@@ -10,6 +10,7 @@ from py_expression_eval import Parser
 from fractions import Fraction
 from math import gcd
 
+
 from datetime import date, datetime, timedelta
 
 from django.contrib import messages
@@ -3436,6 +3437,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                     except:
                         return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
         elif typ >= 4 and typ <= 6:                                                             # Bruch in Komma
+            from decimal import Decimal
             if round(eingabe,4) == round(Decimal(lsg[0]),4):
                 return 1, ""
             elif round(eingabe,3) == round(Decimal(lsg[0]),3):
