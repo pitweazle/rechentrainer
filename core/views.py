@@ -3464,7 +3464,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         hilfe_id = 0
         erg = None 
         nenner_liste = [100,2,4,5,8,10,3]
-        if (typ == 4 and typ2 == 0) or typ == 3:                                                # keine periodischen Dzimalzahlen
+        if (typ == 4 and typ2 == 0) or typ == 3:                                                # keine periodischen Dezimalzahlen
             nenner_liste = nenner_liste[:-1]
         if typ <= 3 :                                                                           # kein nenner 100
             nenner_liste = nenner_liste[1:]
