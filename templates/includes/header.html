@@ -11,7 +11,7 @@
     <div class="dropdown">
         <button class="dropbtn"> 
             {% if user.is_authenticated %}
-                Hallo {{ user.username }}!
+                Hallo {{ user.username }}
             {% else %}
                 <a href="{% url 'anmelden' %}">Anmelden</a>
             {% endif %}

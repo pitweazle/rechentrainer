@@ -5511,7 +5511,9 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche):
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
     if pflicht_kat > 0:
-        soll_kat = int(soll_hj/pflicht_kat)                 
+        soll_kat = int(soll_hj/pflicht_kat)
+    else:
+        soll_kat = 0                 
     if soll_kat < 10:
         soll_kat = 10
     return schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat
