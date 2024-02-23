@@ -223,7 +223,7 @@ def halbieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         typ_end = 1
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
             typ_anf = 2
-            typ_end = 2 + stufe%1
+            typ_end = 2 + stufe%2
         return typ_anf, typ_end
     else:
         typ = random.randint(typ_anf, typ_end)
@@ -474,7 +474,6 @@ def trenner(wert):
 
 def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
-
         typ_anf = 1
         if stufe >= 6 or jg >= 7 or "Kommazahlen" in optionen:
             typ_end = 9
@@ -491,7 +490,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
-        typ = random.randint(typ_anf, typ_end+stufe%1*2)
+        typ = random.randint(typ_anf, typ_end+stufe%2)
         typ2 = 0 
         hilfe_id = 0
         anm = ""
@@ -499,7 +498,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         parameter = {'name':'normal'}
         if typ == 1:                                                                 #Zahlen schreiben
             titel = "Zahlen schreiben"
-            zahl2 = random.randint(5,7+stufe%1)
+            zahl2 = random.randint(5,7+stufe%2)
             zahl1 = random.randint(10000,10**zahl2)
             if stufe%2 == 1:
                 while not "0" in str(zahl1):
@@ -2951,7 +2950,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     typ2 = 2
                     lsg = ["Nebenwinkel", "Neben", "indiv_0"]
                     hilfe_id = 1
-            if typ == 2:
+            if typ2 == 2:
                 text = " Diese beiden Winkel sind gleich groß - wie heißt so ein Winkelpaar?"
                 symbol2 = "α"
                 symbol = "β"
@@ -3146,7 +3145,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 5
-        if stufe%2==1 or jg>7:
+        if stufe%1 != 0:                                        # nur für Gymnasium in A-Kurs'
             typ_end = 6
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
@@ -5679,6 +5678,7 @@ def uebersicht(req, schueler_id=0):
                          zeit_text = "-"
                     letzte_kat = zaehler_kategorie.letzte.strftime("%d.%m.%y")
                     abbr_farbe = lsg_farbe = None
+                    nicht_richtig_quote = 0
                     if richtig_kat > 0:
                         if lsg_gesamt > 0:
                             if lsg_kat > richtig_kat/10:
@@ -6199,9 +6199,6 @@ def main(req, slug):
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, user=user, kategorie = kategorie, sj = user.sj, hj = user.hj).count()
             zaehler = Zaehler.objects.get(user=user, kategorie = kategorie)
             durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt,  = durchschnitt_aufgaben(user)
-            # if richtig_gesamt > 100:
-            #     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0:                   # Hinweis bei zu vielen Aufgaben
-            #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})             
             zaehler.sj = user.sj
             zaehler.hj = user.hj
             if created:
@@ -6215,7 +6212,7 @@ def main(req, slug):
                 # messages.info(req, "Los geht's")
                 zaehler.zeit_summe = 0
                 if richtig_gesamt > 100:
-                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0:                   # Hinweis bei zu vielen Aufgaben
+                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not user.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
                         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
@@ -6233,7 +6230,7 @@ def main(req, slug):
                 typ_anf = zaehler.typ_anf            
             stufe = user.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
-            if kategorie.name == "Prozentrechnung":
+            if kategorie.name in ("Prozentrechnung","Bruchteile"):
                 if user.kurs == "A" or user.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
