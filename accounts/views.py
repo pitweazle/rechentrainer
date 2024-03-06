@@ -247,12 +247,14 @@ def doch_neues_halbjahr(req):
 
 def neues_halbjahr(req):
     sj, hj = name_hj()
+    print(sj,"/",hj)
     user = get_object_or_404(Profil, user_id = req.user.id)
+    print(user.sj,"/",user.hj)
     user.voreinst["no_hj"] = False
     user.voreinst["frage_hj"] = 0
     user.hj = hj
     user.sj = sj
-    #user.save()
+    user.save()
     for zaehler in Zaehler.objects.filter(user_id = user.id): 
         zaehler.fehler_zaehler = 0  
         zaehler.lsg_zaehler = 0  
@@ -675,6 +677,9 @@ def schueler_aendern(req, schueler_id):
     profil_form = Schueler_Aendern_Form(instance=schueler,)
     context = {'profil_form': profil_form, 'schueler': schueler, 'titel': "Schülerdaten ändern"}
     return render(req, 'lehrer/schueler_aendern.html', context)
+
+def film(req):
+    return render(req, 'admin/film.html')  
 
 def update(req):
     if not req.user.is_superuser:

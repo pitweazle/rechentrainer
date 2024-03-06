@@ -15,18 +15,6 @@
                 <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
             </button>
         </td>
-        <!--
-        <td>
-            <button>
-                <a href="{% url 'gruppe_aendern' gruppe.id %}">ändern</a>
-            </button>
-        </td>
-        <td>
-            <button>
-                <a href="{% url 'gruppe_loeschen' gruppe.id %}">löschen</a>
-            </button>
-        </td>
-        -->
         {% if super %}
            <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
         {% endif %}
