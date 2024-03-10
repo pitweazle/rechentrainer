@@ -5516,7 +5516,6 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche):
         soll_kat = 0                 
     if soll_kat < 10:
         soll_kat = 10
-    print("Solkat: ",soll_kat)
     return schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat
 
 def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):

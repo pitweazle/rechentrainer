@@ -26,7 +26,7 @@ urlpatterns = [
     path("gruppe_loeschen/<int:gruppe_id>/", views.gruppe_loeschen, name="gruppe_loeschen"),
      path("suchen/<int:gruppe_id>/", views.suchen, name="suchen"),
 
-    path("mein_schueler/<schueler_id>/", views.mein_schueler, name="mein_schueler"),
+    path("mein_schueler/<schueler_id>/<hj_stimmt>/", views.mein_schueler, name="mein_schueler"),
     path("schueler_aendern/<schueler_id>/", views.schueler_aendern, name="schueler_aendern"),
 
     path("profil_lehrer/", views.profil_lehrer, name="profil_lehrer"), 

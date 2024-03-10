@@ -506,6 +506,7 @@ def gruppe_uebersicht(req, gruppe_id):
             schueler_liste = Profil.objects.filter(gruppe=None).order_by("user__profil__vorname") 
         aufgaben_der_schueler = []
         for user in schueler_liste:
+            hj_stimmt = user.sj == sj and user.hj == hj
             richtig_sum = 0
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
             summen = (
@@ -541,7 +542,6 @@ def gruppe_uebersicht(req, gruppe_id):
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(user = user, kategorie = kat_name)
-
                 if zaehler.count()== 0:
                     fehler, created = Geloescht.objects.get_or_create(user = user.user)
                     if created:
@@ -561,7 +561,6 @@ def gruppe_uebersicht(req, gruppe_id):
                 kategorie_fehler[index] += falsch_kat
                 quote = quote_farbe(richtig_kat, falsch_kat)
                 aufgaben[index] = (quote, richtig_kat)
-
                 prozent_kat, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, user.stufe)      # berechnet die Wertung der Kategorie
                 prozent_summe += prozent_kat
             prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, user.stufe)                         # Berechnung der Gesamtnote
@@ -571,7 +570,7 @@ def gruppe_uebersicht(req, gruppe_id):
             quote_sum = quote_farbe(richtig_sum, falsch_sum)
             aufgaben[0] = (quote_sum, int(richtig_sum))
             aufgaben_der_schueler.append((
-                user, prozent_summe_farbe, prozent_summe, note, dauer_text, aufgaben
+                user, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer_text, aufgaben
             ))
             seconds = int(gesamtzeit.total_seconds())
             mm = int(seconds/60)
@@ -645,7 +644,7 @@ def gruppe_loeschen(req, gruppe_id):
         return render(req, 'lehrer/gruppe_loeschen.html', context={'gruppe': gruppe, 'titel': "wirklich löschen?"}) 
     return render(req, 'lehrer/gruppe_loeschen.html', context={'gruppe': gruppe, 'titel': "Gruppe löschen",}) 
 
-def mein_schueler(req, schueler_id):
+def mein_schueler(req, schueler_id, hj_stimmt):
     mein_schueler = get_object_or_404(Profil, id=schueler_id)
     if not req.user.is_superuser:
         if mein_schueler.gruppe.lehrer != req.user: 
@@ -656,7 +655,7 @@ def mein_schueler(req, schueler_id):
     except:
         gruppe = get_object_or_404(Lerngruppe, name = "keine Gruppe")
         titel = str(mein_schueler) + " keine Gruppe"
-    context={'titel': titel,'schueler': mein_schueler, 'gruppe': gruppe}
+    context={'titel': titel,'schueler': mein_schueler, 'gruppe': gruppe, 'aktuelles_hj': hj_stimmt}
     return render(req, 'lehrer/mein_schueler.html', context) 
 
 def schueler_aendern(req, schueler_id):

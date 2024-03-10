@@ -76,10 +76,10 @@
             {% endfor %}
             </td>
         </tr>
-        {% for schueler, prozent_summe_farbe, prozent_summe, note, dauer, aufgaben in aufgaben_der_schueler %}
+        {% for schueler, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer, aufgaben in aufgaben_der_schueler %}
             <tr >
                 <td style="text-align: left";>
-                    <a  class="button" href="{% url 'mein_schueler' schueler.id %}">{{schueler.vorname}} {{schueler.nachname}} {{schueler.klasse}}</a></td>
+                    <a  class="button" href="{% url 'mein_schueler' schueler.id hj_stimmt %}">{{schueler.vorname}} {{schueler.nachname}} {{schueler.klasse}}</a></td>
                 {% if note_anzeigen %}
                     <td class="{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
                     <td class="{{prozent_summe_farbe}}">{{note}}</td>
