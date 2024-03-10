@@ -1,0 +1,21 @@
+h2{
+  text-align: center; 
+}
+
+ul {
+  list-style: none;
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 30rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: 8rem;
+  background-color: #eeeeee;
+  }
+  
+
+  

@@ -12,6 +12,7 @@
     {{ort_form}} 
     <button type="submit">auswählen</button>
 </form>
+<a href="{% url 'index' %}">Ich möchte mich nicht bei einer Lerngruppe anmelden</a>
 
 <p>Wenn der Schulort oben nicht dabei ist, muss die Schule neu angelegt werden.</p>
 {% if user.profil.klasse|lower == "lehrer" %}

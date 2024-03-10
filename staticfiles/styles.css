@@ -1,0 +1,161 @@
+html{font-family: Arial, Helvetica, sans-serif;}
+
+body{
+    margin: 0;
+    background-color: #f3eded;
+}
+
+.rot {background-color:rgba(255, 0, 0,0.6);}
+.gruen {background-color:rgba(0, 255, 0,0.6);}
+.gelb {background-color:rgba(255, 255,0.6);}
+
+h2,
+h3{
+    font-weight: bold;
+    color: black;
+}
+
+h2 {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 0rem;
+}
+
+h3 {
+    font-size: 1.0rem;
+    text-align: left;
+    padding-bottom: 0;
+}
+
+p {
+  font-size: 1rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline; 
+}  
+
+
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+  }
+  
+.navbar a {
+    float: left;
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;  
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+}
+
+.navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: red;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+details {
+    padding: 5px 20px 5px 20px;    
+}
+
+summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: white;
+    margin: auto;
+    max-width: 1000px;
+    overflow: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+    border-radius: 12px;
+    padding: 2rem;
+}
+  
+thead {
+    background-color:lightgrey;
+}
+
+tbody {
+    background-color:whitesmoke;
+}
+
+th {
+    padding:1px;
+}
+
+td {
+    padding:5px;
+    text-align: right;
+}
+
+ul {
+    list-style: none;
+    background-color: #eeeeee;
+}
+
+li {
+    margin: 0.2rem 0;
+    text-align: left;
+    font-size: 1rem;
+    border-bottom: 1px solid #ccc;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+}
+
+
+li a:hover,
+li a:active {
+    color: #7e0154;
+}
+  

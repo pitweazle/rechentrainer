@@ -42,20 +42,6 @@ def name_next_hj():
         hj = 2
     return sj, hj      
 
-def stufe(jg, kurs):
-    stufe = 0
-    if kurs == "i" or kurs == "S":
-        stufe = 0
-    else: 
-        if jg < 5:
-            stufe = 1
-        else:
-            stufe_liste = [2,4,12,20,26,32,50]
-            stufe = stufe_liste[jg-5] 
-            if kurs in ["Y","R","E","B"]:
-                stufe +=1
-    return stufe
-
 # Dies ist die Startseite:
 def index(req):
     anz_angemeldet = Profil.objects.count()
@@ -74,6 +60,20 @@ def stufen(req):
     return render(req, 'lehrer/stufen.html', context={'titel': "Was bedeuten die Stufen?",})
 
 # registrieren und anmelden:
+def stufe(jg, kurs):
+    stufe = 0
+    if kurs == "i":
+        stufe = 0
+    else: 
+        if jg < 5:
+            stufe = 1
+        else:
+            stufe_liste = [2,4,12,20,26,32,50]
+            stufe = stufe_liste[jg-5] 
+            if kurs in ["Y","R","E","B"]:
+                stufe +=1
+    return stufe
+
 def registrieren(req):
     reg_form = Register_Form()
     profil_form = Profil_Form()  
@@ -147,7 +147,7 @@ def account_loeschen(req):
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'index.html')
-    return render(req, 'account_loeschen.html', context={'titel': "Account löschen",}) 
+    return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
 def hj_pruefen(req):
     if req.user.is_authenticated:

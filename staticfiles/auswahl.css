@@ -1,0 +1,10 @@
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    margin: auto;
+    max-width: 400px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+    border-radius: 12px;
+    padding: 0.5rem;
+  }

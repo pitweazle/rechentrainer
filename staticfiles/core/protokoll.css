@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  background-color: white;
+  max-width: 900px;
+  margin: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  border-radius: 12px;
+  padding: 5px;
+}
+
+html {
+    font-size: small;
+}
+.navbar a{
+    font-size: small;
+} 

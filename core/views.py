@@ -5507,14 +5507,16 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche):
         soll_hj = aufg1hj[woche_halbjahr] * aufgaben_pro_woche                                  # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     else:
         woche_halbjahr = schulwoche
-        print("Woche: ",woche_halbjahr)
-        soll_hj = int(aufg2hj[woche_halbjahr] * aufgaben_pro_woche)     
+        soll_hj = int(aufg2hj[woche_halbjahr] * aufgaben_pro_woche) 
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
     if pflicht_kat > 0:
-        soll_kat = int(soll_hj/pflicht_kat)                 
+        soll_kat = int(soll_hj/pflicht_kat)
+    else:
+        soll_kat = 0                 
     if soll_kat < 10:
         soll_kat = 10
+    print("Solkat: ",soll_kat)
     return schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat
 
 def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
@@ -5744,7 +5746,10 @@ def uebersicht(req, schueler_id=0):
             h, min = divmod(zeit_gesamt, 3600)
             min, sec = divmod(min, 60) 
             dauer = f'{int(h)}:{int(min):02d}'
-            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, user.stufe)                         # Berechnung der Gesamtnote
+            if pflicht_kat > 0:
+                prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, user.stufe)                         # Berechnung der Gesamtnote
+            else:
+                prozent_summe_farbe = prozent_summe = note = None  
             if not bewertung_anzeigen:
                 prozent_summe_farbe = None
             if not details:
@@ -6129,9 +6134,9 @@ def main(req, slug):
                                 kategorie=kategorie,
                                 text__in=zaehler.optionen_text.split(";"),
                                 ).all():
-                                    if(auswahl.bis_stufe) >= int(user.stufe) and auswahl.update:
-                                        user.stufe = auswahl.bis_stufe+1+int(user.stufe)%2
-                                        user.save()
+                                if(auswahl.bis_stufe) >= int(user.stufe) and auswahl.update:
+                                    user.stufe = auswahl.bis_stufe+1+int(user.stufe)%2
+                                    user.save()
                         zaehler.optionen_text = ""
                         zaehler.hinweis = ""
                         zaehler.aufgnr = 0

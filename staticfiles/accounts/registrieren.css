@@ -1,0 +1,23 @@
+h2 {
+    text-align: left; font-size: 1.2rem; 
+}
+
+body {
+    padding: 10px 10px 10px 10px 
+}
+
+.helptext {
+    font-size: 0.8rem;
+}
+
+li {
+    font-size: 0.7rem; 
+    background-color: #f3eded;
+}
+
+.errorlist {
+    color: red;
+}
+
+
+
