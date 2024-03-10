@@ -81,7 +81,7 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
         hilfe_id = 0
         pro_text = einheit = anmerkung = ""
         faktor = stufe%2+1                                  #2 für E-Kurs, 1 für G-Kurs und i
-        if typ_end>1:
+        if typ_end >3:
             typ = random.randint(typ_anf, typ_end+1)
     # hier wird die Aufgabe erstellt:
         if typ == 1:                                                #ganze Zahlen
@@ -119,7 +119,6 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
                 art = "Stück"
             kleingeld = int(einkauf%100)
             text = "Du hast für {}€ eingekauft und bezahlst mit einem {}€ {}" 
-            #pro_text = "Wechselgeld: " + format_zahl(gegeben,0)
             pro_text = "Wechselgeld: {1}"
             if kleingeld > 0 and random.random()>0.5:
                 if kleingeld > 50:
@@ -138,6 +137,7 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
                     art = ""
                     text = text + " und {}ct".format(kleingeld) 
                 erg = round((gegeben - einkauf + kleingeld)/100,2)
+                hilfe_id = 3                
             else:
                 erg = round((gegeben - einkauf)/100,2)        
             text = text + ".<br> Wieviel Wechselgeld erhälst du?"
