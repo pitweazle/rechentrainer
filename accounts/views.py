@@ -480,7 +480,7 @@ def gruppe_uebersicht(req, gruppe_id):
     else:
         wahl = "aktuelles Halbjahr"
         protokoll = protokoll.filter(sj=sj, hj=hj)
-    startdatum = gruppe.ab
+    startdatum = gruppe.erstellt_am
     d0 = date(sj//100+2000,7,24)
     d3 = startdatum
     spaeter = (d3 - d0).days//7

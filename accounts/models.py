@@ -26,7 +26,7 @@ class Schule(models.Model):
 class Lerngruppe(models.Model):
     lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='gruppe')
     name = models.CharField(max_length=15)
-    ab = models.DateField(auto_now_add=True)
+    erstellt_am = models.DateField(auto_now_add=True)
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     aufgaben_pro_woche = models.SmallIntegerField(default=0)
     note_anzeigen = models.BooleanField(default = True)

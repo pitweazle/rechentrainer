@@ -5607,7 +5607,7 @@ def uebersicht(req, schueler_id=0):
         # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
         user_gruppe = user.gruppe
         if user_gruppe:
-            startdatum = user.gruppe.ab
+            startdatum = user.gruppe.erstellt_am
             d0 = date(sj//100+2000,7,24)
             d3 = startdatum
             spaeter = (d3 - d0).days//7
