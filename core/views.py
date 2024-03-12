@@ -5548,32 +5548,32 @@ def uebersicht(req, schueler_id=0):
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
         if schueler_id == 0:
-            user = get_object_or_404(Profil, user_id = req.user.id)
+            profil = get_object_or_404(Profil, user_id = req.user.id)
             if lehrer:
                 loeschen = True            
         else:
-            user = get_object_or_404(Profil, id = schueler_id)
+            profil = get_object_or_404(Profil, id = schueler_id)
         #if not req.user.is_superuser:
-        if(user.id) != (req.user.profil.id) and (user.gruppe.lehrer.id) != (req.user.id):
+        if(profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
             if req.user.is_superuser:
                 pass
             else:
                 return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(user=user, sj=user.sj, hj=user.hj)
+        protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)
         if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
             richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
             #letzte = k['letzte']
         else:
-            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(user)
+            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
         alle = False
         if req.method == 'POST':
             alle = True
-        if user.jg >= 7 or alle:
+        if profil.jg >= 7 or alle:
             kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle kategorien
             alle = True
-        elif user.jg >= 6:
+        elif profil.jg >= 6:
             kategorien = Kategorie.objects.filter(zeile__lt = 22)
-        elif user.jg >= 5:
+        elif profil.jg >= 5:
             kategorien = Kategorie.objects.filter(zeile__lt = 15)
         else:
             kategorien = Kategorie.objects.filter(zeile__lt = 8)
@@ -5582,9 +5582,9 @@ def uebersicht(req, schueler_id=0):
         bearbeitet = 0
         prozent_kat = 0
         breite = "breit"
-        sj = user.sj
-        hj = user.hj
-        gruppe = user.gruppe
+        sj = profil.sj
+        hj = profil.hj
+        gruppe = profil.gruppe
         prozent_summe = nicht_richtig_summe =  nicht_richtig_summe_quote = 0
         prozent_summe_farbe = nicht_richtig_summe_farbe = farbe_kat = None
         note = "-"
@@ -5594,20 +5594,20 @@ def uebersicht(req, schueler_id=0):
             aufgaben_pro_woche = gruppe.aufgaben_pro_woche
             bewertung_anzeigen = gruppe.note_anzeigen
             if aufgaben_pro_woche < 1:
-                aufgaben_pro_woche = 10 * user.jg
+                aufgaben_pro_woche = 10 * profil.jg
         else:
-            aufgaben_pro_woche = 10 * user.jg
+            aufgaben_pro_woche = 10 * profil.jg
             bewertung_anzeigen = False
-        if user.jg > 10:
+        if profil.jg > 10:
             aufgaben_pro_woche = 100
         try:
-            details = user.details
+            details = profil.details
         except:
             details = True
         # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
-        user_gruppe = user.gruppe
-        if user_gruppe:
-            startdatum = user.gruppe.erstellt_am
+        profil_gruppe = profil.gruppe
+        if profil_gruppe:
+            startdatum = profil.gruppe.erstellt_am
             d0 = date(sj//100+2000,7,24)
             d3 = startdatum
             spaeter = (d3 - d0).days//7
@@ -5617,13 +5617,13 @@ def uebersicht(req, schueler_id=0):
             #startdatum = user.date_joined
             spaeter = 1
         
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, user.jg, aufgaben_pro_woche, spaeter)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, spaeter)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
             nicht_richtig_kat = prozent_kat = 0
             prozent_farbe = nicht_richtg_farbe = None
-            if (kategorie.start_jg < user.jg) or (kategorie.start_sw <= schulwoche and kategorie.start_jg == user.jg):
+            if (kategorie.start_jg < profil.jg) or (kategorie.start_sw <= schulwoche and kategorie.start_jg == profil.jg):
                 pflicht = True                                                                      # pflicht = Aufgabenkategorie müsste erledigt werden
                 kat_farbe = "rot"
             else:
@@ -5631,7 +5631,7 @@ def uebersicht(req, schueler_id=0):
             index =  kategorie.zeile
             protokoll_kategorie = protokoll.filter(kategorie = kategorie)
             if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
-                zaehler_kategorie = Zaehler.objects.get(user=user, kategorie = kategorie)
+                zaehler_kategorie = Zaehler.objects.get(user=profil, kategorie = kategorie)
                 #print(kategorie, zaehler_kategorie.fehler_ab)
                 kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
                     protokoll_kategorie
@@ -5724,7 +5724,7 @@ def uebersicht(req, schueler_id=0):
                         zeit_kat = '-'
                     else:
                         zeit_gesamt += zeit_kat.seconds
-                    prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, user.stufe)      # berechnet die Wertung der Kategorie
+                    prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
                     if not pflicht or not bewertung_anzeigen:
                         prozent_farbe = None
                     if not pflicht:
@@ -5761,7 +5761,7 @@ def uebersicht(req, schueler_id=0):
             min, sec = divmod(min, 60) 
             dauer = f'{int(h)}:{int(min):02d}'
             if pflicht_kat > 0:
-                prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, user.stufe)                         # Berechnung der Gesamtnote
+                prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe)                         # Berechnung der Gesamtnote
             else:
                 prozent_summe_farbe = prozent_summe = note = None  
             if not bewertung_anzeigen:
@@ -5778,7 +5778,7 @@ def uebersicht(req, schueler_id=0):
             qfarbe = "unset" 
             dauer = '-'
             pro_aufg = "-" 
-        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = user, zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
+        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle = alle,
             abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
             nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung = bewertung_anzeigen)
