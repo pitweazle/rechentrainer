@@ -5488,11 +5488,11 @@ def durchschnitt_aufgaben(user):
         durchschnitt = int(richtig_gesamt/anzahl)
     return durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt
 
-def soll_berechnung(sj, hj, jg, aufgaben_pro_woche):
+def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, spaeter):
     d0 = date(sj//100+2000,7,24)
     d1 = date.today()
     delta = d1 - d0
-    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,16,16,16,16,16,16,16]       # weniger Aufgaben am Anfang und keine in den Ferien
+    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,16,16,16,16,16,16,16]           # weniger Aufgaben am Anfang und keine in den Ferien
     aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,16,16,16,16,16,16,16,16,16]   
     schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
     if schulwoche < 0:                                                                          # wenn Aufgaben schon im Halbjahr vorher begonnen wurden
@@ -5504,10 +5504,12 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche):
         woche_halbjahr =  delta2.days//7                                                        # wird benötigt um auszurechnen, wieviele Aufgaben gerechnet werden sollten
         if woche_halbjahr <0:
             woche_halbjahr = 0
-        soll_hj = aufg1hj[woche_halbjahr] * aufgaben_pro_woche                                  # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
+        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
     else:
         woche_halbjahr = schulwoche
-        soll_hj = int(aufg2hj[woche_halbjahr] * aufgaben_pro_woche) 
+        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
+    soll_hj +=1
+    soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
     if pflicht_kat > 0:
@@ -5602,7 +5604,20 @@ def uebersicht(req, schueler_id=0):
             details = user.details
         except:
             details = True
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, user.jg, aufgaben_pro_woche)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+        # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
+        user_gruppe = user.gruppe
+        if user_gruppe:
+            startdatum = user.gruppe.ab
+            d0 = date(sj//100+2000,7,24)
+            d3 = startdatum
+            spaeter = (d3 - d0).days//7
+            if spaeter < 1:
+                spaeter = 1
+        else:
+            #startdatum = user.date_joined
+            spaeter = 1
+        
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, user.jg, aufgaben_pro_woche, spaeter)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0

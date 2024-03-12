@@ -480,7 +480,13 @@ def gruppe_uebersicht(req, gruppe_id):
     else:
         wahl = "aktuelles Halbjahr"
         protokoll = protokoll.filter(sj=sj, hj=hj)
-    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche)                    # berechnet den Aufgabensoll für das Halbjahr
+    startdatum = gruppe.ab
+    d0 = date(sj//100+2000,7,24)
+    d3 = startdatum
+    spaeter = (d3 - d0).days//7
+    if spaeter < 1:
+        spaeter = 1
+    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, spaeter)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
