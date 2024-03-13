@@ -113,7 +113,7 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
                     break
                 start += 1
             gegeben = (random.choice(NOTES[start:]))
-            if gegeben != 2:
+            if gegeben != 200:
                 art = "Schein"
             else:
                 art = "Stück"
