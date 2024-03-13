@@ -5488,7 +5488,8 @@ def durchschnitt_aufgaben(user):
         durchschnitt = int(richtig_gesamt/anzahl)
     return durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt
 
-def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, spaeter):
+def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
+    print("Startdatum: ", startdatum)
     d0 = date(sj//100+2000,7,24)
     d1 = date.today()
     delta = d1 - d0
@@ -5502,13 +5503,17 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, spaeter):
         d2 = date(zweites_hj,1,24)
         delta2 = d1 - d2
         woche_halbjahr =  delta2.days//7                                                        # wird benötigt um auszurechnen, wieviele Aufgaben gerechnet werden sollten
-        if woche_halbjahr <0:
-            woche_halbjahr = 0
-        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
+        try:
+            spaeter = ((startdatum.date()-d2).days)//7
+        except:
+            spaeter = ((startdatum-d2).days)//7
     else:
         woche_halbjahr = schulwoche
-        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
-    soll_hj +=1
+        spaeter = (startdatum - d0).days//7
+    if woche_halbjahr <0:
+        woche_halbjahr = 0
+    print("später: ",spaeter)
+    soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
@@ -5606,18 +5611,12 @@ def uebersicht(req, schueler_id=0):
             details = True
         # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
         profil_gruppe = profil.gruppe
+        print("Gruppe: ",gruppe)
         if profil_gruppe:
             startdatum = profil.gruppe.erstellt_am
-            d0 = date(sj//100+2000,7,24)
-            d3 = startdatum
-            spaeter = (d3 - d0).days//7
-            if spaeter < 1:
-                spaeter = 1
         else:
-            #startdatum = user.date_joined
-            spaeter = 1
-        
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, spaeter)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+            startdatum = profil.user.date_joined
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
