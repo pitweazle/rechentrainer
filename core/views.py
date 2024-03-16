@@ -6130,7 +6130,7 @@ def main(req, slug):
                         protokoll.wertung = protokoll.wertung + "r"
                     if zaehler.richtig_of >= kategorie.eof:                 # wenn die erforderliche Anzahl richtiger Antworten eingegeben wurde, wird der jeweilige Fehlerzähler zurückgesetzt
                         if zaehler.fehler_zaehler > 0:
-                            rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Deine Fehlerzähler wurde zurückgesetzt!</b>"
+                            rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Dein Fehlerzähler wurde zurückgesetzt!</b>"
                         zaehler.fehler_ab = timezone.now()
                         zaehler.fehler_zaehler = 0
                         zaehler.lsg_zaehler = 0

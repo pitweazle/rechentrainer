@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block content %}
-
 {% include 'includes/header.html' %} 
 
 <body>
@@ -20,14 +19,13 @@
     {% endif %}
     <div id="main">     
         <h2> Willkommen zur RechentrainerApp!</h2>
-        <div class="boxen">
-            <div class="links">
-                <div class="box_1">
+            <div id="wrapper">
+                <div id="spalte_links">
                     <!--für Lehrer geht es hier zu den Lerngruppen-->
                     {% if lehrer %}
                     <details>
                         <summary>                
-                                <a href="{% url 'meine_gruppen' %}">hier geht es zu den Lerngruppen</a>
+                            <a href="{% url 'meine_gruppen' %}">hier geht es zu den Lerngruppen</a>
                         </summary>
                     {% endif %}
                     </details>        
@@ -90,13 +88,13 @@
                                 <li>Du registrierst dich <a href="/registrieren">hier</a>.</li>
                                 <li>Wenn du vorher schon mal sehen willst, wie das funktioniert - 
                                     <a href="/film">hier gibt es einen Film zum Rechentrainer</a></li>
-                                <li>Wenn du dich registriert hast, findest du oben bei "Aufgaben" zurzeit 14 verschiedene Aufgabentypen.
+                                <li>Wenn du dich registriert hast, findest du oben bei "Aufgaben" zurzeit 26 verschiedene Aufgabentypen.
                                     <br>(Das werden mal mehr - insgesamt gibt es bald 35 verschiedene Aufgabentypen.
-                                    <br>Wenn du diese Aufgaben jetzt schon alle üben willst, kannst du den <a href="https://medien.bildung.hessen.de/rechentrainer/index.html"><i>anderen</i> Rechentrainer</a> benutzen)</li>
+                                    <br>Es fehlen noch die Aufgaben für das 9. und 10. Schuljahr. Die gibt es aber <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hier</a>)</li>
                                 <li>Je nach Schuljahr werden die Aufgaben immer schwieriger (Z.B. kommen ab der 7. Klasse bei <u>allen</u> Aufgabentypen Kommazahlen).</li>                
                                 <li>Der Schwierigkeitsgrad hängt auch von deiner Schulform ab (Z.B. Realschule oder Gymansium).</li>
                                 <li>Wenn du einen Aufgabentyp anklickst, kommen 10 zufällig erzeugte Aufgaben. Wenn du diese erledigt hast, kannst du eine andere Kategorie wählen.</li>
-                                <li>Du solltest jede Woche insgesamt mindesten 100 Aufgaben üben.</li>
+                                <li>Du solltest jede Woche insgesamt, je abhängig von deinem Jahrgang, mindesten 50 - 100 Aufgaben rechnen.</li>
                                 <li>Alle Aufgaben sollst du im Kopf rechnen.</li>            
                             </ul> 
                             <p><b>Wenn du fleißig geübt hast, kannst du die Seite mit deinen gerechneten Aufgaben deinen Eltern und deinem Mathelehrer bzw. deiner Mathelehrerin zeigen.</b></p>
@@ -137,8 +135,7 @@
                             <ul>
                                 <li>"Die eierlegende Wollmilchsau des Mathematikunterrichts"</li>
                                 <li>Die Schülerinnen und Schüler vergessen das Gelernte in Mathematik nicht mehr.<br> Sie wiederholen Versäumtes selbstständig.<br> 
-                                    Auf Knopfdruck werden die Hausaufgaben kontrolliert und die Mathearbeit korrigiert sich selbst*. … das gibt es nicht? Doch!<br>
-                                (* Für die Mathearbeit benötigt man noch den <a href="https://medien.bildung.hessen.de/rechentrainer/index.html"><i>anderen</i> Rechentrainer</a>) </li>
+                                    Auf Knopfdruck werden die Hausaufgaben kontrolliert und die Mathearbeit korrigiert sich selbst*. … das gibt es nicht? Doch!<br></li>
                                 <li>Jeder Mathematiklehrer kennt das Problem: Die Schülerinnen und Schüler vergessen vieles von dem, was sie gelernt haben gleich nach dem Test wieder 
                                     und die Bruchrechnung, das Runden oder das Umwandeln von Einheiten muss immer wieder neu erklärt und auch geübt werden.</li>
                             </ul>
@@ -146,13 +143,9 @@
                             <ul>
                                 <li>Den Rechentrainer gibt es schon seit 2007. Er wurde von mir (Peter Doll) 25 Jahre lang weiterentwickelt.</li> 
                                 <li>Er ist preisgekrönt (2. Platz im Innovationswettbewerb der Deutschen Telekom Stiftung 2011) <a href="{% url 'stimmen' %}">und viel gelobt</a>.</li>
-                                <li>Er kann vom <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hessischen Bildungsserver</a> heruntergeladen und von jedem kostenlos genutzt werden.</li> 
                                 <li><a href="/film">Hier gibt es einen Film dazu</a></li>
-                                <li>... er hat nur einen Nachteil: Er funktioniert nur auf PCs (WIN, OS und Linux) und nicht auf Smartphones und Tablets.</li>
-                                <li>
-                                <li>Auf dieser Seite geht es um die RechentrainerApp für Smartphones und Tablets.</li>
-                                <li>Noch handelt es sich um die Betaversion mit eingeschränktem Funktionsumfang, mit zurzeit 26 Aufgabenkategorien -
-                                <br>die restlichen Kategorien sind in Arbeit und im Laufe des Jahres 2024 sollten alle 35 Kategorien, mit Aufgaben bis zum mittleren Bildungsabschluss vollständig sein.</li>
+                                <li>Die App wird ständig weiterentwickelt. Zurzeit gibt es 26 Aufgabenkategorien, insgesamt sind 35 Kategorien geplant (Die fehlenden gibt es aber schon <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hier</a>).</li>
+                                <li>Mit den 35 Aufgabenkategorien werden alle Themen bis zum mittleren Bildungsabschluss abgedeckt.</li>
                             </ul>
                             <p><b>So funktioniert es:</b></p>
                             <ul>
@@ -187,7 +180,6 @@
                                 <p>Der Rechentrainer ist die Lösung!<br>
                                 <br>
                                 <b>So funktioniert es:</b></p>
-                        
                                 <ul>                
                                     <li>Sie müssen Ihre Tochter/Ihren Sohn <a href="/registrieren">hier registrieren</a>.</li>
                                     <li>Wenn Sie den Rechentrainer zunächst einmal selbst ausprobieren wollen, können Sie sich auch zunächste einmal selbst mit einem Fantasienamen anmelden 
@@ -203,54 +195,30 @@
                             </summary>
                         </details>
                     {% endif %}
-                    <!--Der andere Rechentrainer-->
+                    <!--9. und 10. Schuljahr-->
                     <details>
                         <summary>
-                            Der <i>andere</i> Rechentrainer:
+                            <a href="{% url 'aufgaben_9_und_10' %}">Die Aufgaben für das 9. und 10. Schuljahr</a>
                         </summary>
-                        <ul>
-                            <li>Den Rechentrainer gibt es schon seit 2007. Er wurde von mir (Peter Doll) 15 Jahre lang weiterentwickelt.</li> 
-                            <li>Er ist preisgekrönt (2. Platz im Innovationswettbewerb der Deutschen Telekom Stiftung 2011) und <a href="{% url 'stimmen' %}">wird viel gelobt</a>.</li>
-                            <li>Er kann vom <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hessischen Bildungsserver</a> 
-                                heruntergeladen und von jedem kostenlos genutzt werden. 
-                                Dort finden sich auch alle Infos, Anleitungen, das Handbuch für Lehrer und weitere Programme.</li> 
-                            <li>... er hat nur einen Nachteil: Er funktioniert nur auf PCs (WIN, OS und Linux) und nicht auf Smartphones und Tablets.</li>
-                            <li>Die Installationsanweisung gibt es als <a href="https://medien.bildung.hessen.de/rechentrainer/rechentrainer-installieren.pdf">Text</a> 
-                                und als <a href="https://www.youtube.com/watch?v=EjCXDErevvQ">Film</a></li>
-                            <li>Er funktioniert nur, wenn OpenOffice auf dem Computer installiert ist - das hat aber Vorteile: OpenOffice ist kostenlos und kann alles was das teure Office Paket von Microsoft kann.</li>
-                            <li>Hier auf dieser Seite handelt es sich um die RechentrainerApp, diese hat nicht den gleichen Funktionsumfang wie der <i>andere</i> Rechentrainer. Mit diesem können 35 Themenbereiche bis zum mittleren Bildungsabschluss geübt werden.</li>
-                            <li>Mit dem <i>anderen</i> Rechentrainer können auch Tests geschrieben und Lernstanderhebungen durchgeführt werden.</li>
-                            <li>... und dann gibt es dort auch noch das <a href="https://medien.bildung.hessen.de/rechentrainer/rechenduell.ods">"Rechenduell"</a> das macht den Schülerinnen und Schüler viel Spass!</li>
-                            </ul>
                     </details>
-                    <!--die Stimmen zum Rechentrainer-->
-                    {% if not user.is_authenticated %}
-                        <details>
-                            <summary>
-                                Stimmen zum Rechentrainer
-                            </summary>
-                                <a href="{% url 'stimmen' %}">gibt es hier</a>
-                        </details>
-                    {%endif%}
-                    <!--Impressum-->
+                    <!--Lernkontrollen-->
                     <details>
                         <summary>
-                            Kontakt und Impressum:
+                            <a href="{% url 'lernkontrollen' %}">Lernkontrollen mit dem Rechentrainer</a>
                         </summary>
-                        <p>Den Rechentrainer habe ich (fast) ganz alleine programmiert
-                            und auch für diese Seite bin ich zuständig:
-                            <br><b>Peter Doll</b>
-                            <br>64572 Büttelborn
-                            <br>Gartenstr. 61
-                            <br>Tel.: 06152 9774291
-                            <br>info&#64rechentrainer.app</p>
-                        <p>Ich freue mich sehr über Rückmeldungen, insbesonders, wenn jemand Fehler im Programm oder der Internetseite findet.</p>
-                        <p>Und wenn jemand Änderungswünsche hat oder technischen Support benötigt darf er/sie sich auch gerne melden.</p>
                     </details>
+                    <!--
+                    <details>
+                        <summary>
+                            Lernkontrollen mit dem Rechentrainer:
+                        </summary>
+
+                    </details>
+                    -->
                     <!--Datenschutz-->
                     <details>
                         <summary id="datenschutz">
-                            Datenschutz:
+                            Eure Daten:
                         </summary>
                         <p><b>Wenn du noch jünger als 16 bist, musst du diesen Text deinen Eltern zeigen und diese müssen ihm zustimmen.</b></p>
                         <p><b>Der Rechentrainer funktioniert nur, wenn du dich beim Rechentrainer registrierst und Cookies zulässt.</b>
@@ -277,22 +245,13 @@
                         <p><a href="{% url 'account_loeschen' %}">Hier kannst du deinen Account und alle Daten löschen.</a></p>
                     </details>
                 </div>
-            </div>
-            <div class="rechts">
-                <div class="box_2">
+                <div id="spalte_rechts">
                     <h2>Update vom 7.1.24:</h2>
                     <p>Der Rechentrainer gibt euch jetzt Noten auf eure Arbeit.<br>Um eine gute Note zu erreichen, müsst ihr jetzt 10 Aufgaben pro Jahrgang und Woche erledigen (Das heißt z.B. im Jahrgang 7 70 Aufgaben pro Woche.)<br>... und das schön verteilt auf alle Aufgabenarten. .</p>
                 </div>
-                <!--
-                <div class="box_3">
-                    <h2>Dies ist die Beta Version des Rechentrainers!</h2>
-                    <p>Das heißt, er ist noch nicht fertig und es können auch noch Fehler drin sein.</p>
-                    <p>Es gibt auch erst 25 verschiedene Aufgabenkategorien - irgendwann werden es 35 sein.</p>
-                </div>
-                -->
             </div>
-        </div>
     </div>
 </div>
 </body>
+{% include 'includes/footer.html' %} 
 {% endblock %}

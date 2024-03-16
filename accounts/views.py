@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse, Http404
 
 from django.db.models import Max, Sum, F, Q
 
@@ -15,7 +15,7 @@ from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Ne
 from .models import Schule, Lerngruppe, Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
-#from core.views import protokoll_zeit_filter 
+import mimetypes
  
 def name_hj():
     heute = datetime.today()
@@ -679,7 +679,26 @@ def schueler_aendern(req, schueler_id):
     return render(req, 'lehrer/schueler_aendern.html', context)
 
 def film(req):
-    return render(req, 'admin/film.html')  
+    return render(req, 'medien/film.html')  
+
+def installation_film(req):
+    return render(req, 'medien/installation_film.html')  
+
+def aufgaben_9_und_10(req):
+    return render(req, 'medien/aufgaben_9_und_10.html')  
+
+def lernkontrollen(req):
+    return render(req, 'medien/lernkontrollen.html')  
+
+def handbuch(req):
+    # return FileResponse(open('/medien/Handbuch.pdf', 'rb'), content_type='application/pdf')
+    with open('medien/handbuch.pdf', 'rb') as pdf:
+        response = HttpResponse(pdf.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="handbuch.pdf"'
+        return response
+    
+def download(req):
+    pass
 
 def update(req):
     if not req.user.is_superuser:
