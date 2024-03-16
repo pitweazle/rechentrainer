@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+  <link rel="stylesheet" href="{% static 'medien/lernkontrollen.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>Lernkontrollen mit dem Rechentrainer</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Lernkontrollen mit dem Rechentrainer</a>
+    </div>
+</header>
+<div class="container">
+    <div id="wrapper">
+        <div id="spalte_links">
+            <img src="{% static "medien/test_screenshot.jpg" %}" height="200" width="300" alt="Grafik">
+        </div>
+        <div id="spalte_rechts">
+            <ul>
+                <li>Mit dem Rechentrainer können auch Lernkontrollen erstellt und auch durchführt werden.<br> 
+                    Die Lehrkraft legt in einer Vorlage fest, wieviele Aufgaben von welchen Aufgabenkategorie jeweils gerechnet werden sollen und legt diese Vorlage z.B. im Intranet der Schule ab.<br> 
+                    Zum Testtermin öffnen die Schülerinnen und Schüler ihre jeweilige Vorlage und bearbeiten diese. Da die Aufgaben mit Zufallszahlen erzeugt werden, kann nicht beim Nachbarn/der Nachbarin abgeschrieben werden.
+                    Zu jeder Zeit wird die bisher erreichte Note angezeigt.<br>
+                    Am Ende der Bearbeitungszeit werden die Ergebnisse für alle Schülerinnen und Schüler in einer Datei ordentlich dargestellt, die Tests müssen nur noch ausgedruckt und von der Lehrkraft unterschrieben werden.<br> 
+                </li> 
+                <li>Speziell für SchuB Klassen gibt es auch die Möglichkeit, Lernstandserhebungen durchzuführen. Hier sind typische Aufgaben schon vorgegeben (Diese Auswahl kann von der Lehrkraft natürlich geändert werden.).<br>
+                    Am Ende wird das Ergebnis nicht als Note, sondern als Prozentwert für die einzelnen Lernfelder ausgegeben.</li>
+                <li>Für diese Lernkontrollen benötigt man die Desktopversion des Rechentrainers. Bei der Nutzung von Smartphone und Tablets kann nicht kontrolliert werden kann, ob die Taschenrechnerfunktion benutzt wird.</li>
+                <li>Auf den genutzten PCs muss OpenOffice bzw. LibreOffice installiert sein und dort müssen Makros zugelassen sein.</li>
+                <li>Die Installationsanweisung gibt es als <a href="https://medien.bildung.hessen.de/rechentrainer/rechentrainer-installieren.pdf">Text</a> 
+                    und als <a href="{% url 'installation_film' %}">Film</a></li>                
+                <li>Auf der Seite des hessischen Bildungsservers kann auch ein umfangreiches <a href="https://medien.bildung.hessen.de/rechentrainer/handbuch.pdf">Handbuch für Lehrer</a> mit allen Funktionen der Desktopversion des Rechentrainers heruntergeladen werden.</li>
+                <li>Und <a href="https://medien.bildung.hessen.de/rechentrainer/rechenduell.ods">hier</a> kann auch das im Handbuch beschriebene Rechenduell heruntergeladen werden.<br>
+                Dieses macht den Schülerinnen und Schüler viel Spaß!</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+</html>

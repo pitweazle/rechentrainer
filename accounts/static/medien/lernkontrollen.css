@@ -1,0 +1,11 @@
+
+#spalte_links {
+    width: 300px;
+    float:left;
+}
+
+#spalte_rechts {
+	margin-left: 305px;
+    background-color: white;
+
+}

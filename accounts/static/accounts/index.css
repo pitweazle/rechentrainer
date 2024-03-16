@@ -12,39 +12,19 @@ body {
     border-radius: 12px;
     padding: 5px;
 }
-
-.links {
-    float: left
+#wrapper {
+	width: 800px;
 }
 
-.rechts {
-    float: right
+#spalte_links {
+    width: 400px;
+    float:left;
 }
 
-.boxen {
-    display: flex;
-    flex-wrap: wrap;
-}
-.boxen >* {
-    flex-grow:2;
-    flex-basis: 400px;
-}
+#spalte_rechts {
+    background-color:rgb(208, 243, 208);
+	margin-left: 410px;
 
-.box_1 { 
-    width: 50%; 
-    min-width: 300px; 
-}
-
-.box_2 { 
-    width: 50%;
-    min-width: 300px; 
-    background: #87dd7b; 
-}
-
-.box_3 { 
-    width: 50%;
-    min-width: 300px; 
-    background: rgb(238, 238, 91); 
 }
 
 p {

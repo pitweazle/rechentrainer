@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>Rechentrainerinstallation</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Die Installation des Rechentrainers</a>
+    </div>
+</header>
+<div class="container">
+    <body>
+        <header>
+        </header>
+        <video width="640" height="540" controls autoplay>
+            <source src="{% static "medien/installation_film.mp4" %}"  type="video/mp4"></source>
+        </video>
+        <p>In diesem Video wird gezeigt, wie man den Rechentrainer auf einem PC installiert</p>
+    </body>
+</div>
+{% endblock %}
+</html>

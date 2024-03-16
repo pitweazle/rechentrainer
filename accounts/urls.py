@@ -40,6 +40,11 @@ urlpatterns = [
     path("stufen/", views.stufen, name="stufen"),
 
     path("film/", views.film, name="film"),
+    path("installation_film/", views.installation_film, name="installation_film"),
+    path("aufgaben_9_und_10/", views.aufgaben_9_und_10, name="aufgaben_9_und_10"),
+    path("lernkontrollen/", views.lernkontrollen, name="lernkontrollen"),
+    path("handbuch/", views.handbuch, name="handbuch"),
+    path("download/", views.handbuch, name="download"),
     
     path("update/", views.update),
     path("reparatur/<id>", views.reparatur),
