@@ -12,6 +12,14 @@ body {
     border-radius: 12px;
     padding: 5px;
 }
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+}
+
 #wrapper {
 	width: 800px;
 }
