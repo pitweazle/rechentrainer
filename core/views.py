@@ -492,6 +492,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end+stufe%2)
+        typ=1
         typ2 = 0 
         hilfe_id = 0
         anm = ""
@@ -499,11 +500,11 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         parameter = {'name':'normal'}
         if typ == 1:                                                                 #Zahlen schreiben
             titel = "Zahlen schreiben"
-            zahl2 = random.randint(5,7+stufe%2)
-            zahl1 = random.randint(10000,10**zahl2)
+            exponent = random.randint(5,7+stufe%2)
+            zahl1 = random.randint(10000,10**exponent)
             if stufe%2 == 1:
                 while not "0" in str(zahl1):
-                    zahl1 = random.randint(10000,10**zahl2)
+                    zahl1 = random.randint(10000,10**exponent)
             if zahl1 >= 1000000:
                 zahl_mill = zahl1//1000000
                 if zahl_mill == 1:
@@ -519,7 +520,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             text = "Schreibe folgende Zahl in Ziffern: {}"
             frage = "Als Zahl:"
             variable = [text_k]
-            lsg = trenner(zahl1)
+            lsg = [trenner(zahl1)]
             erg=zahl1
         elif typ == 2:                                                               #Vorgänger Nachfolger
             titel = "Vorgänger und Nachfolger"
@@ -5489,15 +5490,16 @@ def durchschnitt_aufgaben(user):
     return durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt
 
 def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
-    print("Startdatum: ", startdatum)
+    #print("Startdatum: ", startdatum)
     d0 = date(sj//100+2000,7,24)
     d1 = date.today()
     delta = d1 - d0
-    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,16,16,16,16,16,16,16]           # weniger Aufgaben am Anfang und keine in den Ferien
-    aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,16,16,16,16,16,16,16,16,16]   
+    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]           # weniger Aufgaben am Anfang und keine in den Ferien - maximal 1600 (siehe unten)
+    aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,17,18,19,20,21,22,23, 24,25, 26]   
     schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
-    if schulwoche < 0:                                                                          # wenn Aufgaben schon im Halbjahr vorher begonnen wurden
-        schulwoche = 0                                                                 
+    if schulwoche < 0: 
+        #print("kleiner")                                                                       # wenn Aufgaben schon im Halbjahr vorher begonnen wurden
+        schulwoche = 0  
     if hj == 2:
         zweites_hj = (sj%100+2000)
         d2 = date(zweites_hj,1,24)
@@ -5510,11 +5512,16 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
     else:
         woche_halbjahr = schulwoche
         spaeter = (startdatum - d0).days//7
-    if woche_halbjahr <0:
+    if woche_halbjahr < 0:
         woche_halbjahr = 0
-    print("später: ",spaeter)
+    #print("später: ",spaeter)
+    if spaeter < 0:
+        spaeter = 0
+    #print("später: ",spaeter)
     soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
+    if soll_hj > 16:
+        soll_hj = 16
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
     if pflicht_kat > 0:
@@ -6055,6 +6062,7 @@ def main(req, slug):
         kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
         bis_loeschen = "-"
+        titel = ""
         if req.method == 'POST':
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
             protokoll.versuche += 1
