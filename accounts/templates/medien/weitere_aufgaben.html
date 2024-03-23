@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+  <link rel="stylesheet" href="{% static 'medien/weitere_aufgaben.css' %}">
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>weitere Aufgaben</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>weitere Aufgaben</a>
+    </div>
+</header>
+<div class="container">
+    <div id="wrapper">
+        <div id="spalte_links">
+            <img src="{% static "medien/aufgaben_9_und_10.jpg" %}" height="800" width="200" alt="Grafik">
+        </div>
+        <div id="spalte_rechts">
+            <ul>
+                <li>
+                Hier in dem kurzen Filmclip findest du eine Übersicht über alle Aufgabenkategorien im Rechentrainer:<br>
+                    <video width="200" height="150" controls autoplay>
+                        <source src="{% static "medien/film_alle_kategorien.mp4" %}"  type="video/mp4"></source>
+                    </video>
+                </li>
+                <li>Der Rechentrainer wird ständig weiterentwickelt.</li> 
+                <li>Die Aufgabenkategorien in der App decken bisher alle Themen ab, die bis zum Ende des 8. Schuljahres vorkommen ... na ja, fast - Aufgaben zu Wahrscheinlichkeit und zu Funktionen sind in Arbeit ...</li>
+                <li>Aber es gibt noch eine andere Version des Rechentrainers, diese funktioniert aber nur auf PCs (natürlich auch auf dem Mac).<br> 
+                    In dieser Version können unter anderem auch die Aufgaben für das 9. und 10. Schuljahrs geübt werden. Links siehst du einen Screnshot der Aufgabenkategorien 
+                    und hier gibt es eine kurze Übersicht dazu:
+                    <video width="200" height="150" controls autoplay>
+                        <source src="{% static "medien/film_aufgaben_9_und_10.mp4" %}"  type="video/mp4"></source>
+                    </video>
+                </li>
+                <li>Um diesen Rechentrainer zu benutzen, benötigt man also einen PC (WIN, OS oder Linux), er funktioniert nicht auf Smartphones und Tablets.</li>
+                <li>Weiterhin muss auf dem PC OpenOffice bzw. LibreOffice installiert sein - das hat aber Vorteile: OpenOffice ist kostenlos und kann alles, was das teure Office Paket von Microsoft kann.</li>
+                <li>Diese Version des Rechentrainers kann <a src="{% url 'download_rechentrainer' %}">hier</a> heruntergeladen werden.</li> 
+                <li>Die Installationsanweisung gibt es als <a href="{% static "medien/installieren.pdf" %}">Text</a> 
+                    und als <a href="{% url 'installation_film' %}">Film</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+</html>

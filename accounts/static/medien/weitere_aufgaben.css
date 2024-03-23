@@ -1,15 +1,14 @@
 
-.container {
-    max-width: 465px;
-}
-
 #spalte_links {
     width: 200px;
     float:left;
 }
 
 #spalte_rechts {
-    width: 260px;
-	margin-left: 201px;
+	margin-left: 205px;
     background-color: white;
+
 }
+
+
+

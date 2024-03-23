@@ -684,8 +684,8 @@ def film(req):
 def installation_film(req):
     return render(req, 'medien/installation_film.html')  
 
-def aufgaben_9_und_10(req):
-    return render(req, 'medien/aufgaben_9_und_10.html')  
+def weitere_aufgaben(req):
+    return render(req, 'medien/weitere_aufgaben.html')  
 
 def lernkontrollen(req):
     return render(req, 'medien/lernkontrollen.html')  
