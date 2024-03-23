@@ -689,16 +689,9 @@ def aufgaben_9_und_10(req):
 
 def lernkontrollen(req):
     return render(req, 'medien/lernkontrollen.html')  
-
-def handbuch(req):
-    # return FileResponse(open('/medien/Handbuch.pdf', 'rb'), content_type='application/pdf')
-    with open('medien/handbuch.pdf', 'rb') as pdf:
-        response = HttpResponse(pdf.read(), content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename="handbuch.pdf"'
-        return response
     
-def download(req):
-    pass
+def download_rechentrainer(req):
+    return render(req, 'medien/download_rechentrainer.html')  
 
 def update(req):
     if not req.user.is_superuser:
