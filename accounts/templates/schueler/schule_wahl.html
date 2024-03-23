@@ -1,0 +1,23 @@
+{% extends 'auswahl.html' %}  
+{% block content %}
+
+<body>
+<p><b>{{schule.schulname}}</b> </p>
+<p>Das sind die Schulen in <b>{{ort.name}}</b> in denen mit dem Rechentrainer gearbeitet wird:</p>
+
+<ul>
+    {% for schule in schulen %}
+        <li>
+            <a  class="button" href="{% url 'schule_wahl' schule.id  %}">{{schule}} </a>
+        </li>
+    {% endfor %}
+    <li>--------------------------------------------------------</li>
+    <li>
+        <a  class="button" href="{% url 'schule_wahl' 0 %}">Meine Schule ist nicht dabei</a>
+    </li>
+</ul>
+<p>Auch hier gilt: Wenn deine Schule oben nicht dabei ist, muss die Schule neu angelegt werden.</p>
+
+</body>
+{% endblock %}
+</html>

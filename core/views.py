@@ -5565,12 +5565,12 @@ def uebersicht(req, schueler_id=0):
                 loeschen = True            
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
-        #if not req.user.is_superuser:
-        if(profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
-            if req.user.is_superuser:
-                pass
-            else:
-                return HttpResponse("Zugriff verweigert")
+        if(profil.id) != (req.user.profil.id):
+            if lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
+                if req.user.is_superuser:
+                    pass
+                else:
+                    return HttpResponse("Zugriff verweigert")
         protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)
         if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
             richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
@@ -5618,7 +5618,6 @@ def uebersicht(req, schueler_id=0):
             details = True
         # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
         profil_gruppe = profil.gruppe
-        print("Gruppe: ",gruppe)
         if profil_gruppe:
             startdatum = profil.gruppe.erstellt_am
         else:

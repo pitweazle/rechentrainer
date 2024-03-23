@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<head>       
+    <title>Lernkontrollen mit dem Rechentrainer</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Lernkontrollen mit dem Rechentrainer</a>
+    </div>
+</header>
+<div class="container">
+    <h1>Achtung - wichtig!</h1>
+    <p>Wenn kein OpeneOffice/LibreOffice auf dem Computer installiert ist, man den Rechentrainer herunterlädt und dann auf die heruntergeladene Datei "rechentrainer.ots" klickt, 
+    wird wahrscheinlich das Tabellenkalkulationsprogramm Excel von Microsoft diese Datei öffnen. Mit Excel funktioniert der Rechentrainer nicht - 
+    wahrscheinlich wird sogar das Makro in der Datei gelöscht und der Rechentrainer funktioniert dann nicht mehr.</p>
+    <p>Wenn OpenOffice/Libre Office installiert ist, kann man den Rechentrainer hier herunterladen:
+    <button>
+    <a href="{% static "medien/rechentrainer.ots" %}">Download</a>
+    </button></p>
+    <p>... ansonsten geht es hier zur:
+    <button>
+        <a href="{% static "medien/installieren.pdf" %}">Installationsanleitung</a>
+    </button></p>
+</div>
+{% endblock %}
+</html>
