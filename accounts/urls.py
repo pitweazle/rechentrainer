@@ -41,7 +41,7 @@ urlpatterns = [
 
     path("film/", views.film, name="film"),
     path("installation_film/", views.installation_film, name="installation_film"),
-    path("aufgaben_9_und_10/", views.aufgaben_9_und_10, name="aufgaben_9_und_10"),
+    path("weitere_aufgaben/", views.weitere_aufgaben, name="weitere_aufgaben"),
     path("lernkontrollen/", views.lernkontrollen, name="lernkontrollen"),
     path("download_rechentrainer/", views.download_rechentrainer, name="download_rechentrainer"),
     
