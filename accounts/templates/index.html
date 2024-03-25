@@ -90,7 +90,7 @@
                                     <a href="/film">hier gibt es einen Film zum Rechentrainer</a></li>
                                 <li>Wenn du dich registriert hast, findest du oben bei "Aufgaben" zurzeit 26 verschiedene Aufgabentypen.
                                     <br>(Das werden mal mehr - insgesamt gibt es bald 35 verschiedene Aufgabentypen.
-                                    <br>Es fehlen noch die Aufgaben für das 9. und 10. Schuljahr. Die gibt es aber <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hier</a>)</li>
+                                    <br>Es fehlen noch die Aufgaben für das 9. und 10. Schuljahr. Die gibt es aber <a href="{% url 'weitere_aufgaben' %}">hier</a>)</li>
                                 <li>Je nach Schuljahr werden die Aufgaben immer schwieriger (Z.B. kommen ab der 7. Klasse bei <u>allen</u> Aufgabentypen Kommazahlen).</li>                
                                 <li>Der Schwierigkeitsgrad hängt auch von deiner Schulform ab (Z.B. Realschule oder Gymansium).</li>
                                 <li>Wenn du einen Aufgabentyp anklickst, kommen 10 zufällig erzeugte Aufgaben. Wenn du diese erledigt hast, kannst du eine andere Kategorie wählen.</li>
@@ -203,19 +203,13 @@
                         </summary>
                     </details>
                     <!--Lernkontrollen-->
-                    <details>
-                        <summary>
-                            <a href="{% url 'lernkontrollen' %}">Lernkontrollen mit dem Rechentrainer</a>
-                        </summary>
-                    </details>
-                    <!--
-                    <details>
-                        <summary>
-                            Lernkontrollen mit dem Rechentrainer:
-                        </summary>
-
-                    </details>
-                    -->
+                    {% if not user.is_authenticated or lehrer %}
+                        <details>
+                            <summary>
+                                <a href="{% url 'lernkontrollen' %}">Lernkontrollen mit dem Rechentrainer</a>
+                            </summary>
+                        </details>
+                    {% endif %}
                     <!--Datenschutz-->
                     <details>
                         <summary id="datenschutz">
