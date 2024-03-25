@@ -42,9 +42,11 @@ urlpatterns = [
     path("film/", views.film, name="film"),
     path("installation_film/", views.installation_film, name="installation_film"),
     path("weitere_aufgaben/", views.weitere_aufgaben, name="weitere_aufgaben"),
+    path("weitere_projekte/", views.weitere_projekte, name="weitere_projekte"),
     path("lernkontrollen/", views.lernkontrollen, name="lernkontrollen"),
     path("download_rechentrainer/", views.download_rechentrainer, name="download_rechentrainer"),
-    
+    path("download_lernbox/", views.download_lernbox, name="download_lernbox"),
+
     path("update/", views.update),
     path("reparatur/<id>", views.reparatur),
 
