@@ -38,14 +38,14 @@
         <li>
             <img src="{% static 'medien/bingo.jpg' %}" width="200" height="150" style="float:left; margin: 10px;"/> 
             ... und was hat das mit <b>Bingo</b> zu tun? Ich habe eine App programmiert, mit der man diese Kärtchen aus einer Liste erstellen kann, 
-            aber da diese Lernkärtchen heute nicht mehr so modern sind habe ich mir was Neues überlegt:<br>
-            Auf Wunsch werde aus dieser Liste <b>Bingokarten</b> erstellt - rechts seht ihr ein Beispiel für die Hauptstädte Europas. Der Lehrer/die Lehrerin liest aus der Liste eine Hauptstadt Europas vor, 
+            aber da diese Lernkärtchen heute nicht mehr so modern sind, habe ich mir was Neues überlegt:<br>
+            Auf Wunsch werden aus dieser Liste <b>Bingokarten</b> erstellt - rechts seht ihr ein Beispiel für die Hauptstädte Europas. Der Lehrer/die Lehrerin liest aus der Liste eine Hauptstadt Europas vor, 
             die Schülerinnen und Schüler suchen auf ihrer Bingokarte das entsprechende Land dazu und kreuzt es an - jede/r hat eine andere Bingokarte. 
             Wer zuerst alle Länder in einer Reihe oder Spalte komplett durchgestrichen hat ruft <b>"Bingo"</b> und erhält einen Preis.
         </li>
             <li>
                 Um die <b>Lernbox</b> und <b>Bingo</b> benutzen zu können, benötigt man, wie an anderer Stelle erwähnt, einen PC und auf diesem muss OpenOffice oder Libre Office installiert sein. 
-                den Download und genauere Informationen gibt es hier. 
+                <a href="{% static 'medien/lernbox.pdf' %}">Hier findet man das Handbuch für die Lernbox und für Bingo.</a>. 
                 Die Lernbox und Bingo kann <a href="{% url 'download_lernbox' %}">hier</a> heruntergeladen werden.
             </li> 
             <li>
@@ -53,11 +53,35 @@
                 Übrigens: Man kann auch Bingokarten für Vokabeln oder auch für Themen aus der Mathematik erzeugen.<br>
                 Hier gibt es eine Datei mit Aufgaben zu <a href="{% static 'medien/bingo_mathe.ods' %}">Termen, Wurzeln und binomischen Formeln :)</a>  
             </li>
-        <li><h1>Ampel:</h1>
+        <li>
+            <h1>Das RechenDuell:</h1>
+            <img src="{% static 'medien/rechenduell.jpg' %}" width="200" height="150" style="float:left; margin: 10px;"/>
+            Nehmen wir Mathelehrer uns nicht immer mal wieder vor, mit den Schülerinnen und Schülern <b>Kopfrechnen zu üben</b>?<br> 
+            Mit dem RechenDuell macht das mehr Spaß! 
+            Benötigt wird eine Schülerliste und ein Beamer. Nach der Auswahl der Aufgabenart (links) wird eine Kopfrechenaufgabe (rechts oben) angezeigt. 
+            Aus der Schülerliste werden automatisch zwei Kandidaten ausgelost und nach einer einstellbaren Zeitspanne im Fenster unten rechts angezeigt. 
+            Der/die Schnellste wird angeklickt und bekommt einen Punkt. Es erfolgt ein Ranking, falls gewünscht in bis zu drei Ligen – mit Auf- und Abstiegskämpfen.<br>
+            <a href="{% static 'medien/rechenduell.ods' %}">Das RechenDuell kann hier heruntergeladen werden.</a><br>
+            (Auch hier gilt: OpenOffice oder Libre Office muss installiert sein.)<br>
+            Eine Gebrauchsanweisung für das Duell gibt es <a href="{% static 'medien/rechenduell.pdf' %}">hier</a>.<br>
+        </li>
+        <li><h1>Die Ampel:</h1>
             <img src="{% static 'medien/ampel.jpg' %}" width="200" height="150" style="float:left; margin: 10px;"/> 
             Vielleicht verirrt sich ja jemand hierher, der Spass am Programmieren hat:<br> Ich habe eine <b>Ampelsteuerungs-App</b> in der <b>Tabellenkalkulation</b> "calc" von OpenOffice programmiert. 
             <a href="{% static 'medien/ampel.ods' %}">Hier ist die Datei mit dem Code.</a>(Auch hier gilt: OpenOffice oder Libre Office muss installiert sein.)<br>
-            (Wenn man auf die hellgrauen Felder am Anfang der jeweiligen Fahrspuren klickt, fährt ein zusätzliches Auto los.) 
+            (Wenn man auf die hellgrauen Felder am Anfang der jeweiligen Fahrspuren klickt, fährt ein zusätzliches Auto los.)<br><br> <br><br>
+        </li>
+        <li><h1>Der Physiktrainer:</h1>
+            <img src="{% static 'medien/physiktrainer.jpg' %}" width="200" height="150" style="float:left; margin: 10px;"/> 
+            Meiner Meinung nach reichen die Physikstunden nicht aus, um unseren Schülerinnen und Schülern die wichtigsten Grundlagen der Physik beizubringen.<br>
+            Ich habe daher angefangen, einen Physiktrainer zu erstellen. Dieser baut ebenfalls auf dem Prinzip der Lernbox auf:<br>
+            Man beantwortet zunächst die Fragen in der ersten Lernbox. Bei einer richtigen Anwort wandert das "Kärtchen" in das nächste Fach und wenn die erste Box leer ist,
+            überprüft man, ob man die Fragen immer noch richtig beantworten kann, falls ja, wandern sie eine Box weiter, falls nein, wandern sie wieder eine Box zurück ...<br>
+            Es gibt diese Boxen in drei Schwierigkeitsgraden und für alle Themen der Sek1.<br>
+            Noch baut diese Verison auf der Tabellenkalkulation von OpenOffice/LibreOffice auf, sie soll aber als browsergestützte App weiterentwickelt werden. Wer sich diese Vorabversion schon mal anschauen will:
+            <a href="{% static 'medien/physiktrainer_beta.ods' %}">Hier kann man den Physiktrainer herunterladen.</a>(Es handelt sich aber bisher eher um eine Idee.)<br>
+            (Auch hier gilt: OpenOffice oder Libre Office muss installiert sein.)<br>
+            Sollte jemand an diesem Projekt mitarbeiten wollen oder eine Nachricht erhalten möchte, wie es damit weitergeht, kann mir gerne eine Mail schicken.
         </li>
     </ul>
 </div>

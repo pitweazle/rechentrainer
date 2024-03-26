@@ -29,16 +29,16 @@
             </li> 
             <li>Speziell für SchuB Klassen gibt es auch die Möglichkeit, Lernstandserhebungen durchzuführen. Hier sind typische Aufgaben schon vorgegeben (Diese Auswahl kann von der Lehrkraft natürlich geändert werden.).<br>
                 Am Ende wird das Ergebnis nicht als Note, sondern als Prozentwert für die einzelnen Lernfelder ausgegeben.<br>
-                <li>Hier gibt es eine Beschreibung: <a href="https://rechentrainer.app/staticfiles/medien/handbuch.pdf#LSE">Lernstandserhebung</a>. </li>
+                <li>Hier gibt es eine Beschreibung: <a href="{% static 'medien/handbuch.pdf#LSE' %}">Lernstandserhebung</a>. </li>
             <li>Für diese Lernkontrollen benötigt man die Desktopversion des Rechentrainers. Bei der Nutzung von Smartphone und Tablets kann nicht kontrolliert werden kann, ob die Taschenrechnerfunktion benutzt wird.</li>
             <li>Auf den genutzten PCs muss OpenOffice bzw. LibreOffice installiert sein und dort müssen Makros zugelassen sein.</li>
             <li>Den Rechentrainer für PCs kann hier heruntergeladen werden: <a href="{% url 'download_rechentrainer' %}">zum Download</a>.</li>
-            <li>Die Installationsanweisung gibt es als <a href="https://rechentrainer.app/staticfiles/medien/installieren.pdf">Text</a> 
+            <li>Die Installationsanweisung gibt es als <a href="{% static 'medien/installieren.pdf' %}">Text</a> 
                 und als <a href="{% url 'installation_film' %}">Film</a>.</li>                
-            <li>Hier wird erklärt, wie man Tests mit dem Rechentrainer erstellen und durchführen kann: <a href="https://rechentrainer.app/staticfiles/medien/handbuch.pdf#Test">Handbuch für Lehrer</a>.</li>
-            <li>Und <a href="https://rechentrainer.app/staticfiles/medien/rechenduell.ods">hier</a> kann auch das im Handbuch beschriebene Rechenduell heruntergeladen werden.<br>
+            <li>Hier wird erklärt, wie man Tests mit dem Rechentrainer erstellen und durchführen kann: <a href="{% static 'medien/handbuch.pdf#Test' %}">Handbuch für Lehrer</a>.</li>
+            <li>Und <a href="{% static 'medien/rechenduell.ods' %}">hier</a> kann auch das im Handbuch beschriebene Rechenduell heruntergeladen werden.<br>
             Dieses macht den Schülerinnen und Schülern viel Spaß!<br>
-            Auch für das Rechenduell gibt es eine Gebrauchsanweisung im <a href="https://rechentrainer.app/staticfiles/medien/handbuch.pdf#Duell">Handbuch für Lehrer</li>
+            Auch für das Rechenduell gibt es <a href="{% static 'medien/rechenduell.pdf' %}">eine Gebrauchsanweisung</li>
         </ul>
 </div>
 {% endblock %}
