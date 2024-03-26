@@ -1,0 +1,657 @@
+[
+{
+  "model": "core.sachaufgabe",
+  "pk": 1,
+  "fields": {
+    "lfd_nr": 7,
+    "ab_jg": 4,
+    "text": "{a[0]} hat {e}€ gespart. {a[1]} möchte sich {d[0]} kaufen, {d[1]} {f}€ kostet. Wie viel Geld fehlt {a[2]} noch?",
+    "variable": {
+      "a": [
+        [
+          "Julia",
+          "Sie",
+          "ihr"
+        ],
+        [
+          "Sophie",
+          "Sie",
+          "ihr"
+        ],
+        [
+          "Maria",
+          "Sie",
+          "ihr"
+        ],
+        [
+          "Paul",
+          "Er",
+          "ihm"
+        ]
+      ],
+      "d": [
+        [
+          "einen neuen Pullover",
+          "der"
+        ],
+        [
+          "eine neue Tasche",
+          "die"
+        ]
+      ],
+      "e": [
+        10,
+        15,
+        20
+      ],
+      "f": [
+        25,
+        28,
+        30
+      ]
+    },
+    "loesung": "{f}-{e}={}",
+    "pro_text": "Pulloverkauf:",
+    "anmerkung": null,
+    "links_text": "Es fehlen",
+    "rechts_text": "€"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 2,
+  "fields": {
+    "lfd_nr": 2,
+    "ab_jg": 4,
+    "text": "Eine Bäckerei backt täglich {a} Brötchen. Wie viele Brötchen werden in einer Woche gebacken? (Sonntags wird nicht gebacken.)",
+    "variable": {
+      "a": [
+        100,
+        120,
+        150,
+        200,
+        250,
+        300
+      ]
+    },
+    "loesung": "6*{a}={}",
+    "pro_text": "Brötchen:",
+    "anmerkung": null,
+    "links_text": "Es sind",
+    "rechts_text": "Brötchen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 3,
+  "fields": {
+    "lfd_nr": 3,
+    "ab_jg": 4,
+    "text": "Ein Paket hat ein 'Gewicht' (eigentlich 'Masse') von {a}kg. Wie schwer sind {b} solcher Pakete zusammen?",
+    "variable": {
+      "a": [
+        2,
+        3,
+        4,
+        5,
+        10
+      ],
+      "b": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "loesung": "{a}*{b}={}",
+    "pro_text": "Pakete:",
+    "anmerkung": null,
+    "links_text": "Es sind",
+    "rechts_text": "kg"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 4,
+  "fields": {
+    "lfd_nr": 4,
+    "ab_jg": 4,
+    "text": "Die Kinokarte kostet für Erwachsene {a:.2f}€ und für Kinder {b:.2f}€. Wie viel muss  eine Familie mit {c} Erwachsenen und {d} Kindern insgesamt für die Eintrittskarten bezahlen?",
+    "variable": {
+      "a": [
+        8,
+        8.5,
+        9,
+        9.5,
+        10,
+        10.5,
+        11
+      ],
+      "b": [
+        5.5,
+        6,
+        6.5,
+        7
+      ],
+      "c": [
+        1,
+        2
+      ],
+      "d": [
+        2,
+        3,
+        4
+      ]
+    },
+    "loesung": "{c}*{a:.2f}+{d}*{b:.2f}={:.2f}",
+    "pro_text": "Kino:",
+    "anmerkung": null,
+    "links_text": "Es sind",
+    "rechts_text": "€"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 5,
+  "fields": {
+    "lfd_nr": 5,
+    "ab_jg": 4,
+    "text": "Ein Kiosk verkauft Eis am Stiel für {a:.2f}€ pro Stück. Wie viel Geld benötigt man, um {b} Eis am Stiel zu kaufen?",
+    "variable": {
+      "a": [
+        0.8,
+        1,
+        1.2,
+        1.5
+      ],
+      "b": [
+        2,
+        3,
+        4,
+        5,
+        10
+      ]
+    },
+    "loesung": "{b}*{a:.2f}={:.2f}",
+    "pro_text": "Eis:",
+    "anmerkung": null,
+    "links_text": "Sie kosten",
+    "rechts_text": "€"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 6,
+  "fields": {
+    "lfd_nr": 6,
+    "ab_jg": 4,
+    "text": "Ein Schulbus hat eine maximale Kapazität von {a} Schülern. Wenn bereits {b} Schüler im Bus sitzen, wie viele Schüler können noch einsteigen?",
+    "variable": {
+      "a": [
+        60,
+        55,
+        50
+      ],
+      "b": [
+        20,
+        25,
+        30,
+        35,
+        40
+      ]
+    },
+    "loesung": "{a}-{b}={}",
+    "pro_text": "Bus:",
+    "anmerkung": null,
+    "links_text": "Es können noch",
+    "rechts_text": "Schüler einsteigen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 7,
+  "fields": {
+    "lfd_nr": 8,
+    "ab_jg": 4,
+    "text": "In einem Schwimmbad gibt es ein {a} m langes Becken. Wie viele Bahnen muss man schwimmen, um {b} km zurückzulegen?",
+    "variable": {
+      "a": [
+        20,
+        25,
+        50
+      ],
+      "b": [
+        1,
+        1.2,
+        1.5,
+        2,
+        2.5
+      ]
+    },
+    "loesung": "1000*{b}/{a}={}",
+    "pro_text": "Schwimmbad:",
+    "anmerkung": null,
+    "links_text": "Man muss",
+    "rechts_text": "Bahnen schwimmen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 8,
+  "fields": {
+    "lfd_nr": 9,
+    "ab_jg": 4,
+    "text": "Ein Baum wächst durchschnittlich um {a} cm pro Jahr. Wie groß ist er nach {b} Jahren, wenn er zu Beginn {c}m groß war?",
+    "variable": {
+      "a": [
+        5,
+        10,
+        15,
+        20,
+        25
+      ],
+      "b": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "c": [
+        1,
+        1.2,
+        1.3,
+        1.4,
+        1.5,
+        1.6,
+        1.7,
+        1.8
+      ]
+    },
+    "loesung": "{c}+{b}/100*{a}={}",
+    "pro_text": "Baum:",
+    "anmerkung": "Ergebnis in Meter",
+    "links_text": "Er ist",
+    "rechts_text": "m hoch"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 9,
+  "fields": {
+    "lfd_nr": 10,
+    "ab_jg": 4,
+    "text": "In einer Schüssel sind {a} g Gummibärchen. Wenn man täglich {b} g isst, wie viele Tage reichen die Gummibärchen?",
+    "variable": {
+      "a": [
+        200,
+        500
+      ],
+      "b": [
+        20,
+        25,
+        50,
+        100
+      ]
+    },
+    "loesung": "{a}/{b}={:.0f}",
+    "pro_text": "Gummibärchen:",
+    "anmerkung": null,
+    "links_text": "Sie reichen für",
+    "rechts_text": "Tage"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 10,
+  "fields": {
+    "lfd_nr": 11,
+    "ab_jg": 6,
+    "text": "Ein Auto fährt mit einer Geschwindigkeit von {a}km/h. Wie lange braucht es, um eine Strecke von {b}km zurückzulegen?",
+    "variable": {
+      "a": [
+        60,
+        90
+      ],
+      "b": [
+        180
+      ]
+    },
+    "loesung": "{b}/{a}={:.0f}",
+    "pro_text": "Geschwindigkeit:",
+    "anmerkung": null,
+    "links_text": "Es braucht",
+    "rechts_text": "Stunden"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 11,
+  "fields": {
+    "lfd_nr": 12,
+    "ab_jg": 8,
+    "text": "Ein {c[0]} kostet {a:.2f}€. Wenn man mindestens zwei {c[1]} kauft, gibt es einen Rabatt von 10 %. Wie viel kosten  {b[1]} {c[2]}?",
+    "variable": {
+      "a": [
+        5,
+        5.5,
+        6,
+        6.5,
+        7
+      ],
+      "b": [
+        [
+          2,
+          "zwei"
+        ],
+        [
+          4,
+          "vier"
+        ]
+      ],
+      "c": [
+        [
+          "Kinderspielzeuge",
+          "Spielzeuge",
+          "Spielzeugen"
+        ],
+        [
+          "T-Shirt",
+          "T-Shirts",
+          "T-Shirts"
+        ]
+      ]
+    },
+    "loesung": "{a}*{b[0]}*0.9={:.2f}",
+    "pro_text": "Spielzeug:",
+    "anmerkung": null,
+    "links_text": "Sie kosten",
+    "rechts_text": "€"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 12,
+  "fields": {
+    "lfd_nr": 13,
+    "ab_jg": 7,
+    "text": "Ein Sportler legt in {a} eine Strecke von {b} km zurück. Wie weit kommt er bei gleicher Geschwindigkeit in {c} Minuten?",
+    "variable": {
+      "a": [
+        "einer Stunde"
+      ],
+      "b": [
+        12,
+        14,
+        16,
+        20
+      ],
+      "c": [
+        15,
+        30,
+        45
+      ]
+    },
+    "loesung": "{b}*{c}/60={}",
+    "pro_text": "Läufer:",
+    "anmerkung": null,
+    "links_text": "Er kommt",
+    "rechts_text": "km weit"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 13,
+  "fields": {
+    "lfd_nr": 14,
+    "ab_jg": 7,
+    "text": "Ein Glas ist zu {a} mit Saft gefüllt. Wenn man noch {b} ml Saft hinzufügt, ist das Glas voll. Wie groß ist das Glas?",
+    "variable": {
+      "a": [
+        "zwei Drittel"
+      ],
+      "b": [
+        100
+      ]
+    },
+    "loesung": "300={:.0f}",
+    "pro_text": "Glas:",
+    "anmerkung": null,
+    "links_text": "Es ist",
+    "rechts_text": "ml groß"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 14,
+  "fields": {
+    "lfd_nr": 15,
+    "ab_jg": 0,
+    "text": "Ein Bäcker hat {a} Brötchen gebacken. Wie viele volle Körbe mit je {b} Brötchen kann er füllen?",
+    "variable": {
+      "a": [
+        60,
+        120
+      ],
+      "b": [
+        12,
+        6,
+        5,
+        10
+      ]
+    },
+    "loesung": "{a}/{b}={:.0f}",
+    "pro_text": "Brötchenkörbe:",
+    "anmerkung": null,
+    "links_text": "Er kann",
+    "rechts_text": "Körbchen füllen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 15,
+  "fields": {
+    "lfd_nr": 16,
+    "ab_jg": 6,
+    "text": "Ein Tierarzt hat in einem Monat {a} Tabletten für Hunde verschrieben. Jede Tablette enthält {b}mg Wirkstoff. Wie viel Wirkstoff enthält eine Packung mit {c} Tabletten?",
+    "variable": {
+      "a": [
+        100,
+        120,
+        150,
+        200
+      ],
+      "b": [
+        15,
+        20,
+        25,
+        30
+      ],
+      "c": [
+        10,
+        20,
+        50
+      ]
+    },
+    "loesung": "{b}*{c}={:.0f}",
+    "pro_text": "Tablette:",
+    "anmerkung": null,
+    "links_text": "Sie enthält",
+    "rechts_text": "mg Wirkstoff"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 16,
+  "fields": {
+    "lfd_nr": 17,
+    "ab_jg": 4,
+    "text": "Eine Familie hat für den Sommerurlaub {a}€ eingeplant. Wie viel können sie maximal pro Tag für {b} Tage ausgeben, wenn sie die Ausgaben gleichmäßig auf die Tage verteilen möchten?",
+    "variable": {
+      "a": [
+        900,
+        1200,
+        1500
+      ],
+      "b": [
+        15,
+        20
+      ]
+    },
+    "loesung": "{a}/{b}={:.0f}",
+    "pro_text": "Urlaub:",
+    "anmerkung": null,
+    "links_text": "Sie können",
+    "rechts_text": "€ am Tag ausgeben"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 17,
+  "fields": {
+    "lfd_nr": 18,
+    "ab_jg": 6,
+    "text": "Ein Glas Saft hat ein Fassungsvermögen von {a}ml. Wie viele Gläser Saft kann man aus einer {b}l Flasche Saft ausschenken?",
+    "variable": {
+      "a": [
+        100,
+        150,
+        200,
+        250
+      ],
+      "b": [
+        1,
+        1.5,
+        2
+      ]
+    },
+    "loesung": "{b}*1000/{a}={:.0f}",
+    "pro_text": "Saftflasche:",
+    "anmerkung": null,
+    "links_text": "Man kann",
+    "rechts_text": "Gläser füllen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 18,
+  "fields": {
+    "lfd_nr": 19,
+    "ab_jg": 5,
+    "text": "Ein Klassenraum hat eine Länge von {a}m, eine Breite von {b}m und eine Höhe von {c}m. Wie viel Luft befindet sich insgesamt im Klassenraum?",
+    "variable": {
+      "a": [
+        8,
+        7,
+        6
+      ],
+      "b": [
+        5,
+        4
+      ],
+      "c": [
+        3
+      ]
+    },
+    "loesung": "{a}*{b}*{c}={:.0f}",
+    "pro_text": "V Klassenraum:",
+    "anmerkung": null,
+    "links_text": "Es sind",
+    "rechts_text": "m³"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 19,
+  "fields": {
+    "lfd_nr": 20,
+    "ab_jg": 7,
+    "text": "Ein Schwimmbecken hat eine Länge von {a}m, eine Breite von {b}m und eine Tiefe von {c}m. Wie viel Wasser passt maximal in das Schwimmbecken?",
+    "variable": {
+      "a": [
+        8,
+        10,
+        12
+      ],
+      "b": [
+        4,
+        5,
+        6
+      ],
+      "c": [
+        2,
+        2,
+        2.5
+      ]
+    },
+    "loesung": "{a}*{b}*{c}={:.0f}",
+    "pro_text": "V Schwimmbad:",
+    "anmerkung": null,
+    "links_text": "Es passen",
+    "rechts_text": "m³ hinein"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 20,
+  "fields": {
+    "lfd_nr": 1,
+    "ab_jg": 4,
+    "text": "Wie viele {a}cm lange Stücke kann man von einer {b}m langen Leiste absägen?",
+    "variable": {
+      "a": [
+        5,
+        10,
+        15,
+        20,
+        25
+      ],
+      "b": [
+        1,
+        1.2,
+        1.5,
+        2,
+        2.5
+      ]
+    },
+    "loesung": "100*{b} / {a} = {:r}",
+    "pro_text": "Leiste:",
+    "anmerkung": "(Unter Umständen bleibt ein Rest übrig)",
+    "links_text": "Man kann",
+    "rechts_text": "Stücke absägen"
+  }
+},
+{
+  "model": "core.sachaufgabe",
+  "pk": 21,
+  "fields": {
+    "lfd_nr": 21,
+    "ab_jg": 0,
+    "text": "Zwischen zwei Grundstücken soll ein Zaun gezogen werden. Die Pfosten an denen der Zaun befestigt werden soll, werden in einem Abstand von einem Meter aufgestellt. Wieviele Pfosten werden benötigt, wenn die Grundstücksgrenze {a}m lang ist?",
+    "variable": {
+      "a": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "loesung": "{a}+1={:.0f}",
+    "pro_text": "Zaunpfosten:",
+    "anmerkung": "indiv",
+    "links_text": "Es werden",
+    "rechts_text": "Pfosten benötigt"
+  }
+}
+]
