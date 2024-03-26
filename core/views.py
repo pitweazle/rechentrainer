@@ -5490,7 +5490,6 @@ def durchschnitt_aufgaben(user):
     return durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt
 
 def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
-    #print("Startdatum: ", startdatum)
     d0 = date(sj//100+2000,7,24)
     d1 = date.today()
     delta = d1 - d0
@@ -5514,14 +5513,12 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
         spaeter = (startdatum - d0).days//7
     if woche_halbjahr < 0:
         woche_halbjahr = 0
-    #print("später: ",spaeter)
     if spaeter < 0:
         spaeter = 0
-    #print("später: ",spaeter)
     soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
-    if soll_hj > 16:
-        soll_hj = 16
+    if soll_hj > 1600:
+        soll_hj = 1600
     pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
     pflicht_kat = pflicht_kat.count()
     if pflicht_kat > 0:

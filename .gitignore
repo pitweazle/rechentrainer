@@ -64,6 +64,8 @@ settings.py
 *.sqlite3-journal
 *.db
 *.db-journal
+*.sik
+*.bak
 
 # Flask stuff:
 instance/
