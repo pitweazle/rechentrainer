@@ -1469,9 +1469,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         typ_end = 5
         if stufe >= 6 or jg >= 6  or "Dreiecke" in optionen: 
             typ_end = 11  
-        if stufe >= 6 or jg >= 6  or "Symetrie" in optionen: 
+        elif stufe >= 6 or jg >= 6  or "Symetrie" in optionen: 
             typ_end = 8          
-        if stufe >= 6 or jg >= 6  or "Koordinaten" in optionen: 
+        elif stufe >= 6 or jg >= 6  or "Koordinaten" in optionen: 
             typ_end = 7  
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "iniv" in den Lösungen steht
