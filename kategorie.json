@@ -1,0 +1,340 @@
+[
+{
+  "model": "core.kategorie",
+  "pk": 1,
+  "fields": {
+    "zeile": 7,
+    "name": "Sachaufgaben",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 15,
+    "slug": "sachaufgaben"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 2,
+  "fields": {
+    "zeile": 1,
+    "name": "Addieren",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 25,
+    "slug": "addieren"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 3,
+  "fields": {
+    "zeile": 2,
+    "name": "Subtrahieren",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 20,
+    "slug": "subtrahieren"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 4,
+  "fields": {
+    "zeile": 3,
+    "name": "Verdoppeln",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 25,
+    "slug": "verdoppeln"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 5,
+  "fields": {
+    "zeile": 4,
+    "name": "Halbieren",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 25,
+    "slug": "halbieren"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 6,
+  "fields": {
+    "zeile": 5,
+    "name": "1 mal 1",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 25,
+    "slug": "1-mal-1"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 7,
+  "fields": {
+    "zeile": 6,
+    "name": "Kopfrechnen",
+    "farbe": "background-color: #B0E2FF",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 25,
+    "slug": "kopfrechnen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 8,
+  "fields": {
+    "zeile": 8,
+    "name": "Zahlenstrahl",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 15,
+    "slug": "zahlenstrahl"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 9,
+  "fields": {
+    "zeile": 9,
+    "name": "Zehner",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 1,
+    "eof": 20,
+    "slug": "zehner"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 10,
+  "fields": {
+    "zeile": 10,
+    "name": "Runden",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 9,
+    "eof": 15,
+    "slug": "runden"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 11,
+  "fields": {
+    "zeile": 11,
+    "name": "Regeln Begriffe Folgen",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 9,
+    "eof": 15,
+    "slug": "regeln-begriffe-folgen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 12,
+  "fields": {
+    "zeile": 12,
+    "name": "Begriffe der Geometrie",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 9,
+    "eof": 20,
+    "slug": "begriffe-der-geometrie"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 13,
+  "fields": {
+    "zeile": 13,
+    "name": "Einheiten umwandeln",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 15,
+    "eof": 15,
+    "slug": "einheiten-umwandeln"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 15,
+  "fields": {
+    "zeile": 14,
+    "name": "geometrische Figuren",
+    "farbe": "background-color: #9AFF9A",
+    "start_jg": 5,
+    "start_sw": 16,
+    "eof": 20,
+    "slug": "geometrische-figuren"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 16,
+  "fields": {
+    "zeile": 15,
+    "name": "Kommazahlen",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 1,
+    "eof": 20,
+    "slug": "kommazahlen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 17,
+  "fields": {
+    "zeile": 22,
+    "name": "Zuordnungen",
+    "farbe": "background-color: #FFDEAD",
+    "start_jg": 7,
+    "start_sw": 1,
+    "eof": 15,
+    "slug": "zuordnungen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 18,
+  "fields": {
+    "zeile": 23,
+    "name": "Prozentrechnung",
+    "farbe": "background-color: #FFDEAD",
+    "start_jg": 7,
+    "start_sw": 19,
+    "eof": 15,
+    "slug": "prozentrechnung"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 19,
+  "fields": {
+    "zeile": 17,
+    "name": "Bruchteile",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 9,
+    "eof": 15,
+    "slug": "bruchteile"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 20,
+  "fields": {
+    "zeile": 18,
+    "name": "Kürzen",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 19,
+    "eof": 15,
+    "slug": "kurzen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 21,
+  "fields": {
+    "zeile": 19,
+    "name": "Bruch und Kommazahl",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 19,
+    "eof": 15,
+    "slug": "bruch-und-kommazahl"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 22,
+  "fields": {
+    "zeile": 20,
+    "name": "Bruchrechnung",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 21,
+    "eof": 15,
+    "slug": "bruchrechnung"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 23,
+  "fields": {
+    "zeile": 21,
+    "name": "Quader",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 39,
+    "eof": 15,
+    "slug": "quader"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 24,
+  "fields": {
+    "zeile": 24,
+    "name": "negative Zahlen",
+    "farbe": "background-color: #FFDEAD",
+    "start_jg": 7,
+    "start_sw": 29,
+    "eof": 15,
+    "slug": "negative-zahlen"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 25,
+  "fields": {
+    "zeile": 16,
+    "name": "Winkel",
+    "farbe": "background-color: #FFFACD",
+    "start_jg": 6,
+    "start_sw": 9,
+    "eof": 15,
+    "slug": "winkel"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 26,
+  "fields": {
+    "zeile": 25,
+    "name": "Terme",
+    "farbe": "background-color: #FFDEAD",
+    "start_jg": 8,
+    "start_sw": 1,
+    "eof": 15,
+    "slug": "terme"
+  }
+},
+{
+  "model": "core.kategorie",
+  "pk": 27,
+  "fields": {
+    "zeile": 26,
+    "name": "Gleichungen",
+    "farbe": "background-color: #FFDEAD",
+    "start_jg": 8,
+    "start_sw": 1,
+    "eof": 15,
+    "slug": "gleichungen"
+  }
+}
+]
