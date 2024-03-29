@@ -47,7 +47,7 @@ urlpatterns = [
     path("download_rechentrainer/", views.download_rechentrainer, name="download_rechentrainer"),
     path("download_lernbox/", views.download_lernbox, name="download_lernbox"),
 
-    path("update/", views.update),
+    path("karteileichen/", views.karteileichene),
     path("reparatur/<id>", views.reparatur),
 
     path("suchen/", views.suchen, name="suchen"),

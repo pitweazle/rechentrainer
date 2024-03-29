@@ -1,3 +1,18 @@
-# Rechentrainer - Demo
+# Rechentrainer
 
-Betaversion der Rechentrainer.app
+Mit dem Rechentrainer sollen die Schülerinnen und Schüler, ihre Mathelehrer/innen und auch die Eltern mit einem Blick einen kompletten Überblick über die Fähigkeiten, ihre Schwächen und ihr Lernverhalten bekommen.
+Der Rechentrainer weiß immer, welche Themen die Schülerinnen und Schüler in der jeweiligen Schulwoche behandelt haben sollten* und zeigt Themen, die nicht oder nicht genügend geübt wurden mit einer roten Markierung. Rot wird ebenfalls markiert, wenn zu viele Fehler (mehr als 10%) oder wenn ungeliebte Aufgaben zu oft weggeklickt werden ("Abbrechen").
+Der Rechentrainer ist auch so angelegt, dass in jeder Woche eine bestimmte Anzahl von Aufgaben gerechnet werden müssen. Wenn die Lehrkraft das nicht anders festlegt, sind es 10 Aufgaben multipliziert mit dem Jahrgang. Die Wochen der Oster und Weihnachtsferien habe ich verucht davon auszunehmen. Mehr als 1600 Aufgaben müssen nicht gerechnet werden. Melden sich Schülerinnen und Schüler später im Halbjahr an oder legt die Lehrkraft die Lerngruppe später im Halbjahr an, werden die Aufgaben in der Zeit davor nicht berechnet.
+Der Fortschritt wird mit einer Prozentzahl angezeigt. Einerseits wieviel Prozent der jeweiligen Aufgabenkategorie wurden geübt, abzüglich der Fehlerquote und der Anzahl der weggeklickten Aufgaben. Mehr als 110% können nicht erreicht werden. Werden von einer Kategorie zu viele Aufgaben gerechnet obwohl keine Fehler gemacht wurden, erfogt ein Hinweis, dass die anderen Kategorien geübt werden sollten.
+Wenn eine bestimmte Anzahl von Aufgaben an einem Stück ohne Fehler, ohne Abbrechen, Lösung oder Hilfe anzeigen gerechnet wurde wird der Fehlerstand derjenigen Aufgabenkategorie gelöscht. Wenn die Lehrkraft es nicht anders festgelegt hat, wird nach einer gewissen Anzahl von Aufgaben auch eine Gesamtnote berechnet.
+Diese Gesamtnote gilt jeweils für ein Schulhalbjahr. Am 1. August und am 1. Februar wird die Anzeige auf der Übersichtseite glöscht. Im Januar, Juni und Juli erfolgt eine Abfrgae, ob das neue Halbjahr schon früher begonnen werden soll.
+Die Einteilung der Schwierigkeitsgrade erfolgt im Großen und Ganzen in zwei Stufen "E" und "G", weiterhin gibt es eine Einstufung für Föredrkinder und einige wenige Aufgaben, die nur Gymnasialschülern/innen bzw. A-Kurs Schülerinnen und Schüler angezeigt werde. Intern wird die über "Stufen" geregelt. Die Schülerinnen und Schüler in den G-Kursen haben eine geradzahlige Stufe, die E-Kurs Schülerinnen und Schüler eine ungerade. Die Förderschülerinnen und -Schüler werden der Stufe 0 zugeteilt, Grundschülerinnen und -Schüler der Stufe 1. Diese Stufen werden einerseits dem jeweiligen Jahrgang zugeordnet, steigt aber auch im Laufe des Halbjahres. Je nach Jahrgang und Stfe werden oft vor der ersten Aufgabe des 10er Päckchens Optionen abgefragt, z.B. "mit Kommazahlen". Wenn die Schülerinnen und Schüler dies anklicken und 10 Aufgaben fehlerfrei rechnen, wird ihre Stufe entsprechend hochgesetzt. Allerding nur, wenn dies unter "Auswahl" in der Datenbank so festgelegt ist. Schülerinnen und Schüler von Förderschulen und der Grundschule erhalten immer alle Optionen und bleiben in der Stufe 0 bzw. 1.  
+
+* Die Festlegung in welcher Schulwoche welches Thema behandlet wurde, entspricht dem Mathecurriculum der IGS-Kelsterbach. Dies Schulforspezifisch oder sogar abgestimmt auf einzelen Schulen anzupassen wäre sicher Möglich, erscheint aber aufwendig. Die Einstellungen erfolgen in der Datenbank unter "Kategorie".
+
+Zum Aufbau:
+In der App "Core" sind alle Routinen mit denen die Aufgaben erstellt werden und alle Routinen, die benötigt werden umd die Arbeit der Schülerinnen und Schüler anzuzeigen.
+Alle Vorgänge laufen in der Funktion "main" zusammen. Dort werden die Aufgaben erstellt und ausgewertet.
+
+In der App "Accounts" finden sich alle Routinen für die Anmeldung und alle Routinen mit denen die Lehrkräfte die Arbeit ihrer Schülerinnen und Schüler überprüfen können.
+Weiterhin gibt es dort einige Wartungsfunktionen.
