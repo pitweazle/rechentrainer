@@ -699,7 +699,9 @@ def download_rechentrainer(req):
 def download_lernbox(req):
     return render(req, 'medien/download_lernbox.html')  
 
-def update(req):
+# Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
+
+def karteileichen(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     auswahl = Profil.objects.filter(user__date_joined__lt=date(2023,8,1))
