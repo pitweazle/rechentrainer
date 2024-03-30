@@ -2,6 +2,7 @@ from django.urls import path, include
 from .import views
 
 urlpatterns = [
+    path('', include("medien.urls")), 
     path('', views.index, name='index'),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("accounts/login/", views.anmelden, name="anmelden"),
@@ -39,15 +40,7 @@ urlpatterns = [
     path("stimmen/", views.stimmen, name="stimmen"),
     path("stufen/", views.stufen, name="stufen"),
 
-    path("film/", views.film, name="film"),
-    path("installation_film/", views.installation_film, name="installation_film"),
-    path("weitere_aufgaben/", views.weitere_aufgaben, name="weitere_aufgaben"),
-    path("weitere_projekte/", views.weitere_projekte, name="weitere_projekte"),
-    path("lernkontrollen/", views.lernkontrollen, name="lernkontrollen"),
-    path("download_rechentrainer/", views.download_rechentrainer, name="download_rechentrainer"),
-    path("download_lernbox/", views.download_lernbox, name="download_lernbox"),
-
-    path("karteileichen/", views.karteileichene),
+    path("karteileichen/", views.karteileichen),
     path("reparatur/<id>", views.reparatur),
 
     path("suchen/", views.suchen, name="suchen"),
