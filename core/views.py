@@ -3873,7 +3873,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter = {'name':'normal'}
         elif   typ == 5 or typ == -1:                                       # Quader mit Grafik                      
             titel = "Quader"
-            anmerkung= "Alle Angaben in cm"
+            anmerkung= "Alle Angaben in mm"
             breite_u = random.randint(2,4)*20
             breite_o = breite_u 
             hoehe = random.randint(1,4)*50
@@ -3881,6 +3881,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             breite_u_text = a = int(breite_u/5)
             tiefe_text = b = int(tiefe/10)
             hoehe_text = c = int(hoehe/10)
+            einheit = "mm³"
             if typ == 5:
                 gesucht = "das Volumen"
                 frage = "V="
@@ -5416,6 +5417,177 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         lsg = ["x="+str(erg)]                           
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 3
+        if stufe >= 6 or jg >= 7 or "mit" in optionen:
+            typ_end = 2
+        return typ_anf, typ_end
+    elif eingabe != "":                                                                                                         
+        loe = (lsg[0])
+        if eingabe.replace(" ","") != loe.replace(" ",""):
+            erg = loe.replace(",",".")
+            eing = eingabe.replace(",",".")
+            if float(erg) == float(eing):
+                return 0, "Du darfst die Null am Ende nicht weglassen - <br>Die Zahl muss genau {0} Stellen hinter dem Komma haben".format(len(erg)-erg.find("."))
+        else:
+            return 0, "" 
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end) 
+        typ=1
+        typ2 = 0
+        titel = "Wahrscheinlichkeitsrechnung" 
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        hilfe_id = 0
+        erg = None 
+        if typ == 1:                                    # Median
+            titel = "Median"
+            if stufe%2 == 1:
+                tage = random.randint(5,6)
+            else:
+                tage = 5
+            temperaturen = []
+            for temperatur in range(tage):
+                temperatur = random.randint(15,23)
+                temperaturen.append(str(temperatur))  
+            sortiert = temperaturen
+            text = "Die Höchsttemperaturen in der ersten {1} Tagen im August betrugen: {2}° und {3}°<br>Gib den Median dieser Temperaturen an!"
+            frage = "Median:"
+            pro_text = "Median: {4}"
+            einheit = "°"
+            sortiert.sort()
+            variable = [', '.join(sortiert),tage,"°, ".join(temperaturen[:-1]),temperaturen[-1],",".join(temperaturen)]
+            if tage%2 == 1:
+                erg = int(sortiert[2])
+                lsg = [str(erg)+"°C"]
+            else:
+                erg = (int(sortiert[2])+int(sortiert[3]))/2
+                lsg = [format_zahl(erg,1)+"°C"]
+            hilfe_id = 10
+            hilfe = "Du musst die Werte der Größe nach aufschreiben ({}), der mittlere Wert ist der Median.<br>Bei einer geraden Anzahl von Werten musst du den Mittelwert der mittleren beiden Zahlen bilden."
+        elif typ == 2:                                  # Mittelwert
+            titel = "Mittelwert"
+            anzahl_note = [1,1,1]
+            summe = 6
+            for n in range(7):
+                zufall = random.randint(0,2)
+                anzahl_note[zufall] +=1
+                summe +=zufall+1
+            erg = summe/10
+            lsg = [format_zahl(erg,1)]
+            text="Der letzte Vokabeltest ist gut ausgefallen:<br>Es gab {1} mal eine Eins, {2} mal eine Zwei und {3} mal eine Drei<br>Berechne die Durchschnittsnote!"
+            frage = "Durchschnittsnote:"
+            pro_text = "Durchschnittsnote: {1}*1,{2}*2,{3}*3"
+            hilfe_id = 20
+            variable = ["Noten",anzahl_note[0],anzahl_note[1],anzahl_note[2]]
+            hilfe = "Du musst alle {} zusammenzählen und durch die Anzahl der Arbeiten teilen."
+        elif typ == 3:                                  # Mittelwert
+            titel = "Mittelwert"
+            hilfe_id = 20            
+            if stufe%2 == 1:
+                typ2 = random.randint(1,2)
+            else:
+                typ2 = 2 
+            if typ2 == 1:  
+                temperaturen = []
+                summe = 0
+                for temperatur in range(10):
+                    temperatur = random.randint(-2,6)
+                    temperaturen.append(str(temperatur)) 
+                    summe += temperatur 
+                erg = summe/10
+                lsg = [format_zahl(erg,1)+"°"]                             
+                text = "Die Tiefsttemperaturen an den ersten zehn Tagen im Januar betrugen:<br>{1}° und {2}°<br>Berechne die durchschnittliche Tiefsttemperatur!"
+                frage = "Durchschnittstemperatur:"
+                pro_text = " Durchschnitt: {3}"
+                einheit = "°"
+                variable = ["Temperaturen","°, ".join(temperaturen[:-1]),temperaturen[-1],temperaturen]
+            else:
+                noten = []
+                summe = 0
+                for note in range(10):
+                    note = random.randint(1,4)
+                    noten.append(str(note)) 
+                    summe += note
+                print("Noten: ",noten)
+                erg = summe/10
+                lsg = [format_zahl(erg,1)]                             
+                name = ["Tom", "Ali", "Lisa", "Marie"]
+                text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
+                frage = "Durchschnittsnote  "
+                variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
+        elif typ == 4:                                  # Zahlenschloss
+            titel = "Kombinationen"
+            
+#  'Permutationen************************************************************************************************************		
+# 	case 4
+# 		Titel="Kombinationen"
+# 		zahl1=vonbis (3,4)
+# 		AufgabeText="Ein Zahlenschloss für das Fahrrad hat " & zahl1 & " Ziffern" & chr(10) & _
+# 		"Wie viele Einstellmöglichkeiten gibt es, wenn man '" & String(zahl1,"0") & " nicht mitzählt?"
+# 		Aufgabe="Es sind "
+# 		EinhR=" Möglichkeiten"
+
+# 		erg=10^zahl1-1
+# 		Anmerkung=""
+# 	case 5
+# 		Titel="Kombinationen"
+# 		redim bErg(4)
+# 		bErg=Array(6,24,24,24,120)
+# 		redim a(4)
+# 		a=Array(3,4,4,4,5)	
+
+# 		if stufe mod 2=1 then
+# 			zahl1=vonbis (0,3)
+# 		else
+# 			zahl1=vonbis (0,2)		
+# 		end if					
+# 		redim Name(4)
+# 		if typA=1 then		
+# 			zahl="Buchstaben"
+# 			Name=Array("'R','O' und 'T'", "'B','L','A' und 'U'", "'G','E','L' und 'B'","'G','R','Ü' und 'N'","'B','R','A','I' und 'N'")
+# 			Hilfe2="Für den ersten Buchstaben gibt es " & a(zahl1) & " Möglichkeiten, für den zweiten gibt es " & a(zahl1)-1 & " Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " & a(zahl1) & "*" & a(zahl1)-1 & "*..."  
+# 		else
+# 			zahl="Ziffern"
+# 			Name=Array("1,2 und 3", "1,2,3 und 4", "2,4,6 und 8","1,3,5, und 7","1,2,3,4 und 5")
+# 			Hilfe2="Für die erste Ziffer gibt es " & a(zahl1) & " Möglichkeiten, für die zweite Ziffer gibt es " & a(zahl1)-1 & " Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " & a(zahl1) & "*" & a(zahl1)-1 & "*..."  
+# 		end if
+# 		Aufgabe="Es sind "
+# 		EinhR=" Möglichkeiten"
+# 		erg=bErg(zahl1)
+# 		Anmerkung=""
+# 		AufgabeText="Wie viele Möglichkeiten gibt es, die " & zahl & " " & Name(zahl1) & " zu kombinieren?" & chr(10)
+# 		Hilfe1="Man kann das natürlich ausprobieren, indem man alle Möglichkeiten aufschreibt. Man kann es aber auch berechnen: " & chr(10)
+# 	case 6
+# 		Titel="Kombinationen"
+# 		if stufe mod 2=1 then		
+# 			zahl1=vonbis (3,5)
+# 		else
+# 			zahl1=vonbis (3,4)		
+# 		end if					
+# 		AufgabeText=zahl1 & " Personen begegnen sich. Jeder schüttelt jedem die Hand." & chr(10)  
+# 		Aufgabe="Wie oft werden Hände geschüttelt"
+# 		gleich="?"
+# 		EinhR=" Mal"
+# 		erg=0
+# 		for n=1 to zahl1-1
+# 			erg=n+erg
+# 		next	
+# 		Anmerkung=""
+# 		Hilfe1="Man kann das natürlich ausprobieren. Man kann es aber auch berechnen: " & chr(10)	
+# 		Hilfe2="Die erste Person schüttelt  " & zahl1-1 & " Hände, die zweite nur noch " & zahl1-2 & " usw.. Dann muss man die Möglichkeiten addieren: " & zahl1-1 & "+" & zahl1-2 & "*..."  			
+     
+
+        else:
+            pass
+        hilfe = hilfe.format(*variable)
+        print(hilfe)
+        protokoll = pro_text.format(*variable)
+        print(protokoll)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -5983,7 +6155,7 @@ def hilfe(req, zaehler_id, protokoll_id):
 AUFGABEN = {
     1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 8: zahlen, 9: malget10, 10: runden, 
     11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 
-    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen}
+    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
