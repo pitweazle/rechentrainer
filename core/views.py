@@ -3873,7 +3873,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter = {'name':'normal'}
         elif   typ == 5 or typ == -1:                                       # Quader mit Grafik                      
             titel = "Quader"
-            anmerkung= "Alle Angaben in cm"
+            anmerkung= "Alle Angaben in mm"
             breite_u = random.randint(2,4)*20
             breite_o = breite_u 
             hoehe = random.randint(1,4)*50
@@ -3901,6 +3901,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             text = "Berechne {4} dieses Quaders!"
             pro_text = "{} Quader {}·{}·{}"
             variable = [frage,a,b,c,gesucht]
+            einheit = "mm³"
             typ3,  hilfe2 , anmerkung2, lsg2, parameter = sub_koerper(-1, breite_u, breite_o, hoehe, tiefe, 0, hoehe*2+tiefe*0.5)  # erstellt die Grafik
             parameter2 = {'breite_o': breite_o*2, 'breite_u': breite_u*2, 'hoehe': hoehe, 'tiefe': math.sqrt(2*(tiefe*0.35)**2), 'breite_o_text': int(breite_o/5), 'breite_u_text': breite_u_text, 'hoehe_text': str(hoehe_text).replace(".",","), 'tiefe_text': int(tiefe/10)}
             parameter.update(parameter2)
