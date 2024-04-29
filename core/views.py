@@ -841,7 +841,6 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         erg = None
         anmerkung = ""
         hilfe_id = 0
-    # hier wird die Aufgabe erstellt:
         if typ < 5:
             operation_liste = ["Addition", "Subtraktion", "Multiplikation","Division"]
             name_liste = ["Plus", "Minus", "Mal", "Geteilt"]
@@ -857,7 +856,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             titel = "Rechenregeln"
             hilfe_id = 1
-        if typ < 3:
+        if typ < 3:                                         # begriffe
             titel = "Begriffe"
             text = "Wie heißt das Ergebnis einer {}saufgabe?"
             frage = "Das Ergebnis heißt:"
@@ -869,7 +868,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             hilfe_id = 2
             if stufe%2 == 0:
                 hilfe_id = 3 
-        elif typ < 5:
+        elif typ < 5:                                       # Begriffe
             titel = "Kennst du die Begriffe?"
             artikel_liste = ["die", "die", "das", "den"]
             endung_liste = ["","","","en"]
@@ -900,14 +899,14 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             #lsg = str(erg)
             if stufe%2 == 0:
                 hilfe_id = 4 
-        elif typ == 5:
+        elif typ == 5:                                      # Rechenregeln * +
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,8)
             zahl3=random.randint(1,7)
             text = "{} · ({} + {})="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1*(zahl2+zahl3)
-        elif typ == 6:
+        elif typ == 6:                                      # Rechenregeln ( + )+( + )
             zahl1=random.randint(1,8)
             zahl2=random.randint(1,7)
             zahl3=random.randint(1,8)
@@ -915,14 +914,14 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             text="({} + {}) · ({} + {})="
             variable = [str(zahl1), str(zahl2), str(zahl3), str(zahl4)]
             erg=(zahl1+zahl2)*(zahl3+zahl4)
-        elif typ == 7:       
+        elif typ == 7:                                      # Rechenregeln + :
             zahl1=random.randint(2,4)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)*zahl1
             text= "{} + {} : {}="
             variable = [str(zahl2), str(zahl3), str(zahl1)]
             erg=zahl2+zahl3/zahl1
-        elif typ == 8:
+        elif typ == 8:                                      # Rechenreglen * -
             erg = 0
             while erg <= 0:
                 zahl1=random.randint(2,10)
@@ -931,21 +930,21 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 erg=zahl2*zahl3-zahl1
             text= "{} · {} - {}="
             variable = [str(zahl2), str(zahl3), str(zahl1)]
-        elif typ == 9:
+        elif typ == 9:                                      # Rechenregeln + *
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)
             text= "{} + {} · {}="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1+zahl2*zahl3
-        elif typ == 10:
+        elif typ == 10:                                     # Rechenregeln * +
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)
             text="{} · {} + {}="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1*zahl2+zahl3
-        else:
+        else:                                               # Folgen
             if typ == 11:
                 hilfe_id = 5
                 add = random.randint(2,4)	    
@@ -975,7 +974,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     add = random.randint(1,2)	#wird addiert
                 zahl1 = 2
                 anzab = 1
-            elif typ == 16:
+            elif typ == 16:                                     # Fibonacci
                 folge = ["0","1"]
                 a = 1 
                 b = 1
@@ -5435,7 +5434,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return 0, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=1
+        typ=6
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung" 
         variable = ["",]
@@ -5519,67 +5518,56 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 frage = "Durchschnittsnote  "
                 variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
         elif typ == 4:                                  # Zahlenschloss
-            titel = "Kombinationen"
-            
-#  'Permutationen************************************************************************************************************		
-# 	case 4
-# 		Titel="Kombinationen"
-# 		zahl1=vonbis (3,4)
-# 		AufgabeText="Ein Zahlenschloss für das Fahrrad hat " & zahl1 & " Ziffern" & chr(10) & _
-# 		"Wie viele Einstellmöglichkeiten gibt es, wenn man '" & String(zahl1,"0") & " nicht mitzählt?"
-# 		Aufgabe="Es sind "
-# 		EinhR=" Möglichkeiten"
-
-# 		erg=10^zahl1-1
-# 		Anmerkung=""
-# 	case 5
-# 		Titel="Kombinationen"
-# 		redim bErg(4)
-# 		bErg=Array(6,24,24,24,120)
-# 		redim a(4)
-# 		a=Array(3,4,4,4,5)	
-
-# 		if stufe mod 2=1 then
-# 			zahl1=vonbis (0,3)
-# 		else
-# 			zahl1=vonbis (0,2)		
-# 		end if					
-# 		redim Name(4)
-# 		if typA=1 then		
-# 			zahl="Buchstaben"
-# 			Name=Array("'R','O' und 'T'", "'B','L','A' und 'U'", "'G','E','L' und 'B'","'G','R','Ü' und 'N'","'B','R','A','I' und 'N'")
-# 			Hilfe2="Für den ersten Buchstaben gibt es " & a(zahl1) & " Möglichkeiten, für den zweiten gibt es " & a(zahl1)-1 & " Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " & a(zahl1) & "*" & a(zahl1)-1 & "*..."  
-# 		else
-# 			zahl="Ziffern"
-# 			Name=Array("1,2 und 3", "1,2,3 und 4", "2,4,6 und 8","1,3,5, und 7","1,2,3,4 und 5")
-# 			Hilfe2="Für die erste Ziffer gibt es " & a(zahl1) & " Möglichkeiten, für die zweite Ziffer gibt es " & a(zahl1)-1 & " Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " & a(zahl1) & "*" & a(zahl1)-1 & "*..."  
-# 		end if
-# 		Aufgabe="Es sind "
-# 		EinhR=" Möglichkeiten"
-# 		erg=bErg(zahl1)
-# 		Anmerkung=""
-# 		AufgabeText="Wie viele Möglichkeiten gibt es, die " & zahl & " " & Name(zahl1) & " zu kombinieren?" & chr(10)
-# 		Hilfe1="Man kann das natürlich ausprobieren, indem man alle Möglichkeiten aufschreibt. Man kann es aber auch berechnen: " & chr(10)
-# 	case 6
-# 		Titel="Kombinationen"
-# 		if stufe mod 2=1 then		
-# 			zahl1=vonbis (3,5)
-# 		else
-# 			zahl1=vonbis (3,4)		
-# 		end if					
-# 		AufgabeText=zahl1 & " Personen begegnen sich. Jeder schüttelt jedem die Hand." & chr(10)  
-# 		Aufgabe="Wie oft werden Hände geschüttelt"
-# 		gleich="?"
-# 		EinhR=" Mal"
-# 		erg=0
-# 		for n=1 to zahl1-1
-# 			erg=n+erg
-# 		next	
-# 		Anmerkung=""
-# 		Hilfe1="Man kann das natürlich ausprobieren. Man kann es aber auch berechnen: " & chr(10)	
-# 		Hilfe2="Die erste Person schüttelt  " & zahl1-1 & " Hände, die zweite nur noch " & zahl1-2 & " usw.. Dann muss man die Möglichkeiten addieren: " & zahl1-1 & "+" & zahl1-2 & "*..."  			
+            titel = "Permutationen"
+            anzahl = random.randint(3,4)
+            text = "Ein Zahlenschloss für das Fahrrad hat {0} Ziffern<br>Wie viele Einstellmöglichkeiten gibt es, wenn man diejenigen mit {0} gleichen Ziffern nicht mitzählt?".format(anzahl)
+            frage = "Es sind"
+            einheit = "Möglichkeiten"
+            pro_text = "Permutationen {0} Zahlen - 10".format(anzahl)
+            erg=10**anzahl-10
+            lsg = [str(erg)]
+        elif typ == 5:                                  # Permutationen Buchstaben Ziffern
+            titel="Kombinationen"
+            typ2 = random.randint(1,2)
+            if typ2 == 1:
+                typ3 = "Buchstaben"
+                werte = ["'R','O' und 'T'", "'B','L','A' und 'U'", "'G','E','L' und 'B'","'G','R','Ü' und 'N'","'B','R','A','U' und 'N'"]
+            else:
+                typ3 = "Zahlen"
+                werte = ["1, 2 und 3", "1, 2, 3 und 4", "2, 4, 6 und 8","1, 3, 5, und 7","1, 2, 3, 4 und 5"]
+            if stufe%2 == 1:
+                zufall = random.randint(0,4)
+            else:
+                zufall = random.randint(0,3)
+            anzahl = [3,4,4,5]
+            ergebnis = [6,24,24,24,120]
+            variable = [typ3, werte[zufall], anzahl[zufall]]
+            text="Wie viele Möglichkeiten gibt es, die {}<br>{}<br>zu kombinieren?"
+            pro_text = "Permutationen: {2} {0}"
+            frage = "Es sind"
+            einheit = "Möglichkeiten"
+            erg = ergebnis[zufall]
+            lsg = [str(erg)]
+            hilfe_id = 50
+            hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " 
+        elif typ == 6:
+            titel="Kombinationen"
+            if stufe%2 == 1:		
+                zufall = random.randint(3,5)
+            else:
+                zufall = random.randint(3,4)
+            variable = [zufall]	
+            text = "{} Personen begegnen sich. Jeder schüttelt jedem die Hand.<br>Wie oft werden Hände geschüttelt"
+            pro_text = "Händeschütteln {} Personen"
+            frage = ""
+            einheit = "Mal"
+            erg = 0
+            for n in range(zufall+1):
+                erg += n
+            lsg = [str(erg)]
+            hilfe_id = 60
+            hilfe = "Man kann das natürlich ausprobieren. Man kann es aber auch berechnen:<br>Die erste Person schüttelt {0}-1 Hände, die zweite nur noch {0}-2 usw..<br>Dann muss man die Möglichkeiten addieren." 			
      
-
         else:
             pass
         hilfe = hilfe.format(*variable)
