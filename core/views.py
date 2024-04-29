@@ -5419,22 +5419,19 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
 def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 3
-        if stufe >= 6 or jg >= 7 or "mit" in optionen:
-            typ_end = 2
+        typ_end = 8
         return typ_anf, typ_end
-    elif eingabe != "":                                                                                                         
-        loe = (lsg[0])
-        if eingabe.replace(" ","") != loe.replace(" ",""):
-            erg = loe.replace(",",".")
-            eing = eingabe.replace(",",".")
-            if float(erg) == float(eing):
-                return 0, "Du darfst die Null am Ende nicht weglassen - <br>Die Zahl muss genau {0} Stellen hinter dem Komma haben".format(len(erg)-erg.find("."))
+    elif eingabe != "": 
+        if typ == 8:                                                                                                        
+            parser = Parser()
+            if (parser.evaluate(lsg[1],{})) == (parser.evaluate(eingabe,{})):
+                return 1, ""
+            else:
+                return -1, ""
         else:
-            return 0, "" 
+            return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=6
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung" 
         variable = ["",]
@@ -5550,7 +5547,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg = [str(erg)]
             hilfe_id = 50
             hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " 
-        elif typ == 6:
+        elif typ == 6:                                  # Händeschütteln
             titel="Kombinationen"
             if stufe%2 == 1:		
                 zufall = random.randint(3,5)
@@ -5567,7 +5564,53 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg = [str(erg)]
             hilfe_id = 60
             hilfe = "Man kann das natürlich ausprobieren. Man kann es aber auch berechnen:<br>Die erste Person schüttelt {0}-1 Hände, die zweite nur noch {0}-2 usw..<br>Dann muss man die Möglichkeiten addieren." 			
-     
+        elif typ in (7,8):                              # 7=absolute Häufigkeit, 8=relative
+            if typ == 7:
+                art = "absolute"
+                titel = "Absolute Häufigkeit"
+            else:
+                art = "relative"
+                titel="Relative Häufigkeit"
+            typ2 = random.randint(1,2)
+            ereignisse = []
+            if typ2 == 1: 
+                name = ["Tom", "Ali", "Lisa", "Marie"]
+                zufall1 = random.randint(0,3)
+                zufall2 = zufall1
+                while zufall2 == zufall1:
+                    zufall2 = random.randint(0,3)   
+                for n in range(20):
+                    wurf = random.randint(1,6)
+                    ereignisse.append(str(wurf))
+                gesucht = str(random.randint(1,6))
+                variable = [", ".join(ereignisse),art,gesucht,"Würfe","Zahl", name[zufall1],name[zufall2]]
+                text= "Um herauszubekommen, ob die Zahlen beim Würfeln gleich häufig kommen, legen {5} und {6} eine Strichliste an:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit für '{2}' an!" 
+            else:
+                farben = ["w","s","m","b","r","g","a"]
+                farbname = ["weiss","schwarz","metallicsilber","blau","rot","gelb","andere"]
+                zufall = random.randint(0,6)
+                gesucht = farben[zufall]
+                for n in range(20):
+                    farbe = farben[random.randint(0,6)]
+                    ereignisse.append(farbe)
+                gesucht = farben[zufall]
+                variable = [", ".join(ereignisse),art,farbname[zufall],"Autos","Farbe"]
+                text = "Um herauszubekommen, welche Autofarben am häufigsten sind, wurden fünf Minuten lang die Farben der vorbeifahrenden Autos notiert:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit der Autos mit der Farbe '{2}' an!"
+                anmerkung="(w) weiß, (s) schwarz, (m) silbermetallic, (b) blau, (r) rot, (g) gelb, (a) andere"
+            frage = "Die {1} Häufigkeit für '{2}' beträgt"
+            erg = ereignisse.count(gesucht)
+            if typ == 7:
+                lsg = [str(erg)]
+                hilfe_id = 70
+                hilfe = "Für die absolute Häufigkeit, muss man nur die Anzahl der {3} mit der entsprechenden {4} angeben."
+            else:
+                bruch = Fraction(erg/20).limit_denominator()
+                lsg = [str(erg/20).replace(".",","),str(erg)+"/20","indiv_0"]
+                erg = None
+                hilfe_id = 80
+                hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
+            
+
         else:
             pass
         hilfe = hilfe.format(*variable)
