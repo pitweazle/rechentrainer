@@ -4577,7 +4577,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             einheit = "€"
             wert = kapital/100*zinsen
             lsg = [str(int(wert)),str(wert),"indiv_0"] 
-            print(lsg)
         elif typ <= 18:                             # Tageszinsen
             titel = "Tageszinsen"
             kapital_liste = [2,3,4,5,10]
@@ -5419,7 +5418,7 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
 def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 8
+        typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "": 
         if typ == 8:                                                                                                        
@@ -5432,8 +5431,10 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
+        #typ=9
         typ2 = 0
-        titel = "Wahrscheinlichkeitsrechnung" 
+        titel = "Wahrscheinlichkeitsrechnung"
+        parameter = {'name':'normal'} 
         variable = ["",]
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
@@ -5518,6 +5519,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             titel = "Permutationen"
             anzahl = random.randint(3,4)
             text = "Ein Zahlenschloss für das Fahrrad hat {0} Ziffern<br>Wie viele Einstellmöglichkeiten gibt es, wenn man diejenigen mit {0} gleichen Ziffern nicht mitzählt?".format(anzahl)
+            pro_text = "Möglichkeiten Zahlenschloss {} Möglichkeiten"
             frage = "Es sind"
             einheit = "Möglichkeiten"
             pro_text = "Permutationen {0} Zahlen - 10".format(anzahl)
@@ -5585,6 +5587,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 gesucht = str(random.randint(1,6))
                 variable = [", ".join(ereignisse),art,gesucht,"Würfe","Zahl", name[zufall1],name[zufall2]]
                 text= "Um herauszubekommen, ob die Zahlen beim Würfeln gleich häufig kommen, legen {5} und {6} eine Strichliste an:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit für '{2}' an!" 
+                pro_text = "{1} Häufigkeit: Würfel"
             else:
                 farben = ["w","s","m","b","r","g","a"]
                 farbname = ["weiss","schwarz","metallicsilber","blau","rot","gelb","andere"]
@@ -5596,6 +5599,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 gesucht = farben[zufall]
                 variable = [", ".join(ereignisse),art,farbname[zufall],"Autos","Farbe"]
                 text = "Um herauszubekommen, welche Autofarben am häufigsten sind, wurden fünf Minuten lang die Farben der vorbeifahrenden Autos notiert:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit der Autos mit der Farbe '{2}' an!"
+                pro_text = "{1} Häufigkeit: Autofarben"
                 anmerkung="(w) weiß, (s) schwarz, (m) silbermetallic, (b) blau, (r) rot, (g) gelb, (a) andere"
             frage = "Die {1} Häufigkeit für '{2}' beträgt"
             erg = ereignisse.count(gesucht)
@@ -5609,7 +5613,42 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 erg = None
                 hilfe_id = 80
                 hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
+        elif typ == 9:
+            nenner = 11
+            while nenner == 11:
+                nenner = random.randint(6,12)
+            farben_dict = {'r': 'rot', 'n': 'grün', 'b': 'blau', 'g': 'gelb'}
+            color_dict = {'r': 'red', 'n': 'green', 'b': 'blue', 'g': 'yellow'}
+            gesucht = random.choice(list(farben_dict))
+            print ("gesucht: ", gesucht)
+            farben = []
+            for farbe in range(nenner):
+                farbe = random.choice(list(farben_dict))
+                farben.append(farbe)
+            zaehler = farben.count(gesucht)
+            print("Zähler: ",zaehler)
+            print(farben_dict[gesucht])
+            winkel = []
+            n = 0
+            for key in farben:
+                item = (n*(360/nenner),color_dict[key])
+                winkel.append(item)
+                n +=1
+            print(winkel)
+
+            text =" Wie groß ist die Wahrscheinlichkeit dass beim Drehen des Glücksrades die Farbe '{}' kommt? " 
             
+            parameter = {'name': 'svg/stochastik.svg', 'object': 'n-eck'}
+            center_x = 250 
+            center_y = 100
+            alfa = int(360/nenner)
+            #rotate = list(range(alfa,nenner*alfa,alfa))
+            startwinkel = 180-alfa/2
+            parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
+            koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+            parameter.update(koordinaten_dreieck)
+            
+    
 
         else:
             pass
@@ -5617,7 +5656,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         print(hilfe)
         protokoll = pro_text.format(*variable)
         print(protokoll)
-        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):

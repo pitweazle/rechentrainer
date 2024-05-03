@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+version=1.1"center_y3
+<svg viewbox="0 0 400 200">
+
+{% if parameter.object == "n-eck" %}
+
+    <g id="dreieck" >
+      <path d="M {{parameter.schenkel_1_x}}, {{parameter.schenkel_1_y}}
+          L {{parameter.center_x}}, {{parameter.center_y}}
+          L {{parameter.schenkel_2_x}}, {{parameter.schenkel_2_y}}"  
+          stroke="black" 
+        />
+        <line x1="{{parameter.schenkel_1_x}}" y1="{{parameter.schenkel_1_y}}" x2="{{parameter.schenkel_2_x}}" y2="{{parameter.schenkel_2_y}}" stroke="black"/> 
+    </g>
+      {% for winkel,farbe in parameter.rotate %}
+        <use href="#dreieck"  fill= "{{farbe}}" transform="rotate ({{winkel}} {{parameter.center_x}} {{parameter.center_y}})"/>
+      {% endfor %}
+
+      {% if parameter.schenkel_1_x != 0 %}
+          <path d="M {{parameter.schenkel_1_x}}, {{parameter.schenkel_1_y}}
+            L {{parameter.start_bogen_x_2}}, {{parameter.start_bogen_y_2}}
+            A {{parameter.bogen_radius}}, {{parameter.bogen_radius}} 0 {{parameter.largeArcFlag_2}} 1  {{parameter.end_bogen_x_2}}, {{parameter.end_bogen_y_2}}
+            Z " 
+            fill={{parameter.color_2}} 
+          />
+      {% endif %}
+{% endif%}
+</svg>
