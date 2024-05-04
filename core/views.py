@@ -5421,9 +5421,11 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "": 
-        if typ == 8:                                                                                                        
+        if typ in (8,9):                                                                                                        
             parser = Parser()
-            if (parser.evaluate(lsg[1],{})) == (parser.evaluate(eingabe,{})):
+            print(parser.evaluate(lsg[0],{}))
+            print(parser.evaluate(eingabe,{}))
+            if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
                 return 1, ""
             else:
                 return -1, ""
@@ -5431,7 +5433,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        #typ=9
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5538,7 +5539,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 zufall = random.randint(0,4)
             else:
                 zufall = random.randint(0,3)
-            anzahl = [3,4,4,5]
+            anzahl = [3,4,4,5,5]
             ergebnis = [6,24,24,24,120]
             variable = [typ3, werte[zufall], anzahl[zufall]]
             text="Wie viele Möglichkeiten gibt es, die {}<br>{}<br>zu kombinieren?"
@@ -5609,41 +5610,41 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 hilfe = "Für die absolute Häufigkeit, muss man nur die Anzahl der {3} mit der entsprechenden {4} angeben."
             else:
                 bruch = Fraction(erg/20).limit_denominator()
-                lsg = [str(erg/20).replace(".",","),str(erg)+"/20","indiv_0"]
+                lsg = [str(erg)+"/20",str(erg/20).replace(".",","),"indiv_0"]
                 erg = None
                 hilfe_id = 80
                 hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
         elif typ == 9:
             nenner = 11
-            while nenner == 11:
+            while nenner in (7,9,11):
                 nenner = random.randint(6,12)
             farben_dict = {'r': 'rot', 'n': 'grün', 'b': 'blau', 'g': 'gelb'}
             color_dict = {'r': 'red', 'n': 'green', 'b': 'blue', 'g': 'yellow'}
-            gesucht = random.choice(list(farben_dict))
-            print ("gesucht: ", gesucht)
             farben = []
             for farbe in range(nenner):
                 farbe = random.choice(list(farben_dict))
                 farben.append(farbe)
+            gesucht = ""
+            while gesucht not in farben:    
+                gesucht = random.choice(list(farben_dict))
             zaehler = farben.count(gesucht)
-            print("Zähler: ",zaehler)
-            print(farben_dict[gesucht])
+            bruch = Fraction(zaehler/nenner).limit_denominator()
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
+
             winkel = []
             n = 0
             for key in farben:
                 item = (n*(360/nenner),color_dict[key])
                 winkel.append(item)
                 n +=1
-            print(winkel)
-
+            variable = [farben_dict[gesucht], nenner, zaehler]
             text =" Wie groß ist die Wahrscheinlichkeit dass beim Drehen des Glücksrades die Farbe '{}' kommt? " 
-            
+            pro_text = "Glücksrad mit {} Segmenten {}{}"
             parameter = {'name': 'svg/stochastik.svg', 'object': 'n-eck'}
             center_x = 250 
-            center_y = 100
+            center_y = 110
             alfa = int(360/nenner)
-            #rotate = list(range(alfa,nenner*alfa,alfa))
-            startwinkel = 180-alfa/2
+            startwinkel = 90-alfa/2
             parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
             koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
             parameter.update(koordinaten_dreieck)
@@ -5653,9 +5654,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         else:
             pass
         hilfe = hilfe.format(*variable)
-        print(hilfe)
+        #print(hilfe)
         protokoll = pro_text.format(*variable)
-        print(protokoll)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
