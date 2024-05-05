@@ -5421,7 +5421,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "": 
-        if typ in (8,9):                                                                                                        
+        if typ in (8,9,10):                                                                                                        
             parser = Parser()
             print(parser.evaluate(lsg[0],{}))
             print(parser.evaluate(eingabe,{}))
@@ -5433,6 +5433,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
+        typ=10
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5630,7 +5631,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             zaehler = farben.count(gesucht)
             bruch = Fraction(zaehler/nenner).limit_denominator()
             lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
-
             winkel = []
             n = 0
             for key in farben:
@@ -5648,8 +5648,55 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
             koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
             parameter.update(koordinaten_dreieck)
-            
-    
+        elif typ == 10:
+            farben_liste = ['white','red','yellow','blue','white','white','white','red','red','yellow',]
+            color_dict = {'white':'weiß','red': 'rot', 'yellow': 'gelb', 'blue': 'blau'}
+            nenner = random.randint(10,20)
+            farben = []
+            kugeln = []
+            variable = []
+            n = weiss = rot = blau = gelb = 0
+            for kugel in range(nenner):
+                x = 215 + (n%5)*30
+                y = 145 - n//5*26
+                if n//5 in (1,3):
+                    x += 5
+                farbe = farben_liste[random.randint(0,9)]
+                farben.append(farbe)
+                kugel = (farbe,x,y)
+                kugeln.append(kugel)
+                n +=1
+            weiss = farben.count("white")
+            if weiss > 0:
+                variable.append(weiss,)
+                variable.append("weiß",)
+            rot = farben.count("red")
+            if rot > 0:
+                variable.append(rot,)
+                variable.append("rot",)
+            blau = farben.count("blue")
+            if blau > 0:
+                variable.append(blau,)
+                variable.append("blau",)
+            gelb = farben.count("yellow")
+            if gelb > 0:
+                variable.append(gelb,)
+                variable.append("gelb",)
+            dubletten = set(farben)
+            anzahl = len(dubletten)
+            gesucht = ""
+            while gesucht not in farben:
+                gesucht = farben_liste[random.randint(0,3)]
+            parameter = {'name': 'svg/stochastik.svg', 'object': 'urne', 'center_x': 200, 'center_y':160, 'kugeln': kugeln}
+            variable.append(color_dict[gesucht])            
+            text="In einer Urne befinden sich {} {}e"
+            if anzahl >2:
+                text += ", {} {}e" 
+            if anzahl >3:
+                text += ", {} {}e" 
+            text += " und {} {}e Kugeln.<br>Wie groß ist die Wahrscheinlichkeit eine {}e Kugel zu ziehen?" 
+            zaehler = farben.count(gesucht)
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
 
         else:
             pass

@@ -91,7 +91,6 @@ version=1.1"center_y3
 
 <text x="0" y="0" class="text">text</text>
 <text x="10" y="10" class="text">{{center_x}}</text>
-
   {% if   parameter.object == "segment" %}
     <circle cx={{parameter.center_x}} cy={{parameter.center_y}} r={{parameter.radius}} fill="none" stroke="black" />
       <use href="#segment"/>
