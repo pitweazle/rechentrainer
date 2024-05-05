@@ -5433,7 +5433,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=10
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5641,6 +5640,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text =" Wie groß ist die Wahrscheinlichkeit dass beim Drehen des Glücksrades die Farbe '{}' kommt? " 
             pro_text = "Glücksrad mit {} Segmenten {}{}"
             parameter = {'name': 'svg/stochastik.svg', 'object': 'n-eck'}
+            hilfe_id = 90
+            hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {}en Segmente durch die Gesamtzahl der Segmente teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
             center_x = 250 
             center_y = 110
             alfa = int(360/nenner)
@@ -5697,11 +5698,13 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text += " und {} {}e Kugeln.<br>Wie groß ist die Wahrscheinlichkeit eine {}e Kugel zu ziehen?" 
             zaehler = farben.count(gesucht)
             lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
+            hilfe_id = 100
+            hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
 
         else:
             pass
         hilfe = hilfe.format(*variable)
-        #print(hilfe)
+        print(hilfe)
         protokoll = pro_text.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
