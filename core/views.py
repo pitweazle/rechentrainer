@@ -5421,10 +5421,10 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "": 
-        if typ in (8,9,10):                                                                                                        
+        if typ > 7:                                                                                                        
             parser = Parser()
-            print(parser.evaluate(lsg[0],{}))
-            print(parser.evaluate(eingabe,{}))
+            # print(parser.evaluate(lsg[0],{}))
+            # print(parser.evaluate(eingabe,{}))
             if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
                 return 1, ""
             else:
@@ -5433,6 +5433,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
+        #typ=11
+        print("Typ: ",typ)
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5610,11 +5612,11 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 hilfe = "Für die absolute Häufigkeit, muss man nur die Anzahl der {3} mit der entsprechenden {4} angeben."
             else:
                 bruch = Fraction(erg/20).limit_denominator()
-                lsg = [str(erg)+"/20",str(erg/20).replace(".",","),"indiv_0"]
+                lsg = [str(erg)+"/20",str(erg/20).replace(".",",")]
                 erg = None
                 hilfe_id = 80
                 hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
-        elif typ == 9:
+        elif typ == 9:                                  # Glücksrad
             nenner = 11
             while nenner in (7,9,11):
                 nenner = random.randint(6,12)
@@ -5629,7 +5631,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 gesucht = random.choice(list(farben_dict))
             zaehler = farben.count(gesucht)
             bruch = Fraction(zaehler/nenner).limit_denominator()
-            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
             winkel = []
             n = 0
             for key in farben:
@@ -5649,7 +5651,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
             koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
             parameter.update(koordinaten_dreieck)
-        elif typ == 10:
+        elif typ == 10:                                 # Urne
             farben_liste = ['white','red','yellow','blue','white','white','white','red','red','yellow',]
             color_dict = {'white':'weiß','red': 'rot', 'yellow': 'gelb', 'blue': 'blau'}
             nenner = random.randint(10,20)
@@ -5697,15 +5699,48 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text += ", {} {}e" 
             text += " und {} {}e Kugeln.<br>Wie groß ist die Wahrscheinlichkeit eine {}e Kugel zu ziehen?" 
             zaehler = farben.count(gesucht)
-            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",","),"indiv_0"]
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
             hilfe_id = 100
             hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
-
+        elif typ == 11:                                 # Würfeln
+            zufall = random.randint(1,6)
+            variable = [zufall]
+            parameter = {'name': 'core/grafik.html', 'object': 'wuerfel', 'breite': 300}
+            typ2 = random.randint(1,3)
+            if typ2 == 1:
+                zufall = random.randint(2, 7)
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?" 
+                frage = "P(<{})=".format(zufall)
+                zaehler = zufall-1
+                lsg=[str(zaehler)+"/6"]	
+            elif typ2 == 2:
+                zufall = random.choice(["gerade","ungerade"])
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine {} Zahl zu würfeln?".format(zufall) 
+                frage = "P({})=".format(zufall)
+                lsg=["3/6","1/2"]
+            else:
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?" 
+                frage= "P({})=" 
+                zaehler = 1   
+                lsg=["1/6"]
+            hilfe_id = 11
+            hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
         else:
-            pass
+                pass
         hilfe = hilfe.format(*variable)
-        print(hilfe)
+        #print(hilfe)
         protokoll = pro_text.format(*variable)
+
+        if typ > 7:
+            parser = Parser()
+            zahl = (parser.evaluate(lsg[0],{}))
+            if (zahl*10)%1==0:
+                lsg.append(format_zahl(zahl,1))
+            if (zahl*100)%1==0:
+                lsg.append(format_zahl(zahl,2))
+                lsg.append(format_zahl(zahl*100,0)+"%")                        
+            lsg.append("indiv_0")
+        print(lsg)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
