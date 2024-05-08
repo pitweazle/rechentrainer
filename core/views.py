@@ -5433,8 +5433,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        #typ=11
-        print("Typ: ",typ)
+        typ=11
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5616,7 +5615,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 erg = None
                 hilfe_id = 80
                 hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
-        elif typ == 9:                                  # Glücksrad
+        elif typ == 9:                                  # Glücksrad und Roulette
             nenner = 11
             while nenner in (7,9,11):
                 nenner = random.randint(6,12)
@@ -5702,11 +5701,11 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
             hilfe_id = 100
             hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
-        elif typ == 11:                                 # Würfeln
+        elif typ == 11:                                 # Würfeln und Münze
             zufall = random.randint(1,6)
             variable = [zufall]
-            parameter = {'name': 'core/grafik.html', 'object': 'wuerfel', 'breite': 300}
-            typ2 = random.randint(1,3)
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
+            typ2 = random.randint(1,4)
             if typ2 == 1:
                 zufall = random.randint(2, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?" 
@@ -5718,13 +5717,49 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine {} Zahl zu würfeln?".format(zufall) 
                 frage = "P({})=".format(zufall)
                 lsg=["3/6","1/2"]
-            else:
+            elif typ2 ==3:
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?" 
                 frage= "P({})=" 
-                zaehler = 1   
                 lsg=["1/6"]
+            else:
+                parameter['object'] = 'grafik/muenzwurf.jpg'
+                parameter['breite'] = 200
+                variable = [random.choice(["Zahl", "Kopf"])] 
+                text="Wie groß ist die Wahrscheinlichkeit beim Münzwurf '{}' zu würfeln?"
+                anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
+                frage= "P({})=" 
+                lsg=["1/2"]               
             hilfe_id = 11
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
+        elif typ ==12:                                  # Karten
+            typ2 = random.randint(1,2)
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/skat.png', 'breite': 300}
+            werte = ("Sieben", "Acht", "Neun", "Zehn", "Bube", "Dame", "König", "Ass", "Zahl", "Bild")
+            farben = ("Karo", "Herz", "Pik", "Kreuz", "rote", "schwarze")
+            endungen1 = ("e","e","e","e","en","e","en","","e","")
+            endungen2 = ("","","","","n","","n","s","","s") 			 
+            wert = random.randint(0,9)
+            farbe = random.randint(0,5)
+            endung2 = endungen2[wert] if farbe > 3 else ""
+            endung3 = "n" if wert == 4 else ""
+            variable = (farben[farbe], werte[wert], endungen1[wert],endung2,endung3)
+            text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
+            frage = "P({0}{3} {1})="
+            typ2=1
+            if typ2 == 1:
+                text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
+            else:
+                text += "{2} {0} {1} {4} zu ziehen?"	
+            zaehler = 2 if farbe >3 else 1
+
+            if wert == 8:
+                zaehler *= 4
+            elif wert == 9:
+                zaehler *= 3
+            nenner=32
+            lsg = [str(zaehler)+ "/32"]
+            hilfe_id = 120
+            hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen."
         else:
                 pass
         hilfe = hilfe.format(*variable)
@@ -5747,6 +5782,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
     #Das kann u.u. noch unter 'Optionen' ausgeweitet werden (z.B. mit Komma oder ohne)
+    if stufe%1>1:               # hiermit können Aufgaben nur für den A-Kurs erstellt werden
+        typ_end = 20
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 1
