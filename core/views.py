@@ -5348,7 +5348,7 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         if aufgnr < 6:
             typ = random.randint(typ_anf, 4) 
         else:
-            typ = random.randint(typ_anf, typ_end+stufe%2) 
+            typ = random.randint(typ_anf, typ_end+stufe%2)
         titel = "Gleichungen" 
         frage = "x="
         variable = ["",]
