@@ -1,22 +1,19 @@
-import random
-nenner = 11
-while nenner == 11:
-    nenner = random.randint(6,12)
-farben_dict = {'r': 'rot', 'n': 'grün', 'b': 'blau', 'g': 'gelb'}
-color_dict = {'r': 'red', 'n': 'green', 'b': 'blue', 'g': 'yellow'}
-gesucht = random.choice(list(farben_dict))
-print ("gesucht: ", gesucht)
-farben = []
-for farbe in range(nenner):
-    farbe = random.choice(list(farben_dict))
-    farben.append(farbe)
-zaehler = farben.count(gesucht)
-print("Zähler: ",zaehler)
-print(farben_dict[gesucht])
-winkel = []
-n = 0
-for key in farben:
-     item = (n*(360/nenner),color_dict[key])
-     winkel.append(item)
-     n +=1
-print(winkel)
+from django.shortcuts import render
+
+def wahrscheinlichkeit():
+    #...
+    titel = "Wahrscheinlichkeitsrechnung"
+    text = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzlnen Ergebnisse in geschweifte Klammern.<br>"
+    variable = ["irgendeine Aufgabe"]
+    frage = "Ω={"
+    einheit = "}" 
+    #... 
+    return titel, text, frage, einheit, variable
+
+def main():
+    #...
+    titel, text,  frage, variable, einheit = wahrscheinlichkeit() 
+    text = text.format(*variable)
+    #...
+    context = dict( titel = titel,  text = text, frage = frage, einheit = einheit)
+    return render('core/aufgabe.html', context)

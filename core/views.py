@@ -5423,8 +5423,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
     elif eingabe != "": 
         if typ > 7:                                                                                                        
             parser = Parser()
-            # print(parser.evaluate(lsg[0],{}))
-            # print(parser.evaluate(eingabe,{}))
             if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
                 return 1, ""
             else:
@@ -5433,7 +5431,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=11
+        typ=0
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5441,7 +5439,27 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
-        if typ == 1:                                    # Median
+        if typ == 0:                                      # Begriffe
+            typ2 = random.randint(1,3)
+            if typ2 < 3:
+                frage = "Ω={{"
+                text = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+            else:
+                frage = "E={{"
+                text = "Ein Ereignis ist die Menge der Ergebnisse eines Zufallsexperimentes, die die gewünschte Aussage erfüllen.<br>Man bezeichnet sie mit 'E' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+            einheit = "}"
+            #anmerkung = "(Trenne mehrere Ereigniss mit Kommas.)"
+            if typ2 == 1:
+                text += "'Ein Würfel wird geworfen'"
+                menge = "1,2,3,4,5,6"
+            elif typ2 == 2:
+                text += "'Augenzahl bei zwei Würfeln'"
+                menge = "2,3,4,5,6,7,8,9,10,11,12"
+            elif typ2 == 3:
+                text += "'Mit einem Würfel wird eine gerade Zahl gewürfelt'"
+                menge = "2,4,6" 
+            lsg = [menge, menge.replace(",",";")]                           
+        elif typ == 1:                                  # Median
             titel = "Median"
             if stufe%2 == 1:
                 tage = random.randint(5,6)
@@ -5760,6 +5778,24 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg = [str(zaehler)+ "/32"]
             hilfe_id = 120
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen."
+        # 2-stufige Versuche mit Zurücklegen
+        elif typ == 13:
+            parameter['object'] = 'grafik/muenzwurf.jpg'
+            anzahl_dict = {2: "zweimal", 3: "dreimal"}
+            anzahl = random.randint(2,3)
+            parameter['breite'] = 200
+            zufall_dict = {'K': 'Kopf', 'Z': 'Zahl'}
+            zufall = random.choice(["Z", "K"]) 
+            variable = [zufall, anzahl_dict[anzahl], zufall_dict[zufall]]
+            anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
+            frage= "P({0};{0})="
+            nenner = 2**anzahl 
+            lsg=["1/"+str(nenner)]   
+            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?" 
+            hilfe_id = 1
+            hilfe="Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten ... Ereignis multiplizieren<br>(Gib das Ergebnis am Besten als Bruch an)."
+
+
         else:
                 pass
         hilfe = hilfe.format(*variable)
@@ -6400,12 +6436,15 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                    return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
-                if eingabe.replace(" ","") == loe.replace(" ",""):
-                    if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
-                        protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                        punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
-                        return punkte, rueckmeldung
-                    return 1, ""
+                try:
+                    if eingabe.replace(" ","") == loe.replace(" ",""):
+                        if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
+                            protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
+                            punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                            return punkte, rueckmeldung
+                        return 1, ""
+                except:
+                    pass
             if "indiv_0" in lsg:                           #wenn in der Liste 'loesungen' 'indiv_0' steht, dann wird der eingegebene Wert in der Funtion der entsprechenden Kategorie überprüft nachdem die normale Routine "kontrolle" keine Gleichheit festgestellt hat.
                 protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                 punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
@@ -6634,6 +6673,9 @@ def main(req, slug):
             if pro_text != "" :
                 pro_text = pro_text.format(*variable)
             #Die Frage steht vor dem Eingabefeld:
+            # if kategorie.name == "Wahrscheinlichkeit" and typ == 0:
+            #     pass            # sonst wird ein fehler geworfen da 
+            # else:
             frage = frage.format(*variable)
             #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurücgezählt. 
             #Falls mittels Browser reset eine neue Aufgabe erzeugt wird, wird dies als Abbrechen gewertet.
