@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+version=1.1"center_y3
+<svg viewbox="0 0 400 220">
+{% if parameter.object == "urne" %}
+<rect width="155" height="150" x="{{parameter.center_x}}" y="{{parameter.center_y|add:-150}}" 
+        stroke="None" fill="LightSkyBlue"  />
+  <path d="M {{parameter.center_x}}, {{parameter.center_y|add:-150}}
+      L {{parameter.center_x}}, {{parameter.center_y}}
+      L {{parameter.center_x|add:155}}, {{parameter.center_y}}
+      L {{parameter.center_x|add:155}}, {{parameter.center_y|add:-150}}"  
+      fill = None stroke="black" />
+
+  {% for farbe,x,y in parameter.kugeln %}
+      <circle cx={{x}} cy={{y}} r=15 fill={{farbe}} stroke="black" />
+  {% endfor %}
+
+{% elif parameter.object == "n-eck" %}
+    <g id="dreieck" >
+      <path d="M {{parameter.schenkel_1_x}}, {{parameter.schenkel_1_y}}
+          L {{parameter.center_x}}, {{parameter.center_y}}
+          L {{parameter.schenkel_2_x}}, {{parameter.schenkel_2_y}}
+          Z"  
+          stroke="black" 
+        />
+    </g>
+      {% for winkel,farbe in parameter.rotate %}
+        <use href="#dreieck"  fill= "{{farbe}}" transform="rotate ({{winkel}} {{parameter.center_x}} {{parameter.center_y}})"/>
+      {% endfor %}
+      <circle cx={{parameter.center_x}} cy={{parameter.center_y}} r=15 fill="white" stroke="black" />
+      <path d="M {{parameter.center_x|add:10}}, {{parameter.center_y|add:-110}}
+          L {{parameter.center_x}}, {{parameter.center_y|add:-90}}
+          L {{parameter.center_x|add:-10}}, {{parameter.center_y|add:-110}}
+          Z"  
+          fill="white" stroke="black" 
+        />
+{% endif%}
+</svg>

@@ -841,7 +841,6 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         erg = None
         anmerkung = ""
         hilfe_id = 0
-    # hier wird die Aufgabe erstellt:
         if typ < 5:
             operation_liste = ["Addition", "Subtraktion", "Multiplikation","Division"]
             name_liste = ["Plus", "Minus", "Mal", "Geteilt"]
@@ -857,7 +856,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             titel = "Rechenregeln"
             hilfe_id = 1
-        if typ < 3:
+        if typ < 3:                                         # begriffe
             titel = "Begriffe"
             text = "Wie heißt das Ergebnis einer {}saufgabe?"
             frage = "Das Ergebnis heißt:"
@@ -869,7 +868,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             hilfe_id = 2
             if stufe%2 == 0:
                 hilfe_id = 3 
-        elif typ < 5:
+        elif typ < 5:                                       # Begriffe
             titel = "Kennst du die Begriffe?"
             artikel_liste = ["die", "die", "das", "den"]
             endung_liste = ["","","","en"]
@@ -900,14 +899,14 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             #lsg = str(erg)
             if stufe%2 == 0:
                 hilfe_id = 4 
-        elif typ == 5:
+        elif typ == 5:                                      # Rechenregeln * +
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,8)
             zahl3=random.randint(1,7)
             text = "{} · ({} + {})="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1*(zahl2+zahl3)
-        elif typ == 6:
+        elif typ == 6:                                      # Rechenregeln ( + )+( + )
             zahl1=random.randint(1,8)
             zahl2=random.randint(1,7)
             zahl3=random.randint(1,8)
@@ -915,14 +914,14 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             text="({} + {}) · ({} + {})="
             variable = [str(zahl1), str(zahl2), str(zahl3), str(zahl4)]
             erg=(zahl1+zahl2)*(zahl3+zahl4)
-        elif typ == 7:       
+        elif typ == 7:                                      # Rechenregeln + :
             zahl1=random.randint(2,4)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)*zahl1
             text= "{} + {} : {}="
             variable = [str(zahl2), str(zahl3), str(zahl1)]
             erg=zahl2+zahl3/zahl1
-        elif typ == 8:
+        elif typ == 8:                                      # Rechenreglen * -
             erg = 0
             while erg <= 0:
                 zahl1=random.randint(2,10)
@@ -931,21 +930,21 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 erg=zahl2*zahl3-zahl1
             text= "{} · {} - {}="
             variable = [str(zahl2), str(zahl3), str(zahl1)]
-        elif typ == 9:
+        elif typ == 9:                                      # Rechenregeln + *
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)
             text= "{} + {} · {}="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1+zahl2*zahl3
-        elif typ == 10:
+        elif typ == 10:                                     # Rechenregeln * +
             zahl1=random.randint(1,10)
             zahl2=random.randint(1,10)
             zahl3=random.randint(1,10)
             text="{} · {} + {}="
             variable = [str(zahl1), str(zahl2), str(zahl3)]
             erg=zahl1*zahl2+zahl3
-        else:
+        else:                                               # Folgen
             if typ == 11:
                 hilfe_id = 5
                 add = random.randint(2,4)	    
@@ -975,7 +974,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     add = random.randint(1,2)	#wird addiert
                 zahl1 = 2
                 anzab = 1
-            elif typ == 16:
+            elif typ == 16:                                     # Fibonacci
                 folge = ["0","1"]
                 a = 1 
                 b = 1
@@ -3881,6 +3880,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             breite_u_text = a = int(breite_u/5)
             tiefe_text = b = int(tiefe/10)
             hoehe_text = c = int(hoehe/10)
+            einheit = "mm³"
             if typ == 5:
                 gesucht = "das Volumen"
                 frage = "V="
@@ -4578,7 +4578,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             einheit = "€"
             wert = kapital/100*zinsen
             lsg = [str(int(wert)),str(wert),"indiv_0"] 
-            print(lsg)
         elif typ <= 18:                             # Tageszinsen
             titel = "Tageszinsen"
             kapital_liste = [2,3,4,5,10]
@@ -5417,6 +5416,7 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         lsg = ["x="+str(erg)]                           
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+<<<<<<< HEAD
 #def wahrscheinlichkeit
 #     # Liste der Farben
 # colors = ["yellow"] * 5 + ["red"] * 4 + ["blue"] * 3
@@ -5449,11 +5449,413 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
 # # Speichere den SVG-Code in einer Datei
 # with open("output.svg", "w") as f:
 #     f.write(svg_code)
+=======
+def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 9
+        return typ_anf, typ_end
+    elif eingabe != "": 
+        if typ > 7:                                                                                                        
+            parser = Parser()
+            if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
+                return 1, ""
+            else:
+                return -1, ""
+        else:
+            return -1, ""
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end) 
+        typ=0
+        typ2 = 0
+        titel = "Wahrscheinlichkeitsrechnung"
+        parameter = {'name':'normal'} 
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        hilfe_id = 0
+        erg = None 
+        if typ == 0:                                      # Begriffe
+            typ2 = random.randint(1,3)
+            if typ2 < 3:
+                frage = "Ω={{"
+                text = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+            else:
+                frage = "E={{"
+                text = "Ein Ereignis ist die Menge der Ergebnisse eines Zufallsexperimentes, die die gewünschte Aussage erfüllen.<br>Man bezeichnet sie mit 'E' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+            einheit = "}"
+            #anmerkung = "(Trenne mehrere Ereigniss mit Kommas.)"
+            if typ2 == 1:
+                text += "'Ein Würfel wird geworfen'"
+                menge = "1,2,3,4,5,6"
+            elif typ2 == 2:
+                text += "'Augenzahl bei zwei Würfeln'"
+                menge = "2,3,4,5,6,7,8,9,10,11,12"
+            elif typ2 == 3:
+                text += "'Mit einem Würfel wird eine gerade Zahl gewürfelt'"
+                menge = "2,4,6" 
+            lsg = [menge, menge.replace(",",";")]                           
+        elif typ == 1:                                  # Median
+            titel = "Median"
+            if stufe%2 == 1:
+                tage = random.randint(5,6)
+            else:
+                tage = 5
+            temperaturen = []
+            for temperatur in range(tage):
+                temperatur = random.randint(15,23)
+                temperaturen.append(str(temperatur))  
+            sortiert = temperaturen
+            text = "Die Höchsttemperaturen in der ersten {1} Tagen im August betrugen: {2}° und {3}°<br>Gib den Median dieser Temperaturen an!"
+            frage = "Median:"
+            pro_text = "Median: {4}"
+            einheit = "°"
+            sortiert.sort()
+            variable = [', '.join(sortiert),tage,"°, ".join(temperaturen[:-1]),temperaturen[-1],",".join(temperaturen)]
+            if tage%2 == 1:
+                erg = int(sortiert[2])
+                lsg = [str(erg)+"°C"]
+            else:
+                erg = (int(sortiert[2])+int(sortiert[3]))/2
+                lsg = [format_zahl(erg,1)+"°C"]
+            hilfe_id = 10
+            hilfe = "Du musst die Werte der Größe nach aufschreiben ({}), der mittlere Wert ist der Median.<br>Bei einer geraden Anzahl von Werten musst du den Mittelwert der mittleren beiden Zahlen bilden."
+        elif typ == 2:                                  # Mittelwert
+            titel = "Mittelwert"
+            anzahl_note = [1,1,1]
+            summe = 6
+            for n in range(7):
+                zufall = random.randint(0,2)
+                anzahl_note[zufall] +=1
+                summe +=zufall+1
+            erg = summe/10
+            lsg = [format_zahl(erg,1)]
+            text="Der letzte Vokabeltest ist gut ausgefallen:<br>Es gab {1} mal eine Eins, {2} mal eine Zwei und {3} mal eine Drei<br>Berechne die Durchschnittsnote!"
+            frage = "Durchschnittsnote:"
+            pro_text = "Durchschnittsnote: {1}*1,{2}*2,{3}*3"
+            hilfe_id = 20
+            variable = ["Noten",anzahl_note[0],anzahl_note[1],anzahl_note[2]]
+            hilfe = "Du musst alle {} zusammenzählen und durch die Anzahl der Arbeiten teilen."
+        elif typ == 3:                                  # Mittelwert
+            titel = "Mittelwert"
+            hilfe_id = 20            
+            if stufe%2 == 1:
+                typ2 = random.randint(1,2)
+            else:
+                typ2 = 2 
+            if typ2 == 1:  
+                temperaturen = []
+                summe = 0
+                for temperatur in range(10):
+                    temperatur = random.randint(-2,6)
+                    temperaturen.append(str(temperatur)) 
+                    summe += temperatur 
+                erg = summe/10
+                lsg = [format_zahl(erg,1)+"°"]                             
+                text = "Die Tiefsttemperaturen an den ersten zehn Tagen im Januar betrugen:<br>{1}° und {2}°<br>Berechne die durchschnittliche Tiefsttemperatur!"
+                frage = "Durchschnittstemperatur:"
+                pro_text = " Durchschnitt: {3}"
+                einheit = "°"
+                variable = ["Temperaturen","°, ".join(temperaturen[:-1]),temperaturen[-1],temperaturen]
+            else:
+                noten = []
+                summe = 0
+                for note in range(10):
+                    note = random.randint(1,4)
+                    noten.append(str(note)) 
+                    summe += note
+                print("Noten: ",noten)
+                erg = summe/10
+                lsg = [format_zahl(erg,1)]                             
+                name = ["Tom", "Ali", "Lisa", "Marie"]
+                text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
+                frage = "Durchschnittsnote  "
+                variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
+        elif typ == 4:                                  # Zahlenschloss
+            titel = "Permutationen"
+            anzahl = random.randint(3,4)
+            text = "Ein Zahlenschloss für das Fahrrad hat {0} Ziffern<br>Wie viele Einstellmöglichkeiten gibt es, wenn man diejenigen mit {0} gleichen Ziffern nicht mitzählt?".format(anzahl)
+            pro_text = "Möglichkeiten Zahlenschloss {} Möglichkeiten"
+            frage = "Es sind"
+            einheit = "Möglichkeiten"
+            pro_text = "Permutationen {0} Zahlen - 10".format(anzahl)
+            erg=10**anzahl-10
+            lsg = [str(erg)]
+        elif typ == 5:                                  # Permutationen Buchstaben Ziffern
+            titel="Kombinationen"
+            typ2 = random.randint(1,2)
+            if typ2 == 1:
+                typ3 = "Buchstaben"
+                werte = ["'R','O' und 'T'", "'B','L','A' und 'U'", "'G','E','L' und 'B'","'G','R','Ü' und 'N'","'B','R','A','U' und 'N'"]
+            else:
+                typ3 = "Zahlen"
+                werte = ["1, 2 und 3", "1, 2, 3 und 4", "2, 4, 6 und 8","1, 3, 5, und 7","1, 2, 3, 4 und 5"]
+            if stufe%2 == 1:
+                zufall = random.randint(0,4)
+            else:
+                zufall = random.randint(0,3)
+            anzahl = [3,4,4,5,5]
+            ergebnis = [6,24,24,24,120]
+            variable = [typ3, werte[zufall], anzahl[zufall]]
+            text="Wie viele Möglichkeiten gibt es, die {}<br>{}<br>zu kombinieren?"
+            pro_text = "Permutationen: {2} {0}"
+            frage = "Es sind"
+            einheit = "Möglichkeiten"
+            erg = ergebnis[zufall]
+            lsg = [str(erg)]
+            hilfe_id = 50
+            hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " 
+        elif typ == 6:                                  # Händeschütteln
+            titel="Kombinationen"
+            if stufe%2 == 1:		
+                zufall = random.randint(3,5)
+            else:
+                zufall = random.randint(3,4)
+            variable = [zufall]	
+            text = "{} Personen begegnen sich. Jeder schüttelt jedem die Hand.<br>Wie oft werden Hände geschüttelt"
+            pro_text = "Händeschütteln {} Personen"
+            frage = ""
+            einheit = "Mal"
+            erg = 0
+            for n in range(zufall+1):
+                erg += n
+            lsg = [str(erg)]
+            hilfe_id = 60
+            hilfe = "Man kann das natürlich ausprobieren. Man kann es aber auch berechnen:<br>Die erste Person schüttelt {0}-1 Hände, die zweite nur noch {0}-2 usw..<br>Dann muss man die Möglichkeiten addieren." 			
+        elif typ in (7,8):                              # 7=absolute Häufigkeit, 8=relative
+            if typ == 7:
+                art = "absolute"
+                titel = "Absolute Häufigkeit"
+            else:
+                art = "relative"
+                titel="Relative Häufigkeit"
+            typ2 = random.randint(1,2)
+            ereignisse = []
+            if typ2 == 1: 
+                name = ["Tom", "Ali", "Lisa", "Marie"]
+                zufall1 = random.randint(0,3)
+                zufall2 = zufall1
+                while zufall2 == zufall1:
+                    zufall2 = random.randint(0,3)   
+                for n in range(20):
+                    wurf = random.randint(1,6)
+                    ereignisse.append(str(wurf))
+                gesucht = str(random.randint(1,6))
+                variable = [", ".join(ereignisse),art,gesucht,"Würfe","Zahl", name[zufall1],name[zufall2]]
+                text= "Um herauszubekommen, ob die Zahlen beim Würfeln gleich häufig kommen, legen {5} und {6} eine Strichliste an:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit für '{2}' an!" 
+                pro_text = "{1} Häufigkeit: Würfel"
+            else:
+                farben = ["w","s","m","b","r","g","a"]
+                farbname = ["weiss","schwarz","metallicsilber","blau","rot","gelb","andere"]
+                zufall = random.randint(0,6)
+                gesucht = farben[zufall]
+                for n in range(20):
+                    farbe = farben[random.randint(0,6)]
+                    ereignisse.append(farbe)
+                gesucht = farben[zufall]
+                variable = [", ".join(ereignisse),art,farbname[zufall],"Autos","Farbe"]
+                text = "Um herauszubekommen, welche Autofarben am häufigsten sind, wurden fünf Minuten lang die Farben der vorbeifahrenden Autos notiert:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit der Autos mit der Farbe '{2}' an!"
+                pro_text = "{1} Häufigkeit: Autofarben"
+                anmerkung="(w) weiß, (s) schwarz, (m) silbermetallic, (b) blau, (r) rot, (g) gelb, (a) andere"
+            frage = "Die {1} Häufigkeit für '{2}' beträgt"
+            erg = ereignisse.count(gesucht)
+            if typ == 7:
+                lsg = [str(erg)]
+                hilfe_id = 70
+                hilfe = "Für die absolute Häufigkeit, muss man nur die Anzahl der {3} mit der entsprechenden {4} angeben."
+            else:
+                bruch = Fraction(erg/20).limit_denominator()
+                lsg = [str(erg)+"/20",str(erg/20).replace(".",",")]
+                erg = None
+                hilfe_id = 80
+                hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
+        elif typ == 9:                                  # Glücksrad und Roulette
+            nenner = 11
+            while nenner in (7,9,11):
+                nenner = random.randint(6,12)
+            farben_dict = {'r': 'rot', 'n': 'grün', 'b': 'blau', 'g': 'gelb'}
+            color_dict = {'r': 'red', 'n': 'green', 'b': 'blue', 'g': 'yellow'}
+            farben = []
+            for farbe in range(nenner):
+                farbe = random.choice(list(farben_dict))
+                farben.append(farbe)
+            gesucht = ""
+            while gesucht not in farben:    
+                gesucht = random.choice(list(farben_dict))
+            zaehler = farben.count(gesucht)
+            bruch = Fraction(zaehler/nenner).limit_denominator()
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
+            winkel = []
+            n = 0
+            for key in farben:
+                item = (n*(360/nenner),color_dict[key])
+                winkel.append(item)
+                n +=1
+            variable = [farben_dict[gesucht], nenner, zaehler]
+            text =" Wie groß ist die Wahrscheinlichkeit dass beim Drehen des Glücksrades die Farbe '{}' kommt? " 
+            pro_text = "Glücksrad mit {} Segmenten {}{}"
+            parameter = {'name': 'svg/stochastik.svg', 'object': 'n-eck'}
+            hilfe_id = 90
+            hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {}en Segmente durch die Gesamtzahl der Segmente teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
+            center_x = 250 
+            center_y = 110
+            alfa = int(360/nenner)
+            startwinkel = 90-alfa/2
+            parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
+            koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+            parameter.update(koordinaten_dreieck)
+        elif typ == 10:                                 # Urne
+            farben_liste = ['white','red','yellow','blue','white','white','white','red','red','yellow',]
+            color_dict = {'white':'weiß','red': 'rot', 'yellow': 'gelb', 'blue': 'blau'}
+            nenner = random.randint(10,20)
+            farben = []
+            kugeln = []
+            variable = []
+            n = weiss = rot = blau = gelb = 0
+            for kugel in range(nenner):
+                x = 215 + (n%5)*30
+                y = 145 - n//5*26
+                if n//5 in (1,3):
+                    x += 5
+                farbe = farben_liste[random.randint(0,9)]
+                farben.append(farbe)
+                kugel = (farbe,x,y)
+                kugeln.append(kugel)
+                n +=1
+            weiss = farben.count("white")
+            if weiss > 0:
+                variable.append(weiss,)
+                variable.append("weiß",)
+            rot = farben.count("red")
+            if rot > 0:
+                variable.append(rot,)
+                variable.append("rot",)
+            blau = farben.count("blue")
+            if blau > 0:
+                variable.append(blau,)
+                variable.append("blau",)
+            gelb = farben.count("yellow")
+            if gelb > 0:
+                variable.append(gelb,)
+                variable.append("gelb",)
+            dubletten = set(farben)
+            anzahl = len(dubletten)
+            gesucht = ""
+            while gesucht not in farben:
+                gesucht = farben_liste[random.randint(0,3)]
+            parameter = {'name': 'svg/stochastik.svg', 'object': 'urne', 'center_x': 200, 'center_y':160, 'kugeln': kugeln}
+            variable.append(color_dict[gesucht])            
+            text="In einer Urne befinden sich {} {}e"
+            if anzahl >2:
+                text += ", {} {}e" 
+            if anzahl >3:
+                text += ", {} {}e" 
+            text += " und {} {}e Kugeln.<br>Wie groß ist die Wahrscheinlichkeit eine {}e Kugel zu ziehen?" 
+            zaehler = farben.count(gesucht)
+            lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
+            hilfe_id = 100
+            hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
+        elif typ == 11:                                 # Würfeln und Münze
+            zufall = random.randint(1,6)
+            variable = [zufall]
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
+            typ2 = random.randint(1,4)
+            if typ2 == 1:
+                zufall = random.randint(2, 7)
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?" 
+                frage = "P(<{})=".format(zufall)
+                zaehler = zufall-1
+                lsg=[str(zaehler)+"/6"]	
+            elif typ2 == 2:
+                zufall = random.choice(["gerade","ungerade"])
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine {} Zahl zu würfeln?".format(zufall) 
+                frage = "P({})=".format(zufall)
+                lsg=["3/6","1/2"]
+            elif typ2 ==3:
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?" 
+                frage= "P({})=" 
+                lsg=["1/6"]
+            else:
+                parameter['object'] = 'grafik/muenzwurf.jpg'
+                parameter['breite'] = 200
+                variable = [random.choice(["Zahl", "Kopf"])] 
+                text="Wie groß ist die Wahrscheinlichkeit beim Münzwurf '{}' zu würfeln?"
+                anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
+                frage= "P({})=" 
+                lsg=["1/2"]               
+            hilfe_id = 11
+            hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
+        elif typ ==12:                                  # Karten
+            typ2 = random.randint(1,2)
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/skat.png', 'breite': 300}
+            werte = ("Sieben", "Acht", "Neun", "Zehn", "Bube", "Dame", "König", "Ass", "Zahl", "Bild")
+            farben = ("Karo", "Herz", "Pik", "Kreuz", "rote", "schwarze")
+            endungen1 = ("e","e","e","e","en","e","en","","e","")
+            endungen2 = ("","","","","n","","n","s","","s") 			 
+            wert = random.randint(0,9)
+            farbe = random.randint(0,5)
+            endung2 = endungen2[wert] if farbe > 3 else ""
+            endung3 = "n" if wert == 4 else ""
+            variable = (farben[farbe], werte[wert], endungen1[wert],endung2,endung3)
+            text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
+            frage = "P({0}{3} {1})="
+            typ2=1
+            if typ2 == 1:
+                text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
+            else:
+                text += "{2} {0} {1} {4} zu ziehen?"	
+            zaehler = 2 if farbe >3 else 1
+
+            if wert == 8:
+                zaehler *= 4
+            elif wert == 9:
+                zaehler *= 3
+            nenner=32
+            lsg = [str(zaehler)+ "/32"]
+            hilfe_id = 120
+            hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen."
+        # 2-stufige Versuche mit Zurücklegen
+        elif typ == 13:
+            parameter['object'] = 'grafik/muenzwurf.jpg'
+            anzahl_dict = {2: "zweimal", 3: "dreimal"}
+            anzahl = random.randint(2,3)
+            parameter['breite'] = 200
+            zufall_dict = {'K': 'Kopf', 'Z': 'Zahl'}
+            zufall = random.choice(["Z", "K"]) 
+            variable = [zufall, anzahl_dict[anzahl], zufall_dict[zufall]]
+            anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
+            frage= "P({0};{0})="
+            nenner = 2**anzahl 
+            lsg=["1/"+str(nenner)]   
+            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?" 
+            hilfe_id = 1
+            hilfe="Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten ... Ereignis multiplizieren<br>(Gib das Ergebnis am Besten als Bruch an)."
+
+
+        else:
+                pass
+        hilfe = hilfe.format(*variable)
+        #print(hilfe)
+        protokoll = pro_text.format(*variable)
+
+        if typ > 7:
+            parser = Parser()
+            zahl = (parser.evaluate(lsg[0],{}))
+            if (zahl*10)%1==0:
+                lsg.append(format_zahl(zahl,1))
+            if (zahl*100)%1==0:
+                lsg.append(format_zahl(zahl,2))
+                lsg.append(format_zahl(zahl*100,0)+"%")                        
+            lsg.append("indiv_0")
+        print(lsg)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+>>>>>>> Wahrscheinlichkeit
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
     #Das kann u.u. noch unter 'Optionen' ausgeweitet werden (z.B. mit Komma oder ohne)
+    if stufe%1>1:               # hiermit können Aufgaben nur für den A-Kurs erstellt werden
+        typ_end = 20
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 1
@@ -6017,7 +6419,7 @@ def hilfe(req, zaehler_id, protokoll_id):
 AUFGABEN = {
     1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 8: zahlen, 9: malget10, 10: runden, 
     11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 
-    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen}
+    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
@@ -6070,12 +6472,15 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                    return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
-                if eingabe.replace(" ","") == loe.replace(" ",""):
-                    if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
-                        protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                        punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
-                        return punkte, rueckmeldung
-                    return 1, ""
+                try:
+                    if eingabe.replace(" ","") == loe.replace(" ",""):
+                        if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
+                            protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
+                            punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                            return punkte, rueckmeldung
+                        return 1, ""
+                except:
+                    pass
             if "indiv_0" in lsg:                           #wenn in der Liste 'loesungen' 'indiv_0' steht, dann wird der eingegebene Wert in der Funtion der entsprechenden Kategorie überprüft nachdem die normale Routine "kontrolle" keine Gleichheit festgestellt hat.
                 protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                 punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
@@ -6304,6 +6709,9 @@ def main(req, slug):
             if pro_text != "" :
                 pro_text = pro_text.format(*variable)
             #Die Frage steht vor dem Eingabefeld:
+            # if kategorie.name == "Wahrscheinlichkeit" and typ == 0:
+            #     pass            # sonst wird ein fehler geworfen da 
+            # else:
             frage = frage.format(*variable)
             #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurücgezählt. 
             #Falls mittels Browser reset eine neue Aufgabe erzeugt wird, wird dies als Abbrechen gewertet.
