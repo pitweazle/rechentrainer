@@ -5416,6 +5416,39 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         lsg = ["x="+str(erg)]                           
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+#def wahrscheinlichkeit
+#     # Liste der Farben
+# colors = ["yellow"] * 5 + ["red"] * 4 + ["blue"] * 3
+# # Mische die Farben zufällig
+# random.shuffle(colors)
+
+# # SVG-Code
+# svg_code = f"""
+# <svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
+#   <!-- Erstelle Reihen -->
+#   <g transform="translate(10,10)">
+# """
+
+# # Positionen der Kreise
+# positions = [(x, y) for x in range(0, 90, 20) for y in range(0, 50, 20)]
+
+# # Füge Kreise hinzu
+# for i, (x, y) in enumerate(positions):
+#     svg_code += f"""
+#     <g transform="translate({x},{y})">
+#       <circle cx="10" cy="10" r="5" fill="{colors[i]}" style="stroke:black;stroke-width:1" />
+#     </g>
+#     """
+
+# svg_code += """
+#   </g>
+# </svg>
+# """
+
+# # Speichere den SVG-Code in einer Datei
+# with open("output.svg", "w") as f:
+#     f.write(svg_code)
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
