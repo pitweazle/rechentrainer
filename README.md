@@ -16,3 +16,14 @@ Alle Vorgänge laufen in der Funktion "main" zusammen. Dort werden die Aufgaben 
 
 In der App "Accounts" finden sich alle Routinen für die Anmeldung und alle Routinen mit denen die Lehrkräfte die Arbeit ihrer Schülerinnen und Schüler überprüfen können.
 Weiterhin gibt es dort einige Wartungsfunktionen.
+
+Wie werden die Aufgaben erstellt?
+Das kann man an der Funktion "default" - sie ist die Blaupause für die einzelnen Kategorien. Diese bestehen aus zwei oder auch drei Teilen:
+1. if optionen != "": 
+    dieser Teil wird aufgerufen wenn die Kategorie ausgewählt wurde. Hier wird festgelgt aus welchem Bereich ("typ_anf" bis "typ_end") die nächsten 10 Aufgaben erstellt werden. Das hängt von Jahrgang und Stufe ab und unter Umständen, ob bei "Optionen" die vorher abgefragt werden, welche gewählt wurden (z.B. "mit Kommazahlen").
+2. else:
+    hier werden die Aufgaben erstellt und an "main" übergeben und anschließend auch dort überprüft.
+    Als richtig wird die Eingabe gewertet, wenn sie entweder dem Ergenis ("erg") entspricht (wenn es sich um eine Zahl handelt) oder einer der Werte in "lsg" (wenn das Ergebnis keine Zahl ist).
+    Unter Umständen wird die Eingabe noch dahingehend überprüft, ob noch eine Hilfestellung zur richtigen Eingabe gegeben wird, ein Zusatzpunkt oder ein Punktabzug erfogt. Dazu steht in "lsg" ein Eintrag "indiv_0". Und dann wird unter:
+3. elif eingabe != "": 
+    ebendieses überprüft. Dazu wird die Eingabe an die Funktion übergeben.
