@@ -5418,8 +5418,8 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
 
 def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
-        typ_anf = 1
-        typ_end = 9
+        typ_anf = -1
+        typ_end = 18
         return typ_anf, typ_end
     elif eingabe != "": 
         if typ > 7:                                                                                                        
@@ -5428,11 +5428,22 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 return 1, ""
             else:
                 return -1, ""
+        elif typ == 0:
+            if "{" in eingabe or "(" in eingabe:
+                return 0, "Die Klammern steht schon da!"
+            elif (",") not in eingabe:
+                return 0, "Bitte die Werte mit Kommas trennen!"
+            else:
+                return -1, ""
+        elif typ == -1:
+            if eingabe.lower() == lsg[0]:
+                return 1, ""
+            else:
+                return -1, ""
         else:
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=0
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5440,26 +5451,121 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
-        if typ == 0:                                      # Begriffe
+        if typ == -1:                                   # Laplace
+            text = "Handelt es sich bei Experiment:<br>"
+            frage = "ja/nein"
+            hilfe_id = -1
+            hilfe = "Ein Laplace Experiment ist ein zufälliges Element, bei dem alle möglichen Ergebnisse gleich wahrscheinlich sind."
+            typ2 = random.randint(1,7)
+            if typ2 == 1: 
+                experiment = "'Würfeln mit einem normalen Spielwürfel'"
+                pro_text = "Würfel - Laplace?"
+                lsg = ["ja","j"]
+            elif typ2 == 2:
+                experiment = "'Es wird mit zwei Würfeln gewürfelt, die Augenzahl wird addiert'"                
+                pro_text = "Zwei Würfel - Laplace?"
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/2wuerfel.jpg', 'breite': 300}
+                lsg = ["nein","n"] 
+            elif typ2 == 3:
+                weiss = random.randint(5,10)
+                schwarz = random.randint(5,10)
+                variable = [weiss, schwarz]
+                experiment = "'Ziehen einer Kugel aus einer Urne mit {} weißen und {} schwarzen Kugeln'"
+                pro_text = "Urne - Laplace?"
+                if weiss == schwarz:
+                    lsg = ["ja","j"]
+                else:
+                    lsg = ["nein","n"] 
+                farben = ['white','black']
+                for m in range(weiss-1):
+                    farben.append('white',)
+                for m in range (schwarz-1):
+                    farben.append('black',)
+
+                random.shuffle(farben)
+                kugeln = []
+                for n in range(weiss+schwarz):
+                    x = 215 + (n%5)*30 + n//5%2*5
+                    y = 145 - n//5*29
+                    farbe = farben[n]
+                    kugel = (farbe,x,y)
+                    kugeln.append(kugel)
+                    n +=1
+                parameter = {'name': 'svg/stochastik.svg', 'object': 'urne', 'center_x': 200, 'center_y':160, 'kugeln': kugeln}
+
+            elif typ2 == 4:
+                experiment = "'Ziehen einer Karte aus einem gewöhnlichen Set Spielkarten mit 52 Karten'"                
+                pro_text = "Kartenspiel - Laplace?"
+                lsg = ["ja","j"] 
+            elif typ2 == 5:
+                experiment = "'Werfen eines Würfels mit den Zahlen 1,3,5,7,9,11 versehen'"
+                pro_text = "Würfel - Laplace?"
+                lsg = ["ja","j"]                     
+            elif typ2 == 6: 
+                experiment = "'Zwei Würfel werden geworfen, der Würfel mit der höheren Augenzahl wird mit 10 multipliziert und die niedrigere Augenzahl dazu addiert'"
+                anmerkung = "Beispielsweise liefert eine „2“ und eine „4“ das Spielresultat  42."           
+                pro_text = "Zwei Würfel - Laplace?"
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/maexchen.jpg', 'breite': 150}
+                lsg = ["ja","j"] 
+            else:
+                typ3 = random.randint(1,3)
+                if typ3 == 1:
+                    farben = ["r","g","b","r","g","b"]
+                    lsg = ["ja","j"] 
+                elif typ3 == 2:    
+                    farben = ["w","g","w","r","w","b"]
+                    lsg = ["nein","n"] 
+                else:
+                    farben = ["g","r","r","b","g","b"]
+                    lsg = ["ja","j"] 
+                nenner = len(farben)
+                color_dict = {'r': 'red', 'n': 'green', 'b': 'blue', 'g': 'yellow', 'w': 'white'}
+                winkel = []
+                n = 0
+                for key in farben:
+                    item = (n*(360/nenner),color_dict[key])
+                    winkel.append(item)
+                    n +=1
+                experiment = "'Das unten gezeigte Glücksrad wird gedreht'" 
+                pro_text = "Glücksrad: Laplace?"
+                parameter = {'name': 'svg/stochastik.svg', 'object': 'n-eck'}
+                center_x = 250 
+                center_y = 110
+                alfa = int(360/nenner)
+                startwinkel = 90-alfa/2
+                parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
+                koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+                parameter.update(koordinaten_dreieck)
+            text += experiment + "<br>um ein Laplace Experiment?"
+            lsg.append("indiv_0")                 
+        elif typ == 0:                                  # Begriffe
             typ2 = random.randint(1,3)
             if typ2 < 3:
                 frage = "Ω={{"
-                text = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+                text = "Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+                pro_text = "Ergebnisraum: "
+                hilfe_id = 1
+                hilfe = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzelnen Ergebnisse in geschweifte Klammern."
             else:
                 frage = "E={{"
-                text = "Ein Ereignis ist die Menge der Ergebnisse eines Zufallsexperimentes, die die gewünschte Aussage erfüllen.<br>Man bezeichnet sie mit 'E' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>Gib den Ergebnisraum für folgenden Zufallsversuch an:<br>"
+                text = "Gib den Ereignisraum für folgenden Zufallsversuch an:<br>"
+                pro_text = "Ereignisraum: "
+                hilfe_id = 3
+                hilfe = "Ein Ereignisraum ist die Menge der Ergebnisse eines Zufallsexperimentes, die die gewünschte Aussage erfüllen.<br>Man bezeichnet sie mit 'E' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>"
             einheit = "}"
             #anmerkung = "(Trenne mehrere Ereigniss mit Kommas.)"
             if typ2 == 1:
-                text += "'Ein Würfel wird geworfen'"
+                experiment = "'Ein Würfel wird geworfen'"
                 menge = "1,2,3,4,5,6"
             elif typ2 == 2:
-                text += "'Augenzahl bei zwei Würfeln'"
+                experiment = "'Augenzahl bei zwei Würfeln'"
                 menge = "2,3,4,5,6,7,8,9,10,11,12"
             elif typ2 == 3:
-                text += "'Mit einem Würfel wird eine gerade Zahl gewürfelt'"
+                experiment = "'Mit einem Würfel wird eine gerade Zahl gewürfelt'"
                 menge = "2,4,6" 
-            lsg = [menge, menge.replace(",",";")]                           
+            text += experiment
+            pro_text += experiment
+            lsg = [menge, menge.replace(",",";"),"indiv_0"]  
         elif typ == 1:                                  # Median
             titel = "Median"
             if stufe%2 == 1:
@@ -5519,7 +5625,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 lsg = [format_zahl(erg,1)+"°"]                             
                 text = "Die Tiefsttemperaturen an den ersten zehn Tagen im Januar betrugen:<br>{1}° und {2}°<br>Berechne die durchschnittliche Tiefsttemperatur!"
                 frage = "Durchschnittstemperatur:"
-                pro_text = " Durchschnitt: {3}"
+                pro_text = " Durchschnittstemperatur: {3}"
                 einheit = "°"
                 variable = ["Temperaturen","°, ".join(temperaturen[:-1]),temperaturen[-1],temperaturen]
             else:
@@ -5529,16 +5635,20 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                     note = random.randint(1,4)
                     noten.append(str(note)) 
                     summe += note
-                print("Noten: ",noten)
                 erg = summe/10
                 lsg = [format_zahl(erg,1)]                             
                 name = ["Tom", "Ali", "Lisa", "Marie"]
                 text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
+                pro_text = "Durchschnittsnote: {3}"
                 frage = "Durchschnittsnote  "
                 variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
         elif typ == 4:                                  # Zahlenschloss
             titel = "Permutationen"
             anzahl = random.randint(3,4)
+            if anzahl == 3:
+                    parameter = {'name': 'core/grafik.html', 'object': 'grafik/schloss3.jpg', 'breite': 300}
+            else:
+                    parameter = {'name': 'core/grafik.html', 'object': 'grafik/schloss4.jpg', 'breite': 300}
             text = "Ein Zahlenschloss für das Fahrrad hat {0} Ziffern<br>Wie viele Einstellmöglichkeiten gibt es, wenn man diejenigen mit {0} gleichen Ziffern nicht mitzählt?".format(anzahl)
             pro_text = "Möglichkeiten Zahlenschloss {} Möglichkeiten"
             frage = "Es sind"
@@ -5579,7 +5689,12 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             variable = [zufall]	
             text = "{} Personen begegnen sich. Jeder schüttelt jedem die Hand.<br>Wie oft werden Hände geschüttelt"
             pro_text = "Händeschütteln {} Personen"
-            frage = ""
+            if zufall == 3:
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/haende3.jpg', 'breite': 300}
+            elif zufall == 4:
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/haende4.jpg', 'breite': 300}
+            else:
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/haende5.jpg', 'breite': 300}
             einheit = "Mal"
             erg = 0
             for n in range(zufall+1):
@@ -5634,7 +5749,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 erg = None
                 hilfe_id = 80
                 hilfe = "Für die relative Häufigkeit, muss man die Anzahl der {3} mit der entsprechenden {4} durch die Anzahl der {3} teilen."
-        elif typ == 9:                                  # Glücksrad und Roulette
+        elif typ == 9:                                  # Glücksrad
             nenner = 11
             while nenner in (7,9,11):
                 nenner = random.randint(6,12)
@@ -5648,7 +5763,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             while gesucht not in farben:    
                 gesucht = random.choice(list(farben_dict))
             zaehler = farben.count(gesucht)
-            bruch = Fraction(zaehler/nenner).limit_denominator()
+            #bruch = Fraction(zaehler/nenner).limit_denominator()
             lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
             winkel = []
             n = 0
@@ -5678,10 +5793,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             variable = []
             n = weiss = rot = blau = gelb = 0
             for kugel in range(nenner):
-                x = 215 + (n%5)*30
-                y = 145 - n//5*26
-                if n//5 in (1,3):
-                    x += 5
+                x = 215 + (n%5)*30 + n//5%2*5
+                y = 145 - n//5*29
                 farbe = farben_liste[random.randint(0,9)]
                 farben.append(farbe)
                 kugel = (farbe,x,y)
@@ -5717,6 +5830,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text += ", {} {}e" 
             text += " und {} {}e Kugeln.<br>Wie groß ist die Wahrscheinlichkeit eine {}e Kugel zu ziehen?" 
             zaehler = farben.count(gesucht)
+            pro_text = "Urne mit " + str(zaehler) + gesucht + "e von " +str(nenner) + " Kugeln"
             lsg = [str(zaehler)+"/"+str(nenner),str(zaehler/nenner).replace(".",",")]
             hilfe_id = 100
             hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
@@ -5747,10 +5861,15 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text="Wie groß ist die Wahrscheinlichkeit beim Münzwurf '{}' zu würfeln?"
                 anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
                 frage= "P({})=" 
-                lsg=["1/2"]               
+                lsg=["1/2"]
+            if typ2 < 3:
+                pro_text = "Würfel: " + frage.format(*variable)
+            else:
+                pro_text = "Münzwurf: " + frage.format(*variable)
+               
             hilfe_id = 11
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
-        elif typ ==12:                                  # Karten
+        elif typ == 12:                                 # Karten
             typ2 = random.randint(1,2)
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/skat.png', 'breite': 300}
             werte = ("Sieben", "Acht", "Neun", "Zehn", "Bube", "Dame", "König", "Ass", "Zahl", "Bild")
@@ -5761,9 +5880,10 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             farbe = random.randint(0,5)
             endung2 = endungen2[wert] if farbe > 3 else ""
             endung3 = "n" if wert == 4 else ""
-            variable = (farben[farbe], werte[wert], endungen1[wert],endung2,endung3)
+            variable = [farben[farbe], werte[wert], endungen1[wert],endung2,endung3]
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
+            pro_text = "Kartenspiel:" + frage.format(*variable)
             typ2=1
             if typ2 == 1:
                 text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
@@ -5780,7 +5900,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             hilfe_id = 120
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen."
         # 2-stufige Versuche mit Zurücklegen
-        elif typ == 13:
+        elif typ == 13:                                 # Münzen
             parameter['object'] = 'grafik/muenzwurf.jpg'
             anzahl_dict = {2: "zweimal", 3: "dreimal"}
             anzahl = random.randint(2,3)
@@ -5790,19 +5910,87 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             variable = [zufall, anzahl_dict[anzahl], zufall_dict[zufall]]
             anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
             frage= "P({0};{0})="
+            pro_text = "P: 2*gleicher Münzwurf" 
             nenner = 2**anzahl 
             lsg=["1/"+str(nenner)]   
-            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?" 
+            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?"
+            pro_text = "Münzwurf" + str(anzahl) + " Würfe" 
             hilfe_id = 1
             hilfe="Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten ... Ereignis multiplizieren<br>(Gib das Ergebnis am Besten als Bruch an)."
-
-
-        else:
-                pass
-        hilfe = hilfe.format(*variable)
-        #print(hilfe)
-        protokoll = pro_text.format(*variable)
-
+        elif typ == 14:                                 # Würfel
+            zufall = random.randint(1,6)
+            variable = [zufall]
+            text="Wie groß ist die Wahrscheinlichkeit mit einem Würfel zweimal eine '{}' zu würfeln?"
+            pro_text = "P: 2*gleiche Zahl würfeln" 
+            frage= "P({0};{0})="
+            lsg=["1/36"]
+            hilfe_id = 140
+            hilfe = "Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten Wurf multiplizieren (Am Besten als Bruch)."	
+        elif typ == 15:                                 # Pasch
+            text="Wie groß ist die Wahrscheinlichkeit mit zwei Würfeln einen Pasch zu würfeln?" 
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/2wuerfel.jpg', 'breite': 300}
+            pro_text = frage = "P(Pasch)="
+            anmerkung = "(Pasch = zweimal die gleiche Augenzahl)"
+            lsg=["6/36"]
+            hilfe_id = 150
+            hilfe = "Am einfachsten überlegst du, wieviele Möglichkeiten es insgesamt gibt und wieviele davon ein Pasch darstellen (Am Besten als Bruch)."	
+        elif typ == 16:                                 # Kirschen
+            zufall = random.randint(1,4)*10
+            variable = [zufall]
+            text = "Die Wahrscheinlichkeit, dass in einer Kirsche in diesem  Korb ein Wurm ist, beträgt {}%. Wie groß ist die Wahrscheinlichkeit, dass zwei Kirschen, die du aus dem Korb nimmst, verwurmt sind?" 
+            parameter = {'name': 'core/grafik.html', 'object': 'grafik/kirschen.jpg', 'breite': 200}
+            pro_text = frage = "P(2 Kirschen mit Würmern)="		 
+            lsg = [str(int(zufall*zufall/100))+"/100"]
+            hilfe_id = 160
+            hilfe = "Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeit mit sich selbst multiplizieren.<br>Dazu musst du den Prozentwert zunächst in den entsprechenden Bruch oder eine Kommazahl umwandeln."	
+        elif typ == 17:                                 # Socken
+            weiss = random.randint(2,5)  
+            schwarz = random.randint(2,5)
+            farbe = ["weiß", "schwarz"]
+            anzahl = [weiss, schwarz]
+            zufall = random.randint(0,1)
+            gesucht = farbe[zufall]    
+            variable = [weiss, schwarz, gesucht]
+            text="In der Sockenschublade liegen {0} weiße Socken und {1} schwarze Socken.<br>Wie groß ist die Wahrscheinlichkeit im Dunkeln ein Paar {2}e Socken herauszuziehen?"
+            frage = "P({2},{2})="
+            pro_text = "Socken: " + frage.format(*variable)
+            zaehler = anzahl[zufall]*(anzahl[zufall]-1)
+            nenner = (weiss+schwarz)*((weiss+schwarz)-1)	 
+            lsg = [str(zaehler)+"/"+str(nenner)]
+            hilfe_id = 170
+            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Beim ersten Socken hat man {} Möglichkeiten, beim zweiten Socken nur noch {}.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch!"
+        elif typ == 18:                                 # Urne 2 Kugeln
+            farben = ['blue','red','white']
+            color_dict = {'white':'weiß','red': 'rot', 'blue': 'blau'}
+            rot = random.randint(2,4)
+            weiss = (9-rot)
+            for m in range(rot-1):
+                farben.append('red',)
+            for m in range (weiss-1):
+                farben.append('white',)
+            zufall = random.randint(1,2)
+            if zufall == 1:
+                zaehler = rot*(rot-1)
+            else:
+                zaehler = (weiss)*(weiss-1)
+            gesucht = farben[zufall]
+            variable = [rot, weiss, color_dict[gesucht]]  
+            random.shuffle(farben)
+            kugeln = []
+            for n in range(10):
+                x = 215 + (n%5)*30 + n//5*5
+                y = 145 - n//5*29
+                farbe = farben[n]
+                kugel = (farbe,x,y)
+                kugeln.append(kugel)
+                n +=1
+            parameter = {'name': 'svg/stochastik.svg', 'object': 'urne', 'center_x': 200, 'center_y':160, 'kugeln': kugeln}
+            text="In einer Urne befinden sich eine blaue, {0} rote und {1} weiße Kugeln.<br>Wie groß ist die Wahrscheinlichkeit zwei {2}e Kugeln zu ziehen?" 
+            pro_text = "Urne mit {0} und {1} Kugeln"
+            anmerkung = "(Ohne Zurücklegen)"
+            lsg = [str(zaehler)+"/90"] 
+            hilfe_id = 180
+            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Bei der ersten Kugel hat man ? Möglichkeiten, bei der zweiten Kugel eine weniger.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch!"
         if typ > 7:
             parser = Parser()
             zahl = (parser.evaluate(lsg[0],{}))
@@ -5812,9 +6000,10 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 lsg.append(format_zahl(zahl,2))
                 lsg.append(format_zahl(zahl*100,0)+"%")                        
             lsg.append("indiv_0")
+        print("Typ: ",typ)
+        print(hilfe.format(*variable))
         print(lsg)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
-
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -6393,7 +6582,7 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
-    if wert != None:    #Beim Kürzen ist nicht der Zahlenwert wichtig, die Eingabe muss auch die geanu richtige Länge haben, daher wird diese Eingabe z.B. als string ausgewertet und erg=None                                 
+    if wert != None:                                     
         if  decimal.Decimal(eingabe) == wert:
             return 1, ""
         #return abs(given - wert) < decimal.Decimal('0.001') <- das würde man benötigen um Rundungsfehler von Python auszugleichen, ich nutze aber eigentlich nur Ganzahlen
@@ -6440,10 +6629,12 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
             for loe in (lsg):
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
+                        print("D")
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                             punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
                             return punkte, rueckmeldung
+                        print("E")
                         return 1, ""
                 except:
                     pass
