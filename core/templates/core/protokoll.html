@@ -80,7 +80,7 @@
                 </td>
                 <td>{{zeile.kategorie.name }} <br>({{zeile.typ}})</td>
                 <td>{{zeile.aufgnr}} </td>
-                {% if zeile.pro_text  %}
+                {% if zeile.pro_text != ""  %}
                     <td>{{ zeile.pro_text}}</td>
                 {% else %}
                     <td>{{zeile.text}}</td>
