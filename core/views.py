@@ -4242,7 +4242,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
                     parser = Parser()
                     try:
                         zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
-                        print("Zahl: ",zahl)
                         if float(loe) == zahl:
                             return 1, ""
                         else:
@@ -4619,7 +4618,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             lsg.append((zahl))
             lsg.append("indiv_2")                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird 
         variable.extend(hilfe_text)
-        print(typ, ": ",lsg)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
@@ -5418,15 +5416,23 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
 
 def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
-        typ_anf = -1
-        typ_end = 18
+        typ_anf = 0
+        typ_end = 12
+        if stufe%2 == 1:
+            typ_anf = -1
+        if jg > 8 or stufe > 24 or "mit" in optionen:
+            typ_end = 18
         return typ_anf, typ_end
     elif eingabe != "": 
-        if typ > 7:                                                                                                        
-            parser = Parser()
-            if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
-                return 1, ""
-            else:
+        if typ > 7: 
+            try:                                                                                         
+                parser = Parser()
+                eingabe = eingabe.replace(",",".")
+                if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
+                    return 1, ""
+                else:
+                    return -1, ""
+            except:
                 return -1, ""
         elif typ == 0:
             if "{" in eingabe or "(" in eingabe:
@@ -5443,7 +5449,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         else:
             return -1, ""
     else:                                                                            
-        typ = random.randint(typ_anf, typ_end) 
+        typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5682,10 +5688,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " 
         elif typ == 6:                                  # Händeschütteln
             titel="Kombinationen"
-            if stufe%2 == 1:		
-                zufall = random.randint(3,5)
-            else:
-                zufall = random.randint(3,4)
+            zufall = random.randint(3,5)
             variable = [zufall]	
             text = "{} Personen begegnen sich. Jeder schüttelt jedem die Hand.<br>Wie oft werden Hände geschüttelt"
             pro_text = "Händeschütteln {} Personen"
@@ -5697,7 +5700,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 parameter = {'name': 'core/grafik.html', 'object': 'grafik/haende5.jpg', 'breite': 300}
             einheit = "Mal"
             erg = 0
-            for n in range(zufall+1):
+            for n in range(zufall):
                 erg += n
             lsg = [str(erg)]
             hilfe_id = 60
@@ -5909,8 +5912,12 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             zufall = random.choice(["Z", "K"]) 
             variable = [zufall, anzahl_dict[anzahl], zufall_dict[zufall]]
             anmerkung = "Dass die Münze auf dem Rand stehen bleiben kann, vernachlässigen wir." 
-            frage= "P({0};{0})="
-            pro_text = "P: 2*gleicher Münzwurf" 
+            if anzahl == 2:
+                frage= "P({0};{0})="
+                pro_text = "P: 2*gleicher Münzwurf"
+            else:
+                frage= "P({0};{0};{0})="
+                pro_text = "P: 3*gleicher Münzwurf"                 
             nenner = 2**anzahl 
             lsg=["1/"+str(nenner)]   
             text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?"
@@ -6616,7 +6623,6 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 parser = Parser()
                 try:
                     zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
-                    print("Zahl: ",zahl)
                     if round(zahl,3) == round((lsg[1]),3):
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2':                   
                                 punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
@@ -6629,12 +6635,10 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
             for loe in (lsg):
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
-                        print("D")
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                             punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
                             return punkte, rueckmeldung
-                        print("E")
                         return 1, ""
                 except:
                     pass
