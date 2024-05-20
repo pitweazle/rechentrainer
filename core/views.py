@@ -5634,6 +5634,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 pro_text = " Durchschnittstemperatur: {3}"
                 einheit = "°"
                 variable = ["Temperaturen","°, ".join(temperaturen[:-1]),temperaturen[-1],temperaturen]
+                hilfe_id = 31
             else:
                 noten = []
                 summe = 0
@@ -5648,6 +5649,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 pro_text = "Durchschnittsnote: {3}"
                 frage = "Durchschnittsnote  "
                 variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
+                hilfe_id = 32
         elif typ == 4:                                  # Zahlenschloss
             titel = "Permutationen"
             anzahl = random.randint(3,4)
@@ -5685,7 +5687,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             erg = ergebnis[zufall]
             lsg = [str(erg)]
             hilfe_id = 50
-            hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren: " 
+            hilfe ="Für den ersten Buchstaben gibt es {2} Möglichkeiten, für den zweiten gibt es {2}-1 Möglichkeiten usw.. Dann muss man die Möglichkeiten multiplizieren." 
         elif typ == 6:                                  # Händeschütteln
             titel="Kombinationen"
             zufall = random.randint(3,5)
@@ -5869,8 +5871,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 pro_text = "Würfel: " + frage.format(*variable)
             else:
                 pro_text = "Münzwurf: " + frage.format(*variable)
-               
-            hilfe_id = 11
+            hilfe_id = 110
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
         elif typ == 12:                                 # Karten
             typ2 = random.randint(1,2)
@@ -5922,7 +5923,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg=["1/"+str(nenner)]   
             text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?"
             pro_text = "Münzwurf" + str(anzahl) + " Würfe" 
-            hilfe_id = 1
+            hilfe_id = 130
             hilfe="Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten ... Ereignis multiplizieren<br>(Gib das Ergebnis am Besten als Bruch an)."
         elif typ == 14:                                 # Würfel
             zufall = random.randint(1,6)
@@ -6007,9 +6008,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 lsg.append(format_zahl(zahl,2))
                 lsg.append(format_zahl(zahl*100,0)+"%")                        
             lsg.append("indiv_0")
-        print("Typ: ",typ)
-        print(hilfe.format(*variable))
-        print(lsg)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
