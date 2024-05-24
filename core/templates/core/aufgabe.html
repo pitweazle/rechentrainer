@@ -66,8 +66,10 @@
         {% if "tab" in parameter.name %}
             <fieldset>
             <table>
-                <th>{{parameter.titel_x}}</th>
-                <th>{{parameter.titel_y}}</th>
+                <tr>
+                    <th>{{parameter.titel_x}}</th>
+                    <th>{{parameter.titel_y}}</th>
+                </tr>
 
                 {% if lsg %}
                     <tr>
@@ -91,6 +93,7 @@
                         <td>{{parameter.y4}}</td>                                                                    
                     </tr>
                 {% else %}
+                    {% comment %} <tr style= "line-height: 2px;"><td colspan="2"><hr></td></tr> {% endcomment %}
                     {% if "term" in parameter.name %}
                         <tr>
                             <td>{{parameter.x0}}</td>
@@ -106,7 +109,7 @@
                             <td>{{parameter.y0}}</td>                                                                       
                         </tr>
                         <tr>
-                            <td>{{parameter.x1}}</td>
+                            <td>{{parameter.x1}}</td>s
                             <td>{{parameter.y1}}</td>                                                                    
                         </tr>
                     {% endif %}
