@@ -4913,8 +4913,8 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                         return 0, "Den Term kann man weiter zusammenfassen."         
             else:
                 return -1, rueckmeldung 
-    else:  
-        if aufgnr == 1 and typ_end < 8:
+    else: 
+        if aufgnr == 1 and typ_anf != 7:
             typ = 1 
         elif typ_anf == 7:
             typ = random.randint(typ_anf, typ_end) 
@@ -6010,7 +6010,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
-
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -6026,18 +6025,16 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         else:
             typ = random.randint(2, typ_end) 
         typ2 = 0
-        titel = "Terme" 
+        titel = "Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
         variable = []
         hilfe_id = 0
         erg = None
-        buchstaben_liste = ["a","b","c","","x","y", "z", "", "u", "v","w",""]
-        lsg_koeff = [0,0,0,0,0,0,0,0,0,0,0,0]
         parameter = {'name':'normal'}
         if typ == 1:                                                                            # Wertetabelle'
-            text = "Berechne jeweils den Wert des Termes"
-            zahlen = [0,1,2,-1, 0.5]
+            text = "Berechne die Funktionswerte"
+            zahlen = [0,1,2,3]
             lsg = [""]
             absolut = koeffizient = 0
             while absolut == 0:
@@ -6053,13 +6050,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_werte = {}
             y_farbe = {}
             lsg = []
-            for n in range (0,5):
+            for n in range (0,3):
                 x_werte["x" + str(n)] = zahlen[n]
                 y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
                 #y_farbe["color" + str(n)] = "leer"
                 lsg.append(str(zahlen[n]*koeffizient+absolut))
             lsg = [lsg]
-            parameter = {'name': 'tabelle', 'titel_x': 'x', 'titel_y': term}
+            parameter = {'name': 'tab_term', 'titel_x': 'x', 'titel_y': "y = " + term}
             parameter.update(x_werte)
             parameter.update(y_werte)
             parameter.update(y_farbe)
