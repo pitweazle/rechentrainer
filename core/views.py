@@ -6010,6 +6010,61 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+
+def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 1
+
+        return typ_anf, typ_end
+
+    else:  
+        if aufgnr == 1 and typ_end < 8:
+            typ = 1 
+        elif typ_anf == 7:
+            typ = random.randint(typ_anf, typ_end) 
+        else:
+            typ = random.randint(2, typ_end) 
+        typ2 = 0
+        titel = "Terme" 
+        text = "default{}"
+        hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
+        variable = []
+        hilfe_id = 0
+        erg = None
+        buchstaben_liste = ["a","b","c","","x","y", "z", "", "u", "v","w",""]
+        lsg_koeff = [0,0,0,0,0,0,0,0,0,0,0,0]
+        parameter = {'name':'normal'}
+        if typ == 1:                                                                            # Wertetabelle'
+            text = "Berechne jeweils den Wert des Termes"
+            zahlen = [0,1,2,-1, 0.5]
+            lsg = [""]
+            absolut = koeffizient = 0
+            while absolut == 0:
+                absolut = random.randint(-4,4)
+            while koeffizient == 0:
+                if stufe%2 == 1:
+                    koeffizient = random.randint(-4,4)
+                else:
+                    koeffizient = random.randint(1,5)
+            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+            pro_text = "Termbelegung: " + term
+            x_werte = {}
+            y_werte = {}
+            y_farbe = {}
+            lsg = []
+            for n in range (0,5):
+                x_werte["x" + str(n)] = zahlen[n]
+                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+                #y_farbe["color" + str(n)] = "leer"
+                lsg.append(str(zahlen[n]*koeffizient+absolut))
+            lsg = [lsg]
+            parameter = {'name': 'tabelle', 'titel_x': 'x', 'titel_y': term}
+            parameter.update(x_werte)
+            parameter.update(y_werte)
+            parameter.update(y_farbe)
+        return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -6579,7 +6634,7 @@ def hilfe(req, zaehler_id, protokoll_id):
 AUFGABEN = {
     1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 8: zahlen, 9: malget10, 10: runden, 
     11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 
-    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit}
+    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
