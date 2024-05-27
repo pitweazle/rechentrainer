@@ -91,7 +91,7 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
             text = frage = "{} - {} ="
             variable = [str(zahl1), str(zahl2)]
             hilfe_id = 1
-            lsg = str(zahl1 + zahl2)
+            lsg = str(erg)
             titel = "Subtrahieren"
         elif typ == 2:                                              #ganze Zahlen
             exp = random.randint(2,4)
@@ -6016,14 +6016,14 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         typ_end = 1
 
         return typ_anf, typ_end
-
     else:  
-        if aufgnr == 1 and typ_end < 8:
-            typ = 1 
-        elif typ_anf == 7:
-            typ = random.randint(typ_anf, typ_end) 
-        else:
-            typ = random.randint(2, typ_end) 
+        # if aufgnr == 1 and typ_end < 8:
+        #     typ = 1 
+        # elif typ_anf == 7:
+        #     typ = random.randint(typ_anf, typ_end) 
+        # else:
+        #     typ = random.randint(2, typ_end) 
+        typ=1
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6032,9 +6032,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1:                                                                            # Wertetabelle'
+        if typ == 1: 
+            print("OK")                                                                           # Wertetabelle'
             text = "Berechne die Funktionswerte"
-            zahlen = [0,1,2,3]
+            zahlen = [0,1,2,-1]
             lsg = [""]
             absolut = koeffizient = 0
             while absolut == 0:
@@ -6050,7 +6051,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_werte = {}
             y_farbe = {}
             lsg = []
-            for n in range (0,3):
+            for n in range (0,4):
                 x_werte["x" + str(n)] = zahlen[n]
                 y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
                 #y_farbe["color" + str(n)] = "leer"
