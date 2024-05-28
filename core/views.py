@@ -400,12 +400,12 @@ def sachaufgaben(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
         sachaufgaben = Sachaufgabe.objects
         max = sachaufgaben.aggregate(Max('lfd_nr'))['lfd_nr__max']
         if typ > max:
-            typ=1   
+            typ = 1   
         aufgabe = Sachaufgabe.objects.get(lfd_nr = typ)
         while aufgabe.ab_jg > jg:
             typ +=1
             if typ > max:
-                typ=1                  
+                typ = 1                  
             aufgabe = Sachaufgabe.objects.get(lfd_nr = typ)
         text = aufgabe.text
         aufgabe = Sachaufgabe.objects.get(lfd_nr = typ)
@@ -492,7 +492,6 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end+stufe%2)
-        typ=1
         typ2 = 0 
         hilfe_id = 0
         anm = ""
@@ -1176,7 +1175,7 @@ def sub_dreiecke(typ):
     winkel = ""
     rotate = ""
     if typ == 10 or typ == 7:                                               #Benennung von Dreiecken
-        typ=5
+        #typ=5
         typ2 = random.randint(1,5)
         if typ2 == 1:                                                         #gleichschenkliges Dreieck
             pro_text = "Dreieck mit zwei gleich langen Seiten?"
@@ -3619,7 +3618,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 return 0, "Da stimmt was nicht - du musst das Ergebnis entweder als Bruch (z.B. 1/2) oder als gemischte Zahl (z.B. 1 1/2) eingeben oder u.U. als ganze Zahl."
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=2
+        #typ=2
         if stufe%2 == 1:
             typ2 = 1
         else:
