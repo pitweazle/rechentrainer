@@ -6031,8 +6031,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1: 
-            print("OK")                                                                           # Wertetabelle'
+        if typ == 1:                                                                             # Wertetabelle'
             text = "Berechne die Funktionswerte"
             zahlen = [0,1,2,-1]
             lsg = [""]

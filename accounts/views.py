@@ -275,11 +275,9 @@ def neues_halbjahr(req):
 
 #für Schüler
 def profil(req):
-    print(req.user)
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
         print("Lehrer")
         return redirect('profil_lehrer')
-    print("Schüler")
     try:
         schueler = get_object_or_404(Profil, user=req.user)
     except:
