@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="de">
-<header>
-    <div class="navbar">
-        <a href="{% url 'meine_gruppen' %}">zurück</a>        
-        <a>{{titel}}</a>
-    </div> 
-</header>
 
 <head>       
     <title>Rechentrainer im Web</title>
@@ -16,13 +10,21 @@
         body {padding: 1rem;}
     </style>
 </head>
+
+<header>
+    <div class="navbar">
+        <a href="{% url 'meine_gruppen' %}">zurück</a>        
+        <a>{{titel}}</a>
+    </div> 
+</header>
+
 {% block content %}
 
-{% if nachricht %}
-    <p style="text-align: left; background-color: yellow; color: red;"> {{nachricht}}</p>
-{% endif %}
+    {% if nachricht %}
+        <p style="text-align: left; background-color: yellow; color: red;"> {{nachricht}}</p>
+    {% endif %}
 
-<h2> Accounts zusammenführen und löschen</h2>
+    <h2> Accounts zusammenführen und löschen</h2>
     <table>
         <thead>
             <tr>
@@ -72,4 +74,4 @@
     </button>
 
 {% endblock %}
-</html>
+

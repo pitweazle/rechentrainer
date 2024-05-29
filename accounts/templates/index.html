@@ -1,252 +1,251 @@
 {% extends 'layout.html' %}   
 {% load static %}
 {% block css_files %}
-  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include 'includes/header.html' %} 
-
-<body>
-<p>Beim Rechentrainer sind {{anz_angemeldet}} Benutzer angemeldet und haben {{anz_aufg}} Aufgaben gerechnet!</p>    
-<div class="container">
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <div id="main">     
-        <h2> Willkommen zur RechentrainerApp!</h2>
-            <div id="wrapper">
-                <div id="spalte_links">
-                    <!--für Lehrer geht es hier zu den Lerngruppen-->
-                    {% if lehrer %}
-                    <details>
-                        <summary>                
-                            <a href="{% url 'meine_gruppen' %}">hier geht es zu den Lerngruppen</a>
-                        </summary>
-                    {% endif %}
-                    </details>        
-                    <!--hier geht es zu den Aufgaben-->
-                    <details>
-                        <summary>
-                            {% if user.is_authenticated %}
-                                <a href="{% url 'uebersicht' %}">hier geht es zu den Aufgaben</a>
-                            {% else %}
-                                <a href="{% url 'anmelden' %}">Anmelden</a>
+    {% include 'includes/header.html' %} 
+    <body>
+        <p>Beim Rechentrainer sind {{anz_angemeldet}} Benutzer angemeldet und haben {{anz_aufg}} Aufgaben gerechnet!</p>    
+        <div class="container">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <div id="main">     
+                <h2> Willkommen zur RechentrainerApp!</h2>
+                    <div id="wrapper">
+                        <div id="spalte_links">
+                            <!--für Lehrer geht es hier zu den Lerngruppen-->
+                            {% if lehrer %}
+                                <details>
+                                    <summary>                
+                                        <a href="{% url 'meine_gruppen' %}">hier geht es zu den Lerngruppen</a>
+                                    </summary>
+                                </details>        
                             {% endif %}
-                        </summary>
-                    </details>
-                    <!--hier geht es zu den Hinweisen für Schüler-->
-                    <details>
-                        {% if user.is_authenticated %}
-                            <summary>
-                                Gebrauchsanweisung:
-                            </summary>                        
-                            <p ><b>Das solltest du wissen:</b></p>
-                            <p>Wenn du auf <a href="{% url 'uebersicht' %}">"Aufgaben"</a> klickst, kannst du (zurzeit) zwischen 25 verschiedenen Kategorien wählen.</p>
-                            <p>Wenn du dich für ein Thema entschieden hast solltest du 10 Aufgaben am Stück rechnen. Der Rechentrainer zählt deine richtigen 
-                                und falschen Eingaben und berechnet den Fehlerquotienten.
-                                Wenn du 10% oder weniger Fehler machst, ist das Feld grün, wenn es weniger als 1/3 falschen Eingaben sind, ist es gelb, ansonsten rot.</p>
-                            <p>Wenn das Feld nicht grün ist, kannst du in der Spalte "Aufgaben ohne Fehler" sehen, wieviele Aufgaben du noch richtig lösen musst, 
-                                damit deine Fehler in dieser Kategorie gelöscht werden.<br>
-                                Du darfst dann aber nicht auf "Lösung" klicken und auch die Aufgaben nicht abbrechen. Sonst wird dieser Zähler wieder auf Null gesetzt.</p>
-                            <p>Seit Anfang 2024 vergibt der Rechentrainer Noten auf deine Arbeit. Wenn deine Lehrerin/dein Lehrer es nicht anders festgelegt hat, musst du pro Woche und Jahrgang 10 Aufgaben (also wenn du z.B. im Jahrgang 7 bist, sind das 70
-                                Aufgaben pro Woche) rechnen und das auch gleichmäßig auf die verscheidenen Aufgabenkategorien verteilt. Wieviele du gerechnet hast, wird als Prozentzahl angegeben. Dabei werden noch Fehler, Abbrechen und Klick auf "Lösung" abgezogen.
-                                Mehr als 110% kannst du nicht erreichen.</p>                               
-                            <p>Wenn du bei den Rechnungen eine Kommazahl eingeben willst und die Meldung "Enter a number" erscheint, dann musst du <b>anstelle eines Kommas einen Punkt eingeben</b>."</p>
-                            <p>Wenn deine Lehrerin/dein Lehrer deine Lerngruppe beim Rechentrainer angemeldet hat, 
-                            kann sie/er deine Arbeit kontrollieren. 
-                            Dazu musst du aber vorher in deinem <a href="{% url 'profil' %}">"Profil"</a> deine Lerngruppe suchen.</p>
-                        <p>Die Zähler werden zu Beginn jedes Halbjahres auf Null gesetzt. 
-                                Du kannst aber immer unter <a href="{% url 'protokoll' %}">"Protokoll"</a> sehen, 
-                                wie viele Aufgaben du heute, in einer Woche, im Schuljahr oder von Anfang an gerechnest hast.</p>
-                            <p>Und noch was: Die Aufgaben im Rechentrainer sind alle so konzipiert, dass man sie im Kopf rechnen kann. 
-                                Bei schwierigeren Aufgaben kannst du ein Blatt für Nebenrechnungen benutzen. 
-                                Aber übe das Kopfrechnen und schummele nicht! Du wirst sehen: Du wirst immer besser und kannst dann stolz auf dich sein."
-                            </p>
-                        {% else %}
-                        <summary>
-                            Für Schüler:
-                        </summary>
-                            <ul>                
-                                <li>Wollt ihr in Mathematik besser werden?</li>
-                                <li>Wollt ihr Kopfrechnen üben?</li>
-                                <li>    Wollt ihr für den nächsten Test üben?</li>
-                                <li>Habt ihr Angst, für den nächsten Test nicht genug geübt zu haben?</li>
-                                <li>Habt ihr das letzte Thema noch nicht gut genug verstanden?</li>
-                                <li>Habt ihr Probleme mit der Bruchrechnung oder der Umwandlung von Einheiten?</li>
-                                <li>Wollt ihr einen Überblick darüber, was ihr in Mathe könnt und was nicht (so gut)?</li>
-                                <li>Wollt ihr für den Mathewettbewerb, die Hauptschulprüfung oder die Realschulprüfung üben?</li>
-                            </ul>
-                            <p>Der Rechentrainer ist die Lösung! Mit ihm könnt ihr alle diese Ziele erreichen!<br>
-                            <br>
-                            <b>So funktioniert es:</b></p>
-                            <ul>                
-                                <li>Du registrierst dich <a href="/registrieren">hier</a>.</li>
-                                <li>Wenn du vorher schon mal sehen willst, wie das funktioniert - 
-                                    <a href="/film">hier gibt es einen Film zum Rechentrainer</a></li>
-                                <li>Wenn du dich registriert hast, findest du oben bei "Aufgaben" zurzeit 26 verschiedene Aufgabentypen.
-                                    <br>(Das werden mal mehr - insgesamt gibt es bald 35 verschiedene Aufgabentypen.
-                                    <br>Es fehlen noch die Aufgaben für das 9. und 10. Schuljahr. Die gibt es aber <a href="{% url 'weitere_aufgaben' %}">hier</a>)</li>
-                                <li>Je nach Schuljahr werden die Aufgaben immer schwieriger (Z.B. kommen ab der 7. Klasse bei <u>allen</u> Aufgabentypen Kommazahlen).</li>                
-                                <li>Der Schwierigkeitsgrad hängt auch von deiner Schulform ab (Z.B. Realschule oder Gymansium).</li>
-                                <li>Wenn du einen Aufgabentyp anklickst, kommen 10 zufällig erzeugte Aufgaben. Wenn du diese erledigt hast, kannst du eine andere Kategorie wählen.</li>
-                                <li>Du solltest jede Woche insgesamt, je abhängig von deinem Jahrgang, mindesten 50 - 100 Aufgaben rechnen.</li>
-                                <li>Alle Aufgaben sollst du im Kopf rechnen.</li>            
-                            </ul> 
-                            <p><b>Wenn du fleißig geübt hast, kannst du die Seite mit deinen gerechneten Aufgaben deinen Eltern und deinem Mathelehrer bzw. deiner Mathelehrerin zeigen.</b></p>
-                        {% endif %}
-                    </details>
-                    <!--hier geht es zu den Hinweisen für Lehrer-->
-                    {% if not user.is_authenticated or lehrer %}
-                        <details>
-                        {%if lehrer%}
-                            <summary>
-                                Hinweise für Lehrer:
-                            </summary>
-                            <p><b>Das sollten Lehrerinnen und Lehrer wissen:</b></p>
-                            <p>Zunächst mal sollten sie die Aufgaben des Rechentrainers ausprobieren.</p>
-                            <p>Im Unterschied zu den Schülerinnen und Schüler können Lehrerinnen und Lehrer
-                                Ihren Jahrgang und die Zuordnung zu einer Schulform/zu einem Leistungskurs ändern, sowie ihre Aufgaben löschen.
-                                Das geht im <a href="{% url 'profil' %}">Profil</a>.</p>
-                            <p>Dazu ist es wichtig, zu verstehen, dass der Schwierigkeitsgrad der Aufgaben von diesen Einstellungen abhängt. 
-                                Außerdem sollten Sie sich mit den <a href="{% url 'stufen' %}">Stufen</a> beschäftigen.</p>
-                            <p>Als Lehrerin bzw. Lehrer können Sie die Arbeiten ihrer Schülerinnen und Schüler kontrollieren. 
-                                Dazu muss unter <a href="{% url 'meine_gruppen' %}"> "meine Lerngruppen"</a> zunächst eine Lerngruppe festgelegt werden. 
-                                Dabei sollte der Lerngruppe ein aussagekräftiger Name gegeben werden, damit die Schülerinnen und Schüler ihre Lerngruppe am Namen erkennen können.<br>
-                                Anschließend müssen alle Schülerinnen und Schüler in ihrem Profil sich bei dieser Lerngruppe anmelden. Dazu müssen sie zunächst ihren Schulort und ihre Schule wählen,
-                                dann bekommen sie eine Auswahl der in dieser Schule angemeldeten Lehrerinnen und Lehrer und wählen dann besagte Lerngruppe. 
-                                Ab diesem Zeitpunkt können Sie deren Arbeiten kontrollieren.<br>
-                                Unter <a href="{% url 'meine_gruppen' %}"> "meine Lerngruppen"</a> können Sie im Zweifelsfalle auch die Daten der Schülerinnen und Schüler ändern, 
-                                falls diese ihren Namen falsch eingegeben haben oder ihren Kurs gewechselt haben - z.B. auf- oder abgestuft wurden.</p>  
-                            <p>Seit Anfang 2024 vergibt der Rechentrainer Noten.<br> Wenn es nicht anders festgelegt ist, müssen pro Woche und Jahrgang 10 Aufgaben (im Jahrgang 7 sind das z.B. 70
-                                Aufgaben pro Woche) gerechnet werden und das auch gleichmäßig auf die verschiedenen Aufgabenkategorien verteilt.<br>Wieviele jeweils gerechnet wurde, wird als Prozentzahl angegeben. 
-                                Dabei werden noch Fehler und Klick auf "Abbrechen" oder "Lösung" abgezogen. Mehr als 110% können nicht erreicht werden, damit die Schülerinnen und Schüler für eine gute Note möglichst alle Aufgabenkategorien bearbeiten 
-                                und nicht Lücken in einer Kategorie mit mehr Aufgaben in einer anderen ausgleichen können.<br>Die Anzahl der Wochenaufgaben kann auch für jede Lerngruppe individuell geändert werden. 
-                                Dazu muss man in der Übersicht der Lerngruppen bei der entsprechenden Lerngruppe auf "ändern" klicken - bei der Einstellung '0' sind es 10 pro Jahrgang - hier kann aber ein anderer Wert gewählt werden.<br>
-                                Die Noten werden in der Übersicht aber nur angezeigt, wenn "aktuelles Halbjahr" angewählt wurde und das Halbjahr schon soweit fortgeschritten ist, dass die Schülerinnen und Schüler bereits eine Eins erreichen könnten.</p>    
-                        {%else%}
-                            <summary>
-                                Für Lehrer:
-                            </summary>
-                            <ul>
-                                <li>"Die eierlegende Wollmilchsau des Mathematikunterrichts"</li>
-                                <li>Die Schülerinnen und Schüler vergessen das Gelernte in Mathematik nicht mehr.<br> Sie wiederholen Versäumtes selbstständig.<br> 
-                                    Auf Knopfdruck werden die Hausaufgaben kontrolliert und die Mathearbeit korrigiert sich selbst*. … das gibt es nicht? Doch!<br></li>
-                                <li>Jeder Mathematiklehrer kennt das Problem: Die Schülerinnen und Schüler vergessen vieles von dem, was sie gelernt haben gleich nach dem Test wieder 
-                                    und die Bruchrechnung, das Runden oder das Umwandeln von Einheiten muss immer wieder neu erklärt und auch geübt werden.</li>
-                            </ul>
-                            <p><b>Der Rechentrainer ist die Lösung!</b></p>
-                            <ul>
-                                <li>Den Rechentrainer gibt es schon seit 2007. Er wurde von mir (Peter Doll) 25 Jahre lang weiterentwickelt.</li> 
-                                <li>Er ist preisgekrönt (2. Platz im Innovationswettbewerb der Deutschen Telekom Stiftung 2011) <a href="{% url 'stimmen' %}">und viel gelobt</a>.</li>
-                                <li><a href="/film">Hier gibt es einen Film dazu</a></li>
-                                <li>Die App wird ständig weiterentwickelt. Zurzeit gibt es 26 Aufgabenkategorien, insgesamt sind 35 Kategorien geplant (Die fehlenden gibt es aber schon <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hier</a>).</li>
-                                <li>Mit den 35 Aufgabenkategorien werden alle Themen bis zum mittleren Bildungsabschluss abgedeckt.</li>
-                            </ul>
-                            <p><b>So funktioniert es:</b></p>
-                            <ul>
-                                <li>In der IGS-Kelsterbach haben wir gute Erfahrungen damit gemacht, dass unsere Schülerinnen und Schüler 100 Aufgaben pro Woche bearbeiten müssen.</li>
-                                <li>Nach der Auswahl einer Aufgabenkategorie müssen 10 Aufgaben zu dem Thema gelöst werden. Diese werden zufällig aus verschiedenen Unterkategorien ausgewählt.</li>
-                                <li>Der Schwierigkeitsgrad richtet sich bei allen Aufgaben nach Jahrgang und Schulart.</li>
-                                <li>Die Arbeitsergebnisse werden übersichtlich auf einer Seite dargestellt.</li>
-                                <li>Um die RechentrainerApp zu nutzen muss man sich auf dieser Seite registrieren.</li>
-                                <li>Auch Lehrer müssen einen Jahrgang und eine Schulart wählen, diese Angaben können einfach geändert werden.</li>
-                                <li>Lehrer können sich nach der Registrierung als Lehrer einstufen lassen. Dazu müssen sie eine aussagekräftige E-Mail an die im Impressum angegebene Adresse schicken - 
-                                mit dem Schulort und dem Namen der Schule. Anschließend können sie dann die Arbeit ihrer Schülerinnen und Schüler online kontrolieren.</li> 
-                            </ul>
-                        {%endif%}
-                        </details>
-                    {%endif%}
-                    <!--hier gibt es Hinweise für Eltern-->
-                    {% if not user.is_authenticated %}
-                        <details>
-                            <summary >
-                                Für Eltern:
-                            </summary>
-                                <ul>                
-                                    <li>Suchen Sie nach Mathematik-Übungsaufgaben für Ihre Tochter oder Ihren Sohn?</li>
-                                    <li>Wollen Sie keine/n Nachilfelehrer/in beauftragen?</li>
-                                    <li>Finden Sie, dass ihre Tochter/Ihr Sohn besser im Kopfrechnen werden sollte?</li>
-                                    <li>Vergisst Ihre Tochter/Ihr Sohn nach dem Test das Gelernte wieder?</li>
-                                    <li>Soll ihr Sohn/Ihre Tochter für den Mathewettbewerb, die Hauptschulprüfung oder die Realschulprüfung üben?</li>
-                                    <li>Wenn das Üben Ihrer Tochter/Ihrem Sohn Spaß machen würde, wäre es auch gut?</li>
-                                    <li>Ihre Tochter/Ihr Sohn möchte lieber mit dem Smartphone oder dem Tablet üben als mit dem Mathebuch oder Übungsheften?</li>
-                                    <li>Sie wollen auch keine Zeit damit verbringen die Aufgaben zu kontrollieren?</li>
-                                </ul>
-                                <p>Der Rechentrainer ist die Lösung!<br>
-                                <br>
-                                <b>So funktioniert es:</b></p>
-                                <ul>                
-                                    <li>Sie müssen Ihre Tochter/Ihren Sohn <a href="/registrieren">hier registrieren</a>.</li>
-                                    <li>Wenn Sie den Rechentrainer zunächst einmal selbst ausprobieren wollen, können Sie sich auch zunächste einmal selbst mit einem Fantasienamen anmelden 
-                                    und Ihren Account später unter "mein Profil" wieder komplett löschen.</li>
-                                    <li>Er/sie sollte jede Woche mindesten 100 Aufgaben bearbeiten.</li>
-                                    <li>Dabei sollte er/sie alle angezeigten Aufgaben üben und nicht nur die, die er/sie gerne macht.</li>
-                                    <li>Zu den Aufgaben gibt es meistens eine individuelle Hilfe.</li>                
-                                    <li>Der Schwierigkeitsgrad hängt vom Jahrgang und der Schulform ab (Z.B. Realschule oder Gymansium).</li>
-                                    <li>Alle Aufgaben sollen im Kopf gerechnet werden!</li>        
-                                    <li>Sie können auf einer Übersichtsseite jederzeit mit einem Blick feststellen, was Ihre Tochter/Ihr Sohn geübt hat und was gut und was nicht so gut klappt.<br>
-                                    Hier gibt es eine Erklärung worauf man dabei achten sollte: <a href="{% static "medien/liebe_eltern.pdf" %}">Hinweise für Eltern</a></li>
-                                    <li><a href="/film">Hier gibt es einen Film dazu</a></li>
-                                </ul> 
-                            </summary>
-                        </details>
-                    {% endif %}
-                    <!--9. und 10. Schuljahr-->
-                    <details>
-                        <summary>
-                            <a href="{% url 'weitere_aufgaben' %}">weitere Aufgaben</a>
-                        </summary>
-                    </details>
-                    <!--Lernkontrollen-->
-                    {% if not user.is_authenticated or lehrer %}
-                        <details>
-                            <summary>
-                                <a href="{% url 'lernkontrollen' %}">Lernkontrollen mit dem Rechentrainer</a>
-                            </summary>
-                        </details>
-                    {% endif %}
-                    <!--Datenschutz-->
-                    <details>
-                        <summary id="datenschutz">
-                            Eure Daten:
-                        </summary>
-                        <p><b>Wenn du noch jünger als 16 bist, musst du diesen Text deinen Eltern zeigen und diese müssen ihm zustimmen.</b></p>
-                        <p><b>Der Rechentrainer funktioniert nur, wenn du dich beim Rechentrainer registrierst und Cookies zulässt.</b>
-                        <p>Dazu musst du mit einem beliebigen Nutzernamen einen Account anlegen und ein Passwort festlegen.</p> 
-                        <p>Dieses wird verschlüsselt gespeichert, <b>das Passwort kann niemand auslesen</b>, auch der Administrator des Rechentrainers nicht.
-                            Daher ist es sinnvoll, dass du eine E-Mailadresse angibst. Wenn du dein Passwort vergisst, kann dir per E-Mail eine Anleitung geschickt werden, mit der du ein neues Passwort erstellen kannst.</p>
-                        <p>Wenn du Aufgaben rechnest, muss der Rechentrainer wissen, zu welcher Aufgabe deine Eingabe gehört. 
-                            Daher schickt der Rechentrainer bei deiner Registrierung ein Cookie an dein Gerät (Smartphon, Tablett oder Computer).
-                            Dieses ist ein zufällige Buchstaben- und Zahlenfolge, diese wird auf deinem Gerät gespeichert und wenn du auf eine Frage antwortest oder dich neu einloggst, erkennt der Rechentrainer, dass du das bist. </p>
-                        <p><b>Weitere Cookies gibt es nicht, der Rechentrainer gibt deine Daten nicht weiter und es gibt auch keine Werbung.</b></p>
-                        <p>Die Aufgaben des Rechentrainer sind immer auf deinen Jahrgang und deine Schulart angepasst. In der 5. und 6. Klasse musst du z.B. 
-                            nicht mit Kommazahlen rechnen, ab der 7. Klasse kommen überall Aufgaben mit Kommazahlen vor.
-                            Als Schülerinnen oder Schüler einer Hauptschule, eines G-Kurses oder C-Kurses sind die Aufgaben oft einfacher und die Hilfen ausführlicher. Als Förderschüler kannst du den Schwierigkeitsgrad immer aussuchen. 
-                            <b>Daher musst du deinen Jahrgang und die Schulform angeben</b>.</p>
-                        <p>Wenn du den Rechentrainer für die Schule nutzt, kann deine Lehrerin/dein Lehrer eine Lerngruppe anlegen, du kannst dich dort anmelden und <b>
-                            dann kann deine Lehrerin/dein Lehrer deine Arbeit kontrollieren</b>.<br>
-                            <b>Dazu musst du deinen Namen und deine Klasse angeben.</b>
-                            Wenn du nicht willst, dass dein Lehrer/deine Lehrerin deine Arbeit kontrollieren kann, kannst du in <a href="{% url 'profil' %}">deinem Profil</a>, die Lerngruppe abwählen.
-                            Du könntest aber auch einen Fantasienamen eingeben, dann kannst du aber nicht beweisen, dass du die Aufgaben gerechnet hast. 
-                            Vielleicht willst du ja auch deinen Eltern zeigen, dass du fleißig für Mathematik geübt hast. 
-                            <b>Den Namen, denn du eingibst kannst du anschließend nicht mehr ändern</b> (Deine Lehrerin/dein Lehrer kann es, wenn du bei einer Lerngruppe angemeldet bist.).
-                        </p>
-                        <p><a href="{% url 'datenschutz' %}">Hier gibt es noch ausführlichere Informationen.</a></p>
-                        <p><a href="{% url 'account_loeschen' %}">Hier kannst du deinen Account und alle Daten löschen.</a></p>
-                    </details>
-                </div>
-                <div id="spalte_rechts">
-                    <h2>Update vom 7.1.24:</h2>
-                    <p>Der Rechentrainer gibt euch Noten auf eure Arbeit.<br>Um eine gute Note zu erreichen, müsst ihr 10 Aufgaben pro Jahrgang und Woche erledigen (Das heißt z.B. im Jahrgang 7 70 Aufgaben pro Woche.)<br>... und das schön verteilt auf alle Aufgabenarten. .</p>
-                </div>
+                            <!--hier geht es zu den Aufgaben-->
+                            <details>
+                                <summary>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'uebersicht' %}">hier geht es zu den Aufgaben</a>
+                                    {% else %}
+                                        <a href="{% url 'anmelden' %}">Anmelden</a>
+                                    {% endif %}
+                                </summary>
+                            </details>
+                            <!--hier geht es zu den Hinweisen für Schüler-->
+                            <details>
+                                {% if user.is_authenticated %}
+                                    <summary>
+                                        Gebrauchsanweisung:
+                                    </summary>                        
+                                    <p ><b>Das solltest du wissen:</b></p>
+                                    <p>Wenn du auf <a href="{% url 'uebersicht' %}">"Aufgaben"</a> klickst, kannst du (zurzeit) zwischen 25 verschiedenen Kategorien wählen.</p>
+                                    <p>Wenn du dich für ein Thema entschieden hast solltest du 10 Aufgaben am Stück rechnen. Der Rechentrainer zählt deine richtigen 
+                                        und falschen Eingaben und berechnet den Fehlerquotienten.
+                                        Wenn du 10% oder weniger Fehler machst, ist das Feld grün, wenn es weniger als 1/3 falschen Eingaben sind, ist es gelb, ansonsten rot.</p>
+                                    <p>Wenn das Feld nicht grün ist, kannst du in der Spalte "Aufgaben ohne Fehler" sehen, wieviele Aufgaben du noch richtig lösen musst, 
+                                        damit deine Fehler in dieser Kategorie gelöscht werden.<br>
+                                        Du darfst dann aber nicht auf "Lösung" klicken und auch die Aufgaben nicht abbrechen. Sonst wird dieser Zähler wieder auf Null gesetzt.</p>
+                                    <p>Seit Anfang 2024 vergibt der Rechentrainer Noten auf deine Arbeit. Wenn deine Lehrerin/dein Lehrer es nicht anders festgelegt hat, musst du pro Woche und Jahrgang 10 Aufgaben (also wenn du z.B. im Jahrgang 7 bist, sind das 70
+                                        Aufgaben pro Woche) rechnen und das auch gleichmäßig auf die verscheidenen Aufgabenkategorien verteilt. Wieviele du gerechnet hast, wird als Prozentzahl angegeben. Dabei werden noch Fehler, Abbrechen und Klick auf "Lösung" abgezogen.
+                                        Mehr als 110% kannst du nicht erreichen.</p>                               
+                                    <p>Wenn du bei den Rechnungen eine Kommazahl eingeben willst und die Meldung "Enter a number" erscheint, dann musst du <b>anstelle eines Kommas einen Punkt eingeben</b>."</p>
+                                    <p>Wenn deine Lehrerin/dein Lehrer deine Lerngruppe beim Rechentrainer angemeldet hat, 
+                                    kann sie/er deine Arbeit kontrollieren. 
+                                    Dazu musst du aber vorher in deinem <a href="{% url 'profil' %}">"Profil"</a> deine Lerngruppe suchen.</p>
+                                <p>Die Zähler werden zu Beginn jedes Halbjahres auf Null gesetzt. 
+                                        Du kannst aber immer unter <a href="{% url 'protokoll' %}">"Protokoll"</a> sehen, 
+                                        wie viele Aufgaben du heute, in einer Woche, im Schuljahr oder von Anfang an gerechnest hast.</p>
+                                    <p>Und noch was: Die Aufgaben im Rechentrainer sind alle so konzipiert, dass man sie im Kopf rechnen kann. 
+                                        Bei schwierigeren Aufgaben kannst du ein Blatt für Nebenrechnungen benutzen. 
+                                        Aber übe das Kopfrechnen und schummele nicht! Du wirst sehen: Du wirst immer besser und kannst dann stolz auf dich sein."
+                                    </p>
+                                {% else %}
+                                <summary>
+                                    Für Schüler:
+                                </summary>
+                                    <ul>                
+                                        <li>Wollt ihr in Mathematik besser werden?</li>
+                                        <li>Wollt ihr Kopfrechnen üben?</li>
+                                        <li>    Wollt ihr für den nächsten Test üben?</li>
+                                        <li>Habt ihr Angst, für den nächsten Test nicht genug geübt zu haben?</li>
+                                        <li>Habt ihr das letzte Thema noch nicht gut genug verstanden?</li>
+                                        <li>Habt ihr Probleme mit der Bruchrechnung oder der Umwandlung von Einheiten?</li>
+                                        <li>Wollt ihr einen Überblick darüber, was ihr in Mathe könnt und was nicht (so gut)?</li>
+                                        <li>Wollt ihr für den Mathewettbewerb, die Hauptschulprüfung oder die Realschulprüfung üben?</li>
+                                    </ul>
+                                    <p>Der Rechentrainer ist die Lösung! Mit ihm könnt ihr alle diese Ziele erreichen!<br>
+                                    <br>
+                                    <b>So funktioniert es:</b></p>
+                                    <ul>                
+                                        <li>Du registrierst dich <a href="/registrieren">hier</a>.</li>
+                                        <li>Wenn du vorher schon mal sehen willst, wie das funktioniert - 
+                                            <a href="/film">hier gibt es einen Film zum Rechentrainer</a></li>
+                                        <li>Wenn du dich registriert hast, findest du oben bei "Aufgaben" zurzeit 26 verschiedene Aufgabentypen.
+                                            <br>(Das werden mal mehr - insgesamt gibt es bald 35 verschiedene Aufgabentypen.
+                                            <br>Es fehlen noch die Aufgaben für das 9. und 10. Schuljahr. Die gibt es aber <a href="{% url 'weitere_aufgaben' %}">hier</a>)</li>
+                                        <li>Je nach Schuljahr werden die Aufgaben immer schwieriger (Z.B. kommen ab der 7. Klasse bei <u>allen</u> Aufgabentypen Kommazahlen).</li>                
+                                        <li>Der Schwierigkeitsgrad hängt auch von deiner Schulform ab (Z.B. Realschule oder Gymansium).</li>
+                                        <li>Wenn du einen Aufgabentyp anklickst, kommen 10 zufällig erzeugte Aufgaben. Wenn du diese erledigt hast, kannst du eine andere Kategorie wählen.</li>
+                                        <li>Du solltest jede Woche insgesamt, je abhängig von deinem Jahrgang, mindesten 50 - 100 Aufgaben rechnen.</li>
+                                        <li>Alle Aufgaben sollst du im Kopf rechnen.</li>            
+                                    </ul> 
+                                    <p><b>Wenn du fleißig geübt hast, kannst du die Seite mit deinen gerechneten Aufgaben deinen Eltern und deinem Mathelehrer bzw. deiner Mathelehrerin zeigen.</b></p>
+                                {% endif %}
+                            </details>
+                            <!--hier geht es zu den Hinweisen für Lehrer-->
+                            {% if not user.is_authenticated or lehrer %}
+                                <details>
+                                {%if lehrer%}
+                                    <summary>
+                                        Hinweise für Lehrer:
+                                    </summary>
+                                    <p><b>Das sollten Lehrerinnen und Lehrer wissen:</b></p>
+                                    <p>Zunächst mal sollten sie die Aufgaben des Rechentrainers ausprobieren.</p>
+                                    <p>Im Unterschied zu den Schülerinnen und Schüler können Lehrerinnen und Lehrer
+                                        Ihren Jahrgang und die Zuordnung zu einer Schulform/zu einem Leistungskurs ändern, sowie ihre Aufgaben löschen.
+                                        Das geht im <a href="{% url 'profil' %}">Profil</a>.</p>
+                                    <p>Dazu ist es wichtig, zu verstehen, dass der Schwierigkeitsgrad der Aufgaben von diesen Einstellungen abhängt. 
+                                        Außerdem sollten Sie sich mit den <a href="{% url 'stufen' %}">Stufen</a> beschäftigen.</p>
+                                    <p>Als Lehrerin bzw. Lehrer können Sie die Arbeiten ihrer Schülerinnen und Schüler kontrollieren. 
+                                        Dazu muss unter <a href="{% url 'meine_gruppen' %}"> "meine Lerngruppen"</a> zunächst eine Lerngruppe festgelegt werden. 
+                                        Dabei sollte der Lerngruppe ein aussagekräftiger Name gegeben werden, damit die Schülerinnen und Schüler ihre Lerngruppe am Namen erkennen können.<br>
+                                        Anschließend müssen alle Schülerinnen und Schüler in ihrem Profil sich bei dieser Lerngruppe anmelden. Dazu müssen sie zunächst ihren Schulort und ihre Schule wählen,
+                                        dann bekommen sie eine Auswahl der in dieser Schule angemeldeten Lehrerinnen und Lehrer und wählen dann besagte Lerngruppe. 
+                                        Ab diesem Zeitpunkt können Sie deren Arbeiten kontrollieren.<br>
+                                        Unter <a href="{% url 'meine_gruppen' %}"> "meine Lerngruppen"</a> können Sie im Zweifelsfalle auch die Daten der Schülerinnen und Schüler ändern, 
+                                        falls diese ihren Namen falsch eingegeben haben oder ihren Kurs gewechselt haben - z.B. auf- oder abgestuft wurden.</p>  
+                                    <p>Seit Anfang 2024 vergibt der Rechentrainer Noten.<br> Wenn es nicht anders festgelegt ist, müssen pro Woche und Jahrgang 10 Aufgaben (im Jahrgang 7 sind das z.B. 70
+                                        Aufgaben pro Woche) gerechnet werden und das auch gleichmäßig auf die verschiedenen Aufgabenkategorien verteilt.<br>Wieviele jeweils gerechnet wurde, wird als Prozentzahl angegeben. 
+                                        Dabei werden noch Fehler und Klick auf "Abbrechen" oder "Lösung" abgezogen. Mehr als 110% können nicht erreicht werden, damit die Schülerinnen und Schüler für eine gute Note möglichst alle Aufgabenkategorien bearbeiten 
+                                        und nicht Lücken in einer Kategorie mit mehr Aufgaben in einer anderen ausgleichen können.<br>Die Anzahl der Wochenaufgaben kann auch für jede Lerngruppe individuell geändert werden. 
+                                        Dazu muss man in der Übersicht der Lerngruppen bei der entsprechenden Lerngruppe auf "ändern" klicken - bei der Einstellung '0' sind es 10 pro Jahrgang - hier kann aber ein anderer Wert gewählt werden.<br>
+                                        Die Noten werden in der Übersicht aber nur angezeigt, wenn "aktuelles Halbjahr" angewählt wurde und das Halbjahr schon soweit fortgeschritten ist, dass die Schülerinnen und Schüler bereits eine Eins erreichen könnten.</p>    
+                                {%else%}
+                                    <summary>
+                                        Für Lehrer:
+                                    </summary>
+                                    <ul>
+                                        <li>"Die eierlegende Wollmilchsau des Mathematikunterrichts"</li>
+                                        <li>Die Schülerinnen und Schüler vergessen das Gelernte in Mathematik nicht mehr.<br> Sie wiederholen Versäumtes selbstständig.<br> 
+                                            Auf Knopfdruck werden die Hausaufgaben kontrolliert und die Mathearbeit korrigiert sich selbst*. … das gibt es nicht? Doch!<br></li>
+                                        <li>Jeder Mathematiklehrer kennt das Problem: Die Schülerinnen und Schüler vergessen vieles von dem, was sie gelernt haben gleich nach dem Test wieder 
+                                            und die Bruchrechnung, das Runden oder das Umwandeln von Einheiten muss immer wieder neu erklärt und auch geübt werden.</li>
+                                    </ul>
+                                    <p><b>Der Rechentrainer ist die Lösung!</b></p>
+                                    <ul>
+                                        <li>Den Rechentrainer gibt es schon seit 2007. Er wurde von mir (Peter Doll) 25 Jahre lang weiterentwickelt.</li> 
+                                        <li>Er ist preisgekrönt (2. Platz im Innovationswettbewerb der Deutschen Telekom Stiftung 2011) <a href="{% url 'stimmen' %}">und viel gelobt</a>.</li>
+                                        <li><a href="/film">Hier gibt es einen Film dazu</a></li>
+                                        <li>Die App wird ständig weiterentwickelt. Zurzeit gibt es 26 Aufgabenkategorien, insgesamt sind 35 Kategorien geplant (Die fehlenden gibt es aber schon <a href="https://medien.bildung.hessen.de/rechentrainer/index.html">hier</a>).</li>
+                                        <li>Mit den 35 Aufgabenkategorien werden alle Themen bis zum mittleren Bildungsabschluss abgedeckt.</li>
+                                    </ul>
+                                    <p><b>So funktioniert es:</b></p>
+                                    <ul>
+                                        <li>In der IGS-Kelsterbach haben wir gute Erfahrungen damit gemacht, dass unsere Schülerinnen und Schüler 100 Aufgaben pro Woche bearbeiten müssen.</li>
+                                        <li>Nach der Auswahl einer Aufgabenkategorie müssen 10 Aufgaben zu dem Thema gelöst werden. Diese werden zufällig aus verschiedenen Unterkategorien ausgewählt.</li>
+                                        <li>Der Schwierigkeitsgrad richtet sich bei allen Aufgaben nach Jahrgang und Schulart.</li>
+                                        <li>Die Arbeitsergebnisse werden übersichtlich auf einer Seite dargestellt.</li>
+                                        <li>Um die RechentrainerApp zu nutzen muss man sich auf dieser Seite registrieren.</li>
+                                        <li>Auch Lehrer müssen einen Jahrgang und eine Schulart wählen, diese Angaben können einfach geändert werden.</li>
+                                        <li>Lehrer können sich nach der Registrierung als Lehrer einstufen lassen. Dazu müssen sie eine aussagekräftige E-Mail an die im Impressum angegebene Adresse schicken - 
+                                        mit dem Schulort und dem Namen der Schule. Anschließend können sie dann die Arbeit ihrer Schülerinnen und Schüler online kontrolieren.</li> 
+                                    </ul>
+                                {%endif%}
+                                </details>
+                            {%endif%}
+                            <!--hier gibt es Hinweise für Eltern-->
+                            {% if not user.is_authenticated %}
+                                <details>
+                                    <summary >
+                                        Für Eltern:
+                                    </summary>
+                                        <ul>                
+                                            <li>Suchen Sie nach Mathematik-Übungsaufgaben für Ihre Tochter oder Ihren Sohn?</li>
+                                            <li>Wollen Sie keine/n Nachilfelehrer/in beauftragen?</li>
+                                            <li>Finden Sie, dass ihre Tochter/Ihr Sohn besser im Kopfrechnen werden sollte?</li>
+                                            <li>Vergisst Ihre Tochter/Ihr Sohn nach dem Test das Gelernte wieder?</li>
+                                            <li>Soll ihr Sohn/Ihre Tochter für den Mathewettbewerb, die Hauptschulprüfung oder die Realschulprüfung üben?</li>
+                                            <li>Wenn das Üben Ihrer Tochter/Ihrem Sohn Spaß machen würde, wäre es auch gut?</li>
+                                            <li>Ihre Tochter/Ihr Sohn möchte lieber mit dem Smartphone oder dem Tablet üben als mit dem Mathebuch oder Übungsheften?</li>
+                                            <li>Sie wollen auch keine Zeit damit verbringen die Aufgaben zu kontrollieren?</li>
+                                        </ul>
+                                        <p>Der Rechentrainer ist die Lösung!<br>
+                                        <br>
+                                        <b>So funktioniert es:</b></p>
+                                        <ul>                
+                                            <li>Sie müssen Ihre Tochter/Ihren Sohn <a href="/registrieren">hier registrieren</a>.</li>
+                                            <li>Wenn Sie den Rechentrainer zunächst einmal selbst ausprobieren wollen, können Sie sich auch zunächste einmal selbst mit einem Fantasienamen anmelden 
+                                            und Ihren Account später unter "mein Profil" wieder komplett löschen.</li>
+                                            <li>Er/sie sollte jede Woche mindesten 100 Aufgaben bearbeiten.</li>
+                                            <li>Dabei sollte er/sie alle angezeigten Aufgaben üben und nicht nur die, die er/sie gerne macht.</li>
+                                            <li>Zu den Aufgaben gibt es meistens eine individuelle Hilfe.</li>                
+                                            <li>Der Schwierigkeitsgrad hängt vom Jahrgang und der Schulform ab (Z.B. Realschule oder Gymansium).</li>
+                                            <li>Alle Aufgaben sollen im Kopf gerechnet werden!</li>        
+                                            <li>Sie können auf einer Übersichtsseite jederzeit mit einem Blick feststellen, was Ihre Tochter/Ihr Sohn geübt hat und was gut und was nicht so gut klappt.<br>
+                                            Hier gibt es eine Erklärung worauf man dabei achten sollte: <a href="{% static "medien/liebe_eltern.pdf" %}">Hinweise für Eltern</a></li>
+                                            <li><a href="/film">Hier gibt es einen Film dazu</a></li>
+                                        </ul> 
+                                    {% comment %} </summary> {% endcomment %}
+                                </details>
+                            {% endif %}
+                            <!--9. und 10. Schuljahr-->
+                            <details>
+                                <summary>
+                                    <a href="{% url 'weitere_aufgaben' %}">weitere Aufgaben</a>
+                                </summary>
+                            </details>
+                            <!--Lernkontrollen-->
+                            {% if not user.is_authenticated or lehrer %}
+                                <details>
+                                    <summary>
+                                        <a href="{% url 'lernkontrollen' %}">Lernkontrollen mit dem Rechentrainer</a>
+                                    </summary>
+                                </details>
+                            {% endif %}
+                            <!--Datenschutz-->
+                            <details>
+                                <summary id="datenschutz">
+                                    Eure Daten:
+                                </summary>
+                                <p><b>Wenn du noch jünger als 16 bist, musst du diesen Text deinen Eltern zeigen und diese müssen ihm zustimmen.</b></p>
+                                <p><b>Der Rechentrainer funktioniert nur, wenn du dich beim Rechentrainer registrierst und Cookies zulässt.</b>
+                                <p>Dazu musst du mit einem beliebigen Nutzernamen einen Account anlegen und ein Passwort festlegen.</p> 
+                                <p>Dieses wird verschlüsselt gespeichert, <b>das Passwort kann niemand auslesen</b>, auch der Administrator des Rechentrainers nicht.
+                                    Daher ist es sinnvoll, dass du eine E-Mailadresse angibst. Wenn du dein Passwort vergisst, kann dir per E-Mail eine Anleitung geschickt werden, mit der du ein neues Passwort erstellen kannst.</p>
+                                <p>Wenn du Aufgaben rechnest, muss der Rechentrainer wissen, zu welcher Aufgabe deine Eingabe gehört. 
+                                    Daher schickt der Rechentrainer bei deiner Registrierung ein Cookie an dein Gerät (Smartphon, Tablett oder Computer).
+                                    Dieses ist ein zufällige Buchstaben- und Zahlenfolge, diese wird auf deinem Gerät gespeichert und wenn du auf eine Frage antwortest oder dich neu einloggst, erkennt der Rechentrainer, dass du das bist. </p>
+                                <p><b>Weitere Cookies gibt es nicht, der Rechentrainer gibt deine Daten nicht weiter und es gibt auch keine Werbung.</b></p>
+                                <p>Die Aufgaben des Rechentrainer sind immer auf deinen Jahrgang und deine Schulart angepasst. In der 5. und 6. Klasse musst du z.B. 
+                                    nicht mit Kommazahlen rechnen, ab der 7. Klasse kommen überall Aufgaben mit Kommazahlen vor.
+                                    Als Schülerinnen oder Schüler einer Hauptschule, eines G-Kurses oder C-Kurses sind die Aufgaben oft einfacher und die Hilfen ausführlicher. Als Förderschüler kannst du den Schwierigkeitsgrad immer aussuchen. 
+                                    <b>Daher musst du deinen Jahrgang und die Schulform angeben</b>.</p>
+                                <p>Wenn du den Rechentrainer für die Schule nutzt, kann deine Lehrerin/dein Lehrer eine Lerngruppe anlegen, du kannst dich dort anmelden und <b>
+                                    dann kann deine Lehrerin/dein Lehrer deine Arbeit kontrollieren</b>.<br>
+                                    <b>Dazu musst du deinen Namen und deine Klasse angeben.</b>
+                                    Wenn du nicht willst, dass dein Lehrer/deine Lehrerin deine Arbeit kontrollieren kann, kannst du in <a href="{% url 'profil' %}">deinem Profil</a>, die Lerngruppe abwählen.
+                                    Du könntest aber auch einen Fantasienamen eingeben, dann kannst du aber nicht beweisen, dass du die Aufgaben gerechnet hast. 
+                                    Vielleicht willst du ja auch deinen Eltern zeigen, dass du fleißig für Mathematik geübt hast. 
+                                    <b>Den Namen, denn du eingibst kannst du anschließend nicht mehr ändern</b> (Deine Lehrerin/dein Lehrer kann es, wenn du bei einer Lerngruppe angemeldet bist.).
+                                </p>
+                                <p><a href="{% url 'datenschutz' %}">Hier gibt es noch ausführlichere Informationen.</a></p>
+                                <p><a href="{% url 'account_loeschen' %}">Hier kannst du deinen Account und alle Daten löschen.</a></p>
+                            </details>
+                        </div>
+                        <div id="spalte_rechts">
+                            <h2>Update vom 7.1.24:</h2>
+                            <p>Der Rechentrainer gibt euch Noten auf eure Arbeit.<br>Um eine gute Note zu erreichen, müsst ihr 10 Aufgaben pro Jahrgang und Woche erledigen (Das heißt z.B. im Jahrgang 7 70 Aufgaben pro Woche.)<br>... und das schön verteilt auf alle Aufgabenarten. .</p>
+                        </div>
+                    </div>
             </div>
-    </div>
-</div>
-</body>
-{% include 'includes/footer.html' %} 
+        </div>
+    </body>
+    {% include 'includes/footer.html' %} 
 {% endblock %}
