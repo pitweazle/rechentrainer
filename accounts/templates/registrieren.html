@@ -1,82 +1,81 @@
 {% extends 'auswahl.html' %} 
 {% load static %}
 
-{% block content %}
-
 {% block css_files %}
   <link rel="stylesheet" href="{% static 'accounts/registrieren.css' %}">
 {% endblock %}
 
-<body>
-  <div style="background-color: yellow">
-    {% if datenschutz == "off"%}
-      <h2>Sorry, das geht nicht!</h2>
-      <p>Du hast dem Datenschutz nicht zugestimmt, dann funktioniert der Rechentrainer nicht.</p>
-      <p>Damit er funktioniert, müssen deine Daten auf einem Server gespeichert werden und der Server muss Cookies auf deinem Gerät setzen können.</p>
-    {% endif %}
-  </div>
-  <form method="post" action="{% url 'registrieren' %}">
-    {% csrf_token %}
-    <div class="form-control">
-      {{ reg_form.as_p }}
+{% block content %}
+  <body>
+    <div style="background-color: yellow">
+      {% if datenschutz == "off"%}
+        <h2>Sorry, das geht nicht!</h2>
+        <p>Du hast dem Datenschutz nicht zugestimmt, dann funktioniert der Rechentrainer nicht.</p>
+        <p>Damit er funktioniert, müssen deine Daten auf einem Server gespeichert werden und der Server muss Cookies auf deinem Gerät setzen können.</p>
+      {% endif %}
     </div>
-    <!-- 
-    <p style="background-color: yellow">Achte darauf, dass auch beim Benutzername zwischen großen und kleinen Buchstaben unetrschieden wird - schreibe dir deinen Benutzernamen am besten auf!</p>
-    -->
-    <p>(Wenn du dein Passwort vergisst, kannst du dein Passwort <b>nur dann</b> zurücksetzen lassen, wenn du hier oben eine E-Mail-Adresse einträgst!)</p>
-    <h3 style="background-color: yellow">Achte hier unten auf die richtige Schreibweise - du kannst deinen Namen nach dem Speichern nicht mehr ändern!</h3>
-    <details style="background-color: yellow">
-      <summary>
-        Anmerkungen für Lehrer (bitte beachten):
-      </summary>
-      <p><b>Bei 'Klasse' bitte 'Lehrer' eintragen.</b></p>
-      <p> Bei 'Jg' und 'Kurs' muss eine Auswahl getroffen werden (das kann später geändert werden) - 
-      ansonsten können keine Aufgaben erstellt werden!</p>
-      <p>(Statt dem Vornamen kann hier natürlich auch Herr oder Frau eingetragen werden.)</p>
-      <p>Lehrer, die mir eine Mail mit dem Schulort und dem Namen der Schule schicken, nehme ich in die Gruppe der Lehrer auf.</p>
-    </details>
-    <table>
-      {{ profil_form.as_table }}
-    </table>
-    {% now "m" as monat%}
-      {% if monat == "01" or monat == "06" or monat == "07"  %}
-      <h3 style="background-color: yellow">Wir haben jetzt {% now "F" %} - bald gibt es Zeugnisse. Sollen deine Aufgaben, die du ab jetzt machst, schon für das nächste Schulhalbjahr zählen?</h3>
-      Diese Wahl kannst du nicht rückgängig machen. Bestätige sie also bitte, indem du hier "ja" eingibst:
+    <form method="post" action="{% url 'registrieren' %}">
+      {% csrf_token %}
+      <div class="form-control">
+        {{ reg_form.as_p }}
+      </div>
+      <!-- 
+      <p style="background-color: yellow">Achte darauf, dass auch beim Benutzername zwischen großen und kleinen Buchstaben unetrschieden wird - schreibe dir deinen Benutzernamen am besten auf!</p>
+      -->
+      <p>(Wenn du dein Passwort vergisst, kannst du dein Passwort <b>nur dann</b> zurücksetzen lassen, wenn du hier oben eine E-Mail-Adresse einträgst!)</p>
+      <h3 style="background-color: yellow">Achte hier unten auf die richtige Schreibweise - du kannst deinen Namen nach dem Speichern nicht mehr ändern!</h3>
+      <details style="background-color: yellow">
+        <summary>
+          Anmerkungen für Lehrer (bitte beachten):
+        </summary>
+        <p><b>Bei 'Klasse' bitte 'Lehrer' eintragen.</b></p>
+        <p> Bei 'Jg' und 'Kurs' muss eine Auswahl getroffen werden (das kann später geändert werden) - 
+        ansonsten können keine Aufgaben erstellt werden!</p>
+        <p>(Statt dem Vornamen kann hier natürlich auch Herr oder Frau eingetragen werden.)</p>
+        <p>Lehrer, die mir eine Mail mit dem Schulort und dem Namen der Schule schicken, nehme ich in die Gruppe der Lehrer auf.</p>
+      </details>
+      <table>
+        {{ profil_form.as_table }}
+      </table>
+      {% now "m" as monat%}
+        {% if monat == "01" or monat == "06" or monat == "07"  %}
+        <h3 style="background-color: yellow">Wir haben jetzt {% now "F" %} - bald gibt es Zeugnisse. Sollen deine Aufgaben, die du ab jetzt machst, schon für das nächste Schulhalbjahr zählen?</h3>
+        Diese Wahl kannst du nicht rückgängig machen. Bestätige sie also bitte, indem du hier "ja" eingibst:
+        <br>
+        <br>
+        <label> neues Schulhalbjahr? </label> 
+          <input id="neu" name="neu" type="text" size="2">
+        <br> 
+      {% endif %}
+
+      <div {% if datenschutz == "off"%} style="background-color: yellow" {%endif%}>
+
+      <h3 style="background-color: yellow">Jetzt kommt noch die Sache mit dem Datenschutz:</h3>
+      
+      <p><b>Wenn du noch jünger als 16 bist, musst du diesen Text deinen Eltern zeigen und diese müssen ihm zustimmen:</b></p>
+      <p><b>Der Rechentrainer funktioniert nur, wenn du dich beim Rechentrainer registrierst und Cookies zulässt.</b>
+          <br>Wenn du Aufgaben rechnest, muss der Rechentrainer wissen, zu welcher Aufgabe deine Eingabe gehört. 
+          Daher schickt der Rechentrainer bei deiner Registrierung ein Cookie an dein Gerät (Smartfon, Tablett oder Computer).
+          Dieses Cookie wird auf deinem Gerät gespeichert und wenn du auf eine Frage antwortest oder dich neu einloggst, erkennt der Rechentrainer, dass du das bist. 
+          <b>Weitere Cookies gibt es nicht, der Rechentrainer gibt deine Daten nicht weiter und es gibt auch keine Werbung.</b><br><br>
+          Die Aufgaben des Rechentrainer sind immer auf deinen Jahrgang und deine Schulart angepasst. Daher musst du deinen Jahrgang und die Schulform angeben.<br><br>
+          Wenn du den Rechentrainer für die Schule nutzt, kann deine Lehrerin/dein Lehrer eine Lerngruppe anlegen, 
+          du kannst dich dort anmelden und <b>dann kann deine Lehrerin/dein Lehrer deine Arbeit kontrollieren</b>.
+          <b>Dazu wird dein Namen und deine Klasse gespeichert.</b>
+          Wenn du nicht willst, dass dein Lehrer/deine Lehrerin deine Arbeit kontrollieren kann, kannst du in <a href="{% url 'profil' %}">deinem Profil</a>, die Lerngruppe abwählen.
+          Du könntest aber auch einen Fantasienamen eingeben, dann kannst du aber nicht beweisen, dass du die Aufgaben gerechnet hast.<br><br>
+          Du kannst auf der Titelseite des Rechentrainers unter <a href="/#datenschutz">"Datenschutz"</a> auch deinen Account und alle deine Daten löschen. 
+          Dort gibt es auch noch ausführlichere Informationen zum Datenschutz.
+      </p>
+        <input  id="datenschutz" name="datenschutz" type="Checkbox">
+        <label style="background-color: yellow">akzeptieren</label> 
+      </div>
       <br>
+      <input type="Checkbox"  name="cookie_loeschen"> 
+      <label> Ich arbeite nicht an meinem eigenen Gerät, bitte Cookies nach der Abmeldung löschen</b> </label>
       <br>
-      <label> neues Schulhalbjahr? </label> 
-        <input id="neu" name="neu" type="text" size="2">
       <br> 
-    {% endif %}
-
-    <div {% if datenschutz == "off"%} style="background-color: yellow" {%endif%}>
-
-    <h3 style="background-color: yellow">Jetzt kommt noch die Sache mit dem Datenschutz:</h3>
-    
-    <p><b>Wenn du noch jünger als 16 bist, musst du diesen Text deinen Eltern zeigen und diese müssen ihm zustimmen:</b></p>
-    <p><b>Der Rechentrainer funktioniert nur, wenn du dich beim Rechentrainer registrierst und Cookies zulässt.</b>
-        <br>Wenn du Aufgaben rechnest, muss der Rechentrainer wissen, zu welcher Aufgabe deine Eingabe gehört. 
-        Daher schickt der Rechentrainer bei deiner Registrierung ein Cookie an dein Gerät (Smartfon, Tablett oder Computer).
-        Dieses Cookie wird auf deinem Gerät gespeichert und wenn du auf eine Frage antwortest oder dich neu einloggst, erkennt der Rechentrainer, dass du das bist. 
-        <b>Weitere Cookies gibt es nicht, der Rechentrainer gibt deine Daten nicht weiter und es gibt auch keine Werbung.</b><br><br>
-        Die Aufgaben des Rechentrainer sind immer auf deinen Jahrgang und deine Schulart angepasst. Daher musst du deinen Jahrgang und die Schulform angeben.<br><br>
-        Wenn du den Rechentrainer für die Schule nutzt, kann deine Lehrerin/dein Lehrer eine Lerngruppe anlegen, 
-        du kannst dich dort anmelden und <b>dann kann deine Lehrerin/dein Lehrer deine Arbeit kontrollieren</b>.
-        <b>Dazu wird dein Namen und deine Klasse gespeichert.</b>
-        Wenn du nicht willst, dass dein Lehrer/deine Lehrerin deine Arbeit kontrollieren kann, kannst du in <a href="{% url 'profil' %}">deinem Profil</a>, die Lerngruppe abwählen.
-        Du könntest aber auch einen Fantasienamen eingeben, dann kannst du aber nicht beweisen, dass du die Aufgaben gerechnet hast.<br><br>
-        Du kannst auf der Titelseite des Rechentrainers unter <a href="/#datenschutz">"Datenschutz"</a> auch deinen Account und alle deine Daten löschen. 
-        Dort gibt es auch noch ausführlichere Informationen zum Datenschutz.
-    </p>
-      <input  id="datenschutz" name="datenschutz" type="Checkbox">
-      <label style="background-color: yellow">akzeptieren</label> 
-    </div>
-    <br>
-    <input type="Checkbox"  name="cookie_loeschen"> 
-    <label> Ich arbeite nicht an meinem eigenen Gerät, bitte Cookies nach der Abmeldung löschen</b> </label>
-    <br>
-    <br> 
-    <input type="submit" value="Registrieren" style="background-color: yellow">
-  </form>
-</body>
+      <input type="submit" value="Registrieren" style="background-color: yellow">
+    </form>
+  </body>
 {% endblock %}

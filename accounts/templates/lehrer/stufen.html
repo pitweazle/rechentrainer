@@ -1,100 +1,96 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-
-<body>
-    <style>    
-        body {max-width: 350px;}
-        ul {margin: 5px;
-            padding: 5px;}
-        p {margin: 0px;}
-    </style>
-
-    <ul>
-        <li><p><b>Grundsätzlich gilt:</b></p></li>
-        <li><p>Für den E-Kurs gelten die ungeraden Zahlen, für die G-Kurse wird die Stufe um eins heruntergesetzt.</p></li>
-        <li><p><b>Am Anfang eines Schuljahres werden die Stufen wie folgt festgesetzt:</b></p></li>
-        <table>
-            <tr>
-                <th>Jg.</th>
-                <th>Stufe</th>
-            </tr>
-        <tr><td>5</td><td> 2</td></tr>
-        <tr><td>6</td><td> 4</td></tr>
-        <tr><td>7</td><td> 12</td></tr>
-        <tr><td>8</td><td> 20</td></tr>
-        <tr><td>9</td><td> 26</td></tr>
-        <tr><td>10</td><td> 32</td></tr>
-        <tr><td>Ende 10</td><td> 50</td></tr>
-        </table>
-        <li><p>Beim <i>anderen</i> Rechentrainer werden diese Stufen mithilfe eines vorgegebenen Kalenders im Laufe des Schuljahres angepasst. 
-            Das ist im vorliegenden Rechentrainer noch nicht integriert.</p></li>
-        <li><p>Allerdings gibt es einige Aufgabentypen, bei denen die Stufen automatisch höhergesetzt werden. Wenn die Schülerin/der Schüler 
-            bei einer Kategorie z.B. auf "mit Kommazahlen" klickt und dann 10 Aufgaben richtig rechnet, wird die  Stufe auf 6/7 hochgesetzt.</p></li>           
-        <li><p><b>Das bewirken die Stufen:</b></p></li>
-        <li><p><b>Stufe 0: </b></p></li>
-        <li><p> Förderkinder (diese Stufe ändert sich nicht) Die Schülerinnen und Schüler haben immer alle Auswahlmöglichkeiten.</p></li>
-        <li><p><b> Stufe 1/2: </b></p></li>
-        <li><p> Grundschulkinder </p></li>
-        <li><p><b> Stufe 3/4: </b></p></li>
-        <li><p> Einstieg </p></li>
-        <li><p> Alle Wahlmöglichkeiten bestehen. </p></li>
-        <li><p><b> Ab Stufe 4/5: </b></p></li>
-        <li><p> Bei Rechtecken muss auch aus der Fläche oder dem Umfang die zweite Seitenlänge berechnet werden.  </p></li>
-        <li><p><b> Ab Stufe 6/7: </b></p></li>
-        <li><p> Bei Kommazahlen müssen alle Grundrechenarten gerechnet werden. </p></li>
-        <li><p> Beim Runden und bei der Umwandlung von Größen kommen auch Kommazahlen vor. </p></li>
-        <li><p><b> Ab Stufe 8/9: </b></p></li>
-        <li><p> Stufen- und Wechselwinkel, Winkelsumme im Dreieck und Viereck. </p></li>
-        <li><p><b> Ab Stufe 10/11: </b></p></li>
-        <li><p> Bei der Bruchrechnung müssen alle Grundrechenarten gerechnet werden. </p></li>
-        <li><p><b> Ab Stufe 12/13: </b></p></li>
-        <li><p> Bei der Umwandlung von Größen müssen auch Volumeneinheiten umgerechnet werden. </p></li>
-        <li><p><b> Ab Stufe 14/15: </b></p></li>
-        <li><p> Es müssen auch antiprop. Zuordnungen berechnet werden. </p></li>
-        <li><p><b> Ab Stufe16/17: </b></p></li>
-        <li><p> Satz des Thales und schwierigere Winkelaufgaben. </p></li>
-        <li><p><b> Ab Stufe18/19: </b></p></li>
-        <li><p> Es muss auch Prozentsatz und Grundwert, berechnet werden. </p></li>
-        <li><p><b> Ab Stufe 20/21: </b></p></li>
-        <li><p> Negativen Zahlen sind bekannt. </p></li>
-        <li><p><b> Ab Stufe 22/23: </b></p></li>
-        <li><p> E-Kurs muss auch bin. Formeln berechnen </p></li>
-        <li><p><b> Ab Stufe 24/25: </b></p></li>
-        <li><p> Zinsen und mehrstufige Experimente bei Wahrscheinlichkeit </p></li>
-        <li><p><b> Ab Stufe 26/27: </b></p></li>
-        <li><p> Zu Rechtecken kommen Dreiecke </p></li>
-        <li><p><b> Ab Stufe 28/29: </b></p></li>
-        <li><p> Rechnen mit irrationalen Zahlen und Kubikwurzel </p></li>
-        <li><p><b> Ab Stufe 30/31: </b></p></li>
-        <li><p> Teilweises Wurzelziehen </p></li>
-        <li><p><b> Ab Stufe 32/33: </b></p></li>
-        <li><p> Pythagoras und Katheten- sowie Höhensatz </p></li>
-        <li><p><b> Ab Stufe 34/35: </b></p></li>
-        <li><p> Potenzen </p></li>
-        <li><p> Zylinder und Kegel </p></li>
-        <li><p> E-Kurs auch bin. Formel rückwärts </p></li>
-        <li><p><b> Ab Stufe 36/37: </b></p></li>
-        <li><p> auch negative Exponenten </p></li>
-        <li><p> auch Oberfläche von Zylindern </p></li>
-        <li><p><b> Ab Stufe 38/39: </b></p></li>
-        <li><p> Potenzfunktionen </p></li>
-        <li><p><b> Ab Stufe 40/41: </b></p></li>
-        <li><p> Exponentialfunktionen </p></li>
-        <li><p><b> Ab Stufe 42/43: </b></p></li>
-        <li><p> Trigonometrie (mit Pythagoras) </p></li>
-        <li><p><b> Ab Stufe 44/45: </b></p></li>
-        <li><p> Trigonometrie mit Winkelberechnung </p></li>
-        <li><p><b> Ab Stufe 46/47: </b></p></li>
-        <li><p> zusätzlich mit Katheten und Höhensatz </p></li>
-        <li><p><b> Ab Stufe 48/49: </b></p></li>
-        <li><p> zusätzlich mit Aufgaben zu Wachstum </p></li>
-        <li><p> (Exponentialfunktionen ohne Graphen) </p></li>
-        <li><p><b> Ab Stufe 50/51 </b></p></li>
-        <li><p> ... zusätzlich mit Graphen </p></li>
-        
-    </ul>
-
-</body>
+    <body>
+        <style>    
+            body {max-width: 350px;}
+            ul {margin: 5px;
+                padding: 5px;}
+            p {margin: 0px;}
+        </style>
+        <ul>
+            <li><p><b>Grundsätzlich gilt:</b></p></li>
+            <li><p>Für den E-Kurs gelten die ungeraden Zahlen, für die G-Kurse wird die Stufe um eins heruntergesetzt.</p></li>
+            <li><p><b>Am Anfang eines Schuljahres werden die Stufen wie folgt festgesetzt:</b></p></li>
+            <table>
+                <tr>
+                    <th>Jg.</th>
+                    <th>Stufe</th>
+                </tr>
+            <tr><td>5</td><td> 2</td></tr>
+            <tr><td>6</td><td> 4</td></tr>
+            <tr><td>7</td><td> 12</td></tr>
+            <tr><td>8</td><td> 20</td></tr>
+            <tr><td>9</td><td> 26</td></tr>
+            <tr><td>10</td><td> 32</td></tr>
+            <tr><td>Ende 10</td><td> 50</td></tr>
+            </table>
+            <li><p>Beim <i>anderen</i> Rechentrainer werden diese Stufen mithilfe eines vorgegebenen Kalenders im Laufe des Schuljahres angepasst. 
+                Das ist im vorliegenden Rechentrainer noch nicht integriert.</p></li>
+            <li><p>Allerdings gibt es einige Aufgabentypen, bei denen die Stufen automatisch höhergesetzt werden. Wenn die Schülerin/der Schüler 
+                bei einer Kategorie z.B. auf "mit Kommazahlen" klickt und dann 10 Aufgaben richtig rechnet, wird die  Stufe auf 6/7 hochgesetzt.</p></li>           
+            <li><p><b>Das bewirken die Stufen:</b></p></li>
+            <li><p><b>Stufe 0: </b></p></li>
+            <li><p> Förderkinder (diese Stufe ändert sich nicht) Die Schülerinnen und Schüler haben immer alle Auswahlmöglichkeiten.</p></li>
+            <li><p><b> Stufe 1/2: </b></p></li>
+            <li><p> Grundschulkinder </p></li>
+            <li><p><b> Stufe 3/4: </b></p></li>
+            <li><p> Einstieg </p></li>
+            <li><p> Alle Wahlmöglichkeiten bestehen. </p></li>
+            <li><p><b> Ab Stufe 4/5: </b></p></li>
+            <li><p> Bei Rechtecken muss auch aus der Fläche oder dem Umfang die zweite Seitenlänge berechnet werden.  </p></li>
+            <li><p><b> Ab Stufe 6/7: </b></p></li>
+            <li><p> Bei Kommazahlen müssen alle Grundrechenarten gerechnet werden. </p></li>
+            <li><p> Beim Runden und bei der Umwandlung von Größen kommen auch Kommazahlen vor. </p></li>
+            <li><p><b> Ab Stufe 8/9: </b></p></li>
+            <li><p> Stufen- und Wechselwinkel, Winkelsumme im Dreieck und Viereck. </p></li>
+            <li><p><b> Ab Stufe 10/11: </b></p></li>
+            <li><p> Bei der Bruchrechnung müssen alle Grundrechenarten gerechnet werden. </p></li>
+            <li><p><b> Ab Stufe 12/13: </b></p></li>
+            <li><p> Bei der Umwandlung von Größen müssen auch Volumeneinheiten umgerechnet werden. </p></li>
+            <li><p><b> Ab Stufe 14/15: </b></p></li>
+            <li><p> Es müssen auch antiprop. Zuordnungen berechnet werden. </p></li>
+            <li><p><b> Ab Stufe16/17: </b></p></li>
+            <li><p> Satz des Thales und schwierigere Winkelaufgaben. </p></li>
+            <li><p><b> Ab Stufe18/19: </b></p></li>
+            <li><p> Es muss auch Prozentsatz und Grundwert, berechnet werden. </p></li>
+            <li><p><b> Ab Stufe 20/21: </b></p></li>
+            <li><p> Negativen Zahlen sind bekannt. </p></li>
+            <li><p><b> Ab Stufe 22/23: </b></p></li>
+            <li><p> E-Kurs muss auch bin. Formeln berechnen </p></li>
+            <li><p><b> Ab Stufe 24/25: </b></p></li>
+            <li><p> Zinsen und mehrstufige Experimente bei Wahrscheinlichkeit </p></li>
+            <li><p><b> Ab Stufe 26/27: </b></p></li>
+            <li><p> Zu Rechtecken kommen Dreiecke </p></li>
+            <li><p><b> Ab Stufe 28/29: </b></p></li>
+            <li><p> Rechnen mit irrationalen Zahlen und Kubikwurzel </p></li>
+            <li><p><b> Ab Stufe 30/31: </b></p></li>
+            <li><p> Teilweises Wurzelziehen </p></li>
+            <li><p><b> Ab Stufe 32/33: </b></p></li>
+            <li><p> Pythagoras und Katheten- sowie Höhensatz </p></li>
+            <li><p><b> Ab Stufe 34/35: </b></p></li>
+            <li><p> Potenzen </p></li>
+            <li><p> Zylinder und Kegel </p></li>
+            <li><p> E-Kurs auch bin. Formel rückwärts </p></li>
+            <li><p><b> Ab Stufe 36/37: </b></p></li>
+            <li><p> auch negative Exponenten </p></li>
+            <li><p> auch Oberfläche von Zylindern </p></li>
+            <li><p><b> Ab Stufe 38/39: </b></p></li>
+            <li><p> Potenzfunktionen </p></li>
+            <li><p><b> Ab Stufe 40/41: </b></p></li>
+            <li><p> Exponentialfunktionen </p></li>
+            <li><p><b> Ab Stufe 42/43: </b></p></li>
+            <li><p> Trigonometrie (mit Pythagoras) </p></li>
+            <li><p><b> Ab Stufe 44/45: </b></p></li>
+            <li><p> Trigonometrie mit Winkelberechnung </p></li>
+            <li><p><b> Ab Stufe 46/47: </b></p></li>
+            <li><p> zusätzlich mit Katheten und Höhensatz </p></li>
+            <li><p><b> Ab Stufe 48/49: </b></p></li>
+            <li><p> zusätzlich mit Aufgaben zu Wachstum </p></li>
+            <li><p> (Exponentialfunktionen ohne Graphen) </p></li>
+            <li><p><b> Ab Stufe 50/51 </b></p></li>
+            <li><p> ... zusätzlich mit Graphen </p></li>
+            
+        </ul>
+    </body>
 {%endblock%}
-</html>
 

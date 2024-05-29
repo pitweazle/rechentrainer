@@ -1,9 +1,8 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-<body>
-    <p>Das hat geklappt, um als Lehrer freigeschaltet zu werden, musst du jetzt noch eine Mail an den Rechentrainer schicken, aus der irgendwie glaubhaft hervorgeht, 
-        dass du auch wirklich Lehrer der <b>{{schule.schulname}}</b> bist! </p>
-    <a href="{% url 'index' %}">weiter</a>
-</body>
+    <body>
+        <p>Das hat geklappt, um als Lehrer freigeschaltet zu werden, musst du jetzt noch eine Mail an den Rechentrainer schicken, aus der irgendwie glaubhaft hervorgeht, 
+            dass du auch wirklich Lehrer der <b>{{schule.schulname}}</b> bist! </p>
+        <a href="{% url 'index' %}">weiter</a>
+    </body>
 {% endblock %}
-</html>

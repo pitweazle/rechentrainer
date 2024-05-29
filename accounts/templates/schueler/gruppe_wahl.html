@@ -1,21 +1,17 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-
-<body>
-    <p>Jetzt musst du nur noch deine Lerngruppe bei<br>{{lehrer.vorname}}{%if lehrer.vorname == "Herr"%}n{%endif%} {{lehrer.nachname}} wählen:</p>
-    
-    <ul>
-        {% for gruppe in gruppen %}
+    <body>
+        <p>Jetzt musst du nur noch deine Lerngruppe bei<br>{{lehrer.vorname}}{%if lehrer.vorname == "Herr"%}n{%endif%} {{lehrer.nachname}} wählen:</p>
+        <ul>
+            {% for gruppe in gruppen %}
+                <li>
+                    <a  class="button" href="{% url 'gruppe_wahl' gruppe.id %}">{{gruppe.name}} </a>
+                </li>
+            {% endfor %}
+            <li>--------------------------------------------------------</li>
             <li>
-                <a  class="button" href="{% url 'gruppe_wahl' gruppe.id %}">{{gruppe.name}} </a>
+                <a  class="button" href="{% url 'gruppe_wahl' 0 %}">MeinLerngruppe ist nicht dabei</<>
             </li>
-        {% endfor %}
-        <li>--------------------------------------------------------</li>
-        <li>
-            <a  class="button" href="{% url 'gruppe_wahl' 0 %}">MeinLerngruppe ist nicht dabei</<>
-        </li>
-    </ul>
-
-</body>
+        </ul>
+    </body>
 {% endblock %}
-</html>

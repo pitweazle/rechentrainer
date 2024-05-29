@@ -1,18 +1,17 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
 
-<body>
-    <p>Ich frage sicherheitshalber nochmal:</p>
-    <p>Soll dein Account "{{user}}" und alle deine Daten wirklich gelöscht werden?</p>
+    <body>
+        <p>Ich frage sicherheitshalber nochmal:</p>
+        <p>Soll dein Account "{{user}}" und alle deine Daten wirklich gelöscht werden?</p>
 
-    <form action="/account_loeschen/" method="POST">
-        {% csrf_token %}
+        <form action="/account_loeschen/" method="POST">
+            {% csrf_token %}
 
-        <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
-        <label >ja, ich bin sicher</label> 
+            <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
+            <label >ja, ich bin sicher</label> 
 
-        <input type="submit" name="loeschen" value="loeschen"></button>
-    </form>
-</body>
+            <input type="submit" name="loeschen" value="loeschen"></button>
+        </form>
+    </body>
 {% endblock %}
-</html>
