@@ -1,0 +1,111 @@
+                    <form action="{% url 'main' kategorie.slug %}" method="post">
+                        {% csrf_token %}
+                            <fieldset>
+                            <table>
+                                <tr>
+                                    <th class = "linie_rechts">{{parameter.titel_x}}</th>
+                                    <th>{{parameter.titel_y}}</th>
+                                </tr>
+                                {% if lsg %}
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x0}}</td>
+                                        <td>{{parameter.y0}}</td>                                                                       
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x1}}</td>
+                                        <td>{{parameter.y1}}</td>                                                                    
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts"">{{parameter.x2}}</td>
+                                        <td>{{parameter.y2}}</td>                                                                    
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x3}}</td>
+                                        <td>{{parameter.y3}}</td>                                                                    
+                                    </tr>                                    
+                                    <tr>
+                                        <td class = "linie_rechts"">{{parameter.x4}}</td>
+                                        <td>{{parameter.y4}}</td>                                                                    
+                                    </tr>
+                                {% else %}
+                                    {% if "term" in parameter.name %}
+                                        <tr>
+                                            <td class = "linie_rechts">{{parameter.x0}}</td>
+                                            <td class = "{{parameter.color0}}">{{form.y0}}</td>                                                                    
+                                        </tr>
+                                        <tr>
+                                            <td class = "linie_rechts">{{parameter.x1}}</td>
+                                            <td class = "{{parameter.color1}}">{{form.y1}}</td>                                                                    
+                                        </tr> 
+                                    {% else %}
+                                        <tr>
+                                            <td class = "linie_rechts">{{parameter.x0}}</td>
+                                            <td>{{parameter.y0}}</td>                                                                       
+                                        </tr>
+                                        <tr>
+                                            <td class = "linie_rechts">{{parameter.x1}}</td>s
+                                            <td>{{parameter.y1}}</td>                                                                    
+                                        </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x2}}</td>
+                                        <td class = "{{parameter.color2}}">{{form.y2}}</td>                                                                    
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x3}}</td>
+                                        <td class = "{{parameter.color3}}">{{form.y3}}</td>                                                                    
+                                    </tr> 
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x4}}</td>
+                                        <td class = "{{parameter.color4}}">{{form.y4}}</td>                                                                    
+                                    </tr> 
+                                {%endif%}                                   
+                            </table>
+                        {% endif %}
+                        {% if 'dreimal' in message_unten %}
+                            </form>
+                            {% comment %} <nav> {% endcomment %}
+                                <button type="button">
+                                    <a href="{% url 'uebersicht'  %}">weiter</a>
+                                </button>
+                        {% elif lsg %}
+                    </form>
+                    {% comment %} <nav> {% endcomment %}
+                        {% if eingabe != " " %}
+                            <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
+                        {%endif%}
+                        <button type="button">
+                            <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
+                        </button>
+                {% else %}
+                    {{message_unten}}
+                    <fieldset>
+                        {% if not "tab" in parameter.name %}
+                            {{frage}}
+                            {{form.eingabe}}
+                            {{einheit}}
+                        {% endif %}
+                        <input type="submit" value="Prüfen">
+                    </fieldset>
+                        <nav>
+                            <button type="button">
+                                <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
+                            </button>
+                            {% if hilfe  %}
+                                <button type="button">
+                                    <href="{% url 'hilfe' zaehler_id protokoll_id %}"> Hilfe</a>
+                                </button>
+                            {% endif %}
+                            <button type="button">
+                                <href="{% url 'abbrechen' zaehler_id %}">Abbrechen</a>
+                            </button>
+                        </nav>
+                    {% if bis_loeschen > 0 %}
+                        Fehler löschen: noch {{bis_loeschen}} Aufgaben
+                    {% endif %}
+                {% endif%}
+            </div>          
+            {% endautoescape %}
+        {% endblock %}
+    </div>
+</body>
