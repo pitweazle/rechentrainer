@@ -16,11 +16,14 @@
                     <button type="submit">ändern</button></td>
                 </form></tr>
             <tr>
-                <td>Jg:</td><td> {{schueler.jg}}</td></tr>
+                <td>Jg:</td><td> {{schueler.jg}}</td>
+            </tr>
             <tr>
-                <td>angemeldet seit:</td><td> {{user.date_joined|date:"d.m.y H:i"}}</td></tr>
+                <td>angemeldet seit:</td><td> {{user.date_joined|date:"d.m.y H:i"}}</td>
+            </tr>
             <tr>
-                <td>Halbjahr:</td><td> {{schueler.sj}}/{{schueler.hj}}</td></tr>
+                <td>Halbjahr:</td><td> {{schueler.sj}}/{{schueler.hj}}</td>
+            </tr>
             <tr>
                 <td>Kurs:</td><td> {{schueler.kurs}}</td>
             </tr>
@@ -34,23 +37,21 @@
             {%endif%}
             <tr>
                 <td>Lerngruppe:</td>
-            {% if schueler.gruppe %}
-                <td> {{schueler.gruppe.name}}</td>
-                </tr>
-                <td>bei:</td><td>{{schueler.gruppe.lehrer.profil.vorname}}{%if schueler.gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{schueler.gruppe.lehrer.profil.nachname}}</td>
-                </tr>
-            {%else%}
-                <td>keine</td></td>
-                </tr>
-            {%endif%}
+                {% if schueler.gruppe %}
+                    <td> {{schueler.gruppe.name}}</td>
+                    </tr>
+                    <td>bei:</td><td>{{schueler.gruppe.lehrer.profil.vorname}}{%if schueler.gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{schueler.gruppe.lehrer.profil.nachname}}</td>
+                {%else%}
+                    <td>keine</td></td>
+                {%endif%}
+            </tr>
             <tr>
                 <form action="/profil/" method="POST">
                     {% csrf_token %}         
                     <td>Details anzeigen:</td>
                     <td><input type="Checkbox"  name="details" checked /> 
-                    <input type="submit" value="ändern">
+                    <input type="submit" value="ändern"></td>
                 </form>
-            </tr></td>
             </tr>
         </table>
 
