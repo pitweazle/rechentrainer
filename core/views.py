@@ -6033,7 +6033,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         parameter = {'name':'normal'}
         if typ == 1:                                                                             # Wertetabelle'
             text = "Berechne die Funktionswerte"
-            zahlen = [0,1,2,-1]
+            zahlen = [0,1,2,-1,0.5]
             lsg = [""]
             absolut = koeffizient = 0
             while absolut == 0:
@@ -6049,7 +6049,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_werte = {}
             y_farbe = {}
             lsg = []
-            for n in range (0,4):
+            for n in range (0,5):
                 x_werte["x" + str(n)] = zahlen[n]
                 y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
                 #y_farbe["color" + str(n)] = "leer"

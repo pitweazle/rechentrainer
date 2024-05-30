@@ -62,7 +62,11 @@
             </div>
             <div class="unten">
                 {% if "tab" in parameter.name %}
-                    {% include 'core/wertetabelle.html'%}
+                    {% if lsg %}
+                        {% include 'core/wertetabelle_lsg.html'%}
+                    {% else %}
+                        {% include 'core/wertetabelle.html'%}
+                    {% endif %}
                 {% endif %}
                 {% if 'dreimal' in message_unten %}
                     <button type="button">
