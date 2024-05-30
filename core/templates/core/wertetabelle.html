@@ -7,29 +7,7 @@
                 <th class = "linie_rechts">{{parameter.titel_x}}</th>
                 <th>{{parameter.titel_y}}</th>
             </tr>
-            {% if lsg %}
-                <tr>
-                    <td class = "linie_rechts">{{parameter.x0}}</td>
-                    <td>{{parameter.y0}}</td>                                                                       
-                </tr>
-                <tr>
-                    <td class = "linie_rechts">{{parameter.x1}}</td>
-                    <td>{{parameter.y1}}</td>                                                                    
-                </tr>
-                <tr>
-                    <td class = "linie_rechts"">{{parameter.x2}}</td>
-                    <td>{{parameter.y2}}</td>                                                                    
-                </tr>
-                <tr>
-                    <td class = "linie_rechts">{{parameter.x3}}</td>
-                    <td>{{parameter.y3}}</td>                                                                    
-                </tr>                                    
-                <tr>
-                    <td class = "linie_rechts"">{{parameter.x4}}</td>
-                    <td>{{parameter.y4}}</td>                                                                    
-                </tr>
-            {% else %}
-                {% if "term" in parameter.name %}
+                {% if 'term' in parameter.name or 'funktion' in parameter.name%}  
                     <tr>
                         <td class = "linie_rechts">{{parameter.x0}}</td>
                         <td class = "{{parameter.color0}}">{{form.y0}}</td>                                                                    
@@ -44,7 +22,7 @@
                         <td>{{parameter.y0}}</td>                                                                       
                     </tr>
                     <tr>
-                        <td class = "linie_rechts">{{parameter.x1}}</td>s
+                        <td class = "linie_rechts">{{parameter.x1}}</td>
                         <td>{{parameter.y1}}</td>                                                                    
                     </tr>
                 {% endif %}
@@ -60,6 +38,5 @@
                     <td class = "linie_rechts">{{parameter.x4}}</td>
                     <td class = "{{parameter.color4}}">{{form.y4}}</td>                                                                    
                 </tr> 
-            {%endif%}                                   
         </table>
     </form>
