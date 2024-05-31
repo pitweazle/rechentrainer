@@ -4863,6 +4863,33 @@ def sortieren(zahl,buchstaben):
         term = term.replace("1","")
     return term
 
+def wertetabelle(parameter,stufe):
+    zahlen = [0,1,2,-1,0.5]
+    lsg = [""]
+    absolut = koeffizient = 0
+    while absolut == 0:
+        absolut = random.randint(-4,4)
+    while koeffizient == 0:
+        if stufe%2 == 1:
+            koeffizient = random.randint(-4,4)
+        else:
+            koeffizient = random.randint(1,5)
+    term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+    x_werte = {}
+    y_werte = {}
+    y_farbe = {}
+    lsg = []
+    for n in range (0,5):
+        x_werte["x" + str(n)] = zahlen[n]
+        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+        #y_farbe["color" + str(n)] = "leer"
+        lsg.append(str(zahlen[n]*koeffizient+absolut))
+    lsg = [lsg]
+    parameter.update(x_werte)
+    parameter.update(y_werte)
+    parameter.update(y_farbe)
+    return parameter, term, lsg
+
 def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -4931,32 +4958,10 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         parameter = {'name':'normal'}
         if typ == 1:                                                                            # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
-            zahlen = [0,1,2,-1, 0.5]
-            lsg = [""]
-            absolut = koeffizient = 0
-            while absolut == 0:
-                absolut = random.randint(-4,4)
-            while koeffizient == 0:
-                if stufe%2 == 1:
-                    koeffizient = random.randint(-4,4)
-                else:
-                    koeffizient = random.randint(1,5)
-            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+            parameter = {'name': 'tab_term',}
+            parameter, term, lsg = wertetabelle(parameter,stufe)
+            parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
-            x_werte = {}
-            y_werte = {}
-            y_farbe = {}
-            lsg = []
-            for n in range (0,5):
-                x_werte["x" + str(n)] = zahlen[n]
-                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
-                #y_farbe["color" + str(n)] = "leer"
-                lsg.append(str(zahlen[n]*koeffizient+absolut))
-            lsg = [lsg]
-            parameter = {'name': 'tab_terme', 'titel_x': 'x', 'titel_y': term}
-            parameter.update(x_werte)
-            parameter.update(y_werte)
-            parameter.update(y_farbe)
         elif typ == 2:                                                                          # Terme zusammenfassen
             items = stufe%2+4
             startbuchstabe = typ2 = random.randint(0,2)*4
@@ -6033,32 +6038,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         parameter = {'name':'normal'}
         if typ == 1:                                                                             # Wertetabelle'
             text = "Berechne die Funktionswerte"
-            zahlen = [0,1,2,-1,0.5]
-            lsg = [""]
-            absolut = koeffizient = 0
-            while absolut == 0:
-                absolut = random.randint(-4,4)
-            while koeffizient == 0:
-                if stufe%2 == 1:
-                    koeffizient = random.randint(-4,4)
-                else:
-                    koeffizient = random.randint(1,5)
-            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+            parameter = {'name': 'tab_term',}
+            parameter, term, lsg = wertetabelle(parameter,stufe)
+            parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-            x_werte = {}
-            y_werte = {}
-            y_farbe = {}
-            lsg = []
-            for n in range (0,5):
-                x_werte["x" + str(n)] = zahlen[n]
-                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
-                #y_farbe["color" + str(n)] = "leer"
-                lsg.append(str(zahlen[n]*koeffizient+absolut))
-            lsg = [lsg]
-            parameter = {'name': 'tab_term', 'titel_x': 'x', 'titel_y': "y = " + term}
-            parameter.update(x_werte)
-            parameter.update(y_werte)
-            parameter.update(y_farbe)
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
