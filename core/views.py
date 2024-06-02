@@ -6027,7 +6027,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         #     typ = random.randint(typ_anf, typ_end) 
         # else:
         #     typ = random.randint(2, typ_end) 
-        typ=1
+        typ=2
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6036,12 +6036,44 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1:                                                                             # Wertetabelle'
+        if typ == 1:                                                                            # Wertetabelle'
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
             parameter, term, lsg = wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
+        elif typ ==2:                                                                           # Koordinatensystem
+            titel = "Funktionsgleichung"
+            text = "Wie lautet die Funktionsgleichung dieses Graphen?"
+            frage = "y="
+            box_hoehe = 360
+            box_breite = 400
+            y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
+            x_null = 130                            # x_Null entspricht der lage der y-Achse
+            y_start = box_hoehe                     # ist der Anfang der y-Achse
+            x_start = 0                             # ist der Anfang der x-Achse
+            einteilung = 20
+            achsen = {
+                'xvalues': [
+                    (x_null + n*40, 2*n) for n in range(-3, 6)
+                ],
+                'yvalues': [
+                    (y_null - n*40, 2*n) for n in range(-2, 6)
+                ],
+             }
+            absolut = -1
+            steigung = 1
+            
+            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*einteilung), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*einteilung)}
+            parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
+                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                    'einteilung' :einteilung,
+                    'y_null': y_null,'x_null': x_null,
+                    'y_start': y_start,'x_start': x_start,
+                    }
+            parameter.update(achsen)
+            parameter.update(graph) 
+
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
