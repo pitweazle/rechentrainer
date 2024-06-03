@@ -88,6 +88,11 @@
         <text x="{{parameter.x_koo|add:10}}" y="{{parameter.y_koo|add:5}}" style="stroke:red;stroke-width:1;">{{parameter.text_a}}</text>
     {% endif %}
 
+    
+    {% if parameter.object == "graph" %}
+        <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
+    {% endif %}
+
     {% if parameter.object == "spiegel" %}
         <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
         <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
