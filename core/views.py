@@ -4891,7 +4891,6 @@ def wertetabelle(parameter,stufe):
     parameter.update(y_farbe)
     return parameter, term, lsg
 
-
 def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -6072,30 +6071,32 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             frage = "y="
             box_hoehe = 360
             box_breite = 400
+            grid = 20
 
             y_start = box_hoehe                     # ist der Anfang der y-Achse
             x_start = 0                             # ist der Anfang der x-Achse
 
             y_null = y_start-100                    # y_Null entspricht der Lage der x-Achse
-            x_null = 150                            # x_Null entspricht der lage der y-Achse
+            x_null = 140                            # x_Null entspricht der lage der y-Achse
 
-            einteilung = 20
+            einteilung = grid*2
             parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
                     'einteilung' :einteilung,
+                    'grid' : grid,
                     'y_null': y_null,'x_null': x_null,
                     'y_start': y_start,'x_start': x_start,
                     }
-            achsen = {
+            beschriftung = {
                 'xvalues': [
-                    (x_null + n*40, 2*n) for n in range(-x_null//(einteilung*2), (box_breite-x_null)//(einteilung*2))
+                    (x_null + 2*n*einteilung, 2*n) for n in range(-x_null//(einteilung*2), (box_breite-x_null)//(einteilung*2))
                 ],
                 'yvalues': [
-                    (y_null - n*40, 2*n) for n in range(-y_null//(einteilung*2), (y_null)//(einteilung*2))
+                    (y_null - 2*n*einteilung, 2*n) for n in range(-y_null//(einteilung*2), (y_null)//(einteilung*2))
                 ],
              }
-            parameter.update(achsen)
-            print(achsen)
+            parameter.update(beschriftung)
+            print(beschriftung)
 
             absolut = -1
             steigung = 1
