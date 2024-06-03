@@ -1838,7 +1838,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             zahl=(x_koo+20)*1000+y_koo
             lsg = lsg + [str((x_koo+20)*1000+y_koo)]
             lsg = lsg + ["indiv_0"] 
-
         elif typ == 8:                                                              #Symmetrie
             titel = pro_text = "Symmetrie"
             zeichen_liste = [(0,1,2,3,4,5,6,7,8,9),      ("A", "B", "C", "D", "E", "F"),    ("G", "H", "I", "J", "K", "L"), ("M", "N", "O", "P", "Q", "R", "S"), ("T", "U", "V", "W", "X", "Y", "Z")]
@@ -4959,32 +4958,10 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         parameter = {'name':'normal'}
         if typ == 1:                                                                            # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
-            zahlen = [0,1,2,-1, 0.5]
-            lsg = [""]
-            absolut = koeffizient = 0
-            while absolut == 0:
-                absolut = random.randint(-4,4)
-            while koeffizient == 0:
-                if stufe%2 == 1:
-                    koeffizient = random.randint(-4,4)
-                else:
-                    koeffizient = random.randint(1,5)
-            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+            parameter = {'name': 'tab_term',}
+            parameter, term, lsg = wertetabelle(parameter,stufe)
+            parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
-            x_werte = {}
-            y_werte = {}
-            y_farbe = {}
-            lsg = []
-            for n in range (0,5):
-                x_werte["x" + str(n)] = zahlen[n]
-                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
-                #y_farbe["color" + str(n)] = "leer"
-                lsg.append(str(zahlen[n]*koeffizient+absolut))
-            lsg = [lsg]
-            parameter = {'name': 'tab_terme', 'titel_x': 'x', 'titel_y': term}
-            parameter.update(x_werte)
-            parameter.update(y_werte)
-            parameter.update(y_farbe)
         elif typ == 2:                                                                          # Terme zusammenfassen
             items = stufe%2+4
             startbuchstabe = typ2 = random.randint(0,2)*4
@@ -6071,15 +6048,18 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             frage = "y="
             box_hoehe = 360
             box_breite = 400
-            grid = 20
+            einteilung = 40
 
             y_start = box_hoehe                     # ist der Anfang der y-Achse
             x_start = 0                             # ist der Anfang der x-Achse
 
-            y_null = y_start-100                    # y_Null entspricht der Lage der x-Achse
-            x_null = 140                            # x_Null entspricht der lage der y-Achse
+            y_null = y_start-einteilung *2          # y_Null entspricht der Lage der x-Achse
+            x_null = einteilung *3                  # x_Null entspricht der lage der y-Achse
 
-            einteilung = grid*2
+            anzeigen = 1                            # '1' alle Zahlen, '2' nur gerade Zahlen
+
+            grid = einteilung/2
+
             parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
                     'einteilung' :einteilung,
@@ -6089,19 +6069,19 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     }
             beschriftung = {
                 'xvalues': [
-                    (x_null + 2*n*einteilung, 2*n) for n in range(-x_null//(einteilung*2), (box_breite-x_null)//(einteilung*2))
+                    (x_null + n*einteilung, n) for n in range(-x_null//(einteilung)+1, (box_breite-x_null)//(einteilung))
                 ],
                 'yvalues': [
-                    (y_null - 2*n*einteilung, 2*n) for n in range(-y_null//(einteilung*2), (y_null)//(einteilung*2))
+                    (y_null - n*einteilung, n) for n in range(-(box_hoehe-y_null)//(einteilung)+1, (y_null)//(einteilung))
                 ],
              }
             parameter.update(beschriftung)
             print(beschriftung)
 
-            absolut = -1
-            steigung = 1
+            absolut = 5
+            steigung = -2/3
             
-            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*20), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*20)}
+            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*einteilung), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*einteilung)}
 
             parameter.update(graph) 
 
