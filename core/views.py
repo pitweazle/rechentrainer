@@ -5647,7 +5647,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
                 pro_text = "Durchschnittsnote: {3}"
                 frage = "Durchschnittsnote  "
-                variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
+                variable = [name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1],noten]
                 hilfe_id = 32
         elif typ == 4:                                  # Zahlenschloss
             titel = "Permutationen"
