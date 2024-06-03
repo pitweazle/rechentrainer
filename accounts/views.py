@@ -66,6 +66,9 @@ def stufe(jg, kurs):
         if jg < 5:
             stufe = 1
         else:
+            if jg > 11:
+                jg = 11
+                kurs = "Y"
             stufe_liste = [2,4,12,20,26,32,50]
             stufe = stufe_liste[jg-5] 
             if kurs in ["Y","R","E","B"]:
