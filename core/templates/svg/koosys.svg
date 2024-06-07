@@ -116,16 +116,16 @@
             <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text>
         {%endfor%}
 
-        {% if parameter.typ == 1 %}
-            <line x1="0" y1="{{parameter.hoehe|add:-10}}" x2="{{parameter.breite}}" y2="-10" style="stroke:red;stroke-width:2;" />	
+        {% if parameter.spiegelachse == "winkelhalbierende" %}
+            <line x1="0" y1="{{parameter.hoehe}}" x2="{{parameter.breite}}" y2="0" style="stroke:red;stroke-width:2;" />	
             <text x="30" y="{{parameter.box_hoehe|add:-10}}" style="stroke:red;stroke-width:1;">S</text>  
-        {% elif parameter.typ == 2 %} 
+        {% elif parameter.spiegelachse == "y_achse" %} 
             <line x1="{{parameter.x0}}" y1="0" x2="{{parameter.x0}}" y2="{{parameter.hoehe}}" style="stroke:red;stroke-width:2;" />	
             <text x="{{parameter.x0|add:10}}" y="20" style="stroke:red;stroke-width:1;">S</text>
-        {% elif parameter.typ == 3 %}
+        {% elif parameter.spiegelachse == "x_achse" %}
             <line x1 = "0" y1="{{parameter.y0}}" x2 ="{{parameter.breite}}" y2="{{parameter.y0}}"  style="stroke:red;stroke-width:2;" />	
             <text x="50" y="{{parameter.y0|add:20}}" style="stroke:red;stroke-width:1;">S</text>
-        {% endif %}           
+        {% endif %}             
     {% endif %}
 
 </svg>
