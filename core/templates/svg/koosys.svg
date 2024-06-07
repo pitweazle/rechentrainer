@@ -40,7 +40,14 @@
     <rect x="0" y="0" width="{{parameter.box_breite}}" height="{{parameter.box_hoehe}}" fill="url(#grid)"/>
 
     <!--x-Achse-->
-    <line x1="{{parameter.x_start}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+    {% if parameter.quadranten == 4 %}
+        <line x1="10" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        <rect x="10" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" />
+    {% else %}
+        <line x1="{{parameter.x_null}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        <rect x="{{parameter.x_null}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" />
+
+    {% endif %}
     <!--Pfeil-->
     <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:-10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
     <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
@@ -61,8 +68,14 @@
             {%endif%}
         {%endfor%}
 
-    <!--y-Achse-->
-    <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.y_start}}" style="stroke:black;stroke-width:1;" />
+    {% if parameter.quadranten == 4 %}
+        <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.box_hoehe}}" style="stroke:black;stroke-width:1;" />
+        <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
+    {% else %}
+        <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        <rect x="{{parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
+
+    {% endif %}
     <!--Pfeil-->
     <line x1="{{parameter.x_null|add:-10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
     <line x1="{{parameter.x_null|add:10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	

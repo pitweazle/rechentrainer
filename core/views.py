@@ -1522,6 +1522,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
+        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1752,7 +1753,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"
+            anmerkung="Du must die Koordinaten mit einem Semikolon eingeben: so (  ;  )!"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
@@ -1765,11 +1766,11 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 lsg = ["({0};{1})".format(x_koo, y_koo)]
                 lsg = lsg + ["({0}|{1})".format(x_koo, y_koo)]
                 box_hoehe = 240
-                box_breite = 350
+                box_breite = 360
                 y_null = box_hoehe-40
-                x_null = 30
+                x_null = 40
                 y_start = y_null
-                x_start = 30
+                x_start = 40
                 einteilung = 20
                 parameter_2 = {
                     'xvalues': [
@@ -1788,9 +1789,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 box_hoehe = 280
-                box_breite = 350
+                box_breite = 360
                 y_null = box_hoehe-40
-                x_null = 30
+                x_null = 40
                 y_start = y_null
                 x_start = x_null
                 einteilung = random.randint(1,2) * 10
@@ -1813,7 +1814,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_hoehe = 360
                 box_breite = 400
                 y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
-                x_null = 130                            # x_Null entspricht der lage der y-Achse
+                x_null = 120                            # x_Null entspricht der lage der y-Achse
                 y_start = box_hoehe                     # ist der Anfang der y-Achse
                 x_start = 0                             # ist der Anfang der x-Achse
                 einteilung = 10
@@ -1830,6 +1831,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 }
             parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                    'grid': 20,
                     'einteilung' :einteilung,
                     'y_null': y_null,'x_null': x_null,
                     'y_start': y_start,'x_start': x_start,
@@ -1885,9 +1887,10 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 1
             else:
                 typ2 = 2
+            typ2=1
             if typ2 == 1:                                                           #nur positive Zahlen
                 breite = 300 
-                x_null = 30
+                x_null = 40
                 x_start = 30
                 x_text_start = 0
                 hoehe = 300                
@@ -1906,20 +1909,21 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             x1 = d_breite = 1000                                                  
             y1 = d_hoehe =1000
             typ3 = random.randint(1,3)
-            if typ3 == 1:                                                          #Spiegelachse ist Winkelhalbierende
+            spiegelachse = random.choice(["winkelhalbierende", "y_achse", "x_achse"])
+            if spiegelachse == "winkelhalbierende":                                                          #Spiegelachse ist Winkelhalbierende
                 hilfe_id = 91
                 x0 = 0
                 y0 = 0
                 #hier kommt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
                     x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 2:                                                        #Spiegelachse parallel zur y-Achse
+            elif spiegelachse == "y_achse":                                                        #Spiegelachse parallel zur y-Achse
                 x0 = random.randint(4,7)
                 y0 = 0
                 #hier kmmt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x0 > x0 + x_null/20:
                     x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 3:                                                        #Spiegelachse parallel zur x-Achse
+            elif spiegelachse == "x_achse":                                                        #Spiegelachse parallel zur x-Achse
                 x0 = 0
                 y0 = random.randint(4,7)
                 #hier kmmt das Dreieck:
@@ -1930,21 +1934,21 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             y3 = y1 + d_hoehe
             x3 = x1 + random.randint(0,d_breite)
             #Berechnung der Bildpunkte
-            if typ3 == 1:
+            if spiegelachse == "winkelhalbierende":
                 x1b = y1
                 x2b = y2
                 x3b = y3
                 y1b = x1
                 y2b = x2
                 y3b = x3
-            elif typ3 == 2:
+            if spiegelachse == "y_achse":
                 x1b = x1 - (x1 - x0)*2 
                 x2b = x2 - (x2 - x0)*2 
                 x3b = x3 - (x3 - x0)*2 
                 y1b = y1
                 y2b = y2
                 y3b = y3
-            elif typ3 == 3:
+            if spiegelachse == "x_achse":
                 x1b = x1  
                 x2b = x2 
                 x3b = x3 
@@ -1968,6 +1972,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             lsg = ["({0};{1})".format(xb, yb)]
             lsg = lsg + ["({0}|{1})".format(xb, yb)]
             parameter = {
+                'grid': 20,
                 'einteilung' :20,
                 'box_hoehe' : hoehe,'box_breite' : breite,
                 'hoehe' : hoehe,'breite' : breite,
@@ -1976,7 +1981,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 'x0': x_null + x0*20,'y0': y_null - y0*20           
                 }
             parameter_2 = {
-                'name': 'svg/koosys.svg', 'object': 'spiegel', 'typ': typ3,
+                'name': 'svg/koosys.svg', 'object': 'spiegel', 'spiegelachse': spiegelachse,
                 'xvalues': [
                     (x_null + n*40, 2*n) for n in range(x_text_start, 7)
                 ],
@@ -6045,18 +6050,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ ==2:                                                                           # Koordinatensystem
             titel = "Funktionsgleichung"
             text = "Wie lautet die Funktionsgleichung dieses Graphen?"
-            frage = "y="
+            frage = "y"
             box_hoehe = 360
             box_breite = 400
             einteilung = 40
 
-            y_start = box_hoehe                     # ist der Anfang der y-Achse
-            x_start = 0                             # ist der Anfang der x-Achse
-
-            y_null = y_start-einteilung *2          # y_Null entspricht der Lage der x-Achse
+            y_null = box_hoehe-einteilung *2        # y_Null entspricht der Lage der x-Achse
             x_null = einteilung *3                  # x_Null entspricht der lage der y-Achse
-
-            anzeigen = 1                            # '1' alle Zahlen, '2' nur gerade Zahlen
 
             grid = einteilung/2
 
@@ -6065,7 +6065,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     'einteilung' :einteilung,
                     'grid' : grid,
                     'y_null': y_null,'x_null': x_null,
-                    'y_start': y_start,'x_start': x_start,
+                    'quadranten': 4,
                     }
             beschriftung = {
                 'xvalues': [
@@ -6074,9 +6074,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 'yvalues': [
                     (y_null - n*einteilung, n) for n in range(-(box_hoehe-y_null)//(einteilung)+1, (y_null)//(einteilung))
                 ],
-             }
+             }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
             parameter.update(beschriftung)
-            print(beschriftung)
 
             absolut = 5
             steigung = -2/3
