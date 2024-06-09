@@ -1821,7 +1821,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_start = box_hoehe                     # ist der Anfang der y-Achse
                 x_start = 0                             # ist der Anfang der x-Achse
                 einteilung = 10
-                parameter_2 = {
+                beschriftung = {
                     'xvalues': [
                         (x_null + n*100, n) for n in range(-1, 5)
                     ],
@@ -1839,7 +1839,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'einteilung' :einteilung,
                     'y_null': y_null,'x_null': x_null,
                     }
-            parameter.update(parameter_2) 
+            parameter.update(beschriftung) 
             print(parameter)               
             zahl=(x_koo+20)*1000+y_koo
             lsg = lsg + [str((x_koo+20)*1000+y_koo)]
@@ -6057,26 +6057,23 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             frage = "y"
             box_hoehe = 360
             box_breite = 400
-            einteilung = 40
+            grid = 20
 
-            y_null = box_hoehe-einteilung *2        # y_Null entspricht der Lage der x-Achse
-            x_null = einteilung *3                  # x_Null entspricht der lage der y-Achse
-
-            grid = einteilung/2
+            y_null = box_hoehe-grid*5         # y_Null  Lage der x-Achse
+            x_null = grid *5                  # x_Null  Lage der y-Achse
 
             parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'einteilung' :einteilung,
                     'grid' : grid,
                     'y_null': y_null,'x_null': x_null,
                     'quadranten': 4,
                     }
             beschriftung = {
                 'xvalues': [
-                    (x_null + n*einteilung, n) for n in range(-x_null//(einteilung)+1, (box_breite-x_null)//(einteilung))
+                    (x_null + n*grid*2, n) for n in range(-x_null//(grid)+1, (box_breite-x_null)//(grid*2))
                 ],
                 'yvalues': [
-                    (y_null - n*einteilung, n) for n in range(-(box_hoehe-y_null)//(einteilung)+1, (y_null)//(einteilung))
+                    (y_null - n*grid*2, n) for n in range(-(box_hoehe-y_null)//(grid)+1, (y_null)//(grid*2))
                 ],
              }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
             parameter.update(beschriftung)
@@ -6084,7 +6081,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             absolut = 5
             steigung = -2/3
             
-            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*einteilung), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*einteilung)}
+            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid)}
 
             parameter.update(graph) 
 
