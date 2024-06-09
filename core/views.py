@@ -1479,6 +1479,7 @@ def koordinatensystem(box_breite, box_hoehe, grid, x_null, y_null):
     parameter.update(beschriftung)
     return parameter
 
+
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
         typ_anf = 1
@@ -1771,14 +1772,14 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten mit einem Semikolon eingeben: so (  ;  )"
+            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=4
+            typ2=2
             if typ2 ==1:                                                            #nur N im 1.Quadranten
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
@@ -1830,7 +1831,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'grid': 10,
                     'einteilung': -10,
                 } 
-            else:                                                                   #Koordinatensystem
+            elif typ2 == 3:
                 x_koo = random.randint(-12,22)
                 y_koo = random.randint(-7,25) 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
@@ -1838,11 +1839,11 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_hoehe = 360
                 box_breite = 400
                 y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
-                x_null = 120                            # x_Null entspricht der lage der y-Achse
+                x_null = 130                            # x_Null entspricht der lage der y-Achse
                 y_start = box_hoehe                     # ist der Anfang der y-Achse
                 x_start = 0                             # ist der Anfang der x-Achse
                 einteilung = 10
-                beschriftung = {
+                parameter_2 = {
                     'xvalues': [
                         (x_null + n*100, n) for n in range(-1, 5)
                     ],
@@ -1852,18 +1853,42 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
-                    'quadranten': 4,
                 }
-            parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
-                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'einteilung' :einteilung,
-                    'y_null': y_null,'x_null': x_null,
-                    }
-            parameter.update(beschriftung) 
-            print(parameter)               
-            zahl=(x_koo+20)*1000+y_koo
-            lsg = lsg + [str((x_koo+20)*1000+y_koo)]
-            lsg = lsg + ["indiv_0"] 
+
+            else:                                                                   #Koordinatensystem
+                x_koo = random.randint(-12,22)
+                y_koo = random.randint(-7,25) 
+                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                box_hoehe = 360
+                box_breite = 400
+                y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
+                x_null = 130                            # x_Null entspricht der lage der y-Achse
+                y_start = box_hoehe                     # ist der Anfang der y-Achse
+                x_start = 0                             # ist der Anfang der x-Achse
+                einteilung = 10
+                parameter_2 = {
+                    'xvalues': [
+                        (x_null + n*100, n) for n in range(-1, 5)
+                    ],
+                    'yvalues': [
+                        (y_null - n*100, n) for n in range(0, 5)
+                    ],
+                    'x_koo' : x_null + x_koo*10, 
+                    'y_koo': y_null -(y_koo*10),
+                    'text_a': "A",
+                }
+            if typ2 < 3:
+                parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
+                        'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                        'einteilung' :einteilung,
+                        'y_null': y_null,'x_null': x_null,
+                        'y_start': y_start,'x_start': x_start,
+                        }
+                parameter.update(beschriftung)                
+                zahl=(x_koo+20)*1000+y_koo
+                lsg = lsg + [str((x_koo+20)*1000+y_koo)]
+                lsg = lsg + ["indiv_0"] 
         elif typ == 8:                                                              #Symmetrie
             titel = pro_text = "Symmetrie"
             zeichen_liste = [(0,1,2,3,4,5,6,7,8,9),      ("A", "B", "C", "D", "E", "F"),    ("G", "H", "I", "J", "K", "L"), ("M", "N", "O", "P", "Q", "R", "S"), ("T", "U", "V", "W", "X", "Y", "Z")]
@@ -1911,10 +1936,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 1
             else:
                 typ2 = 2
-            typ2=1
             if typ2 == 1:                                                           #nur positive Zahlen
                 breite = 300 
-                x_null = 40
+                x_null = 30
                 x_start = 30
                 x_text_start = 0
                 hoehe = 300                
@@ -1933,21 +1957,20 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             x1 = d_breite = 1000                                                  
             y1 = d_hoehe =1000
             typ3 = random.randint(1,3)
-            spiegelachse = random.choice(["winkelhalbierende", "y_achse", "x_achse"])
-            if spiegelachse == "winkelhalbierende":                                                          #Spiegelachse ist Winkelhalbierende
+            if typ3 == 1:                                                          #Spiegelachse ist Winkelhalbierende
                 hilfe_id = 91
                 x0 = 0
                 y0 = 0
                 #hier kommt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
                     x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif spiegelachse == "y_achse":                                                        #Spiegelachse parallel zur y-Achse
+            elif typ3 == 2:                                                        #Spiegelachse parallel zur y-Achse
                 x0 = random.randint(4,7)
                 y0 = 0
                 #hier kmmt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x0 > x0 + x_null/20:
                     x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif spiegelachse == "x_achse":                                                        #Spiegelachse parallel zur x-Achse
+            elif typ3 == 3:                                                        #Spiegelachse parallel zur x-Achse
                 x0 = 0
                 y0 = random.randint(4,7)
                 #hier kmmt das Dreieck:
@@ -1958,21 +1981,21 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             y3 = y1 + d_hoehe
             x3 = x1 + random.randint(0,d_breite)
             #Berechnung der Bildpunkte
-            if spiegelachse == "winkelhalbierende":
+            if typ3 == 1:
                 x1b = y1
                 x2b = y2
                 x3b = y3
                 y1b = x1
                 y2b = x2
                 y3b = x3
-            if spiegelachse == "y_achse":
+            elif typ3 == 2:
                 x1b = x1 - (x1 - x0)*2 
                 x2b = x2 - (x2 - x0)*2 
                 x3b = x3 - (x3 - x0)*2 
                 y1b = y1
                 y2b = y2
                 y3b = y3
-            if spiegelachse == "x_achse":
+            elif typ3 == 3:
                 x1b = x1  
                 x2b = x2 
                 x3b = x3 
@@ -1996,7 +2019,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             lsg = ["({0};{1})".format(xb, yb)]
             lsg = lsg + ["({0}|{1})".format(xb, yb)]
             parameter = {
-                'grid': 20,
                 'einteilung' :20,
                 'box_hoehe' : hoehe,'box_breite' : breite,
                 'hoehe' : hoehe,'breite' : breite,
@@ -2005,7 +2027,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 'x0': x_null + x0*20,'y0': y_null - y0*20           
                 }
             parameter_2 = {
-                'name': 'svg/koosys.svg', 'object': 'spiegel', 'spiegelachse': spiegelachse,
+                'name': 'svg/koosys.svg', 'object': 'spiegel', 'typ': typ3,
                 'xvalues': [
                     (x_null + n*40, 2*n) for n in range(x_text_start, 7)
                 ],
@@ -4892,33 +4914,6 @@ def sortieren(zahl,buchstaben):
         term = term.replace("1","")
     return term
 
-def wertetabelle(parameter,stufe):
-    zahlen = [0,1,2,-1,0.5]
-    lsg = [""]
-    absolut = koeffizient = 0
-    while absolut == 0:
-        absolut = random.randint(-4,4)
-    while koeffizient == 0:
-        if stufe%2 == 1:
-            koeffizient = random.randint(-4,4)
-        else:
-            koeffizient = random.randint(1,5)
-    term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
-    x_werte = {}
-    y_werte = {}
-    y_farbe = {}
-    lsg = []
-    for n in range (0,5):
-        x_werte["x" + str(n)] = zahlen[n]
-        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
-        #y_farbe["color" + str(n)] = "leer"
-        lsg.append(str(zahlen[n]*koeffizient+absolut))
-    lsg = [lsg]
-    parameter.update(x_werte)
-    parameter.update(y_werte)
-    parameter.update(y_farbe)
-    return parameter, term, lsg
-
 def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -4987,10 +4982,32 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         parameter = {'name':'normal'}
         if typ == 1:                                                                            # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
-            parameter = {'name': 'tab_term',}
-            parameter, term, lsg = wertetabelle(parameter,stufe)
-            parameter.update({'titel_x': 'x', 'titel_y': term})
+            zahlen = [0,1,2,-1, 0.5]
+            lsg = [""]
+            absolut = koeffizient = 0
+            while absolut == 0:
+                absolut = random.randint(-4,4)
+            while koeffizient == 0:
+                if stufe%2 == 1:
+                    koeffizient = random.randint(-4,4)
+                else:
+                    koeffizient = random.randint(1,5)
+            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
             pro_text = "Termbelegung: " + term
+            x_werte = {}
+            y_werte = {}
+            y_farbe = {}
+            lsg = []
+            for n in range (0,5):
+                x_werte["x" + str(n)] = zahlen[n]
+                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+                #y_farbe["color" + str(n)] = "leer"
+                lsg.append(str(zahlen[n]*koeffizient+absolut))
+            lsg = [lsg]
+            parameter = {'name': 'tab_terme', 'titel_x': 'x', 'titel_y': term}
+            parameter.update(x_werte)
+            parameter.update(y_werte)
+            parameter.update(y_farbe)
         elif typ == 2:                                                                          # Terme zusammenfassen
             items = stufe%2+4
             startbuchstabe = typ2 = random.randint(0,2)*4
@@ -5681,7 +5698,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
                 pro_text = "Durchschnittsnote: {3}"
                 frage = "Durchschnittsnote  "
-                variable = ["Noten",name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1]]
+                variable = [name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1],noten]
                 hilfe_id = 32
         elif typ == 4:                                  # Zahlenschloss
             titel = "Permutationen"
@@ -6065,12 +6082,35 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1:                                                                            # Wertetabelle'
+        if typ == 1: 
+            print("OK")                                                                           # Wertetabelle'
             text = "Berechne die Funktionswerte"
-            parameter = {'name': 'tab_term',}
-            parameter, term, lsg = wertetabelle(parameter,stufe)
-            parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
+            zahlen = [0,1,2,-1]
+            lsg = [""]
+            absolut = koeffizient = 0
+            while absolut == 0:
+                absolut = random.randint(-4,4)
+            while koeffizient == 0:
+                if stufe%2 == 1:
+                    koeffizient = random.randint(-4,4)
+                else:
+                    koeffizient = random.randint(1,5)
+            term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
             pro_text = "Termbelegung: " + term
+            x_werte = {}
+            y_werte = {}
+            y_farbe = {}
+            lsg = []
+            for n in range (0,4):
+                x_werte["x" + str(n)] = zahlen[n]
+                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+                #y_farbe["color" + str(n)] = "leer"
+                lsg.append(str(zahlen[n]*koeffizient+absolut))
+            lsg = [lsg]
+            parameter = {'name': 'tab_term', 'titel_x': 'x', 'titel_y': "y = " + term}
+            parameter.update(x_werte)
+            parameter.update(y_werte)
+            parameter.update(y_farbe)
         elif typ ==2:                                                                           # Koordinatensystem
             titel = "Funktionsgleichung"
             text = "Wie lautet die Funktionsgleichung dieses Graphen?"
