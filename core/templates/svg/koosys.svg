@@ -16,7 +16,7 @@
             <rect width="1" height="30" />
         </pattern> {% endcomment %}
 
-        <pattern id="yduenn" x="20" y="{{parameter.grid}}" width="20" height="{{parameter.grid}}" patternUnits="userSpaceOnUse">
+        <pattern id="yduenn" x="0" y="{{parameter.grid}}" width="20" height="{{parameter.grid}}" patternUnits="userSpaceOnUse">
             <rect width="20" height="1" />
         </pattern>
         {% comment %} <pattern id="ymittel" x="20" y="{{parameter.y_null}}" width="20" height="50" patternUnits="userSpaceOnUse">
@@ -45,7 +45,7 @@
         <rect x="0" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" />
     {% else %}
         <line x1="{{parameter.x_null}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
-        <rect x="{{parameter.x_null}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" />
+        <rect x="{{parameter.x_null|add:1}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-70}}" height="10" fill="url(#xduenn)" />
 
     {% endif %}
     <!--Pfeil-->
@@ -54,7 +54,7 @@
     start{{parameter.x_start}}
 
         <!-- dünne Linien-->
-        <rect x="{{parameter.x_start}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" />
+        {% comment %} <rect x="{{parameter.x_start}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite}}" height="10" fill="url(#xduenn)" /> {% endcomment %}
         {% comment %} {% if parameter.einteilung == 10 %}
             <!--5er Linien-->
             <rect x="{{parameter.x_start|add:20}}" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-60}}" height="15" fill="url(#xmittel)" />
@@ -68,12 +68,13 @@
             {%endif%}
         {%endfor%}
 
+    <!--y-Achse-->
     {% if parameter.quadranten == 4 %}
         <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.box_hoehe}}" style="stroke:black;stroke-width:1;" />
         <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
     {% else %}
         <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
-        <rect x="{{parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
+        <rect x="{{parameter.x_null|add:-5}}"  y="40" width="10" height="{{parameter.y_null|add:-20}}" fill="url(#yduenn)" />
 
     {% endif %}
     <!--Pfeil-->
@@ -81,7 +82,7 @@
     <line x1="{{parameter.x_null|add:10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
 
         <!--dünne Linien-->
-        <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.y_start|add:-30}}" fill="url(#yduenn)" />
+        {% comment %} <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.y_start|add:-30}}" fill="url(#yduenn)" /> {% endcomment %}
         {% comment %} {% if parameter.einteilung == 10 %}
             <!--5er Linien-->
             <rect x="{{ parameter.x_null|add:-7.5}}"  y="30" width="15" height="{{parameter.y_start|add:-40}}" fill="url(#ymittel)" />
