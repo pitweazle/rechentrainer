@@ -1760,6 +1760,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 2
             else:
                 typ2 = 3
+            typ2=1
             if typ2 ==1:                                                            #nur N im 1.Quadranten
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
@@ -1777,7 +1778,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                         (x_null + n*20, n) for n in range(0, 15)
                     ],
                     'yvalues': [
-                        (y_null - n*20, n) for n in range(0, 10)
+                        (y_null - n*20, n) for n in range(0, 9)
                     ],
                     'x_koo' : x_null + x_koo*20, 
                     'y_koo': y_null -(y_koo*20),
@@ -1837,9 +1838,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'grid': 20,
                     'einteilung' :einteilung,
                     'y_null': y_null,'x_null': x_null,
-                    'y_start': y_start,'x_start': x_start,
                     }
-            parameter.update(parameter_2)                
+            parameter.update(parameter_2) 
+            print(parameter)               
             zahl=(x_koo+20)*1000+y_koo
             lsg = lsg + [str((x_koo+20)*1000+y_koo)]
             lsg = lsg + ["indiv_0"] 
