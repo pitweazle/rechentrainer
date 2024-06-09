@@ -1760,7 +1760,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=1
+            typ2=2
             if typ2 ==1:                                                            #nur N im 1.Quadranten
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
@@ -1773,7 +1773,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_start = y_null
                 x_start = 40
                 einteilung = 20
-                parameter_2 = {
+                beschriftung = {
                     'xvalues': [
                         (x_null + n*20, n) for n in range(0, 15)
                     ],
@@ -1783,6 +1783,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*20, 
                     'y_koo': y_null -(y_koo*20),
                     'text_a': "A",
+                    'grid': 20,
                     'quadranten': 1,
                 } 
             elif typ2 ==2:                                                          #nur Kommazahlen im 1.Quadranten
@@ -1797,7 +1798,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_start = y_null
                 x_start = x_null
                 einteilung = random.randint(1,2) * 10
-                parameter_2 = {
+                beschriftung = {
                     'xvalues': [
                         (x_null + n*100, n) for n in range(0, 3)
                     ],
@@ -1807,7 +1808,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
-                    'quadranten': 4,
+                    'quadranten': 1,
+                    'grid': 10,
+                    'einteilung': -10,
                 } 
             else:                                                                   #Koordinatensystem
                 x_koo = random.randint(-12,22)
@@ -1835,7 +1838,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 }
             parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'grid': 20,
                     'einteilung' :einteilung,
                     'y_null': y_null,'x_null': x_null,
                     }
