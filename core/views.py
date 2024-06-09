@@ -1461,6 +1461,24 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
 
+def koordinatensystem(box_breite, box_hoehe, grid, x_null, y_null):
+    parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
+            'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+            'grid' : grid,
+            'y_null': y_null,'x_null': x_null,
+            'quadranten': 4,
+            }
+    beschriftung = {
+        'xvalues': [
+            (x_null + n*grid*2, n) for n in range(-x_null//(grid)+1, (box_breite-x_null)//(grid*2))
+        ],
+        'yvalues': [
+            (y_null - n*grid*2, n) for n in range(-(box_hoehe-y_null)//(grid)+1, (y_null)//(grid*2))
+        ],
+        }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
+    parameter.update(beschriftung)
+    return parameter
+
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
         typ_anf = 1
@@ -1760,7 +1778,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=2
+            typ2=4
             if typ2 ==1:                                                            #nur N im 1.Quadranten
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
@@ -6060,25 +6078,9 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             box_hoehe = 360
             box_breite = 400
             grid = 20
-
             y_null = box_hoehe-grid*5         # y_Null  Lage der x-Achse
             x_null = grid *5                  # x_Null  Lage der y-Achse
-
-            parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
-                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'grid' : grid,
-                    'y_null': y_null,'x_null': x_null,
-                    'quadranten': 4,
-                    }
-            beschriftung = {
-                'xvalues': [
-                    (x_null + n*grid*2, n) for n in range(-x_null//(grid)+1, (box_breite-x_null)//(grid*2))
-                ],
-                'yvalues': [
-                    (y_null - n*grid*2, n) for n in range(-(box_hoehe-y_null)//(grid)+1, (y_null)//(grid*2))
-                ],
-             }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
-            parameter.update(beschriftung)
+            parameter = koordinatensystem(box_breite, box_hoehe, grid, x_null, y_null)
 
             absolut = 5
             steigung = -2/3
