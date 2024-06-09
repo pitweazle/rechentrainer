@@ -1522,7 +1522,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
+        typ=7
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1753,7 +1753,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten mit einem Semikolon eingeben: so (  ;  )!"
+            anmerkung="Du must die Koordinaten mit einem Semikolon eingeben: so (  ;  )"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
@@ -1782,6 +1782,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*20, 
                     'y_koo': y_null -(y_koo*20),
                     'text_a': "A",
+                    'quadranten': 1,
                 } 
             elif typ2 ==2:                                                          #nur Kommazahlen im 1.Quadranten
                 x_koo = random.randint(0,20)
@@ -1805,6 +1806,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
+                    'quadranten': 4,
                 } 
             else:                                                                   #Koordinatensystem
                 x_koo = random.randint(-12,22)
@@ -1828,6 +1830,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
+                    'quadranten': 4,
                 }
             parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
