@@ -1461,12 +1461,11 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
 
-def koordinatensystem(box_breite, box_hoehe, grid, x_null, y_null):
-    parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
+def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20):
+    parameter = {'name': 'svg/koosys.svg',
             'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
             'grid' : grid,
             'y_null': y_null,'x_null': x_null,
-            'quadranten': 4,
             }
     beschriftung = {
         'xvalues': [
@@ -1772,15 +1771,15 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"
+            anmerkung="Du must die Koordinaten mit Klammer und Semikolon eingeben - so: (  ;  )"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=2
-            if typ2 ==1:                                                            #nur N im 1.Quadranten
+            typ2=3
+            if typ2 == 1:                                                            #nur N im 1.Quadranten
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
                 lsg = ["({0};{1})".format(x_koo, y_koo)]
@@ -1789,8 +1788,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                y_start = y_null
-                x_start = 40
                 einteilung = 20
                 beschriftung = {
                     'xvalues': [
@@ -1803,9 +1800,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'y_koo': y_null -(y_koo*20),
                     'text_a': "A",
                     'grid': 20,
-                    'quadranten': 1,
                 } 
-            elif typ2 ==2:                                                          #nur Kommazahlen im 1.Quadranten
+            elif typ2 == 2:                                                          #nur Kommazahlen im 1.Quadranten
                 x_koo = random.randint(0,20)
                 y_koo = random.randint(0,20) 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
@@ -1832,29 +1828,26 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'einteilung': -10,
                 } 
             elif typ2 == 3:
-                x_koo = random.randint(-12,22)
-                y_koo = random.randint(-7,25) 
-                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 box_hoehe = 360
                 box_breite = 400
-                y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
-                x_null = 130                            # x_Null entspricht der lage der y-Achse
-                y_start = box_hoehe                     # ist der Anfang der y-Achse
-                x_start = 0                             # ist der Anfang der x-Achse
-                einteilung = 10
-                parameter_2 = {
-                    'xvalues': [
-                        (x_null + n*100, n) for n in range(-1, 5)
-                    ],
-                    'yvalues': [
-                        (y_null - n*100, n) for n in range(0, 5)
-                    ],
-                    'x_koo' : x_null + x_koo*10, 
-                    'y_koo': y_null -(y_koo*10),
+                grid = 20
+                y_null = box_hoehe-grid*7         # y_Null  Lage der x-Achse
+                x_null = grid *7                  # x_Null  Lage der y-Achse
+                parameter = koordinatensystem(x_null, y_null,box_breite, box_hoehe, grid, )
+                x_koo = random.randint(-6,11)/2
+                y_koo = random.randint(-6,9)/2 
+                lsg = ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
+                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo).replace(".", ",")]
+                zahl=(x_koo*10+20)*1000+y_koo*10        # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = lsg + [zahl]
+                lsg = lsg + ["indiv_0"] 
+                punkt = {
+                    'object': 'koordinaten',
+                    'x_koo' : x_null + x_koo*40, 
+                    'y_koo': y_null -(y_koo*40),
                     'text_a': "A",
                 }
-
+                parameter.update(punkt)
             else:                                                                   #Koordinatensystem
                 x_koo = random.randint(-12,22)
                 y_koo = random.randint(-7,25) 
@@ -1883,7 +1876,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                         'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
                         'einteilung' :einteilung,
                         'y_null': y_null,'x_null': x_null,
-                        'y_start': y_start,'x_start': x_start,
                         }
                 parameter.update(beschriftung)                
                 zahl=(x_koo+20)*1000+y_koo
@@ -6120,12 +6112,12 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             grid = 20
             y_null = box_hoehe-grid*5         # y_Null  Lage der x-Achse
             x_null = grid *5                  # x_Null  Lage der y-Achse
-            parameter = koordinatensystem(box_breite, box_hoehe, grid, x_null, y_null)
+            parameter = koordinatensystem(x_null, y_null)
 
             absolut = 5
             steigung = -2/3
             
-            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid)}
+            graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid)}
 
             parameter.update(graph) 
 

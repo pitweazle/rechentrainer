@@ -47,10 +47,10 @@
     <rect x="0" y="0" width="{{parameter.box_breite}}" height="{{parameter.box_hoehe}}" fill="url(#grid)"/>
 
     <!--x-Achse-->
-    {% if parameter.quadranten == 4 %}
+    {% if parameter.x_null != 40 %}
         <line x1="0" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
         <rect x="0" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-20}}" height="10" fill="url(#xduenn)" />
-        <rect x="10" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-70}}" height="15" fill="url(#xganze)" />
+        <rect x="10" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-50}}" height="15" fill="url(#xganze)" />
     {% else %}
         <line x1="{{parameter.x_null}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
         <rect x="{{parameter.x_null|add:1}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-70}}" height="10" fill="url(#xduenn)" />
@@ -67,7 +67,6 @@
     start{{parameter.x_start}}
 
 
-
         {%for x, txt in parameter.xvalues %}
             {%if txt != 0%}
                 <text x="{{x|add:-5}}" y="{{parameter.y_null|add:25}}" style="url(#text)">{{txt}}</text>
@@ -75,7 +74,7 @@
         {%endfor%}
 
     <!--y-Achse-->
-    {% if parameter.quadranten == 4 %}
+    {% if parameter.x_null != 40 %}
         <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.box_hoehe}}" style="stroke:black;stroke-width:1;" />
         <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
         <rect x="{{ parameter.x_null|add:-7.5}}"  y="30" width="15" height="{{parameter.box_hoehe}}" fill="url(#yganze)" />
