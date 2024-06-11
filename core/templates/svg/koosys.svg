@@ -43,10 +43,10 @@
         </g>  
     </defs>	
 
-    <!-- Karo-Muster -->
+<!-- Karo-Muster -->
     <rect x="0" y="0" width="{{parameter.box_breite}}" height="{{parameter.box_hoehe}}" fill="url(#grid)"/>
 
-    <!--x-Achse-->
+<!--x-Achse-->
     {% if parameter.x_null != 40 %}
         <line x1="0" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
         <rect x="0" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-20}}" height="10" fill="url(#xduenn)" />
@@ -66,14 +66,13 @@
     <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
     start{{parameter.x_start}}
 
+    {%for x, txt in parameter.xvalues %}
+        {%if txt != 0%}
+            <text x="{{x|add:-5}}" y="{{parameter.y_null|add:25}}" style="url(#text)">{{txt}}</text>
+        {%endif%}
+    {%endfor%}
 
-        {%for x, txt in parameter.xvalues %}
-            {%if txt != 0%}
-                <text x="{{x|add:-5}}" y="{{parameter.y_null|add:25}}" style="url(#text)">{{txt}}</text>
-            {%endif%}
-        {%endfor%}
-
-    <!--y-Achse-->
+<!--y-Achse-->
     {% if parameter.x_null != 40 %}
         <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.box_hoehe}}" style="stroke:black;stroke-width:1;" />
         <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
@@ -93,13 +92,11 @@
     <line x1="{{parameter.x_null|add:-10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
     <line x1="{{parameter.x_null|add:10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
 
-
-
-        {%for y, txt in parameter.yvalues %}
-            {%if txt != 0%}
-                <text x="{{parameter.x_null|add:-25}}" y="{{y|add:5}}" style="url(#text)">{{txt}}</text>
-            {%endif%}
-        {%endfor%}
+    {%for y, txt in parameter.yvalues %}
+        {%if txt != 0%}
+            <text x="{{parameter.x_null|add:-25}}" y="{{y|add:5}}" style="url(#text)">{{txt}}</text>
+        {%endif%}
+    {%endfor%}
 
     {% if parameter.object == "koordinaten" %}
         <!--Kreuz-->	
@@ -123,7 +120,7 @@
         {%endfor%}
 
         {% if parameter.spiegelachse == "winkelhalbierende" %}
-            <line x1="0" y1="{{parameter.hoehe}}" x2="{{parameter.breite}}" y2="0" style="stroke:red;stroke-width:2;" />	
+            <line x1="0" y1="{{parameter.box_hoehe}}" x2="{{parameter.box_breite}}" y2="0" style="stroke:red;stroke-width:2;" />	
             <text x="30" y="{{parameter.box_hoehe|add:-10}}" style="stroke:red;stroke-width:1;">S</text>  
         {% elif parameter.spiegelachse == "y_achse" %} 
             <line x1="{{parameter.x0}}" y1="0" x2="{{parameter.x0}}" y2="{{parameter.hoehe}}" style="stroke:red;stroke-width:2;" />	
