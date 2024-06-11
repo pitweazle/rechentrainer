@@ -1155,7 +1155,7 @@ def sub_figuren():
     lsg = lsg + ["indiv_0"] 
     return typ2, anmerkung, lsg, parameter
 
-def dreieck(typ2):
+def sub_dreieck(typ2):
     if typ2 == 1:
         x1 = random.randint(4,12)
         y1 = random.randint(1,12) 
@@ -1461,7 +1461,7 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
 
-def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20):
+def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, einteilung=2):
     parameter = {'name': 'svg/koosys.svg',
             'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
             'grid' : grid,
@@ -1469,15 +1469,14 @@ def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20):
             }
     beschriftung = {
         'xvalues': [
-            (x_null + n*grid*2, n) for n in range(-x_null//(grid)+1, (box_breite-x_null)//(grid*2))
+            (x_null + n*grid*einteilung, n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*einteilung))
         ],
         'yvalues': [
-            (y_null - n*grid*2, n) for n in range(-(box_hoehe-y_null)//(grid)+1, (y_null)//(grid*2))
+            (y_null - n*grid*einteilung, n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*einteilung))
         ],
         }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
     parameter.update(beschriftung)
     return parameter
-
 
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
@@ -1771,41 +1770,32 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten mit Klammer und Semikolon eingeben - so: (  ;  )"
+            anmerkung="Du must die Koordinaten in Klammern setzen und mit Semikolon trennen: (  ;  )"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=3
+            typ2=1
             if typ2 == 1:                                                            #nur N im 1.Quadranten
-                x_koo = random.randint(0,14)
-                y_koo = random.randint(0,9) 
-                lsg = ["({0};{1})".format(x_koo, y_koo)]
-                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo)]
                 box_hoehe = 240
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                einteilung = 20
-                beschriftung = {
-                    'xvalues': [
-                        (x_null + n*20, n) for n in range(0, 15)
-                    ],
-                    'yvalues': [
-                        (y_null - n*20, n) for n in range(0, 9)
-                    ],
+                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe, grid=20, einteilung=1)
+                x_koo = random.randint(0,14)
+                y_koo = random.randint(0,9) 
+                lsg = ["({0};{1})".format(x_koo, y_koo)]
+                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo)]
+                punkt = {
+                    'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*20, 
                     'y_koo': y_null -(y_koo*20),
                     'text_a': "A",
-                    'grid': 20,
                 } 
+                parameter.update(punkt)
             elif typ2 == 2:                                                          #nur Kommazahlen im 1.Quadranten
-                x_koo = random.randint(0,20)
-                y_koo = random.randint(0,20) 
-                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 box_hoehe = 280
                 box_breite = 360
                 y_null = box_hoehe-40
@@ -1813,6 +1803,12 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_start = y_null
                 x_start = x_null
                 einteilung = random.randint(1,2) * 10
+                parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
+                        'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                        'y_null': y_null,'x_null': x_null,
+                        'grid': 10,
+                        'einteilung': einteilung,
+                        }
                 beschriftung = {
                     'xvalues': [
                         (x_null + n*100, n) for n in range(0, 3)
@@ -1820,14 +1816,21 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'yvalues': [
                         (y_null - n*100, n) for n in range(0, 3)
                     ],
+                }
+                parameter.update(beschriftung)
+                x_koo = random.randint(0,20)
+                y_koo = random.randint(0,20) 
+                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                punkt = {
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
-                    'quadranten': 1,
                     'grid': 10,
                     'einteilung': -10,
                 } 
-            elif typ2 == 3:
+                parameter.update(punkt)
+            else:
                 box_hoehe = 360
                 box_breite = 400
                 grid = 20
@@ -1838,9 +1841,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_koo = random.randint(-6,9)/2 
                 lsg = ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
                 lsg = lsg + ["({0}|{1})".format(x_koo, y_koo).replace(".", ",")]
-                zahl=(x_koo*10+20)*1000+y_koo*10        # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-                lsg = lsg + [zahl]
-                lsg = lsg + ["indiv_0"] 
                 punkt = {
                     'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*40, 
@@ -1848,39 +1848,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'text_a': "A",
                 }
                 parameter.update(punkt)
-            else:                                                                   #Koordinatensystem
-                x_koo = random.randint(-12,22)
-                y_koo = random.randint(-7,25) 
-                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                box_hoehe = 360
-                box_breite = 400
-                y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
-                x_null = 130                            # x_Null entspricht der lage der y-Achse
-                y_start = box_hoehe                     # ist der Anfang der y-Achse
-                x_start = 0                             # ist der Anfang der x-Achse
-                einteilung = 10
-                parameter_2 = {
-                    'xvalues': [
-                        (x_null + n*100, n) for n in range(-1, 5)
-                    ],
-                    'yvalues': [
-                        (y_null - n*100, n) for n in range(0, 5)
-                    ],
-                    'x_koo' : x_null + x_koo*10, 
-                    'y_koo': y_null -(y_koo*10),
-                    'text_a': "A",
-                }
-            if typ2 < 3:
-                parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
-                        'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                        'einteilung' :einteilung,
-                        'y_null': y_null,'x_null': x_null,
-                        }
-                parameter.update(beschriftung)                
-                zahl=(x_koo+20)*1000+y_koo
-                lsg = lsg + [str((x_koo+20)*1000+y_koo)]
-                lsg = lsg + ["indiv_0"] 
+            zahl=(x_koo+20)*1000+y_koo                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = lsg + [str((x_koo+20)*1000+y_koo)]
+            lsg = lsg + ["indiv_0"] 
         elif typ == 8:                                                              #Symmetrie
             titel = pro_text = "Symmetrie"
             zeichen_liste = [(0,1,2,3,4,5,6,7,8,9),      ("A", "B", "C", "D", "E", "F"),    ("G", "H", "I", "J", "K", "L"), ("M", "N", "O", "P", "Q", "R", "S"), ("T", "U", "V", "W", "X", "Y", "Z")]
@@ -1928,14 +1898,13 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 1
             else:
                 typ2 = 2
+            typ2=1
             if typ2 == 1:                                                           #nur positive Zahlen
                 breite = 300 
-                x_null = 30
-                x_start = 30
-                x_text_start = 0
+                x_null = 40
                 hoehe = 300                
                 y_null = hoehe-40
-                y_start = hoehe-40
+                x_text_start = 40
                 y_text_start = 0   
             else:                                                                   #auch negative Zahlen
                 breite = 400
@@ -1948,46 +1917,47 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_text_start = -2   
             x1 = d_breite = 1000                                                  
             y1 = d_hoehe =1000
-            typ3 = random.randint(1,3)
-            if typ3 == 1:                                                          #Spiegelachse ist Winkelhalbierende
+            spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
+            spiegelachse="winkelhalbierende"
+            if spiegelachse == "winkelhalbierende":                                                          #Spiegelachse ist Winkelhalbierende
                 hilfe_id = 91
                 x0 = 0
                 y0 = 0
                 #hier kommt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 2:                                                        #Spiegelachse parallel zur y-Achse
+                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
+            elif spiegelachse == "y_achse":                                                        #Spiegelachse parallel zur y-Achse
                 x0 = random.randint(4,7)
                 y0 = 0
                 #hier kmmt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x0 > x0 + x_null/20:
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 3:                                                        #Spiegelachse parallel zur x-Achse
+                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
+            elif spiegelachse == "x_achse":                                                        #Spiegelachse parallel zur x-Achse
                 x0 = 0
                 y0 = random.randint(4,7)
                 #hier kmmt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or y1 - y0 > y0 + y_null/20:
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
+                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
             x2 = x1 + d_breite
             y2 = y1
             y3 = y1 + d_hoehe
             x3 = x1 + random.randint(0,d_breite)
             #Berechnung der Bildpunkte
-            if typ3 == 1:
+            if spiegelachse == "winkelhalbierende":
                 x1b = y1
                 x2b = y2
                 x3b = y3
                 y1b = x1
                 y2b = x2
                 y3b = x3
-            elif typ3 == 2:
+            elif spiegelachse == "y_achse":
                 x1b = x1 - (x1 - x0)*2 
                 x2b = x2 - (x2 - x0)*2 
                 x3b = x3 - (x3 - x0)*2 
                 y1b = y1
                 y2b = y2
                 y3b = y3
-            elif typ3 == 3:
+            elif spiegelachse == "x_achse":
                 x1b = x1  
                 x2b = x2 
                 x3b = x3 
@@ -2007,25 +1977,30 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 xb = xb_liste[typ4]
             yb = yb_liste[typ4] 
             text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[typ4] + "' des gespiegelten Dreiecks?"
-            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"             
+            anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
             lsg = ["({0};{1})".format(xb, yb)]
             lsg = lsg + ["({0}|{1})".format(xb, yb)]
             parameter = {
-                'einteilung' :20,
+                'name': 'svg/koosys.svg', 'object': 'spiegel', 'spiegelachse': spiegelachse,
                 'box_hoehe' : hoehe,'box_breite' : breite,
                 'hoehe' : hoehe,'breite' : breite,
-                'y_null': y_null,'x_null': x_null,                
-                'x_start': x_start,'y_start': y_start,
+                'y_null': y_null,'x_null': x_null,  
+                'grid': 20,
+                'einteilung' :20,
+              
                 'x0': x_null + x0*20,'y0': y_null - y0*20           
                 }
-            parameter_2 = {
-                'name': 'svg/koosys.svg', 'object': 'spiegel', 'typ': typ3,
+            print(parameter)
+            beschriftung = {
                 'xvalues': [
                     (x_null + n*40, 2*n) for n in range(x_text_start, 7)
                 ],
                 'yvalues': [
                     (y_null - n*40, 2*n) for n in range(y_text_start, 7)
                 ],                    
+                }
+            parameter.update(beschriftung)
+            dreieck = {
                 'x1': x_null + x_koo[0], 'y1': y_null - y_koo[0], 
                 'x2': x_null + x_koo[1], 'y2': y_null - y_koo[1], 
                 'x3': x_null + x_koo[2], 'y3': y_null - y_koo[2],
@@ -2033,7 +2008,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     (x_null+x_koo[n]+ecken_x[n], y_null-y_koo[n]+ecken_y[n], ecken[n]) for n in (range(0,3))
                 ],  
                 }
-            parameter.update(parameter_2)
+            parameter.update(dreieck)            
             zahl=(xb+20)*1000+yb
             lsg = lsg + [str((xb+20)*1000+yb)]
             lsg = lsg + ["indiv_0"] 
