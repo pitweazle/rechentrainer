@@ -26,10 +26,10 @@
             <rect width="20" height="2" />
         </pattern>
 
-        <pattern id="ymittel" y="{{parameter.einteilung}}"" y="{{parameter.y_null}}" width="20" height="50" patternUnits="userSpaceOnUse">
+        <pattern id="ymittel" y="{{parameter.einteilung}}" width="20" height="50" patternUnits="userSpaceOnUse">
             <rect width="20" height="2" />
         </pattern>        
-        <pattern id="ydick"  y="40" width="30" height="100" patternUnits="userSpaceOnUse">
+        <pattern id="ydick"  y="{{parameter.einteilung}}" width="30" height="100" patternUnits="userSpaceOnUse">
             <rect width="30" height="2" />
         </pattern>
         

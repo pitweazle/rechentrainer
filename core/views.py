@@ -1465,14 +1465,15 @@ def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, ei
     parameter = {'name': 'svg/koosys.svg',
             'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
             'grid' : grid,
+            'einteilung': einteilung,
             'y_null': y_null,'x_null': x_null,
             }
     beschriftung = {
         'xvalues': [
-            (x_null + n*grid*einteilung, n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*einteilung))
+            (x_null + n*grid*abs(einteilung), n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*abs(einteilung))-1)
         ],
         'yvalues': [
-            (y_null - n*grid*einteilung, n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*einteilung))
+            (y_null - n*grid*abs(einteilung), n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*abs(einteilung))-1)
         ],
         }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
     parameter.update(beschriftung)
@@ -1778,12 +1779,12 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             else:
                 typ2 = 3
             typ2=1
-            if typ2 == 1:                                                            #nur N im 1.Quadranten
+            if typ2 == 1:                                                            # nur N im 1.Quadranten
                 box_hoehe = 240
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe, grid=20, einteilung=1)
+                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe, einteilung=1)
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
                 lsg = ["({0};{1})".format(x_koo, y_koo)]
@@ -1795,7 +1796,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'text_a': "A",
                 } 
                 parameter.update(punkt)
-            elif typ2 == 2:                                                          #nur Kommazahlen im 1.Quadranten
+            elif typ2 == 2:                                                          # Kommazahlen im 1.Quadranten
                 box_hoehe = 280
                 box_breite = 360
                 y_null = box_hoehe-40
@@ -1803,6 +1804,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_start = y_null
                 x_start = x_null
                 einteilung = random.randint(1,2) * 10
+                # parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
+
                 parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
                         'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
                         'y_null': y_null,'x_null': x_null,
@@ -1830,7 +1833,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'einteilung': -10,
                 } 
                 parameter.update(punkt)
-            else:
+            else:                                                                    # 4 Quadranten
                 box_hoehe = 360
                 box_breite = 400
                 grid = 20
