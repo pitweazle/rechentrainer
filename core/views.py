@@ -6182,7 +6182,11 @@ def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
     if prozent_kat > 110:
         prozent_kat = 110
     if richtig > 0:
-        prozent_kat *= ((richtig-falsch-lsg-abbr)/richtig)
+        #print(prozent_kat)
+        #print((richtig-falsch-lsg-abbr)/richtig*100)
+        prozent_kat = (prozent_kat+((richtig-falsch-lsg-abbr)/richtig*100))/2
+        #print("A: ",prozent_kat)
+        #print("B: ",prozent_kat * (richtig-falsch-lsg-abbr)/richtig)
     if prozent_kat < 0:
         prozent_kat = 0
     prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)

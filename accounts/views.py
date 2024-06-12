@@ -278,11 +278,8 @@ def neues_halbjahr(req):
 
 #für Schüler
 def profil(req):
-    print(req.user)
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
-        print("Lehrer")
         return redirect('profil_lehrer')
-    print("Schüler")
     try:
         schueler = get_object_or_404(Profil, user=req.user)
     except:
@@ -621,7 +618,7 @@ def neue_gruppe(req):
 
 def gruppe_aendern(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user:
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     if req.method == 'POST':
         gruppe_form = Gruppe_Aendern_Form(req.POST, instance=gruppe)
@@ -665,7 +662,7 @@ def mein_schueler(req, schueler_id, hj_stimmt):
 
 def schueler_aendern(req, schueler_id):
     schueler = Profil.objects.get(id=schueler_id)
-    if schueler.gruppe.lehrer != req.user:
+    if schueler.gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     if req.method == 'POST': 
         profil_form = Schueler_Aendern_Form(req.POST, instance=schueler)
