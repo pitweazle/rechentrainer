@@ -618,7 +618,7 @@ def neue_gruppe(req):
 
 def gruppe_aendern(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user:
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     if req.method == 'POST':
         gruppe_form = Gruppe_Aendern_Form(req.POST, instance=gruppe)
