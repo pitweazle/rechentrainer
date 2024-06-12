@@ -1468,12 +1468,21 @@ def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, ei
             'einteilung': einteilung,
             'y_null': y_null,'x_null': x_null,
             }
+    if einteilung == -10:
+        x_ende = 0
+        y_ende = +2
+    elif einteilung == 1:
+        x_ende = -1
+        y_ende = -1
+    else:
+        x_ende = 0
+        y_ende = 0        
     beschriftung = {
         'xvalues': [
-            (x_null + n*grid*abs(einteilung), n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*abs(einteilung))-1)
+            (x_null + n*grid*abs(einteilung), n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*abs(einteilung))+x_ende)
         ],
         'yvalues': [
-            (y_null - n*grid*abs(einteilung), n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*abs(einteilung))-1)
+            (y_null - n*grid*abs(einteilung), n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*abs(einteilung))+y_ende)
         ],
         }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
     parameter.update(beschriftung)
@@ -1540,7 +1549,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=7
+        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1778,7 +1787,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 2
             else:
                 typ2 = 3
-            typ2=1
             if typ2 == 1:                                                            # nur N im 1.Quadranten
                 box_hoehe = 240
                 box_breite = 360
@@ -1801,36 +1809,16 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                y_start = y_null
-                x_start = x_null
-                einteilung = random.randint(1,2) * 10
-                # parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
-
-                parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
-                        'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                        'y_null': y_null,'x_null': x_null,
-                        'grid': 10,
-                        'einteilung': einteilung,
-                        }
-                beschriftung = {
-                    'xvalues': [
-                        (x_null + n*100, n) for n in range(0, 3)
-                    ],
-                    'yvalues': [
-                        (y_null - n*100, n) for n in range(0, 3)
-                    ],
-                }
-                parameter.update(beschriftung)
+                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
                 x_koo = random.randint(0,20)
                 y_koo = random.randint(0,20) 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 punkt = {
+                    'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
-                    'grid': 10,
-                    'einteilung': -10,
                 } 
                 parameter.update(punkt)
             else:                                                                    # 4 Quadranten
@@ -1901,45 +1889,44 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 1
             else:
                 typ2 = 2
-            typ2=1
+            typ2=2
             if typ2 == 1:                                                           #nur positive Zahlen
                 breite = 300 
-                x_null = 40
                 hoehe = 300                
+                x_null = 40
                 y_null = hoehe-40
-                x_text_start = 40
-                y_text_start = 0   
             else:                                                                   #auch negative Zahlen
-                breite = 400
-                x_null = 110
-                x_start = 0
-                x_text_start = -2
-                hoehe = 400
-                y_null = 280
-                y_start = hoehe
-                y_text_start = -2   
+                breite = 340
+                hoehe = 340
+                x_null = 120
+                y_null = hoehe-120
             x1 = d_breite = 1000                                                  
             y1 = d_hoehe =1000
             spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
-            spiegelachse="winkelhalbierende"
-            if spiegelachse == "winkelhalbierende":                                                          #Spiegelachse ist Winkelhalbierende
+            spiegelachse="x_achse"
+            if spiegelachse == "winkelhalbierende":                                # Spiegelachse ist Winkelhalbierende
                 hilfe_id = 91
-                x0 = 0
-                y0 = 0
+                x_start = 0
+                y_start = hoehe
+                x_end = breite
+                y_end = 0                
                 #hier kommt das Dreieck:
                 while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
                     x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
-            elif spiegelachse == "y_achse":                                                        #Spiegelachse parallel zur y-Achse
-                x0 = random.randint(4,7)
-                y0 = 0
+            elif spiegelachse == "y_achse":                                        # Spiegelachse parallel zur y-Achse
+                x_start = x_end = random.randint(4,7)
+                y_start = hoehe
+                y_end = 0 
                 #hier kmmt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x0 > x0 + x_null/20:
+                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x_start > x_start + x_null/20:
                     x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
-            elif spiegelachse == "x_achse":                                                        #Spiegelachse parallel zur x-Achse
-                x0 = 0
-                y0 = random.randint(4,7)
+            elif spiegelachse == "x_achse":                                        # Spiegelachse parallel zur x-Achse
+                x_start = 0
+                x_end = breite
+                y_start = y_end = random.randint(4,7)
                 #hier kmmt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or y1 - y0 > y0 + y_null/20:
+                print(x)
+                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or y1 - y_start > y_start + y_null/20:
                     x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
             x2 = x1 + d_breite
             y2 = y1
@@ -1954,19 +1941,23 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y2b = x2
                 y3b = x3
             elif spiegelachse == "y_achse":
-                x1b = x1 - (x1 - x0)*2 
-                x2b = x2 - (x2 - x0)*2 
-                x3b = x3 - (x3 - x0)*2 
+                x1b = x1 - (x1 - x_start)*2 
+                x2b = x2 - (x2 - x_start)*2 
+                x3b = x3 - (x3 - x_start)*2 
                 y1b = y1
                 y2b = y2
                 y3b = y3
+                x_start =x_start*20 + x_null
+                x_end = x_end*20 + x_null
             elif spiegelachse == "x_achse":
                 x1b = x1  
                 x2b = x2 
                 x3b = x3 
-                y1b = y1 - (y1 - y0)*2
-                y2b = y2 - (y2 - y0)*2
-                y3b = y3 - (y3 - y0)*2
+                y1b = y1 - (y1 - y_start)*2
+                y2b = y2 - (y2 - y_start)*2
+                y3b = y3 - (y3 - y_start)*2
+                y_start = y_start*20
+                y_end = y_end*20
             xb_liste = [x1b, x2b, x3b]
             yb_liste = [y1b, y2b, y3b]
             x_koo = [x1*20, x2*20, x3*20, x1*20]
@@ -1983,26 +1974,17 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
             lsg = ["({0};{1})".format(xb, yb)]
             lsg = lsg + ["({0}|{1})".format(xb, yb)]
-            parameter = {
-                'name': 'svg/koosys.svg', 'object': 'spiegel', 'spiegelachse': spiegelachse,
-                'box_hoehe' : hoehe,'box_breite' : breite,
-                'hoehe' : hoehe,'breite' : breite,
-                'y_null': y_null,'x_null': x_null,  
-                'grid': 20,
-                'einteilung' :20,
-              
-                'x0': x_null + x0*20,'y0': y_null - y0*20           
-                }
-            print(parameter)
-            beschriftung = {
-                'xvalues': [
-                    (x_null + n*40, 2*n) for n in range(x_text_start, 7)
-                ],
-                'yvalues': [
-                    (y_null - n*40, 2*n) for n in range(y_text_start, 7)
-                ],                    
-                }
-            parameter.update(beschriftung)
+
+            parameter = koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
+            achse = {
+                'object': 'spiegel', 'spiegelachse': spiegelachse,
+                'x_start': x_start,
+                'y_start': y_start,
+                'x_end': x_end,
+                'y_end': y_end,
+            }
+            parameter.update(achse)  
+
             dreieck = {
                 'x1': x_null + x_koo[0], 'y1': y_null - y_koo[0], 
                 'x2': x_null + x_koo[1], 'y2': y_null - y_koo[1], 
@@ -6221,7 +6203,11 @@ def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
     if prozent_kat > 110:
         prozent_kat = 110
     if richtig > 0:
-        prozent_kat *= ((richtig-falsch-lsg-abbr)/richtig)
+        #print(prozent_kat)
+        #print((richtig-falsch-lsg-abbr)/richtig*100)
+        prozent_kat = (prozent_kat+((richtig-falsch-lsg-abbr)/richtig*100))/2
+        #print("A: ",prozent_kat)
+        #print("B: ",prozent_kat * (richtig-falsch-lsg-abbr)/richtig)
     if prozent_kat < 0:
         prozent_kat = 0
     prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
@@ -6413,6 +6399,7 @@ def uebersicht(req, schueler_id=0):
                         zeit_kat = '-'
                     else:
                         zeit_gesamt += zeit_kat.seconds
+                    print(kategorie)
                     prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
                     if not pflicht or not bewertung_anzeigen:
                         prozent_farbe = None
