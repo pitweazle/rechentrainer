@@ -43,7 +43,9 @@
                     <th width=50> %</th>
                 {% endif %}
                 <th width=60>erledigt</th>
-                <th width=100>letzte Bearbeitung</th> 
+                {% if details == True %}
+                    <th width=100>letzte Bearbeitung</th>
+                {%endif%} 
             </tr>
         </thead>
         <tbody>
@@ -62,15 +64,13 @@
                 <td>{{nicht_richtig_summe}}</td> 
                 <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
             {% endif %}
-            {% if prozent_summe %}
+            {% comment %} {% if prozent_summe %} {% endcomment %}
                 <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-            {% else %}
+            {% comment %} {% else %}
                 <th></th> 
-            {% endif %}              
+            {% endif %}               {% endcomment %}
             {% if bewertung == True %}
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-            {% else %}
-                <th></th>
             {% endif %}               
             {% for kategorie, zeile in zeilen %}            
                 <tr>
