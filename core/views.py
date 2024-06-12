@@ -6393,7 +6393,7 @@ def uebersicht(req, schueler_id=0):
                         zeile = (kategorie,((kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)), 
                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat), (prozent_farbe,str(int(prozent_kat))+"%"), (None,letzte_kat)))
                     else:
-                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe,str(nicht_richtig_quote)+"%"),  (prozent_farbe,str(int(prozent_kat))+"%")))    
+                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe,str(nicht_richtig_quote)+"%"),  (prozent_farbe,str(int(prozent_kat))+"%"), (None,letzte_kat)))    
                     bearbeitet = index
             if index != bearbeitet:
                 farbe_kat = 'rot' if pflicht else None
@@ -6402,7 +6402,7 @@ def uebersicht(req, schueler_id=0):
                     zeile = kategorie, ((farbe_kat,'-'), *((None,'-'),) * 8,(prozent_farbe,'0%' if pflicht else '-'),(None,'-'))
                     breite = "breit"
                 else:
-                    zeile = kategorie, ((farbe_kat,'-'), *((None,'-'),) * 2,(prozent_farbe,'0%' if pflicht else '-'))
+                    zeile = kategorie, ((farbe_kat,'-'), *((None,'-'),) * 2,(prozent_farbe,'0%' if pflicht else '-'),(None,'-'))
                     breite = "schmal"
             zeilen.append(zeile)
         summe_farbe = prozent_summe_farbe = "unset" 

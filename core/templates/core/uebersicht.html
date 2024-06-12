@@ -40,6 +40,7 @@
                     <th>Hilfe</th>
                 {% else %} 
                     <th width=40>nicht richtig</th>
+                    <th width=50> %</th>
                 {% endif %}
                 <th width=60>erledigt</th>
                 <th width=100>letzte Bearbeitung</th> 
@@ -57,11 +58,14 @@
                 <td>{{abbr}}</td>
                 <td>{{lsg}}</td>
                 <td>{{hilfe}}</td>
-            {% else %} 
+            {% else %}
+                <td>{{nicht_richtig_summe}}</td> 
                 <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
             {% endif %}
             {% if prozent_summe %}
-                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>  
+                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+            {% else %}
+                <th></th> 
             {% endif %}              
             {% if bewertung == True %}
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
