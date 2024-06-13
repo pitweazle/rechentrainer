@@ -51,7 +51,11 @@
            
             {% for kategorie, zeile in zeilen %}            
                 <tr>
-                    <td style="text-align: center;">{{kategorie.name}}</td>
+                    {% if lehrer and not loeschen %}
+                        <td style="text-align: center;">{{kategorie.name}}</td>
+                    {%else%}    
+                        <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
+                    {%endif%}  
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}
