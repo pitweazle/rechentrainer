@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/uebersicht.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% include 'includes/header.html' %} 
+
+{%if lehrer and not loeschen%}
+<button>        
+    <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+</button>
+
+{%endif%}
+<h2>{{schueler.vorname}} {{schueler.nachname}}
+{% if not loeschen or not lehrer %}
+{{schueler.klasse}}</h2>
+{%else%}
+    </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
+    (Jg. und Stufe können im Profil geändert werden)</h5>
+{% endif %}
+
+<ul class={{breite}}>
+    <table>
+        <thead>
+            <tr>
+                <th width=100>Kategorie</th>
+                <th width=60>richtig</th>
+                <th width=40>nicht richtig</th>
+                <th width=50> %</th>
+                {% if bewertung == True %}
+                    <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+                {% else %}   
+                    <th width=60>erledigt</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <td style="text-align: center;">Aufgaben Halbjahr</td>
+            <td class = "{{summe_farbe}}">{{richtig}}</td>
+            <td>{{nicht_richtig_summe}}</td> 
+            <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
+            {% comment %} {% if prozent_summe %} {% endcomment %}
+                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+            {% comment %} {% else %}
+                <th></th> 
+            {% endif %}               {% endcomment %}
+           
+            {% for kategorie, zeile in zeilen %}            
+                <tr>
+                    <td style="text-align: center;">{{kategorie.name}}</td>
+                    {% for style, item in zeile %}
+                        <td class = "{{style}}">{{item}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            {% if not alle  %}
+            <tr>
+            <td  colspan="3", align="left">
+                <form action="{% url 'uebersicht' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit"><b>alle Kategorien anzeigen</b></button>
+                </form>
+            </td>
+            </tr> 
+            {% endif %}          
+        </tbody>
+    </table>
+    <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    <p>
+        Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
+    </p>
+</ul>
+
+{% endblock %}
