@@ -1156,14 +1156,14 @@ def sub_figuren():
     return typ2, anmerkung, lsg, parameter
 
 def sub_dreieck(typ2):
-    if typ2 == 1:
-        x1 = random.randint(4,12)
-        y1 = random.randint(1,12) 
-    else:
-        x1 = random.randint(-3,8)
-        y1 = random.randint(-3,8) 
     breite = random.randint(2,6)
-    hoehe = random.randint(2,6)        
+    hoehe = random.randint(2,6)  
+    if typ2 == 1:
+        x1 = random.randint(4,12-breite)
+        y1 = random.randint(1,12-hoehe) 
+    else:
+        x1 = random.randint(-4,9-breite)
+        y1 = random.randint(-4,9-hoehe) 
     return x1, y1, breite, hoehe    
 
 def sub_dreiecke(typ):
@@ -1895,69 +1895,59 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 hoehe = 300                
                 x_null = 40
                 y_null = hoehe-40
+                x_max = y_max = 0
             else:                                                                   #auch negative Zahlen
                 breite = 340
                 hoehe = 340
                 x_null = 120
                 y_null = hoehe-120
-            x1 = d_breite = 1000                                                  
-            y1 = d_hoehe =1000
+                x_max = y_max = -5
             spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
-            spiegelachse="x_achse"
-            if spiegelachse == "winkelhalbierende":                                # Spiegelachse ist Winkelhalbierende
-                hilfe_id = 91
-                x_start = 0
-                y_start = hoehe
-                x_end = breite
-                y_end = 0                
-                #hier kommt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
-                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
-            elif spiegelachse == "y_achse":                                        # Spiegelachse parallel zur y-Achse
-                x_start = x_end = random.randint(4,7)
-                y_start = hoehe
-                y_end = 0 
-                #hier kmmt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x_start > x_start + x_null/20:
-                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
-            elif spiegelachse == "x_achse":                                        # Spiegelachse parallel zur x-Achse
-                x_start = 0
-                x_end = breite
-                y_start = y_end = random.randint(4,7)
-                #hier kmmt das Dreieck:
-                print(x)
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or y1 - y_start > y_start + y_null/20:
-                    x1, y1, d_breite, d_hoehe = sub_dreieck(typ2)
-            x2 = x1 + d_breite
-            y2 = y1
-            y3 = y1 + d_hoehe
-            x3 = x1 + random.randint(0,d_breite)
-            #Berechnung der Bildpunkte
-            if spiegelachse == "winkelhalbierende":
-                x1b = y1
-                x2b = y2
-                x3b = y3
-                y1b = x1
-                y2b = x2
-                y3b = x3
-            elif spiegelachse == "y_achse":
-                x1b = x1 - (x1 - x_start)*2 
-                x2b = x2 - (x2 - x_start)*2 
-                x3b = x3 - (x3 - x_start)*2 
-                y1b = y1
-                y2b = y2
-                y3b = y3
-                x_start =x_start*20 + x_null
-                x_end = x_end*20 + x_null
-            elif spiegelachse == "x_achse":
-                x1b = x1  
-                x2b = x2 
-                x3b = x3 
-                y1b = y1 - (y1 - y_start)*2
-                y2b = y2 - (y2 - y_start)*2
-                y3b = y3 - (y3 - y_start)*2
-                y_start = y_start*20
-                y_end = y_end*20
+            x1b = x2b = x3b =  y1b = y2b = y3b = -10
+            while x1b<x_max or x2b<x_max or x3b<x_max or x1b>9 or x2b>9 or x3b>9 or y1b<x_max or y2b<x_max or y3b<x_max or y1b>9 or y2b>9 or y3b>9 :
+                x1, y1, d_breite, d_hoehe = sub_dreieck(typ2) 
+                x2 = x1 + d_breite
+                x3 = x1 + d_breite
+                y2 = y1
+                y3 = y1 + d_hoehe
+                #Berechnung der Bildpunkte:
+                if spiegelachse == "winkelhalbierende":
+                    hilfe_id = 91
+                    x_start = 0
+                    y_start = hoehe
+                    x_end = breite
+                    y_end = 0                    
+                    x1b = y1
+                    x2b = y2
+                    x3b = y3
+                    y1b = x1
+                    y2b = x2
+                    y3b = x3
+                elif spiegelachse == "y_achse":
+                    x_start = x_end = random.randint(4,7)
+                    y_start = hoehe
+                    y_end = 0 
+                    x1b = x1 - (x1 - x_start)*2 
+                    x2b = x2 - (x2 - x_start)*2 
+                    x3b = x3 - (x3 - x_start)*2 
+                    y1b = y1
+                    y2b = y2
+                    y3b = y3
+                    #Die Koordinaten der Spiegelachse:
+                    x_start =x_start*20 + x_null
+                    x_end = x_end*20 + x_null
+                elif spiegelachse == "x_achse":
+                    x_start = 0
+                    x_end = breite
+                    y_start = y_end = random.randint(4,7)
+                    x1b = x1  
+                    x2b = x2 
+                    x3b = x3 
+                    y1b = y1 - (y1 - y_start)*2
+                    y2b = y2 - (y2 - y_start)*2
+                    y3b = y3 - (y3 - y_start)*2
+                    y_start = y_start*20
+                    y_end = y_end*20
             xb_liste = [x1b, x2b, x3b]
             yb_liste = [y1b, y2b, y3b]
             x_koo = [x1*20, x2*20, x3*20, x1*20]
@@ -1965,17 +1955,16 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             ecken = ["A", "B", "C"]
             ecken_x = [-20,10,-5]                               #schiebt Benennung in x
             ecken_y = [10,10,-10]                               #schiebt Benennung in y
-            xb = -1
-            while xb < 0:
-                typ4 = random.randint(0,2)
-                xb = xb_liste[typ4]
-            yb = yb_liste[typ4] 
-            text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[typ4] + "' des gespiegelten Dreiecks?"
+            xb = -10
+            while xb < x_max:
+                gesucht = random.randint(0,2)
+                xb = xb_liste[gesucht]
+            yb = yb_liste[gesucht] 
+            text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[gesucht] + "' des gespiegelten Dreiecks?"
             anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
             lsg = ["({0};{1})".format(xb, yb)]
             lsg = lsg + ["({0}|{1})".format(xb, yb)]
-
-            parameter = koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
+            parameter = sub_koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
             achse = {
                 'object': 'spiegel', 'spiegelachse': spiegelachse,
                 'x_start': x_start,
@@ -1984,7 +1973,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 'y_end': y_end,
             }
             parameter.update(achse)  
-
             dreieck = {
                 'x1': x_null + x_koo[0], 'y1': y_null - y_koo[0], 
                 'x2': x_null + x_koo[1], 'y2': y_null - y_koo[1], 
