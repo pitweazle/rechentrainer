@@ -5452,6 +5452,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=11
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
@@ -5842,13 +5843,12 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             hilfe_id = 100
             hilfe = "Für die relative Häufigkeit, muss man die Anzahl der Kugeln der gesuchten Farbe durch die Gesamtzahl der Kugeln teilen.<br>(Das kann man am einfachsten als Bruch angeben.)"
         elif typ == 11:                                 # Würfeln und Münze
-            zufall = random.randint(1,6)
-            variable = [zufall]
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
             typ2 = random.randint(1,4)
+            typ2=1
             if typ2 == 1:
                 zufall = random.randint(2, 7)
-                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?" 
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?".format(zufall)  
                 frage = "P(<{})=".format(zufall)
                 zaehler = zufall-1
                 lsg=[str(zaehler)+"/6"]	
@@ -6203,11 +6203,8 @@ def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
     if prozent_kat > 110:
         prozent_kat = 110
     if richtig > 0:
-        #print(prozent_kat)
-        #print((richtig-falsch-lsg-abbr)/richtig*100)
+        #prozent_kat *= ((richtig-falsch-lsg-abbr)/richtig)
         prozent_kat = (prozent_kat+((richtig-falsch-lsg-abbr)/richtig*100))/2
-        #print("A: ",prozent_kat)
-        #print("B: ",prozent_kat * (richtig-falsch-lsg-abbr)/richtig)
     if prozent_kat < 0:
         prozent_kat = 0
     prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
@@ -6415,7 +6412,7 @@ def uebersicht(req, schueler_id=0):
                         zeile = (kategorie,((kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)), 
                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat), (prozent_farbe,str(int(prozent_kat))+"%"), (None,letzte_kat)))
                     else:
-                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe,str(nicht_richtig_quote)+"%"),  (prozent_farbe,str(int(prozent_kat))+"%")))    
+                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe,str(nicht_richtig_quote)+"%"),  (prozent_farbe,str(int(prozent_kat))+"%")))   
                     bearbeitet = index
             if index != bearbeitet:
                 farbe_kat = 'rot' if pflicht else None
@@ -6462,7 +6459,10 @@ def uebersicht(req, schueler_id=0):
         #     context["letzte"] = letzte.strftime("%d.%m.%y %H:%M")
         # except:
         #     pass
-        return render(req, 'core/uebersicht.html', context)
+        if details:
+            return render(req, 'core/uebersicht.html', context)
+        else:
+            return render(req, 'core/uebersicht_ohne_details.html', context)
     else:
         return redirect('anmelden')
 
