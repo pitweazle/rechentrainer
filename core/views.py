@@ -1461,7 +1461,7 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
 
-def koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, einteilung=2):
+def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, einteilung=2):
     parameter = {'name': 'svg/koosys.svg',
             'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
             'grid' : grid,
@@ -1792,7 +1792,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe, einteilung=1)
+                parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe, einteilung=1)
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
                 lsg = ["({0};{1})".format(x_koo, y_koo)]
@@ -1809,7 +1809,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 box_breite = 360
                 y_null = box_hoehe-40
                 x_null = 40
-                parameter = koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
+                parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
                 x_koo = random.randint(0,20)
                 y_koo = random.randint(0,20) 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
@@ -1827,7 +1827,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 grid = 20
                 y_null = box_hoehe-grid*7         # y_Null  Lage der x-Achse
                 x_null = grid *7                  # x_Null  Lage der y-Achse
-                parameter = koordinatensystem(x_null, y_null,box_breite, box_hoehe, grid, )
+                parameter = sub_koordinatensystem(x_null, y_null,box_breite, box_hoehe, grid, )
                 x_koo = random.randint(-6,11)/2
                 y_koo = random.randint(-6,9)/2 
                 lsg = ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
@@ -2663,7 +2663,7 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 lsg = format_zahl(erg,erg_stellen)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
-def segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
+def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
         rad_start = math.radians(startwinkel)
         rad = math.radians(winkel)        
         start_x = center_x - radius *  math.cos(rad_start)
@@ -3191,7 +3191,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             lsg = [str(zaehler)+"/"+str(nenner),"indiv_0"]
             parameter = {'name': 'svg/winkel.svg', 'object': 'bruchteile', 'nenner': nenner, 'winkel': winkel}
             koordinaten = dict(center_x = center_x, center_y = center_y, radius = radius, sweep_flag = 1)
-            koordinaten1 = segment(center_x, center_y, radius, 360/nenner)
+            koordinaten1 = sub_segment(center_x, center_y, radius, 360/nenner)
             koordinaten.update(koordinaten1)
             parameter.update(koordinaten)
         elif typ == 2:
@@ -3634,6 +3634,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
         hilfe_id = 0
         erg = None 
         parser = Parser()
+        typ=1
         if typ <= 2:
             anmerkung="Wenn du nicht weißt, wie man das rechnet, solltest du mal auf 'Hilfe' klicken!<br>" + anmerkung
             #typ2=7
@@ -3685,9 +3686,10 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 "center_y": center_y,
                 "radius": radius,
                 "sweep_flag": 1,
-                **segment(center_x, center_y, radius, 360/nenner_1),
-                **segment(center_x2, center_y, radius, 360/nenner_2, 2),
+                **sub_segment(center_x, center_y, radius, 360/nenner_1),
+                **sub_segment(center_x2, center_y, radius, 360/nenner_2, 2),
             }
+            print("Koo: ",koordinaten)
             if nenner_1 != nenner_2:  
                 if stufe%2 == 1:
                     if nenner_1 == kgv:
@@ -3709,7 +3711,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     else:    
                         hilfe_id = 36
                         hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - den ersten Bruch musst du also mit {5} erweitern, den zweiten mit {6}.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust!"
-                    koordinaten.update(segment(center_x, center_y, radius, 360/kgv, 3))
+                    koordinaten.update(sub_segment(center_x, center_y, radius, 360/kgv, 3))
                     parameter['winkel3'] = zaehler_faerben(kgv, 0, "LightSkyBlue")
             parameter.update(koordinaten)
         elif typ <= 4:    	                                                                    # Addition (typ=1) und Subtraktion (typ=2) gleichnamiger Brüche
@@ -4358,7 +4360,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
                     hilfe_id = 20
             parameter = {'name': 'svg/winkel.svg', 'object': 'segment', 'color': 'blue'}
             koordinaten = dict(center_x = center_x, center_y = center_y, radius = radius, sweep_flag = 1)
-            koordinaten1 = segment(center_x, center_y, radius, winkel)
+            koordinaten1 = sub_segment(center_x, center_y, radius, winkel)
             koordinaten.update(koordinaten1)
             parameter.update(koordinaten)
         elif typ <= 4:                              # Prozentsatz aus Rechteck
@@ -6072,7 +6074,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             grid = 20
             y_null = box_hoehe-grid*5         # y_Null  Lage der x-Achse
             x_null = grid *5                  # x_Null  Lage der y-Achse
-            parameter = koordinatensystem(x_null, y_null)
+            parameter = sub_koordinatensystem(x_null, y_null)
 
             absolut = 5
             steigung = -2/3
@@ -6396,7 +6398,6 @@ def uebersicht(req, schueler_id=0):
                         zeit_kat = '-'
                     else:
                         zeit_gesamt += zeit_kat.seconds
-                    print(kategorie)
                     prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
                     if not pflicht or not bewertung_anzeigen:
                         prozent_farbe = None
