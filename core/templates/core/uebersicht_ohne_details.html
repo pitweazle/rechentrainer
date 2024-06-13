@@ -29,56 +29,29 @@
             <tr>
                 <th width=100>Kategorie</th>
                 <th width=60>richtig</th>
-                {% if details == True %}
-                    <th width=30>falsch</th>
-                    <th> %</th>
-                    <th>Zeit</th>
-                    <th>sec/ Aufg.</th>
-                    <th>Aufg. ohne Fehler</th>
-                    <th>Abbr.</th>
-                    <th>Lsg.</th>
-                    <th>Hilfe</th>
-                {% else %} 
-                    <th width=40>nicht richtig</th>
-                    <th width=50> %</th>
+                <th width=40>nicht richtig</th>
+                <th width=50> %</th>
+                {% if bewertung == True %}
+                    <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+                {% else %}   
+                    <th width=60>erledigt</th>
                 {% endif %}
-                <th width=60>erledigt</th>
-                {% if details == True %}
-                    <th width=100>letzte Bearbeitung</th>
-                {%endif%} 
             </tr>
         </thead>
         <tbody>
             <td style="text-align: center;">Aufgaben Halbjahr</td>
             <td class = "{{summe_farbe}}">{{richtig}}</td>
-            {% if details == True %}
-                <td>{{falsch}}</td>
-                <td class ="{{qfarbe}}">{{quote}}%</td>
-                <td>{{dauer}}</td>
-                <td>{{pro_aufg}}</td>
-                <td></td>            
-                <td>{{abbr}}</td>
-                <td>{{lsg}}</td>
-                <td>{{hilfe}}</td>
-            {% else %}
-                <td>{{nicht_richtig_summe}}</td> 
-                <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% endif %}
+            <td>{{nicht_richtig_summe}}</td> 
+            <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
             {% comment %} {% if prozent_summe %} {% endcomment %}
                 <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
             {% comment %} {% else %}
                 <th></th> 
             {% endif %}               {% endcomment %}
-            {% if bewertung == True %}
-                <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-            {% endif %}               
+           
             {% for kategorie, zeile in zeilen %}            
                 <tr>
-                    {% if lehrer and not loeschen %}
-                        <td style="text-align: center;">{{kategorie.name}}</td>
-                    {%else%}    
-                        <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
-                    {%endif%}  
+                    <td style="text-align: center;">{{kategorie.name}}</td>
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}
@@ -98,13 +71,8 @@
     </table>
     <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
     <p>
-    {% if details %}
-        Wenn du mit einem Smartphone arbeitest, kannst du unter "mein Profil" "Details anzeigen" wegklicken, dann wird diese Anzeige schmaler und passt auf das Display.
-    {% else %}
         Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
-    {% endif %}
     </p>
-
 </ul>
 
 {% endblock %}

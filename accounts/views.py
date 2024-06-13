@@ -66,6 +66,9 @@ def stufe(jg, kurs):
         if jg < 5:
             stufe = 1
         else:
+            if jg > 11:
+                jg = 11
+                kurs = "Y"
             stufe_liste = [2,4,12,20,26,32,50]
             stufe = stufe_liste[jg-5] 
             if kurs in ["Y","R","E","B"]:
@@ -275,11 +278,8 @@ def neues_halbjahr(req):
 
 #für Schüler
 def profil(req):
-    print(req.user)
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
-        print("Lehrer")
         return redirect('profil_lehrer')
-    print("Schüler")
     try:
         schueler = get_object_or_404(Profil, user=req.user)
     except:
@@ -662,7 +662,7 @@ def mein_schueler(req, schueler_id, hj_stimmt):
 
 def schueler_aendern(req, schueler_id):
     schueler = Profil.objects.get(id=schueler_id)
-    if schueler.gruppe.lehrer != req.user:
+    if schueler.gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     if req.method == 'POST': 
         profil_form = Schueler_Aendern_Form(req.POST, instance=schueler)
