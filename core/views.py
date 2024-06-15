@@ -6033,11 +6033,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-<<<<<<< HEAD
         if typ == 1: 
-=======
-        if typ == 1:                                                                            # Wertetabelle'
->>>>>>> HTML-aufräumen
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
             parameter, term, lsg = wertetabelle(parameter,stufe)
