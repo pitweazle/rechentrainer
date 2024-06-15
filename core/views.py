@@ -1175,7 +1175,6 @@ def sub_dreiecke(typ):
     winkel = ""
     rotate = ""
     if typ == 10 or typ == 7:                                               #Benennung von Dreiecken
-        #typ=5
         typ2 = random.randint(1,5)
         if typ2 == 1:                                                         #gleichschenkliges Dreieck
             pro_text = "Dreieck mit zwei gleich langen Seiten?"
@@ -3618,7 +3617,6 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 return 0, "Da stimmt was nicht - du musst das Ergebnis entweder als Bruch (z.B. 1/2) oder als gemischte Zahl (z.B. 1 1/2) eingeben oder u.U. als ganze Zahl."
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        #typ=2
         if stufe%2 == 1:
             typ2 = 1
         else:
@@ -5449,7 +5447,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=11
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
