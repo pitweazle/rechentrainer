@@ -122,7 +122,7 @@
             <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text>
         {%endfor%}
         <line x1="{{parameter.x_start}}" y1="{{parameter.y_start}}" x2="{{parameter.x_end}}" y2="{{parameter.y_end}}" style="stroke:red;stroke-width:2;" />	
-        <text x="{{parameter.x_start|add:10}}" y="{{parameter.y_start|add:20}}" style="stroke:red;stroke-width:1;">S</text>  
+        <text x="{{parameter.x_end|add:-20}}" y="{{parameter.y_end|add:30}}" style="stroke:red;stroke-width:1;">S</text>  
     {% endif %}
 
 </svg>

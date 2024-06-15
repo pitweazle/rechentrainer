@@ -1548,6 +1548,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
+        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1900,7 +1901,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_null = hoehe-120
                 x_max = y_max = -5
             spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
-            spiegelachse = "x_achse"
+            #spiegelachse = "x_achse"
             Ax_bild = Bx_bild = Cx_bild =  Ay_bild = By_bild = Cy_bild = -10
             while Ax_bild<x_max or Bx_bild<x_max or Cx_bild<x_max or Ax_bild>9 or Bx_bild>9 or Cx_bild>9 or Ay_bild<x_max or By_bild<x_max or Cy_bild<x_max or Ay_bild>9 or By_bild>9 or Cy_bild>9 :
                 Ax, Ay, d_breite, d_hoehe = sub_dreieck(typ2) 
