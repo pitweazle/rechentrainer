@@ -1549,7 +1549,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -3622,7 +3621,6 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
         hilfe_id = 0
         erg = None 
         parser = Parser()
-        typ=1
         if typ <= 2:
             anmerkung="Wenn du nicht weißt, wie man das rechnet, solltest du mal auf 'Hilfe' klicken!<br>" + anmerkung
             #typ2=7
@@ -5442,7 +5440,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=11
         typ2 = 0
         titel = "Wahrscheinlichkeitsrechnung"
         parameter = {'name':'normal'} 
