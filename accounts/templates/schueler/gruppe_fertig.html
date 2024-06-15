@@ -1,15 +1,12 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-
-<body>
-<p>Das hat geklappt, du bist jetzt in der Gruppe:</p>
-<p><b>{{gruppe.name}}</b></p>
-<p>bei</p>
-<p><b>{{gruppe.lehrer.profil.vorname}}{%if gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{gruppe.lehrer.profil.nachname}}</b></p>
-<p>angemeldet.</p>
-<p>{{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}} kann jetzt deine Arbeit kontrollieren.</p>
-<a href="{% url 'index' %}">weiter</a>
-
-</body>
+    <body>
+        <p>Das hat geklappt, du bist jetzt in der Gruppe:</p>
+        <p><b>{{gruppe.name}}</b></p>
+        <p>bei</p>
+        <p><b>{{gruppe.lehrer.profil.vorname}}{%if gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{gruppe.lehrer.profil.nachname}}</b></p>
+        <p>angemeldet.</p>
+        <p>{{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}} kann jetzt deine Arbeit kontrollieren.</p>
+        <a href="{% url 'index' %}">weiter</a>
+    </body>
 {% endblock %}
-</html>

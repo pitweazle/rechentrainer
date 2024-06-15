@@ -1,7 +1,5 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-
-<body>
   <form method="POST" action="{% url 'anmelden' %}">
     {% csrf_token %}
     <table>    
@@ -18,5 +16,4 @@
     <button><a href="/password_reset">hier klicken</a></button></p>
   <p>Du hast noch keinen Account? 
     <button><a href="/registrieren">hier klicken</a></button></p>
-</body>
 {% endblock %}

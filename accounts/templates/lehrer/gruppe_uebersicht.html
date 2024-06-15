@@ -27,74 +27,71 @@
                 </div>
             {% endif %}
         </div> 
-
     </div> 
 </header>
 <br>
-
-<form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
-    {% csrf_token %}
-    <h2 style= "text-align: left;">Zeitraum:
-        {{form_filter}}
-        <input name="filter" type="submit" value="anwenden">
-    </h2>
-</form>
-
-<br> 
 <body>
-<table>
-    <thead>
-        <tr>
-            <th >Name</th>
-            {% if note_anzeigen %}
-                <th>erledigt</th>
-                <th>Note</th>
-            {% endif %}
-            <th >Zeit</th>
-            <th >Summe</th>
-            {%for kategorie in kategorien %}
-                <th>
-                    <div class="rotated-th"; style="{{kategorie.farbe}}">
-                        <span class="rotated-th__label">
-                            {{kategorie.name}}
-                        </span>
-                    </div>
-                </th>
-            {%endfor%}
-        </tr>
-    </thead>
-    <tbody>
-        <tr >
-            <td>{{wahl}}</td>
-            {% if note_anzeigen %}
-                <td></td>
-                <td></td>
-            {% endif %}
-            <td>{{gesamtzeit}}</td>         
-            {% for quote, summe in summen %}
-                <td class="{{quote}}">{{summe}}</td>  
-            {% endfor %}
-            </td>
-        </tr>
-        {% for schueler, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer, aufgaben in aufgaben_der_schueler %}
+    <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
+        {% csrf_token %}
+        <h2 style= "text-align: left;">Zeitraum:
+            {{form_filter}}
+            <input name="filter" type="submit" value="anwenden">
+        </h2>
+    </form>
+    <br> 
+    <table>
+        <thead>
+            <tr>
+                <th >Name</th>
+                    {% if note_anzeigen %}
+                        <th>erledigt</th>
+                        <th>Note</th>
+                    {% endif %}
+                <th >Zeit</th>
+                <th >Summe</th>
+                {%for kategorie in kategorien %}
+                    <th>
+                        <div class="rotated-th"; style="{{kategorie.farbe}}">
+                            <span class="rotated-th__label">
+                                {{kategorie.name}}
+                            </span>
+                        </div>
+                    </th>
+                {%endfor%}
+            </tr>
+        </thead>
+        <tbody>
             <tr >
-                <td style="text-align: left";>
-                    <a  class="button" href="{% url 'mein_schueler' schueler.id hj_stimmt %}">{{schueler.vorname}} {{schueler.nachname}} {{schueler.klasse}}</a></td>
+                <td>{{wahl}}</td>
                 {% if note_anzeigen %}
-                    <td class="{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-                    <td class="{{prozent_summe_farbe}}">{{note}}</td>
+                    <td></td>
+                    <td></td>
                 {% endif %}
-
-                <td>{{dauer}}</td>
-                {% for quote, anzahl in aufgaben %}
-                    <td class="{{quote}}">{{anzahl}}</td>
+                <td>{{gesamtzeit}}</td>         
+                {% for quote, summe in summen %}
+                    <td class="{{quote}}">{{summe}}</td>  
                 {% endfor %}
                 </td>
             </tr>
-        {% empty %}
-            <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+            {% for schueler, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer, aufgaben in aufgaben_der_schueler %}
+                <tr >
+                    <td style="text-align: left";>
+                        <a  class="button" href="{% url 'mein_schueler' schueler.id hj_stimmt %}">{{schueler.vorname}} {{schueler.nachname}} {{schueler.klasse}}</a></td>
+                    {% if note_anzeigen %}
+                        <td class="{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+                        <td class="{{prozent_summe_farbe}}">{{note}}</td>
+                    {% endif %}
+
+                    <td>{{dauer}}</td>
+                    {% for quote, anzahl in aufgaben %}
+                        <td class="{{quote}}">{{anzahl}}</td>
+                    {% endfor %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

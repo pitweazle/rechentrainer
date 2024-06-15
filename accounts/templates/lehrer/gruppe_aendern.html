@@ -1,17 +1,14 @@
 {% extends 'lehrer/gruppe.html' %}  
 {% block content %}
-
-
-<body>
-<br>
-<form action="/gruppe_aendern/{{gruppe.id}}/" method="POST">
-    {% csrf_token %} 
+  <body>
+    <br>
+    <form action="/gruppe_aendern/{{gruppe.id}}/" method="POST">
+      {% csrf_token %} 
         <table>    
-      {{ gruppe_form.as_table }}
-    </table>
-    <button type="submit">ändern</button>
-</form>
-<p></p>
-</body>
+          {{ gruppe_form.as_table }}
+        </table>
+      <button type="submit">ändern</button>
+    </form>
+    <p></p>
+  </body>
 {% endblock %}
-</html>

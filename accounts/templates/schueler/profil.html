@@ -1,78 +1,83 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
+    <body>
+        <p>An deinem Profil kannst du nur den Namen deiner Klasse ändern und außerdem kannst du noch auswählen, ob du auf der Übersichtseite alle Details angezeigt bekommen möchtest - alle anderen Daten kann nur dein Lehrer/deine Lehrerin ändern.</p> 
+        <table>
+            <tr>
+                <td>username:</td><td> {{user}}</td></tr>
+            <tr>
+                <td>Name:</td><td> {{schueler.vorname}} {{schueler.nachname}}</td></tr>
+            <tr>
+            <tr>
+                <form action="/profil/" method="POST">
+                    {% csrf_token %} 
+                    <td>{{profil_form.klasse.label}}:</td>
+                    <td>{{profil_form.klasse}}
+                    <button type="submit">ändern</button></td>
+                </form></tr>
+            <tr>
+                <td>Jg:</td><td> {{schueler.jg}}</td>
+            </tr>
+            <tr>
+                <td>angemeldet seit:</td><td> {{user.date_joined|date:"d.m.y H:i"}}</td>
+            </tr>
+            <tr>
+                <td>Halbjahr:</td><td> {{schueler.sj}}/{{schueler.hj}}</td>
+            </tr>
+            <tr>
+                <td>Kurs:</td><td> {{schueler.kurs}}</td>
+            </tr>
+            <tr>
+                <td>Stufe:</td><td> {{schueler.stufe}}</td>
+            </tr>
+            {% if schueler.schule %}
+                <tr>
+                    <td>Schule:</td><td> {{schueler.schule}}</td>
+                </tr>
+            {%endif%}
+            <tr>
+                <td>Lerngruppe:</td>
+                {% if schueler.gruppe %}
+                    <td> {{schueler.gruppe.name}}</td>
+                    </tr>
+                    <td>bei:</td><td>{{schueler.gruppe.lehrer.profil.vorname}}{%if schueler.gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{schueler.gruppe.lehrer.profil.nachname}}</td>
+                {%else%}
+                    <td>keine</td></td>
+                {%endif%}
+            </tr>
+            <tr>
+                <form action="/profil/" method="POST">
+                    {% csrf_token %}         
+                    <td>Details anzeigen:</td>
+                    <td><input type="Checkbox"  name="details" checked /> 
+                    <input type="submit" value="ändern"></td>
+                </form>
+            </tr>
+        </table>
 
-<body>
-<p>An deinem Profil kannst du nur den Namen deiner Klasse ändern und außerdem kannst du noch auswählen, ob du auf der Übersichtseite alle Details angezeigt bekommen möchtest - alle anderen Daten kann nur dein Lehrer/deine Lehrerin ändern.</p> 
-<table>
-    <tr>
-        <td>username:</td><td> {{user}}</td></tr>
-    <tr>
-        <td>Name:</td><td> {{schueler.vorname}} {{schueler.nachname}}</td></tr>
-    <tr>
-    <tr>
+        {% if schueler.schule %}
+            <h4>Hier kannst du deine Lerngruppe oder deine Schule und den Schulort wechseln:</h4>
+        {%else%}
+            <h4>Wenn deine Lehrerin/dein Lehrer deine Lerngruppe beim Rechentrainer angemeldet hat, kannst du sie hier suchen:</h4>
+        {%endif%}
+        <p>Suche hier zunächst deinen Schulort:</p>
         <form action="/profil/" method="POST">
             {% csrf_token %} 
-            <td>{{profil_form.klasse.label}}:</td>
-            <td>{{profil_form.klasse}}
-            <button type="submit">ändern</button></td>
-        </form></tr>
-    <tr>
-        <td>Jg:</td><td> {{schueler.jg}}</td></tr>
-    <tr>
-        <td>angemeldet seit:</td><td> {{user.date_joined|date:"d.m.y H:i"}}</td></tr>
-    <tr>
-        <td>Halbjahr:</td><td> {{schueler.sj}}/{{schueler.hj}}</td></tr>
-    <tr>
-        <td>Kurs:</td><td> {{schueler.kurs}}</td></tr>
-    <tr>
-        <td>Stufe:</td><td> {{schueler.stufe}}</td></tr>
-    {% if schueler.schule %}
-        <tr>
-            <td>Schule:</td><td> {{schueler.schule}}</td></tr>
-    {%endif%}
-        <tr>
-            <td>Lerngruppe:</td>
-    {% if schueler.gruppe %}
-        <td> {{schueler.gruppe.name}}</td></tr>
-        <td>bei:</td><td>{{schueler.gruppe.lehrer.profil.vorname}}{%if schueler.gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{schueler.gruppe.lehrer.profil.nachname}}</td></tr>
-    {%else%}
-        <td>keine</td></td></tr>
-    {%endif%}
-        <tr>
+            {{ort}} 
+            <button type="submit">auswählen</button>
+        </form>
+
+        <!--
+        <h4>Hier kannst du dich in einer zweite Lerngruppe anmelden:</h4>
+        <p>Suche hier zunächst deinen Schulort:</p>
         <form action="/profil/" method="POST">
-            {% csrf_token %}         
-            <td>Details anzeigen:</td>
-            <td><input type="Checkbox"  name="details" checked /> 
-            <input type="submit" value="ändern">
-        </form></tr>
-        </td>
-        </tr>
-</table>
+            {% csrf_token %} 
+            {{ort}} 
+            <button type="submit">auswählen</button>
+        </form>
+        -->
 
-
-{% if schueler.schule %}
-    <h4>Hier kannst du deine Lerngruppe oder deine Schule und den Schulort wechseln:</h4>
-{%else%}
-    <h4>Wenn deine Lehrerin/dein Lehrer deine Lerngruppe beim Rechentrainer angemeldet hat, kannst du sie hier suchen:</h4>
-{%endif%}
-<p>Suche hier zunächst deinen Schulort:</p>
-<form action="/profil/" method="POST">
-    {% csrf_token %} 
-    {{ort}} 
-    <button type="submit">auswählen</button>
-</form>
-
-<!--
-<h4>Hier kannst du dich in einer zweite Lerngruppe anmelden:</h4>
-<p>Suche hier zunächst deinen Schulort:</p>
-<form action="/profil/" method="POST">
-    {% csrf_token %} 
-    {{ort}} 
-    <button type="submit">auswählen</button>
-</form>
--->
-
-</body>
+    </body>
 {% endblock %}
 
 
