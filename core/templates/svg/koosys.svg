@@ -114,7 +114,7 @@
     {% endif %}
 
     {% if parameter.object == "spiegel" %}
-        <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
+        <polygon points="{{parameter.Ax}},{{parameter.Ay}} {{parameter.Bx}},{{parameter.By}} {{parameter.Cx}},{{parameter.Cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
         <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
         <use href="#kreuz" transform="translate({{parameter.x2}},{{parameter.y2}})"/>
         <use href="#kreuz" transform="translate({{parameter.x3}},{{parameter.y3}})"/>
