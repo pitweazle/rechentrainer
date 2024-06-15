@@ -1,7 +1,6 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-
-<body>
+    <body>
         <h2>Ein neues {{halbjahr}} hat angefangen</h2>
         <p>Auf der Übersichtseite ('Aufgaben') wurden deine Aufgaben gelöscht.</p>
         <p>Auf der Protokollseite kannst du dir aber immer noch alle Aufgaben, auch die vom letzten Halbjahr, anzeigen lassen.</p>
@@ -10,6 +9,5 @@
             <p>Falls der Klassennamen so nicht stimmt, kannst du ihn unter 'Profil' selbst ändern. Falls das Schuljahr nicht stimmt, kann das nur die Lehrkraft deiner Lerngruppe machen - oder du musst dem Rechentrainer eine Mail schicken.</p>
         {% endif %}
         <a href="{% url 'index' %}">weiter</a>
-</body>
+    </body>
 {% endblock %}
-</html>

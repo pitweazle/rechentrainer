@@ -1,21 +1,18 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-<body>
-<p><b>{{schule.schulname}}</b> </p>
-<p>Das sind die Lehrerinnen und Lehrer, die hier mit dem Rechentrainer arbeiten:</p>
-
-<ul>
-    {% for lehrer in lehrer_liste %}
-        <li>
-            <a  class="button" href="{% url 'lehrer_wahl' lehrer.id %}">{{lehrer.profil.vorname}} {{lehrer.profil.nachname}}</a>
-        </li>
-    {% endfor %}
-    <li>--------------------------------------------------------</li>
-    <li>
-        <a  class="button" href="{% url 'gruppe_wahl' 0 %}">Mein Lehrer/meine Lehrerin ist nicht dabei</<>
-    </li>
-</ul>
-
-</body>
+    <body>
+        <p><b>{{schule.schulname}}</b> </p>
+        <p>Das sind die Lehrerinnen und Lehrer, die hier mit dem Rechentrainer arbeiten:</p>
+        <ul>
+            {% for lehrer in lehrer_liste %}
+                <li>
+                    <a  class="button" href="{% url 'lehrer_wahl' lehrer.id %}">{{lehrer.profil.vorname}} {{lehrer.profil.nachname}}</a>
+                </li>
+            {% endfor %}
+            <li>--------------------------------------------------------</li>
+            <li>
+                <a  class="button" href="{% url 'gruppe_wahl' 0 %}">Mein Lehrer/meine Lehrerin ist nicht dabei</<>
+            </li>
+        </ul>
+    </body>
 {% endblock %}
-</html>
