@@ -1548,7 +1548,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1901,7 +1900,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 y_null = hoehe-120
                 x_max = y_max = -5
             spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
-            #spiegelachse = "x_achse"
             Ax_bild = Bx_bild = Cx_bild =  Ay_bild = By_bild = Cy_bild = -10
             while Ax_bild<x_max or Bx_bild<x_max or Cx_bild<x_max or Ax_bild>9 or Bx_bild>9 or Cx_bild>9 or Ay_bild<x_max or By_bild<x_max or Cy_bild<x_max or Ay_bild>9 or By_bild>9 or Cy_bild>9 :
                 Ax, Ay, d_breite, d_hoehe = sub_dreieck(typ2) 
@@ -5241,7 +5239,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             text = "Löse die Klammern auf:<br>" + frage 
         elif typ in[7,8]:                                                                       # binomische Formeln
             typ2 = random.randint(1,6)
-            typ2=6
+            #typ2=6
             startbuchstabe =  random.randint(0,2)*4
             buchstabe1 = buchstaben_liste[startbuchstabe+random.randint(0,3)]
             buchstabe2 = buchstabe1
@@ -5829,7 +5827,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         elif typ == 11:                                 # Würfeln und Münze
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
             typ2 = random.randint(1,4)
-            typ2=1
+            #typ2=1
             if typ2 == 1:
                 zufall = random.randint(2, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?".format(zufall)  
@@ -5874,13 +5872,12 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
             pro_text = "Kartenspiel:" + frage.format(*variable)
-            typ2=1
+            #typ2=1
             if typ2 == 1:
                 text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
             else:
                 text += "{2} {0} {1} {4} zu ziehen?"	
             zaehler = 2 if farbe >3 else 1
-
             if wert == 8:
                 zaehler *= 4
             elif wert == 9:
@@ -6050,20 +6047,34 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ ==2:                                                                           # Koordinatensystem
             titel = "Funktionsgleichung"
             text = "Wie lautet die Funktionsgleichung dieses Graphen?"
+            pro_text = "Funktionsgleichung ablesen"
             frage = "y"
             box_hoehe = 360
             box_breite = 400
             grid = 20
-            y_null = box_hoehe-grid*5         # y_Null  Lage der x-Achse
-            x_null = grid *5                  # x_Null  Lage der y-Achse
+            y_null = box_hoehe-140         # y_Null  Lage der x-Achse
+            x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-
-            absolut = 5
-            steigung = -2/3
             
-            graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid)}
+            absolut = random.randint(-4,6)/2
+            steigung = 0
+            while steigung == 0:
+                steigung = random.randint(-4,6)/2
+            if steigung%1==0:
+                steigung =int(steigung)
+            #variable = [steigung, absolut]
+            if absolut == 0:
+                gleichung = "{}x".format(steigung).replace("1x","x").replace(".",",").replace(",0","")
+            else:
+                gleichung = "{}x{:+1.1f}".format(steigung, absolut).replace("1x","x").replace(".",",").replace(",0","") 
+            lsg = [gleichung]
+            
+            graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
 
-            parameter.update(graph) 
+            parameter.update(graph)
+            hilfe_id = 20
+            hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach diesr Zahl kommt ein 'x'."
+
 
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
