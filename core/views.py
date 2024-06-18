@@ -6055,27 +6055,47 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140         # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            
-            absolut = random.randint(-4,6)/2
-            steigung = 0
-            while steigung == 0:
-                steigung = random.randint(-4,6)/2
-            if steigung%1==0:
-                steigung =int(steigung)
-            #variable = [steigung, absolut]
-            if absolut == 0:
-                gleichung = "{}x".format(steigung).replace("1x","x").replace(".",",").replace(",0","")
+
+            if stufe%2 == 0:
+                typ2 = 1
             else:
-                gleichung = "{}x{:+1.1f}".format(steigung, absolut).replace("1x","x").replace(".",",").replace(",0","") 
+                typ2 = random.randint(1,4)
+            if typ2 < 4:
+                basis = 1                       # die Grundlinie des Steigungsdreiecks
+                absolut_max = 6
+                steigung = 0
+                while steigung == 0:
+                    steigung = random.randint(-4,6)/2
+                str_steigung = str(steigung)
+                hilfe_id = 20
+                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
+            else:
+                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
+                absolut_max = 4
+                typ3 = random.randint(1,2)
+                if typ3 == 1:
+                    basis = 3
+                    steigung = 2/3
+                    str_steigung = "2/3"
+                else:
+                    basis = 4
+                    steigung = 3/4
+                    str_steigung = "3/4"
+                hilfe_id = 21
+                hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
+
+            absolut = random.randint(-4,absolut_max)/2
+            if absolut == 0:
+                gleichung = "{}x".format(str_steigung).replace(".",",").replace(",0","").replace("1x","x")
+            else:
+                gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x") 
             lsg = [gleichung]
             
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
 
-            hilfe_id = 20
-            hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach diesr Zahl kommt ein 'x'."
 
-            steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+1*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+1*grid*2,'Cy_steigung':y_null-(absolut+steigung)*grid*2 }
+            steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
             parameter.update(steigungsdreieck)
             print(steigungsdreieck)
 

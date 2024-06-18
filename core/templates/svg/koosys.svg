@@ -113,7 +113,7 @@
         <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
     {% endif %}
 
-    {% if parameter.hilfe == 20 %}
+    {% if parameter.hilfe == 20 or parameter.hilfe == 21%}
         <polygon points="{{parameter.Ax_steigung}},{{parameter.Ay_steigung}} {{parameter.Bx_steigung}},{{parameter.By_steigung}} {{parameter.Cx_steigung}},{{parameter.Cy_steigung}}"  style="stroke:black;stroke-width:1;fill: yellow; fill-opacity: 0.4;"/>
     {%endif%}
 
