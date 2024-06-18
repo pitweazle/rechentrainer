@@ -32,7 +32,11 @@
         <pattern id="ydick"  y="{{parameter.einteilung}}" width="30" height="100" patternUnits="userSpaceOnUse">
             <rect width="30" height="2" />
         </pattern>
-        
+
+        <symbol id="steigungsdreieck" > 
+            <polygon points="{{parameter.Ax_steigung}},{{parameter.Ay_steigung}} {{parameter.Bx_steigung}},{{parameter.By_steigung}} {{parameter.Cx_steigung}},{{parameter.Cy_steigung}}"  style="stroke:black;stroke-width:1;fill: yellow; fill-opacity: 0.4;"/>
+        </symbol>
+
         <symbol id="text" style="font-size:10px;font-family:Sans Serif, Verdana; stroke:black;stroke-width:5;fill:black">
             <text x="20" y="10"/> 
         </symbol>
@@ -113,8 +117,10 @@
         <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
     {% endif %}
 
+
+
     {% if parameter.hilfe == 20 or parameter.hilfe == 21%}
-        <polygon points="{{parameter.Ax_steigung}},{{parameter.Ay_steigung}} {{parameter.Bx_steigung}},{{parameter.By_steigung}} {{parameter.Cx_steigung}},{{parameter.Cy_steigung}}"  style="stroke:black;stroke-width:1;fill: yellow; fill-opacity: 0.4;"/>
+        <use href="#steigungsdreieck"/>          
     {%endif%}
 
     {% if parameter.object == "spiegel" %}
