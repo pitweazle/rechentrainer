@@ -6060,6 +6060,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 typ2 = 1
             else:
                 typ2 = random.randint(1,4)
+            typ2=4
             if typ2 < 4:
                 basis = 1                       # die Grundlinie des Steigungsdreiecks
                 absolut_max = 6
