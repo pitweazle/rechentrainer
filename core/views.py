@@ -6005,11 +6005,15 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
         else:
             try:
-                eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
+                eingabe=eingabe.replace(",",".")
                 eingabe=eingabe.split("x")
-                zahl=(float(eingabe[1])*10+20)*100
-                zahl = zahl + float(eingabe[0])*10
-                if round(zahl,3) == round(float(lsg[1]),3):
+                zahl = float(eingabe[0])*10
+                print("Zahl1: ",zahl)
+                if not eingabe[1]:
+                    zahl +=2000
+                else:
+                    zahl=zahl + (float(eingabe[1])*10+20)*100
+                if round(zahl,2) == round(float(lsg[1]),2):
                     return 1, ""
                 else:
                     return -1, "" 
