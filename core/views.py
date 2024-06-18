@@ -5997,8 +5997,24 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 1
-
         return typ_anf, typ_end
+    elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
+        if "-1x" in eingabe :
+            return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
+        elif "1x" in eingabe:
+            return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
+        else:
+            try:
+                eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
+                eingabe=eingabe.split("x")
+                zahl=(float(eingabe[1])*10+20)*100
+                zahl = zahl + float(eingabe[0])*10
+                if round(zahl,3) == round(float(lsg[1]),3):
+                    return 1, ""
+                else:
+                    return -1, "" 
+            except:
+                return -1, "" 
     else:  
         # if aufgnr == 1 and typ_end < 8:
         #     typ = 1 
@@ -6052,15 +6068,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             box_hoehe = 360
             box_breite = 400
             grid = 20
-            y_null = box_hoehe-140         # y_Null  Lage der x-Achse
+            y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-
             if stufe%2 == 0:
                 typ2 = 1
             else:
                 typ2 = random.randint(1,4)
-            typ2=4
             if typ2 < 4:
                 basis = 1                       # die Grundlinie des Steigungsdreiecks
                 absolut_max = 6
@@ -6091,14 +6105,15 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             else:
                 gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x") 
             lsg = [gleichung]
-            
+            zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
+            lsg.append(zahl)
+            lsg.append("indiv_0")
+
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
 
-
             steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
-            parameter.update(steigungsdreieck)
-            print(steigungsdreieck)
+            parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
 
 
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
