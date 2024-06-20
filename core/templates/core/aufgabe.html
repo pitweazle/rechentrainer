@@ -80,15 +80,20 @@
                         <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
+
+
                     {{message_unten}}
-                    <fieldset>
-                        {% if not "tab" in parameter.name %}
-                            {{frage}}
-                            {{form.eingabe}}
-                            {{einheit}}
-                        {% endif %}
-                        <input type="submit" value="Prüfen">
-                    </fieldset>
+                    <form action="{% url 'main' kategorie.slug %}" method="post">
+                        {% csrf_token %}
+                        <fieldset>
+                            {% if not "tab" in parameter.name %}
+                                {{frage}}
+                                {{form.eingabe}}
+                                {{einheit}}
+                            {% endif %}
+                            <input type="submit" value="Prüfen">
+                        </fieldset>
+                    </form>
                     <nav>
                         <button type="button">
                             <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
