@@ -1226,8 +1226,8 @@ def sub_dreiecke(typ):
             y1 = y0 + hoehe
         if typ2 == 4:                                                         #stumpfwinkliges Dreieck
             pro_text = "Dreieck, bei dem ein Winkel größer als 90° ist?"
-            lsg = ["stumpfwinklges Dreieck","stumpfwinkliges", "stumpfwinklig"]
-            seiten = ["c", "a", "b"]
+            lsg = ["stumpfwinkliges Dreieck","stumpfwinkliges", "stumpfwinklig"]
+            seiten = ["c", "a", "b"]i
             x0 = x1
             breite = random.randint(150, 250)
             hoehe = random.randint(150, 250)
@@ -5256,7 +5256,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             text = "Löse die Klammern auf:<br>" + frage 
         elif typ in[7,8]:                                                                       # binomische Formeln
             typ2 = random.randint(1,6)
-            typ2=6
+            #typ2=6
             startbuchstabe =  random.randint(0,2)*4
             buchstabe1 = buchstaben_liste[startbuchstabe+random.randint(0,3)]
             buchstabe2 = buchstabe1
@@ -5844,7 +5844,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         elif typ == 11:                                 # Würfeln und Münze
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
             typ2 = random.randint(1,4)
-            typ2=1
+            #typ2=1
             if typ2 == 1:
                 zufall = random.randint(2, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?".format(zufall)  
@@ -5889,7 +5889,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
             pro_text = "Kartenspiel:" + frage.format(*variable)
-            typ2=1
+            #typ2=1
             if typ2 == 1:
                 text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
             else:
