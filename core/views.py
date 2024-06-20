@@ -1226,8 +1226,8 @@ def sub_dreiecke(typ):
             y1 = y0 + hoehe
         if typ2 == 4:                                                         #stumpfwinkliges Dreieck
             pro_text = "Dreieck, bei dem ein Winkel größer als 90° ist?"
-            lsg = ["stumpfwinklges Dreieck","stumpfwinkliges", "stumpfwinklig"]
-            seiten = ["c", "a", "b"]
+            lsg = ["stumpfwinkliges Dreieck","stumpfwinkliges", "stumpfwinklig"]
+            seiten = ["c", "a", "b"]i
             x0 = x1
             breite = random.randint(150, 250)
             hoehe = random.randint(150, 250)
