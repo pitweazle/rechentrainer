@@ -1226,7 +1226,7 @@ def sub_dreiecke(typ):
             y1 = y0 + hoehe
         if typ2 == 4:                                                         #stumpfwinkliges Dreieck
             pro_text = "Dreieck, bei dem ein Winkel größer als 90° ist?"
-            lsg = ["stumpfwinklges Dreieck","stumpfwinkliges", "stumpfwinklig"]
+            lsg = ["stumpfwinkliges Dreieck","stumpfwinkliges", "stumpfwinklig"]
             seiten = ["c", "a", "b"]
             x0 = x1
             breite = random.randint(150, 250)
@@ -5992,41 +5992,80 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 lsg.append(format_zahl(zahl*100,0)+"%")                        
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+ 
+def funktionsgleichung(typ2):
+    if typ2 == 1:                               # nur ganze Zahlen
+        basis = 1
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-2,3)
+        str_steigung = str(steigung)   
+    elif typ2 == 2:                             
+        absolut_max = 4
+        typ3 = random.randint(1,2)
+        if typ3 == 1:                           # Steigung als Bruch
+            basis = 3
+            steigung = 2/3
+            str_steigung = "2/3"
+        else:                                   # Kommazahlen ( ,5)
+            basis = 4
+            steigung = 3/4
+            str_steigung = "3/4"
+    else:
+        basis = 1                       # die Grundlinie des Steigungsdreiecks
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-4,6)/2
+        str_steigung = str(steigung)
+    absolut = random.randint(-4,absolut_max)/2
+    if absolut == 0:
+        gleichung = "{}x".format(str_steigung).replace(".",",").replace(",0","").replace("1x","x")
+    else:
+        gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x")
+    return gleichung, steigung, absolut, basis 
 
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 1
+        typ_end = 3
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if "-1x" in eingabe :
-            return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
-        elif "1x" in eingabe:
-            return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
-        else:
-            try:
-                eingabe=eingabe.replace(",",".")
-                eingabe=eingabe.split("x")
-                zahl = float(eingabe[0])*10
-                print("Zahl1: ",zahl)
-                if not eingabe[1]:
-                    zahl +=2000
-                else:
-                    zahl=zahl + (float(eingabe[1])*10+20)*100
-                if round(zahl,2) == round(float(lsg[1]),2):
-                    return 1, ""
-                else:
+        if typ == 2:
+            if "-1x" in eingabe :
+                return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
+            elif "1x" in eingabe:
+                return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
+            else:
+                try:
+                    eingabe=eingabe.replace(",",".")
+                    eingabe=eingabe.split("x")
+                    zahl = float(eingabe[0])*10
+                    print("Zahl1: ",zahl)
+                    if not eingabe[1]:
+                        zahl +=2000
+                    else:
+                        zahl=zahl + (float(eingabe[1])*10+20)*100
+                    if round(zahl,2) == round(float(lsg[1]),2):
+                        return 1, ""
+                    else:
+                        return -1, "" 
+                except:
                     return -1, "" 
-            except:
-                return -1, "" 
+        elif typ == 3:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        else:
+            return -1, "" 
     else:  
-        # if aufgnr == 1 and typ_end < 8:
-        #     typ = 1 
-        # elif typ_anf == 7:
-        #     typ = random.randint(typ_anf, typ_end) 
-        # else:
-        #     typ = random.randint(2, typ_end) 
-        typ=2
+        if aufgnr == 1 and typ_end < 4:
+            typ = 1 
+        elif typ_anf == 2:
+            typ = random.randint(typ_anf, typ_end) 
+        #typ=3
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6064,63 +6103,65 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter.update(x_werte)
             parameter.update(y_werte)
             parameter.update(y_farbe)
-        elif typ ==2:                                                                           # Koordinatensystem
-            titel = "Funktionsgleichung"
-            text = "Wie lautet die Funktionsgleichung dieses Graphen?"
-            pro_text = "Funktionsgleichung ablesen"
-            frage = "y"
+        else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
             grid = 20
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            if stufe%2 == 0:
-                typ2 = 1
-            else:
-                typ2 = random.randint(1,4)
-            if typ2 < 4:
-                basis = 1                       # die Grundlinie des Steigungsdreiecks
-                absolut_max = 6
-                steigung = 0
-                while steigung == 0:
-                    steigung = random.randint(-4,6)/2
-                str_steigung = str(steigung)
-                hilfe_id = 20
-                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
-            else:
-                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                absolut_max = 4
-                typ3 = random.randint(1,2)
-                if typ3 == 1:
-                    basis = 3
-                    steigung = 2/3
-                    str_steigung = "2/3"
+            if typ == 3:
+                titel = "Funktionswerte"                                                # Funktionswert auf Graph?
+                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                frage = "ja/nein"
+                typ2=1
+                x = random.choice([-10, -5, 6, 7, 10])
+            elif typ == 2:                                                              # Funktionsgleichung
+                titel = "Funktionsgleichung"
+                text = "Wie lautet die Funktionsgleichung dieses Graphen?"
+                pro_text = "Funktionsgleichung ablesen"
+                frage = "y="
+                if stufe%2 == 0:
+                    typ2 = 2
                 else:
-                    basis = 4
-                    steigung = 3/4
-                    str_steigung = "3/4"
+                    typ2 = random.randint(2,5)
+            if typ2 == 2:
+                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
                 hilfe_id = 21
                 hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
-
-            absolut = random.randint(-4,absolut_max)/2
-            if absolut == 0:
-                gleichung = "{}x".format(str_steigung).replace(".",",").replace(",0","").replace("1x","x")
             else:
-                gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x") 
-            lsg = [gleichung]
-            zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
-            lsg.append(zahl)
-            lsg.append("indiv_0")
-
+                hilfe_id = 20
+                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
+            gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
+            if typ == 2:
+                lsg = [gleichung]
+                zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
+                lsg.append(zahl)
+                lsg.append("indiv_0")
+                steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
+                parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
+            else:
+                if absolut%2 == 0:
+                    y = int(steigung*x+absolut)
+                else:
+                    y = steigung*x+absolut
+                typ3 = random.randint(-1,1)
+                if typ3 == 0:
+                    lsg = ["ja", "j", "indiv_0"]
+                else:
+                    y +=typ3
+                    lsg = ["nein", "n", "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id = 30
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht."						
+                else:
+                    hilfe_id = 31
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
+                
+            variable = [gleichung, x, str(y).replace(".",",")]
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-
-            steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
-            parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
-
-
-        return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
