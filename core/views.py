@@ -5875,7 +5875,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             hilfe_id = 110
             hilfe="Du musst die Anzahl der erwünschten Ereignisse durch die Anzahl aller Möglichkeiten teilen.<br>(Gib das Ergebnis einfach als Bruch an)"
         elif typ == 12:                                 # Karten
-            typ2 = random.randint(1,2)
+            #typ2 = random.randint(1,2)
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/skat.png', 'breite': 300}
             werte = ("Sieben", "Acht", "Neun", "Zehn", "Bube", "Dame", "König", "Ass", "Zahl", "Bild")
             farben = ("Karo", "Herz", "Pik", "Kreuz", "rote", "schwarze")
@@ -5889,13 +5889,11 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
             pro_text = "Kartenspiel:" + frage.format(*variable)
-            #typ2=1
-            if typ2 == 1:
-                text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
-            else:
-                text += "{2} {0} {1} {4} zu ziehen?"	
+            # if typ2 == 1:
+            text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
+            # else:
+            #     text += "{2} {0} {1}{4} zu ziehen?"	
             zaehler = 2 if farbe >3 else 1
-
             if wert == 8:
                 zaehler *= 4
             elif wert == 9:
