@@ -2,24 +2,23 @@
 {% block content %}
 <body>
   <h2>Neues Halbjahr beginnen?</h2>
-      <h2>Wir haben jetzt {% now "F" %} - bald gibt es Zeugnisse. Sollen die Aufgaben, die du ab jetzt machst, schon für das nächste Schulhalbjahr zählen?</h2>
-      Dann siehst du deine bisher gemachten Aufgaben (und auch die Fehler) nicht mehr auf der Übersichtseite. <br>(Am 1.{{wechsel}} passiert das sowieso.)<br>
-      Diese Wahl kannst du nicht rückgängig machen. Bestätige sie also bitte, indem du hier "ja" eingibst - ansonsten kannst du unten einfach auf 'weiter' klicken:
-      <br>
-      <br>
-      <form method="POST" action="{% url 'naechstes_halbjahr' %}">
-        {% csrf_token %}
-        <form>
-            <label> neues Schulhalbjahr? </label> 
-            <input id="neu" name="neu" type="text">
-            <br>
-            <br>
-            <input type="Checkbox"  name="keinefrage"> 
-            <label> Nein, ich möchte <b>nicht</b> das neue Halbjahr anfangen und <b>möchte auch bis zum nächsten {{monat}} nicht mehr danach gefragt werden!</b> </label>
-            <br>
-            <br> 
-            <input type="submit" value="weiter">
-        </form> 
+    <h2>Wir haben jetzt {% now "F" %} - bald gibt es Zeugnisse. Sollen die Aufgaben, die du ab jetzt machst, schon für das nächste Schulhalbjahr zählen?</h2>
+    Dann siehst du deine bisher gemachten Aufgaben (und auch die Fehler) nicht mehr auf der Übersichtseite. <br>(Am 1.{{wechsel}} passiert das sowieso.)<br>
+    Diese Wahl kannst du nicht rückgängig machen. Bestätige sie also bitte, indem du hier "ja" eingibst - ansonsten kannst du unten einfach auf 'weiter' klicken:
+    <br>
+    <br>
+    <form method="POST" action="{% url 'naechstes_halbjahr' %}">
+      {% csrf_token %}
+      <form>
+        <label> neues Schulhalbjahr? </label> 
+        <input id="neu" name="neu" type="text">
+        <br>
+        <br>
+        <input type="Checkbox"  name="keinefrage"> 
+        <label> Nein, ich möchte <b>nicht</b> das neue Halbjahr anfangen und <b>möchte auch bis zum nächsten {{monat}} nicht mehr danach gefragt werden!</b> </label>
+        <br>
+        <br> 
+        <input type="submit" value="weiter">
+    </form> 
 </body>  
 {% endblock %}
-</html>

@@ -1,26 +1,24 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
-<body>
-{% if user.profil.klasse|lower == "lehrer" %}
-    <p>Wähle hier deinen Schulort:</p>
-{% else %}
-    <p>Hier kannst du prüfen, ob dein Schulort, deine Schule, deine Lehrerin bzw. dein Lehrer sowie deine Lerngruppe schon registriert sind.</p>
-    <p>Zunächst der Schulort</p>
-{% endif %}
-<form action="/ort_wahl/" method="POST">
-    {% csrf_token %} 
-    {{ort_form}} 
-    <button type="submit">auswählen</button>
-</form>
-<a href="{% url 'index' %}">Ich möchte mich nicht bei einer Lerngruppe anmelden</a>
+    <body>
+        {% if user.profil.klasse|lower == "lehrer" %}
+            <p>Wähle hier deinen Schulort:</p>
+        {% else %}
+            <p>Hier kannst du prüfen, ob dein Schulort, deine Schule, deine Lehrerin bzw. dein Lehrer sowie deine Lerngruppe schon registriert sind.</p>
+            <p>Zunächst der Schulort</p>
+        {% endif %}
+        <form action="/ort_wahl/" method="POST">
+            {% csrf_token %} 
+            {{ort_form}} 
+            <button type="submit">auswählen</button>
+        </form>
+        <a href="{% url 'index' %}">Ich möchte mich nicht bei einer Lerngruppe anmelden</a>
 
-<p>Wenn der Schulort oben nicht dabei ist, muss die Schule neu angelegt werden.</p>
-{% if user.profil.klasse|lower == "lehrer" %}
-    <p>Für einen Lehrerzugang musst du sowieso eine E-Mail an den Rechentrainer schicken.</p>
-{% else %}
-    <p>Wenn du willst, kannst du ja eine diesbezügliche Mail an den Rechentrainer schicken.</p>
-{% endif %}
-
-</body>
+        <p>Wenn der Schulort oben nicht dabei ist, muss die Schule neu angelegt werden.</p>
+        {% if user.profil.klasse|lower == "lehrer" %}
+            <p>Für einen Lehrerzugang musst du sowieso eine E-Mail an den Rechentrainer schicken.</p>
+        {% else %}
+            <p>Wenn du willst, kannst du ja eine diesbezügliche Mail an den Rechentrainer schicken.</p>
+        {% endif %}
+    </body>
 {% endblock %}
-</html>

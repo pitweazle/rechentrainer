@@ -10,8 +10,8 @@
     </head>
 
 {% block css_files %}
-<link rel="stylesheet" href="{% static 'styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
 {% endblock %}
 
 <body>
@@ -60,99 +60,41 @@
                 {% endlocalize %}
                 </p>
             </div>
-            <footer>
-        <form action="{% url 'main' kategorie.slug %}" method="post">
-        {% csrf_token %}
-        {% if "tab" in parameter.name %}
-            <fieldset>
-            <table>
-                <tr>
-                    <th class = "linie_rechts">{{parameter.titel_x}}</th>
-                    <th>{{parameter.titel_y}}</th>
-                </tr>
-                {% if lsg %}
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x0}}</td>
-                        <td>{{parameter.y0}}</td>                                                                       
-                    </tr>
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x1}}</td>
-                        <td>{{parameter.y1}}</td>                                                                    
-                    </tr>
-                    <tr>
-                        <td class = "linie_rechts"">{{parameter.x2}}</td>
-                        <td>{{parameter.y2}}</td>                                                                    
-                    </tr>
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x3}}</td>
-                        <td>{{parameter.y3}}</td>                                                                    
-                    </tr>                                    
-                    <tr>
-                        <td class = "linie_rechts"">{{parameter.x4}}</td>
-                        <td>{{parameter.y4}}</td>                                                                    
-                    </tr>
+            <div class="unten">
+                {% if "tab" in parameter.name %}
+                    {% if lsg %}
+                        {% include 'core/wertetabelle_lsg.html'%}
+                    {% else %}
+                        {% include 'core/wertetabelle.html'%}
+                    {% endif %}
+                {% endif %}
+                {% if 'dreimal' in message_unten %}
+                    <button type="button">
+                        <a href="{% url 'uebersicht'  %}">weiter</a>
+                    </button>
+                {% elif lsg %}
+                    {% if eingabe != " " %}
+                        <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
+                    {%endif%}
+                    <button type="button">
+                        <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
+                    </button>
                 {% else %}
-                    {% if "term" in parameter.name %}
-                        <tr>
-                            <td class = "linie_rechts">{{parameter.x0}}</td>
-                            <td class = "{{parameter.color0}}">{{form.y0}}</td>                                                                    
-                        </tr>
-                        <tr>
-                            <td class = "linie_rechts">{{parameter.x1}}</td>
-                            <td class = "{{parameter.color1}}">{{form.y1}}</td>                                                                    
-                        </tr> 
-                    {% else %}
-                        <tr>
-                            <td class = "linie_rechts">{{parameter.x0}}</td>
-                            <td>{{parameter.y0}}</td>                                                                       
-                        </tr>
-                        <tr>
-                            <td class = "linie_rechts">{{parameter.x1}}</td>s
-                            <td>{{parameter.y1}}</td>                                                                    
-                        </tr>
-                    {% endif %}
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x2}}</td>
-                        <td class = "{{parameter.color2}}">{{form.y2}}</td>                                                                    
-                    </tr>
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x3}}</td>
-                        <td class = "{{parameter.color3}}">{{form.y3}}</td>                                                                    
-                    </tr> 
-                    <tr>
-                        <td class = "linie_rechts">{{parameter.x4}}</td>
-                        <td class = "{{parameter.color4}}">{{form.y4}}</td>                                                                    
-                    </tr> 
-                {%endif%}                                   
-            </table>
-                    {% endif %}
-                    {% if 'dreimal' in message_unten %}
-                        </form>
-                        <nav>
-                            <button type="button">
-                                <a href="{% url 'uebersicht'  %}">weiter</a>
-                            </button>
-                    {% elif lsg %}
-                        </form>
-                         <nav>
-                            {% if eingabe != " " %}
-                                <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
-                            {%endif%}
-                            <button type="button">
-                                <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
-                            </button>
-                    {% else %}
-                            {{message_unten}}
-                            <fieldset>
-                                {% if not "tab" in parameter.name %}
-                                    {{frage}}
-                                    {{form.eingabe}}
-                                    {{einheit}}
-                                {% endif %}
-                                <input type="submit" value="Prüfen">
-                            </fieldset>
-                        </form>
-                        <nav>
+
+
+                    {{message_unten}}
+                    <form action="{% url 'main' kategorie.slug %}" method="post">
+                        {% csrf_token %}
+                        <fieldset>
+                            {% if not "tab" in parameter.name %}
+                                {{frage}}
+                                {{form.eingabe}}
+                                {{einheit}}
+                            {% endif %}
+                            <input type="submit" value="Prüfen">
+                        </fieldset>
+                    </form>
+                    <nav>
                         <button type="button">
                             <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
                         </button>
@@ -169,7 +111,7 @@
                         Fehler löschen: noch {{bis_loeschen}} Aufgaben
                     {% endif %}
                 {% endif%}
-            </footer>           
+            </div>          
             {% endautoescape %}
         {% endblock %}
     </div>
