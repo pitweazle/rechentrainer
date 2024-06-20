@@ -1,37 +1,32 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
+    <head>
+        <style>body{min-width: 450px;}</style>    
+    </head>
 
-<head>
-    <style>body{min-width: 450px;}</style>    
-</head>
-
-<body>
-<table>
-    {% for gruppe in gruppen %}
-    <tr>
-        <td align="left">{{ gruppe.name }}</td>
-        <td>
-            <button>
-                <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
-            </button>
-        </td>
-        {% if super %}
-           <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
-        {% endif %}
-
-        </tr>
-    {% empty %}
-        <strong>Es sind noch keine Lerngruppen vorhanden.</strong>
-    {% endfor %}
-    <tr>
-        <td colspan="2", align="left">
-            <button>
-                <a href="{% url 'neue_gruppe' %}">neue Lerngruppe anlegen</a>
-            </button>
-        </td>
-</table>
-
-</body>
-
+    <body>
+        <table>
+            {% for gruppe in gruppen %}
+                <tr>
+                    <td align="left">{{ gruppe.name }}</td>
+                    <td>
+                        <button>
+                            <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
+                        </button>
+                    </td>
+                    {% if super %}
+                        <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <strong>Es sind noch keine Lerngruppen vorhanden.</strong>
+            {% endfor %}
+            <tr>
+                <td colspan="2", align="left">
+                    <button>
+                        <a href="{% url 'neue_gruppe' %}">neue Lerngruppe anlegen</a>
+                    </button>
+                </td>
+        </table>
+    </body>
 {% endblock %}
-</html>

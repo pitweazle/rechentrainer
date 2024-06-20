@@ -2,27 +2,28 @@
 {% load static %}
 
 <html lang="de">
-    <head>       
-        <title>Rechentrainer im Web</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
-    </head>
-
+<head>       
+    <title>Rechentrainer im Web</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'auswahl.css' %}">
     {% block css_files %}
     {% endblock %}
+</head>
 
-    <header>
-        <div class="navbar">
-            <a href="{% url 'index' %}">&#8962 Home</a>
-            <a>kein{{titel}} gewählt</a>
-        </div> 
-    </header>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>kein{{titel}} gewählt</a>
+    </div> 
+</header>
 
+<body>
     <p>Wenn du hier dein{{titel}} nicht findest, hat deine Lehrerin/dein Lehrer hier noch keine Lerngruppe angelegt.</p>
     {% if not "ruppe" in titel %}
         <p> Du muss du sie/ihn mal auf den Rechentrainer hinweisen!</p>
     {%endif%}
     <a href="{% url 'index' %}">weiter</a>
+</body>
 </html>

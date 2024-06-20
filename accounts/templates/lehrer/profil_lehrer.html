@@ -1,19 +1,17 @@
 {% extends 'auswahl.html' %}   
 {% block content %}
-
-<body>
-  <form action="/profil_lehrer/" method="POST">
-    <table>
-      {% csrf_token %}
-      {{profil_form.as_table}}
-      <tr><td style="font-weight: bold; text-align: center;"></td><td>Aufg. zählen für das {{lehrer.hj}}. Hj. {{lehrer.sj}}</td></tr>
-    </table>
-    <button type="submit">ändern</button>  
-  </form>
-  <br>
-  <button>
-    <a href="{% url 'index' %}">zurück</a>
-</button>
- 
-</body>
+  <body>
+    <form action="/profil_lehrer/" method="POST">
+      <table>
+        {% csrf_token %}
+        {{profil_form.as_table}}
+        <tr><td style="font-weight: bold; text-align: center;"></td><td>Aufg. zählen für das {{lehrer.hj}}. Hj. {{lehrer.sj}}</td></tr>
+      </table>
+      <button type="submit">ändern</button>  
+    </form>
+    <br>
+    <button>
+      <a href="{% url 'index' %}">zurück</a>
+    </button>
+  </body>
 {% endblock %}
