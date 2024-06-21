@@ -80,8 +80,6 @@
                         <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
-
-
                     {{message_unten}}
                     <form action="{% url 'main' kategorie.slug %}" method="post">
                         {% csrf_token %}

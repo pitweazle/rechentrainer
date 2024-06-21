@@ -1155,15 +1155,15 @@ def sub_figuren():
     lsg = lsg + ["indiv_0"] 
     return typ2, anmerkung, lsg, parameter
 
-def dreieck(typ2):
-    if typ2 == 1:
-        x1 = random.randint(4,12)
-        y1 = random.randint(1,12) 
-    else:
-        x1 = random.randint(-3,8)
-        y1 = random.randint(-3,8) 
+def sub_dreieck(typ2):
     breite = random.randint(2,6)
-    hoehe = random.randint(2,6)        
+    hoehe = random.randint(2,6)  
+    if typ2 == 1:
+        x1 = random.randint(4,11-breite)
+        y1 = random.randint(1,11-hoehe) 
+    else:
+        x1 = random.randint(-4,9-breite)
+        y1 = random.randint(-4,9-hoehe) 
     return x1, y1, breite, hoehe    
 
 def sub_dreiecke(typ):
@@ -1460,6 +1460,33 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
 
+def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, einteilung=2):
+    parameter = {'name': 'svg/koosys.svg',
+            'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+            'grid' : grid,
+            'einteilung': einteilung,
+            'y_null': y_null,'x_null': x_null,
+            }
+    if einteilung == -10:
+        x_ende = 0
+        y_ende = +2
+    elif einteilung == 1:
+        x_ende = -1
+        y_ende = -1
+    else:
+        x_ende = 0
+        y_ende = 0        
+    beschriftung = {
+        'xvalues': [
+            (x_null + n*grid*abs(einteilung), n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*abs(einteilung))+x_ende)
+        ],
+        'yvalues': [
+            (y_null - n*grid*abs(einteilung), n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*abs(einteilung))+y_ende)
+        ],
+        }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
+    parameter.update(beschriftung)
+    return parameter
+
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
         typ_anf = 1
@@ -1751,90 +1778,66 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Koordinatensystem"
             text = "Wie lauten die Koordinaten des Punktes A?"
             frage = "P="
-            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"
+            anmerkung="Du must die Koordinaten in Klammern setzen und mit Semikolon trennen: (  ;  )"
             if stufe < 6:
                 typ2 = 1
             elif stufe < 20:
                 typ2 = 2
             else:
                 typ2 = 3
-            if typ2 ==1:                                                            #nur N im 1.Quadranten
+            if typ2 == 1:                                                            # nur N im 1.Quadranten
+                box_hoehe = 240
+                box_breite = 360
+                y_null = box_hoehe-40
+                x_null = 40
+                parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe, einteilung=1)
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
                 lsg = ["({0};{1})".format(x_koo, y_koo)]
                 lsg = lsg + ["({0}|{1})".format(x_koo, y_koo)]
-                box_hoehe = 240
-                box_breite = 350
-                y_null = box_hoehe-40
-                x_null = 30
-                y_start = y_null
-                x_start = 30
-                einteilung = 20
-                parameter_2 = {
-                    'xvalues': [
-                        (x_null + n*20, n) for n in range(0, 15)
-                    ],
-                    'yvalues': [
-                        (y_null - n*20, n) for n in range(0, 10)
-                    ],
+                punkt = {
+                    'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*20, 
                     'y_koo': y_null -(y_koo*20),
                     'text_a': "A",
                 } 
-            elif typ2 ==2:                                                          #nur Kommazahlen im 1.Quadranten
+                parameter.update(punkt)
+            elif typ2 == 2:                                                          # Kommazahlen im 1.Quadranten
+                box_hoehe = 280
+                box_breite = 360
+                y_null = box_hoehe-40
+                x_null = 40
+                parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
                 x_koo = random.randint(0,20)
                 y_koo = random.randint(0,20) 
                 lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                box_hoehe = 280
-                box_breite = 350
-                y_null = box_hoehe-40
-                x_null = 30
-                y_start = y_null
-                x_start = x_null
-                einteilung = random.randint(1,2) * 10
-                parameter_2 = {
-                    'xvalues': [
-                        (x_null + n*100, n) for n in range(0, 3)
-                    ],
-                    'yvalues': [
-                        (y_null - n*100, n) for n in range(0, 3)
-                    ],
+                punkt = {
+                    'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*10, 
                     'y_koo': y_null -(y_koo*10),
                     'text_a': "A",
                 } 
-            else:                                                                   #Koordinatensystem
-                x_koo = random.randint(-12,22)
-                y_koo = random.randint(-7,25) 
-                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                parameter.update(punkt)
+            else:                                                                    # 4 Quadranten
                 box_hoehe = 360
                 box_breite = 400
-                y_null = box_hoehe-100                  # y_Null entspricht der Lage der x-Achse
-                x_null = 130                            # x_Null entspricht der lage der y-Achse
-                y_start = box_hoehe                     # ist der Anfang der y-Achse
-                x_start = 0                             # ist der Anfang der x-Achse
-                einteilung = 10
-                parameter_2 = {
-                    'xvalues': [
-                        (x_null + n*100, n) for n in range(-1, 5)
-                    ],
-                    'yvalues': [
-                        (y_null - n*100, n) for n in range(0, 5)
-                    ],
-                    'x_koo' : x_null + x_koo*10, 
-                    'y_koo': y_null -(y_koo*10),
+                grid = 20
+                y_null = box_hoehe-grid*7         # y_Null  Lage der x-Achse
+                x_null = grid *7                  # x_Null  Lage der y-Achse
+                parameter = sub_koordinatensystem(x_null, y_null,box_breite, box_hoehe, grid, )
+                x_koo = random.randint(-6,11)/2
+                y_koo = random.randint(-6,9)/2 
+                lsg = ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
+                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo).replace(".", ",")]
+                punkt = {
+                    'object': 'koordinaten',
+                    'x_koo' : x_null + x_koo*40, 
+                    'y_koo': y_null -(y_koo*40),
                     'text_a': "A",
                 }
-            parameter = {'name': 'svg/koosys.svg', 'object': 'koordinaten',
-                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'einteilung' :einteilung,
-                    'y_null': y_null,'x_null': x_null,
-                    'y_start': y_start,'x_start': x_start,
-                    }
-            parameter.update(parameter_2)                
-            zahl=(x_koo+20)*1000+y_koo
+                parameter.update(punkt)
+            zahl=(x_koo+20)*1000+y_koo                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
             lsg = lsg + [str((x_koo+20)*1000+y_koo)]
             lsg = lsg + ["indiv_0"] 
         elif typ == 8:                                                              #Symmetrie
@@ -1886,112 +1889,96 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 typ2 = 2
             if typ2 == 1:                                                           #nur positive Zahlen
                 breite = 300 
-                x_null = 30
-                x_start = 30
-                x_text_start = 0
                 hoehe = 300                
+                x_null = 40
                 y_null = hoehe-40
-                y_start = hoehe-40
-                y_text_start = 0   
+                x_max = y_max = 0
             else:                                                                   #auch negative Zahlen
-                breite = 400
-                x_null = 110
-                x_start = 0
-                x_text_start = -2
-                hoehe = 400
-                y_null = 280
-                y_start = hoehe
-                y_text_start = -2   
-            x1 = d_breite = 1000                                                  
-            y1 = d_hoehe =1000
-            typ3 = random.randint(1,3)
-            if typ3 == 1:                                                          #Spiegelachse ist Winkelhalbierende
-                hilfe_id = 91
-                x0 = 0
-                y0 = 0
-                #hier kommt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4  :
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 2:                                                        #Spiegelachse parallel zur y-Achse
-                x0 = random.randint(4,7)
-                y0 = 0
-                #hier kmmt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or x1 - x0 > x0 + x_null/20:
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            elif typ3 == 3:                                                        #Spiegelachse parallel zur x-Achse
-                x0 = 0
-                y0 = random.randint(4,7)
-                #hier kmmt das Dreieck:
-                while x1 + d_breite > breite/20-3 or y1 + d_hoehe > hoehe/20-4 or y1 - y0 > y0 + y_null/20:
-                    x1, y1, d_breite, d_hoehe = dreieck(typ2)
-            x2 = x1 + d_breite
-            y2 = y1
-            y3 = y1 + d_hoehe
-            x3 = x1 + random.randint(0,d_breite)
-            #Berechnung der Bildpunkte
-            if typ3 == 1:
-                x1b = y1
-                x2b = y2
-                x3b = y3
-                y1b = x1
-                y2b = x2
-                y3b = x3
-            elif typ3 == 2:
-                x1b = x1 - (x1 - x0)*2 
-                x2b = x2 - (x2 - x0)*2 
-                x3b = x3 - (x3 - x0)*2 
-                y1b = y1
-                y2b = y2
-                y3b = y3
-            elif typ3 == 3:
-                x1b = x1  
-                x2b = x2 
-                x3b = x3 
-                y1b = y1 - (y1 - y0)*2
-                y2b = y2 - (y2 - y0)*2
-                y3b = y3 - (y3 - y0)*2
-            xb_liste = [x1b, x2b, x3b]
-            yb_liste = [y1b, y2b, y3b]
-            x_koo = [x1*20, x2*20, x3*20, x1*20]
-            y_koo = [y1*20, y1*20, y3*20, y1*20]
+                breite = 340
+                hoehe = 340
+                x_null = 120
+                y_null = hoehe-120
+                x_max = y_max = -5
+            spiegelachse = random.choice(["winkelhalbierende","y_achse","x_achse"])
+            Ax_bild = Bx_bild = Cx_bild =  Ay_bild = By_bild = Cy_bild = -10
+            while Ax_bild<x_max or Bx_bild<x_max or Cx_bild<x_max or Ax_bild>9 or Bx_bild>9 or Cx_bild>9 or Ay_bild<x_max or By_bild<x_max or Cy_bild<x_max or Ay_bild>9 or By_bild>9 or Cy_bild>9 :
+                Ax, Ay, d_breite, d_hoehe = sub_dreieck(typ2) 
+                Bx = Ax + d_breite
+                Cx = Ax + d_breite
+                By = Ay
+                Cy = Ay + d_hoehe
+                #Berechnung der Bildpunkte:
+                if spiegelachse == "winkelhalbierende":
+                    hilfe_id = 91
+                    x_start = 0
+                    y_start = hoehe
+                    x_end = breite
+                    y_end = 0                    
+                    Ax_bild = Ay
+                    Bx_bild = By
+                    Cx_bild = Cy
+                    Ay_bild = Ax
+                    By_bild = Bx
+                    Cy_bild = Cx
+                elif spiegelachse == "y_achse":
+                    x_start = x_end = random.randint(4,7)
+                    y_start = hoehe
+                    y_end = 0 
+                    Ax_bild = Ax - (Ax - x_start)*2 
+                    Bx_bild = Bx - (Bx - x_start)*2 
+                    Cx_bild = Cx - (Cx - x_start)*2 
+                    Ay_bild = Ay
+                    By_bild = By
+                    Cy_bild = Cy
+                    #Die Koordinaten der Spiegelachse:
+                    x_start = x_end = x_start*20 + x_null
+                elif spiegelachse == "x_achse":
+                    x_start = 0
+                    x_end = breite
+                    y_start = y_end = random.randint(4,7)
+                    Ax_bild = Ax  
+                    Bx_bild = Bx 
+                    Cx_bild = Cx 
+                    Ay_bild = Ay - (Ay - y_start)*2
+                    By_bild = By - (By - y_start)*2
+                    Cy_bild = Cy - (Cy - y_start)*2
+                    y_start = y_end = y_null - y_start*20
+            x_bild_liste = [Ax_bild, Bx_bild, Cx_bild]
+            y_bild_liste = [Ay_bild, By_bild, Cy_bild]
+            x_koo = [Ax*20, Bx*20, Cx*20, Ax*20]
+            y_koo = [Ay*20, Ay*20, Cy*20, Ay*20]
             ecken = ["A", "B", "C"]
             ecken_x = [-20,10,-5]                               #schiebt Benennung in x
             ecken_y = [10,10,-10]                               #schiebt Benennung in y
-            xb = -1
-            while xb < 0:
-                typ4 = random.randint(0,2)
-                xb = xb_liste[typ4]
-            yb = yb_liste[typ4] 
-            text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[typ4] + "' des gespiegelten Dreiecks?"
-            anmerkung="Du must die Koordinaten entweder so (  ;  ) oder so (  |  ) eingeben!"             
-            lsg = ["({0};{1})".format(xb, yb)]
-            lsg = lsg + ["({0}|{1})".format(xb, yb)]
-            parameter = {
-                'einteilung' :20,
-                'box_hoehe' : hoehe,'box_breite' : breite,
-                'hoehe' : hoehe,'breite' : breite,
-                'y_null': y_null,'x_null': x_null,                
-                'x_start': x_start,'y_start': y_start,
-                'x0': x_null + x0*20,'y0': y_null - y0*20           
-                }
-            parameter_2 = {
-                'name': 'svg/koosys.svg', 'object': 'spiegel', 'typ': typ3,
-                'xvalues': [
-                    (x_null + n*40, 2*n) for n in range(x_text_start, 7)
-                ],
-                'yvalues': [
-                    (y_null - n*40, 2*n) for n in range(y_text_start, 7)
-                ],                    
-                'x1': x_null + x_koo[0], 'y1': y_null - y_koo[0], 
-                'x2': x_null + x_koo[1], 'y2': y_null - y_koo[1], 
-                'x3': x_null + x_koo[2], 'y3': y_null - y_koo[2],
+            x_bild = -10
+            while x_bild < x_max:
+                gesucht = random.randint(0,2)
+                x_bild = x_bild_liste[gesucht]
+            y_bild = y_bild_liste[gesucht] 
+            text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[gesucht] + "' des gespiegelten Dreiecks?"
+            anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
+            lsg = ["({0};{1})".format(x_bild, y_bild)]
+            lsg = lsg + ["({0}|{1})".format(x_bild, y_bild)]
+            parameter = sub_koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
+            achse = {
+                'object': 'spiegel', 'spiegelachse': spiegelachse,
+                'x_start': x_start,
+                'y_start': y_start,
+                'x_end': x_end,
+                'y_end': y_end,
+            }
+            parameter.update(achse)  
+            dreieck = {
+                'Ax': x_null + x_koo[0], 'Ay': y_null - y_koo[0], 
+                'Bx': x_null + x_koo[1], 'By': y_null - y_koo[1], 
+                'Cx': x_null + x_koo[2], 'Cy': y_null - y_koo[2],
                 'ecken': [
                     (x_null+x_koo[n]+ecken_x[n], y_null-y_koo[n]+ecken_y[n], ecken[n]) for n in (range(0,3))
                 ],  
                 }
-            parameter.update(parameter_2)
-            zahl=(xb+20)*1000+yb
-            lsg = lsg + [str((xb+20)*1000+yb)]
+            parameter.update(dreieck)            
+            zahl=(x_bild+20)*1000+y_bild
+            lsg = lsg + [str((x_bild+20)*1000+y_bild)]
             lsg = lsg + ["indiv_0"] 
         else:                                                                       #10 Name Dreiecke - 11 Namen und Seiten Ecken
             titel = "Benennungen am Dreieck"
@@ -2659,7 +2646,7 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 lsg = format_zahl(erg,erg_stellen)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
-def segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
+def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
         rad_start = math.radians(startwinkel)
         rad = math.radians(winkel)        
         start_x = center_x - radius *  math.cos(rad_start)
@@ -3187,7 +3174,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             lsg = [str(zaehler)+"/"+str(nenner),"indiv_0"]
             parameter = {'name': 'svg/winkel.svg', 'object': 'bruchteile', 'nenner': nenner, 'winkel': winkel}
             koordinaten = dict(center_x = center_x, center_y = center_y, radius = radius, sweep_flag = 1)
-            koordinaten1 = segment(center_x, center_y, radius, 360/nenner)
+            koordinaten1 = sub_segment(center_x, center_y, radius, 360/nenner)
             koordinaten.update(koordinaten1)
             parameter.update(koordinaten)
         elif typ == 2:
@@ -3680,9 +3667,10 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 "center_y": center_y,
                 "radius": radius,
                 "sweep_flag": 1,
-                **segment(center_x, center_y, radius, 360/nenner_1),
-                **segment(center_x2, center_y, radius, 360/nenner_2, 2),
+                **sub_segment(center_x, center_y, radius, 360/nenner_1),
+                **sub_segment(center_x2, center_y, radius, 360/nenner_2, 2),
             }
+            print("Koo: ",koordinaten)
             if nenner_1 != nenner_2:  
                 if stufe%2 == 1:
                     if nenner_1 == kgv:
@@ -3704,7 +3692,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     else:    
                         hilfe_id = 36
                         hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - den ersten Bruch musst du also mit {5} erweitern, den zweiten mit {6}.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust!"
-                    koordinaten.update(segment(center_x, center_y, radius, 360/kgv, 3))
+                    koordinaten.update(sub_segment(center_x, center_y, radius, 360/kgv, 3))
                     parameter['winkel3'] = zaehler_faerben(kgv, 0, "LightSkyBlue")
             parameter.update(koordinaten)
         elif typ <= 4:    	                                                                    # Addition (typ=1) und Subtraktion (typ=2) gleichnamiger Brüche
@@ -4353,7 +4341,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
                     hilfe_id = 20
             parameter = {'name': 'svg/winkel.svg', 'object': 'segment', 'color': 'blue'}
             koordinaten = dict(center_x = center_x, center_y = center_y, radius = radius, sweep_flag = 1)
-            koordinaten1 = segment(center_x, center_y, radius, winkel)
+            koordinaten1 = sub_segment(center_x, center_y, radius, winkel)
             koordinaten.update(koordinaten1)
             parameter.update(koordinaten)
         elif typ <= 4:                              # Prozentsatz aus Rechteck
@@ -5889,10 +5877,11 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
             pro_text = "Kartenspiel:" + frage.format(*variable)
-            # if typ2 == 1:
-            text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
-            # else:
-            #     text += "{2} {0} {1}{4} zu ziehen?"	
+            #typ2=1
+            if typ2 == 1:
+                text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
+            else:
+                text += "{2} {0} {1} {4} zu ziehen?"	
             zaehler = 2 if farbe >3 else 1
             if wert == 8:
                 zaehler *= 4
@@ -6008,21 +5997,80 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 lsg.append(format_zahl(zahl*100,0)+"%")                        
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+ 
+def funktionsgleichung(typ2):
+    if typ2 == 1:                               # nur ganze Zahlen
+        basis = 1
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-2,3)
+        str_steigung = str(steigung)   
+    elif typ2 == 2:                             
+        absolut_max = 4
+        typ3 = random.randint(1,2)
+        if typ3 == 1:                           # Steigung als Bruch
+            basis = 3
+            steigung = 2/3
+            str_steigung = "2/3"
+        else:                                   # Kommazahlen ( ,5)
+            basis = 4
+            steigung = 3/4
+            str_steigung = "3/4"
+    else:
+        basis = 1                       # die Grundlinie des Steigungsdreiecks
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-4,6)/2
+        str_steigung = str(steigung)
+    absolut = random.randint(-4,absolut_max)/2
+    if absolut == 0:
+        gleichung = "{}x".format(str_steigung).replace(".",",").replace(",0","").replace("1x","x")
+    else:
+        gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x")
+    return gleichung, steigung, absolut, basis 
 
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 1
-
+        typ_end = 3
         return typ_anf, typ_end
+    elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
+        if typ == 2:
+            if "-1x" in eingabe :
+                return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
+            elif "1x" in eingabe:
+                return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
+            else:
+                try:
+                    eingabe=eingabe.replace(",",".")
+                    eingabe=eingabe.split("x")
+                    zahl = float(eingabe[0])*10
+                    print("Zahl1: ",zahl)
+                    if not eingabe[1]:
+                        zahl +=2000
+                    else:
+                        zahl=zahl + (float(eingabe[1])*10+20)*100
+                    if round(zahl,2) == round(float(lsg[1]),2):
+                        return 1, ""
+                    else:
+                        return -1, "" 
+                except:
+                    return -1, "" 
+        elif typ == 3:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        else:
+            return -1, "" 
     else:  
-        # if aufgnr == 1 and typ_end < 8:
-        #     typ = 1 
-        # elif typ_anf == 7:
-        #     typ = random.randint(typ_anf, typ_end) 
-        # else:
-        #     typ = random.randint(2, typ_end) 
-        typ=2
+        if aufgnr == 1 and typ_end < 4:
+            typ = 1 
+        elif typ_anf == 2:
+            typ = random.randint(typ_anf, typ_end) 
+        #typ=3
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6037,45 +6085,79 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter, term, lsg = wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-        elif typ ==2:                                                                           # Koordinatensystem
-            titel = "Funktionsgleichung"
-            text = "Wie lautet die Funktionsgleichung dieses Graphen?"
-            frage = "y="
+            x_werte = {}
+            y_werte = {}
+            y_farbe = {}
+            lsg = []
+            for n in range (0,4):
+                x_werte["x" + str(n)] = zahlen[n]
+                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+                #y_farbe["color" + str(n)] = "leer"
+                lsg.append(str(zahlen[n]*koeffizient+absolut))
+            lsg = [lsg]
+            parameter = {'name': 'tab_term', 'titel_x': 'x', 'titel_y': "y = " + term}
+            parameter.update(x_werte)
+            parameter.update(y_werte)
+            parameter.update(y_farbe)
+        else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
-
-            y_start = box_hoehe                     # ist der Anfang der y-Achse
-            x_start = 0                             # ist der Anfang der x-Achse
-
-            y_null = y_start-100                    # y_Null entspricht der Lage der x-Achse
-            x_null = 150                            # x_Null entspricht der lage der y-Achse
-
-            einteilung = 20
-            parameter = {'name': 'svg/koosys.svg', 'object': 'graph',
-                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'einteilung' :einteilung,
-                    'y_null': y_null,'x_null': x_null,
-                    'y_start': y_start,'x_start': x_start,
-                    }
-            achsen = {
-                'xvalues': [
-                    (x_null + n*40, 2*n) for n in range(-x_null//(einteilung*2), (box_breite-x_null)//(einteilung*2))
-                ],
-                'yvalues': [
-                    (y_null - n*40, 2*n) for n in range(-y_null//(einteilung*2), (y_null)//(einteilung*2))
-                ],
-             }
-            parameter.update(achsen)
-            print(achsen)
-
-            absolut = -1
-            steigung = 1
-            
-            graph = {'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*20), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*20)}
-
-            parameter.update(graph) 
-
-        return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+            grid = 20
+            y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+            x_null = 140                    # x_Null  Lage der y-Achse
+            parameter = sub_koordinatensystem(x_null, y_null)
+            if typ == 3:
+                titel = "Funktionswerte"                                                # Funktionswert auf Graph?
+                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                frage = "ja/nein"
+                typ2=1
+                x = random.choice([-10, -5, 6, 7, 10])
+            elif typ == 2:                                                              # Funktionsgleichung
+                titel = "Funktionsgleichung"
+                text = "Wie lautet die Funktionsgleichung dieses Graphen?"
+                pro_text = "Funktionsgleichung ablesen"
+                frage = "y="
+                if stufe%2 == 0:
+                    typ2 = 2
+                else:
+                    typ2 = random.randint(2,5)
+            if typ2 == 2:
+                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
+                hilfe_id = 21
+                hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
+            else:
+                hilfe_id = 20
+                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
+            gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
+            if typ == 2:
+                lsg = [gleichung]
+                zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
+                lsg.append(zahl)
+                lsg.append("indiv_0")
+                steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
+                parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
+            else:
+                if absolut%2 == 0:
+                    y = int(steigung*x+absolut)
+                else:
+                    y = steigung*x+absolut
+                typ3 = random.randint(-1,1)
+                if typ3 == 0:
+                    lsg = ["ja", "j", "indiv_0"]
+                else:
+                    y +=typ3
+                    lsg = ["nein", "n", "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id = 30
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht."						
+                else:
+                    hilfe_id = 31
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
+                
+            variable = [gleichung, x, str(y).replace(".",",")]
+            graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
+            parameter.update(graph)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
