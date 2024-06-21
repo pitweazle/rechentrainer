@@ -4945,7 +4945,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         if typ == 1:                                                                            # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
             parameter = {'name': 'tab_term',}
-            parameter, term, lsg = wertetabelle(parameter,stufe)
+            parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
         elif typ == 2:                                                                          # Terme zusammenfassen
@@ -6846,6 +6846,7 @@ def main(req, slug):
                     eingabe.append(form.cleaned_data['y2'])
                     eingabe.append(form.cleaned_data['y3'])
                     eingabe.append(form.cleaned_data['y4'])
+                    print("Eingabe: ",eingabe)
                     pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
                 else:
                     eingabe = pro_eingabe = form.cleaned_data['eingabe']
