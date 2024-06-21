@@ -4874,7 +4874,7 @@ def wertetabelle(parameter,stufe):
     parameter.update(x_werte)
     parameter.update(y_werte)
     parameter.update(y_farbe)
-    return parameter, term, lsg
+    return parameter, term, koeffizient, absolut, lsg
 
 def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -6035,6 +6035,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 3
+        print("A")
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ == 2:
@@ -6065,12 +6066,15 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 return -1, ""
         else:
             return -1, "" 
-    else:  
-        if aufgnr == 1 and typ_end < 4:
-            typ = 1 
-        elif typ_anf == 2:
-            typ = random.randint(typ_anf, typ_end) 
-        #typ=3
+    else: 
+        print("B") 
+        print("Aufg: ",aufgnr)
+        # if aufgnr == 1 and typ_end < 4:
+        #     typ = 1 
+        # else:
+        #     typ = random.randint(2, typ_end) 
+        print("Typ: ", typ)
+        typ=2
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6080,9 +6084,12 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         erg = None
         parameter = {'name':'normal'}
         if typ == 1: 
+            print("D")
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
-            parameter, term, lsg = wertetabelle(parameter,stufe)
+            print("E")
+            parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+            print("H")
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
             x_werte = {}
@@ -6106,6 +6113,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
+            print("Parameter: ",parameter)
             if typ == 3:
                 titel = "Funktionswerte"                                                # Funktionswert auf Graph?
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
@@ -6121,13 +6129,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     typ2 = 2
                 else:
                     typ2 = random.randint(2,5)
-            if typ2 == 2:
-                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                hilfe_id = 21
-                hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
-            else:
-                hilfe_id = 20
-                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
+                if typ2 == 2:
+                    anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
+                    hilfe_id = 21
+                    hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
+                else:
+                    hilfe_id = 20
+                    hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
             gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
             if typ == 2:
                 lsg = [gleichung]
@@ -6154,7 +6162,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     hilfe_id = 31
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
                 
-            variable = [gleichung, x, str(y).replace(".",",")]
+                variable = [gleichung, x, str(y).replace(".",",")]
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
