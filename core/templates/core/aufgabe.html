@@ -81,17 +81,23 @@
                     </button>
                 {% else %}
                     {{message_unten}}
-                    <form action="{% url 'main' kategorie.slug %}" method="post">
-                        {% csrf_token %}
-                        <fieldset>
-                            {% if not "tab" in parameter.name %}
+                    {% if not "tab" in parameter.name %}
+                        <form action="{% url 'main' kategorie.slug %}" method="post">
+                            {% csrf_token %}
+                            <fieldset>
                                 {{frage}}
                                 {{form.eingabe}}
                                 {{einheit}}
-                            {% endif %}
-                            <input type="submit" value="Prüfen">
-                        </fieldset>
-                    </form>
+                                <input type="submit" value="Prüfen">
+                            </fieldset>
+                        </form>
+                    {%else%}
+                        <table>
+                            <tr>
+                                <td><input type="submit" value="Prüfen"></td>
+                            </tr>
+                        </table>
+                    {% endif %}
                     <nav>
                         <button type="button">
                             <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
