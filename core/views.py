@@ -1548,6 +1548,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
+        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1837,8 +1838,9 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     'text_a': "A",
                 }
                 parameter.update(punkt)
-            zahl=(x_koo+20)*1000+y_koo                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-            lsg = lsg + [str((x_koo+20)*1000+y_koo)]
+            zahl=(x_koo*10+20)*1000+y_koo*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            print(zahl)
+            lsg = lsg + [zahl]
             lsg = lsg + ["indiv_0"] 
         elif typ == 8:                                                              #Symmetrie
             titel = pro_text = "Symmetrie"
@@ -1948,7 +1950,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             x_koo = [Ax*20, Bx*20, Cx*20, Ax*20]
             y_koo = [Ay*20, Ay*20, Cy*20, Ay*20]
             ecken = ["A", "B", "C"]
-            ecken_x = [-20,10,-5]                               #schiebt Benennung in x
+            ecken_x = [-20,10,-5]                               #schiebt Benennung in x(-1;1,0)
             ecken_y = [10,10,-10]                               #schiebt Benennung in y
             x_bild = -10
             while x_bild < x_max:
@@ -1956,6 +1958,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 x_bild = x_bild_liste[gesucht]
             y_bild = y_bild_liste[gesucht] 
             text = "Das Dreieck ABC wird an der Spiegelachse S gespiegelt. <br>Wie lauten die Koordinaten des Punktes " + ecken[gesucht] + "' des gespiegelten Dreiecks?"
+            frage = ecken[gesucht] + "':"
+            pro_text = "Achsenspiegelung"
             anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
             lsg = ["({0};{1})".format(x_bild, y_bild)]
             lsg = lsg + ["({0}|{1})".format(x_bild, y_bild)]
@@ -1977,8 +1981,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 ],  
                 }
             parameter.update(dreieck)            
-            zahl=(x_bild+20)*1000+y_bild
-            lsg = lsg + [str((x_bild+20)*1000+y_bild)]
+            zahl=(x_bild*10+20)*1000+y_bild*10
+            lsg = lsg + [zahl]
             lsg = lsg + ["indiv_0"] 
         else:                                                                       #10 Name Dreiecke - 11 Namen und Seiten Ecken
             titel = "Benennungen am Dreieck"
