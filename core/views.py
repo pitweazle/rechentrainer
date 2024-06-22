@@ -1838,7 +1838,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 }
                 parameter.update(punkt)
             zahl=(x_koo*10+20)*1000+y_koo*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-            print(zahl)
             lsg = lsg + [zahl]
             lsg = lsg + ["indiv_0"] 
         elif typ == 8:                                                              #Symmetrie
@@ -3672,7 +3671,6 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 **sub_segment(center_x, center_y, radius, 360/nenner_1),
                 **sub_segment(center_x2, center_y, radius, 360/nenner_2, 2),
             }
-            print("Koo: ",koordinaten)
             if nenner_1 != nenner_2:  
                 if stufe%2 == 1:
                     if nenner_1 == kgv:
@@ -6033,7 +6031,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 3
-        print("A")
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ == 2:
@@ -6046,7 +6043,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     eingabe=eingabe.replace(",",".")
                     eingabe=eingabe.split("x")
                     zahl = float(eingabe[0])*10
-                    print("Zahl1: ",zahl)
                     if not eingabe[1]:
                         zahl +=2000
                     else:
@@ -6081,7 +6077,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
             tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
-            print(tabellenwerte)
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
@@ -6228,7 +6223,6 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
     aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,17,18,19,20,21,22,23, 24,25, 26]   
     schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
     if schulwoche < 0: 
-        #print("kleiner")                                                                       # wenn Aufgaben schon im Halbjahr vorher begonnen wurden
         schulwoche = 0  
     if hj == 2:
         zweites_hj = (sj%100+2000)
@@ -6366,7 +6360,6 @@ def uebersicht(req, schueler_id=0):
             protokoll_kategorie = protokoll.filter(kategorie = kategorie)
             if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
                 zaehler_kategorie = Zaehler.objects.get(user=profil, kategorie = kategorie)
-                #print(kategorie, zaehler_kategorie.fehler_ab)
                 kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
                     protokoll_kategorie
                     .values("kategorie__zeile")
@@ -6382,7 +6375,6 @@ def uebersicht(req, schueler_id=0):
                         kat_farbe = "gelb"
                     # elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
                     #     kat_farbe = "gelb"
-                    #print(zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0) )  
                     #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
                     falsch_kat = zaehler_kategorie.fehler_zaehler
                     abbr_kat = zaehler_kategorie.abbr_zaehler
@@ -6824,7 +6816,6 @@ def main(req, slug):
                     eingabe.append(form.cleaned_data['y2'])
                     eingabe.append(form.cleaned_data['y3'])
                     eingabe.append(form.cleaned_data['y4'])
-                    print("Eingabe: ",eingabe)
                     pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
                 else:
                     eingabe = pro_eingabe = form.cleaned_data['eingabe']
