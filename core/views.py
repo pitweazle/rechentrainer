@@ -1548,7 +1548,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -3622,7 +3621,6 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
         parser = Parser()
         if typ <= 2:
             anmerkung="Wenn du nicht weißt, wie man das rechnet, solltest du mal auf 'Hilfe' klicken!<br>" + anmerkung
-            #typ2=7
             ganz = ""
             if stufe%2 == 1:
                 kgv_max = 30
@@ -3708,7 +3706,6 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 typ2 = random.randint(1,5)  
                 text="Berechne und kürze (falls möglich):<br><br>{1} {2} {3} ="
                 anmerkung="(Für das Kürzen gibt es einen halben Extrapunkt)"
-            #typ2=7
             if (typ == 3 and typ2 >=6) or (typ == 4 and typ2 == 7):                             # auch gemischte Zahlen
                 while ggt(zaehler_1,nenner)!=1 or ggt(zaehler_2,nenner)!=1:
                     zaehler_1 = random.randint(1, nenner-1)
@@ -5248,7 +5245,6 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             text = "Löse die Klammern auf:<br>" + frage 
         elif typ in[7,8]:                                                                       # binomische Formeln
             typ2 = random.randint(1,6)
-            #typ2=6
             startbuchstabe =  random.randint(0,2)*4
             buchstabe1 = buchstaben_liste[startbuchstabe+random.randint(0,3)]
             buchstabe2 = buchstabe1
@@ -5836,7 +5832,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         elif typ == 11:                                 # Würfeln und Münze
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
             typ2 = random.randint(1,4)
-            #typ2=1
             if typ2 == 1:
                 zufall = random.randint(2, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?".format(zufall)  
@@ -5881,7 +5876,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             text = "Ein Kartenspiel besteht aus 32 Karten:<br>Den Zahlen (7, 8, 9, 10) den Bildern (Bube, Dame, König) und dem Ass. Alle Karten  gibt es viermal: Karo, Herz, Pik und Kreuz.<br>Eine Karte wird gezogen.<br>Wie groß ist die Wahrscheinlichkeit ein" 
             frage = "P({0}{3} {1})="
             pro_text = "Kartenspiel:" + frage.format(*variable)
-            #typ2=1
             if typ2 == 1:
                 text += "{2} {0}{3} {1}{4} zu ziehen?"		 		
             else:
@@ -6075,7 +6069,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
-        #typ=2
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6103,7 +6096,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 titel = "Funktionswerte"                                                # Funktionswert auf Graph?
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 frage = "ja/nein"
-                typ2=1
+                typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])
             elif typ == 2:                                                              # Funktionsgleichung
                 titel = "Funktionsgleichung"
