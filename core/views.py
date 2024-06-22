@@ -3695,7 +3695,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     koordinaten.update(sub_segment(center_x, center_y, radius, 360/kgv, 3))
                     parameter['winkel3'] = zaehler_faerben(kgv, 0, "LightSkyBlue")
             parameter.update(koordinaten)
-        elif typ <= 4:    	                                                                    # Addition (typ=1) und Subtraktion (typ=2) gleichnamiger Brüche
+        elif typ <= 4:    	                                                                    # Addition (typ =1) und Subtraktion (typ =2) gleichnamiger Brüche
             nenner = random.randint(3,10)
             zaehler_1 = zaehler_2 = nenner 
             if typ2 == 1:
@@ -6725,7 +6725,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
         else:
             if "indiv_0" in lsg:
                 protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
                 return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist                         
             else:
                 return -1, ""    
@@ -6754,7 +6754,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                     zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
                     if round(zahl,3) == round((lsg[1]),3):
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2':                   
-                                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
                                 return punkte, rueckmeldung
                         return 1, ""
                     else:
@@ -6766,14 +6766,14 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                            punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                            punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
                             return punkte, rueckmeldung
                         return 1, ""
                 except:
                     pass
             if "indiv_0" in lsg:                           #wenn in der Liste 'loesungen' 'indiv_0' steht, dann wird der eingegebene Wert in der Funtion der entsprechenden Kategorie überprüft nachdem die normale Routine "kontrolle" keine Gleichheit festgestellt hat.
                 protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ=protokoll.typ, typ2=protokoll.typ2)
+                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
                 if punkte > 0:
                     return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist
                 else:
