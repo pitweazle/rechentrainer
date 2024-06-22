@@ -6071,14 +6071,11 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         else:
             return -1, "" 
     else: 
-        print("B") 
-        print("Aufg: ",aufgnr)
-        # if aufgnr == 1 and typ_end < 4:
-        #     typ = 1 
-        # else:
-        #     typ = random.randint(2, typ_end) 
-        print("Typ: ", typ)
-        typ=2
+        if aufgnr == 1 and typ_end < 4:
+            typ = 1 
+        else:
+            typ = random.randint(2, typ_end) 
+        #typ=2
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6088,28 +6085,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         erg = None
         parameter = {'name':'normal'}
         if typ == 1: 
-            print("D")
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
-            print("E")
-            parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
-            print("H")
+            tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+            print(tabellenwerte)
+            parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-            x_werte = {}
-            y_werte = {}
-            y_farbe = {}
-            lsg = []
-            for n in range (0,4):
-                x_werte["x" + str(n)] = zahlen[n]
-                y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
-                #y_farbe["color" + str(n)] = "leer"
-                lsg.append(str(zahlen[n]*koeffizient+absolut))
-            lsg = [lsg]
-            parameter = {'name': 'tab_term', 'titel_x': 'x', 'titel_y': "y = " + term}
-            parameter.update(x_werte)
-            parameter.update(y_werte)
-            parameter.update(y_farbe)
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
@@ -6117,7 +6099,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            print("Parameter: ",parameter)
             if typ == 3:
                 titel = "Funktionswerte"                                                # Funktionswert auf Graph?
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
