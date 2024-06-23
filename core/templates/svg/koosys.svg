@@ -117,11 +117,15 @@
         <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
     {% endif %}
 
-
-
-    {% if parameter.hilfe == 20 or parameter.hilfe == 21%}
+    {% if parameter.hilfe == 90 or parameter.hilfe == 91%}
         <use href="#steigungsdreieck"/>          
     {%endif%}
+
+    <path d="M{{parameter.x_null}} {{parameter.y}}
+    L{{parameter.x}} {{parameter.y}}
+    "
+    fill="none"
+    stroke="green"/>
 
     {% if parameter.object == "spiegel" %}
         <polygon points="{{parameter.Ax}},{{parameter.Ay}} {{parameter.Bx}},{{parameter.By}} {{parameter.Cx}},{{parameter.Cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
