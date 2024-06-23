@@ -2391,7 +2391,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 frage = "A="
                 hilfe_id = 31
             elif typ2 < 5:                              #Umfang Rechteck
-                gesucht = "der Umfang"
+                gesucht = "den Umfang"
                 erg = 2*(zahl1+zahl2)
                 exp = ""
                 frage = "u=" 
@@ -2405,7 +2405,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 hilfe_id = 35
             elif typ2 == 6:                             #Umfang Quadrat
                 figur = "Quadrates"
-                gesucht = "der Umfang"
+                gesucht = "den Umfang"
                 erg = 4*zahl1
                 exp = ""
                 frage = "u=" 
@@ -6033,12 +6033,12 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         typ_end = 3
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if typ == 2:
+        if typ == 4:
             if eingabe not in ["ja", "nein"] :
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
             else:
                 return -1, ""
-        elif typ > 2:
+        elif typ > 5:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
             elif "1x" in eingabe:
@@ -6069,6 +6069,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
+        typ=6
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6084,6 +6085,16 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
+        elif typ in [2,3]:
+            gleichung, steigung, absolut, basis = funktionsgleichung(1)
+            x = random.randint(-3,6)
+            variable = [gleichung, x]
+            text = "Berechne für die Funktion f(x)= {} den Funktionswert für x={}" 
+            frage = pro_text = "f({1})="
+            erg = steigung*x+absolut
+            lsg = [str(erg)]
+            hilfe_id = 20
+            hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
@@ -6091,13 +6102,21 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            if typ == 2:
+            if typ == 4:
                 titel = "Funktionswerte"                                                # Funktionswert auf Graph?
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 frage = "ja/nein"
                 typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])
-            else:                                                              # Funktionsgleichung
+            elif typ == 5:                                                              # Funktionswert ablesen                                                            
+                titel = "Funktionswerte" 
+                text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
+                typ2 = 1
+            elif typ == 6:                                                              # Funktionswert ablesen                                                            
+                titel = "Funktionswerte" 
+                text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht:"
+                typ2 = 1
+            else:                                                                       # Funktionsgleichung
                 titel = "Funktionsgleichung"
                 text = "Wie lautet die Funktionsgleichung dieses Graphen?"
                 pro_text = "Funktionsgleichung ablesen"
@@ -6108,20 +6127,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     typ2 = random.randint(2,5)
                 if typ2 == 2:
                     anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                    hilfe_id = 21
+                    hilfe_id = 91
                     hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
                 else:
-                    hilfe_id = 20
+                    hilfe_id = 90
                     hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
             gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
-            if typ == 3:
-                lsg = [gleichung]
-                zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
-                lsg.append(zahl)
-                lsg.append("indiv_0")
-                steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
-                parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
-            else:
+            if typ == 4:
                 if absolut%2 == 0:
                     y = int(steigung*x+absolut)
                 else:
@@ -6139,6 +6151,33 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     hilfe_id = 31
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
                 variable = [gleichung, x, str(y).replace(".",",")]
+            elif typ == 5: 
+                erg = 99
+                while erg <-3 or erg > 4.5 or x <-3 or x > 4.5:
+                    x = random.randint(-6,10)/2
+                    erg = steigung*x+absolut
+                frage = pro_text = "f({1})="
+                variable = [gleichung, str(x).replace(".",",")]
+                lsg = [str(erg)]
+            elif typ == 6: 
+                x = y = 99
+                while x <-3 or x > 4.5 or y <-3 or y > 4.5:
+                    x = random.randint(-6,10)/2
+                    y = steigung*x+absolut
+                frage = "x="
+                pro_text = "f(x)={1}, x=?"
+                variable = [gleichung, str(y).replace(".",",")]
+                ablesen = {'x':x_null+x*40, 'y':y_null-y*40}
+                parameter.update(ablesen)
+                erg = x
+                lsg = [str(erg)]
+            else:
+                lsg = [gleichung]
+                zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
+                lsg.append(zahl)
+                lsg.append("indiv_0")
+                steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
+                parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
