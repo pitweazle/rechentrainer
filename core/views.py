@@ -6034,10 +6034,19 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ == 2:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        elif typ > 2:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
             elif "1x" in eingabe:
                 return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
+            elif not "x" in eingabe:
+                return 0, "In der Funktionsgleichung muss ein 'x' vorkommen"
+            elif  "*" in eingabe:
+                return 0, "'*' lässt man weg"
             else:
                 try:
                     eingabe=eingabe.replace(",",".")
@@ -6053,11 +6062,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                         return -1, "" 
                 except:
                     return -1, "" 
-        elif typ == 3:
-            if eingabe not in ["ja", "nein"] :
-                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
-            else:
-                return -1, ""
         else:
             return -1, "" 
     else: 
@@ -6073,7 +6077,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1: 
+        if typ == 1:                                                                    # Wertetabelle
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_term',}
             tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
@@ -6087,13 +6091,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            if typ == 3:
+            if typ == 2:
                 titel = "Funktionswerte"                                                # Funktionswert auf Graph?
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 frage = "ja/nein"
                 typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])
-            elif typ == 2:                                                              # Funktionsgleichung
+            else:                                                              # Funktionsgleichung
                 titel = "Funktionsgleichung"
                 text = "Wie lautet die Funktionsgleichung dieses Graphen?"
                 pro_text = "Funktionsgleichung ablesen"
@@ -6110,7 +6114,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     hilfe_id = 20
                     hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
             gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
-            if typ == 2:
+            if typ == 3:
                 lsg = [gleichung]
                 zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
                 lsg.append(zahl)
@@ -6134,7 +6138,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 else:
                     hilfe_id = 31
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
-                
                 variable = [gleichung, x, str(y).replace(".",",")]
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
