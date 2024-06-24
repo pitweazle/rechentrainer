@@ -788,7 +788,7 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             endung = ""
         if typ > 0:
             exp = 10**(typ+2)
-            zahl1 = int(random.random()*exp)  
+            zahl1 = int(random.random()*exp) 
             name = name_liste[typ] + endung
             name = name.title()
             zahl = trenner(zahl1).lstrip("0")
@@ -801,7 +801,6 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             next = name_liste[typ-1]
             if stufe%2 == 0:
                 hilfe_id = 2
-
         else:
             zahl2 = random.randint(1,2)
             zahl1 = int(random.random()*10**(abs(typ)+zahl2+1))
@@ -813,7 +812,7 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             variable = [str(zahl).replace(".", ","), name, abs(typ), n]
             if typ < 0:
                 erg = round(zahl1 ,abs(typ))
-                lsg = ["{0:.{1}f}".format(zahl1,abs(typ)).replace(".",",")]
+                lsg = ["{0:.{1}f}".format(zahl1,abs(typ)).replace(".",","),"{0:.{1}f}".format(zahl1,abs(typ))]
                 hilfe_id = 3
                 if stufe%2 == 0:
                     hilfe_id = 4
@@ -825,6 +824,8 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 if typ == 0:
                     hilfe_id = 0   
             lsg = lsg + ["indiv"]
+            if erg==0:
+                lsg=["0"]
         erg = None
         frage = "{}".format(*variable) + chr(8776)
         return typ, typ2, titel, text, "", frage, variable, "", "", lsg, hilfe_id, erg, {'name':'normal'}
@@ -1359,7 +1360,7 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
                 tiefe = random.randint(10,30)*10
             breite_o = breite_u
         elif typ2 == 2:                                                           # Würfel'
-            lsg = ["Würfel", "Kubus"]                                                  
+            lsg = ["Würfel", "Wuerfel", "Kubus"]                                                  
             anmerkung = "Die Kanten sind gleich lang"
             hoehe = tiefe = breite_u*2
             breite_o = breite_u
@@ -6030,7 +6031,7 @@ def funktionsgleichung(typ2):
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 3
+        typ_end = 8
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ == 4:
@@ -6038,7 +6039,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
             else:
                 return -1, ""
-        elif typ > 5:
+        elif typ > 6:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
             elif "1x" in eingabe:
@@ -6113,13 +6114,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
                 typ2 = 1
                 hilfe_id = 50
-                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen und von da aus weiter zur y-Achse und liest dort den Funktionswert ab."
+                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen, von da aus weiter zur y-Achse und liest dort den gesuchten Funktionswert ab."
             elif typ == 6:                                                              # x für Funktionswert ablesen                                                            
                 titel = "Funktionswerte" 
-                text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht:"
+                text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
                 typ2 = 1
                 hilfe_id = 60
-                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen und von da aus weiter zur x-Achse und liest dort den x-Wert ab."
+                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
             else:                                                                       # Funktionsgleichung
                 titel = "Funktionsgleichung"
                 text = "Wie lautet die Funktionsgleichung dieses Graphen?"
