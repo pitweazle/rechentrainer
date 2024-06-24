@@ -6070,6 +6070,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
+        if typ==3:
+         typ=9
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6085,7 +6087,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-        elif typ in [2,3]:
+        elif typ == 2:                                                                  # Funktionswert berechnen
             gleichung, steigung, absolut, basis = funktionsgleichung(1)
             x = random.randint(-3,6)
             variable = [gleichung, x]
@@ -6095,6 +6097,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             lsg = [str(erg)]
             hilfe_id = 20
             hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
+        elif typ == 3:                                                                  # Schaubild
+            pass
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
@@ -6102,8 +6106,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             y_null = box_hoehe-140          # y_Null  Lage der x-Achse
             x_null = 140                    # x_Null  Lage der y-Achse
             parameter = sub_koordinatensystem(x_null, y_null)
-            if typ == 4:
-                titel = "Funktionswerte"                                                # Funktionswert auf Graph?
+            if typ == 4:                                                                # Funktionswert auf Graph?
+                titel = "Funktionswerte" 
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 frage = "ja/nein"
                 typ2 = 1
@@ -6184,8 +6188,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-
-            print(hilfe_text.format(*variable))
+            #print(hilfe_text.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -6921,7 +6924,10 @@ def main(req, slug):
                     protokoll.save()
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
-                    if zaehler.aufgnr > 10:
+                    mehr = 0
+                    if kategorie.name == "Funktionen":
+                        mehr=5
+                    if zaehler.aufgnr > 10+mehr:
                         if  zaehler.optionen_text not in ["", "keine",] and user.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
                             max_stufe = 3
                             for auswahl in Auswahl.objects.filter(
