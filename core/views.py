@@ -6112,10 +6112,14 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 titel = "Funktionswerte" 
                 text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
                 typ2 = 1
-            elif typ == 6:                                                              # Funktionswert ablesen                                                            
+                hilfe_id = 50
+                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen und von da aus weiter zur y-Achse und liest dort den Funktionswert ab."
+            elif typ == 6:                                                              # x für Funktionswert ablesen                                                            
                 titel = "Funktionswerte" 
                 text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht:"
                 typ2 = 1
+                hilfe_id = 60
+                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen und von da aus weiter zur x-Achse und liest dort den x-Wert ab."
             else:                                                                       # Funktionsgleichung
                 titel = "Funktionsgleichung"
                 text = "Wie lautet die Funktionsgleichung dieses Graphen?"
@@ -6180,6 +6184,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
+
+            print(hilfe_text.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
