@@ -128,7 +128,6 @@
         style = "fill:none; stroke:green; stroke-width: 3"/>
     {%endif%} 
 
-
     {% if parameter.object == "spiegel" %}
         <polygon points="{{parameter.Ax}},{{parameter.Ay}} {{parameter.Bx}},{{parameter.By}} {{parameter.Cx}},{{parameter.Cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
         <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
