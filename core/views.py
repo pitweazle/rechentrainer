@@ -6286,7 +6286,11 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
             spaeter = ((startdatum-d2).days)//7
     else:
         woche_halbjahr = schulwoche
-        spaeter = (startdatum - d0).days//7
+        if woche_halbjahr <= 0:
+            woche_halbjahr = 0
+            spaeter = 0
+        else:
+            spaeter = (startdatum - d0).days//7        
     if woche_halbjahr < 0:
         woche_halbjahr = 0
     if spaeter < 0:
