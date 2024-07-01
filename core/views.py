@@ -6071,7 +6071,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         else:
             typ = random.randint(2, typ_end) 
         if typ==3:
-         typ=9
+            typ=9
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6166,6 +6166,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     erg = steigung*x+absolut
                 frage = pro_text = "f({1})="
                 variable = [gleichung, str(x).replace(".",",")]
+                ablesen = {'x':x_null+x*40, 'y':y_null-erg*40}
+                parameter.update(ablesen)
                 lsg = [str(erg)]
             elif typ == 6: 
                 x = y = 99
@@ -6188,7 +6190,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-            #print(hilfe_text.format(*variable))
+            #print(hilfe_id, ": ",hilfe_text.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
