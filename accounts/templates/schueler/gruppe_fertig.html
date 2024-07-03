@@ -7,6 +7,8 @@
         <p><b>{{gruppe.lehrer.profil.vorname}}{%if gruppe.lehrer.profil.vorname == "Herr"%}n{%endif%} {{gruppe.lehrer.profil.nachname}}</b></p>
         <p>angemeldet.</p>
         <p>{{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}} kann jetzt deine Arbeit kontrollieren.</p>
-        <a href="{% url 'index' %}">weiter</a>
+        <button type="button">
+            <a href="{% url 'index' %}">weiter</a>
+        </button>
     </body>
 {% endblock %}

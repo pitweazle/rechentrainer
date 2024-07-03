@@ -740,7 +740,13 @@ def suchen(req, gruppe_id=None):
                 profile = profile.filter(~Q(user__groups__name = 'Lehrer'))
             else:
                 profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
-        zeilen = []    
+        zeilen = []   
+        sj, hj = name_hj()
+        for profil in profile:
+            gesamt = Protokoll.objects.filter(user_id = profil.id)
+            neu = gesamt.filter(sj = sj, hj = hj)
+            zeilen.append((profil, gesamt.count, neu.count))
+
         if req.method == "POST":
             zusammen_form = Zusammen_Form(req.POST)
             if zusammen_form.is_valid():
@@ -805,53 +811,42 @@ def suchen(req, gruppe_id=None):
                     profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
-                try:
-                    loeschen = loeschen_form.cleaned_data['loeschen']
-                    if loeschen:
-                        try:
-                            user = User.objects.get(id = loeschen)
-                            gruppe = user.profil.gruppe
-                            if gruppe:
-                                gruppe_id = gruppe.id
-                        except:
-                            nachricht = "Ein Account mit der ID {} existiert nicht".format(loeschen)
-                            context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht}
-                            render(req, 'admin/suchen.html', context)
-                        try:
-                            profil = Profil.objects.get(user__id = user.id)
-                        except:
-                            user.groups.clear()
-                            group = Group.objects.get(name='Gelöscht')
-                            user.groups.add(group)
-                            nachricht = 'Zu dem Account "{}" mit der ID "{}" existiert kein Userprofil'.format(user, loeschen)
-                            context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht}
-                            return render(req, 'admin/suchen.html', context)
-                        if not req.user.is_superuser and profil.gruppe.lehrer !=  (req.user): 
-                            nachricht = " Der user {} ist nicht Ihrer Lerngruppe zugeordnet".format(profil.user)
+                #try:
+                loeschen = loeschen_form.cleaned_data['loeschen']
+                if loeschen:
+                    #try:
+                    #user = User.objects.get(id = loeschen)
+                    user = User.objects.filter(id = loeschen).first()
+                    if user == None:
+                        nachricht = "Ein Account mit der ID {} existiert nicht".format(loeschen)
+                    else:
+                        profil = Profil.objects.filter(user = user).first()
+                        if profil == None:
+                            nachricht = "Ein Profil mit der ID {} existiert nicht".format(loeschen)
                         else: 
-                            protokolle = Protokoll.objects.filter(user = profil)                 
-                            if protokolle.count() > 0 and not req.user.is_superuser:
-                                nachricht = 'Mit dem Account "{}" ID:{} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, loeschen,protokolle.count())
+                            gruppe = user.profil.gruppe
+                            if gruppe == None or gruppe.id != gruppe_id:
+                                nachricht = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(loeschen) 
                             else:
-                                heute = date.today()
-                                nachricht = 'Das Userprofil "{}" mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(profil, user, heute, req.user.profil.vorname, req.user.profil.nachname)
-                                user.groups.clear()
-                                group = Group.objects.get(name='Gelöscht')
-                                user.groups.add(group)
-                                profil.delete()
-                                geloescht, created = Geloescht.objects.get_or_create(user = user)
-                                geloescht.text += nachricht
-                                geloescht.save()
-                            profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
-                except:
-                    nachricht = "Mit der letzten Eingabe stimmt was nicht!"        
-                    render(req, 'admin/suchen.html')
-        sj, hj = name_hj()
-        for profil in profile:
-            gesamt = Protokoll.objects.filter(user_id = profil.id)
-            neu = gesamt.filter(sj = sj, hj = hj)
-            zeilen.append((profil, gesamt.count, neu.count))
-        context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen"}
+                                protokolle = Protokoll.objects.filter(user = user.profil.id) 
+                                if protokolle.count() > 0 and not req.user.is_superuser:
+                                    nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
+                                else:
+                                    heute = date.today()
+                                    nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user, heute, req.user.profil.vorname, req.user.profil.nachname)
+                                    user.groups.clear()
+                                    group = Group.objects.get(name='Gelöscht')
+                                    user.groups.add(group)
+                                    profil.delete()
+                                    geloescht, created = Geloescht.objects.get_or_create(user = user)
+                                    geloescht.text += nachricht
+                                    geloescht.save()
+                # except:
+                #     nachricht = "Mit der letzten Eingabe stimmt was nicht!"        
+                #     context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, "gruppe_id": gruppe_id}
+                #     return render(req, 'admin/suchen.html', context)                    
+
+        context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
         return HttpResponse("Zugriff verweigert")
