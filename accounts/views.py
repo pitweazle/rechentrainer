@@ -762,7 +762,6 @@ def suchen(req, gruppe_id=None):
             if zusammen_form.is_valid():
                 quelle = zusammen_form.cleaned_data['quelle']
                 ziel = zusammen_form.cleaned_data['ziel']
-                #try: 
                 if ziel  and quelle :
                     user_quelle, nachricht_quelle = account_pruefen(quelle)
                     user_ziel,  nachricht_ziel= account_pruefen(ziel)
@@ -825,13 +824,10 @@ def suchen(req, gruppe_id=None):
                                     nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
                                     verschoben.text += nachricht
                                     verschoben.save()                            
-                        # profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
-                #try:
                 loeschen = loeschen_form.cleaned_data['loeschen']
                 if loeschen:
-                    #try:
                     user, nachricht = account_pruefen(loeschen)
                     if len(nachricht) < 5:
                         gruppe = user.profil.gruppe
@@ -851,11 +847,6 @@ def suchen(req, gruppe_id=None):
                                 geloescht, created = Geloescht.objects.get_or_create(user = user)
                                 geloescht.text += nachricht
                                 geloescht.save()
-                # except:
-                #     nachricht = "Mit der letzten Eingabe stimmt was nicht!"        
-                #     context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, "gruppe_id": gruppe_id}
-                #     return render(req, 'admin/suchen.html', context)                    
-
         context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
