@@ -724,6 +724,17 @@ def loeschen_alt(req):
                 #a.delete()
     return HttpResponse("fertig!")
 
+def account_pruefen(id):
+    nachricht = ""
+    user = User.objects.filter(id = id).first()
+    if user == None:
+        nachricht = "Ein Account mit der ID {} existiert nicht".format(id)
+    else:
+        profil = Profil.objects.filter(user = user).first()
+        if profil == None:
+            nachricht = "Ein Profil mit der ID {} existiert nicht".format(id)
+    return user, nachricht
+
 def suchen(req, gruppe_id=None):
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists() or req.user.is_superuser:
         #suchen_form = Suchen_Form
@@ -746,7 +757,6 @@ def suchen(req, gruppe_id=None):
             gesamt = Protokoll.objects.filter(user_id = profil.id)
             neu = gesamt.filter(sj = sj, hj = hj)
             zeilen.append((profil, gesamt.count, neu.count))
-
         if req.method == "POST":
             zusammen_form = Zusammen_Form(req.POST)
             if zusammen_form.is_valid():
@@ -754,93 +764,93 @@ def suchen(req, gruppe_id=None):
                 ziel = zusammen_form.cleaned_data['ziel']
                 #try: 
                 if ziel  and quelle :
-                    profil_id_ziel = User.objects.get(id = ziel).id 
-                    profil_ziel = Profil.objects.get(user_id = profil_id_ziel)
-                    gruppe = profil_ziel.gruppe
-                    if gruppe:
-                        gruppe_id = gruppe.id
-                    vorname = profil_ziel.vorname 
-                    nachname = profil_ziel.nachname 
-                    profil_id_quelle = User.objects.get(id = quelle).id 
-                    profil_quelle = Profil.objects.get(user_id = profil_id_quelle)
-                    vorname_quelle = profil_quelle.vorname 
-                    nachname_quelle = profil_quelle.nachname
-                    if  not req.user.is_superuser and (vorname_quelle.upper() != vorname.upper() or nachname_quelle.upper() != nachname.upper()):  
-                        nachricht = "Namen stimmen nicht überein!"
-                    else:
-                        protokolle = Protokoll.objects.filter(user = profil_quelle)
-                        if protokolle.count() == 0:
-                            nachricht = "Es sind keine Aufgaben zum Übertragen da."
+                    user_quelle, nachricht_quelle = account_pruefen(quelle)
+                    user_ziel,  nachricht_ziel= account_pruefen(ziel)
+                    nachricht = nachricht_quelle + " - " + nachricht_ziel
+                    if len(nachricht) < 5:
+                        gruppe = user_quelle.profil.gruppe
+                        if gruppe == None or gruppe.id != gruppe_id:
+                            nachricht_quelle = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(quelle) 
                         else:
-                            user = User.objects.get(id = profil_quelle.user.id)
-                            verschoben, created = Geloescht.objects.get_or_create(user = user)
-                            heute = date.today()
-                            zaehler_quelle = Zaehler.objects.filter(user = profil_quelle)
-                            nachricht = "Der/die Zähler: "
-                            for q in zaehler_quelle:
-                                ziele = Zaehler.objects.filter(user = profil_ziel, kategorie = q.kategorie)
-                                if ziele.count() == 0:
-                                    nachricht = nachricht + '"' + str(q.kategorie) + '", '
-                                    q.user = profil_ziel
-                                    q.save()
+                            vorname_quelle = user_ziel.profil.vorname 
+                            nachname_quelle = user_ziel.profil.nachname 
+                        gruppe = user_ziel.profil.gruppe
+                        if gruppe == None or gruppe.id != gruppe_id:
+                            nachricht_ziel = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(ziel) 
+                        else:
+                            vorname_ziel = user_ziel.profil.vorname 
+                            nachname_ziel = user_ziel.profil.nachname 
+                        nachricht = nachricht_quelle + " - " + nachricht_ziel
+                        if len(nachricht) < 5:
+                            if  not req.user.is_superuser and (vorname_quelle.upper() != vorname_ziel.upper() or nachname_quelle.upper() != nachname_ziel.upper()):  
+                                nachricht = "Namen stimmen nicht überein!"
+                            else:
+                                protokolle = Protokoll.objects.filter(user = user_quelle.profil)
+                                if protokolle.count() == 0:
+                                    nachricht = "Es sind keine Aufgaben zum Übertragen da."
                                 else:
-                                    ziel = ziele.first()
-                                    if  ziel.sj >0 and ziel.sj == q.sj and ziel.hj == q.hj:
-                                        ziel.fehler_zaehler += q.fehler_zaehler
-                                        ziel.abbr_zaehler += q.abbr_zaehler
-                                        ziel.lsg_zaehler += q.lsg_zaehler
-                                        ziel.hilfe_zaehler += q.hilfe_zaehler
-                                        if ziel.richtig_of < q.richtig_of:
-                                            ziel.richtig_of = q.richtig_of
-                                        if ziel.letzte < q.letzte:
-                                            ziel.letzte = q.letzte
-                                        ziel.save()
-                            if nachricht != "Der/die Zähler: ":
-                                nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, profil_quelle.user)
-                                verschoben.text += nachricht
-                                verschoben.save()                            
-                            n = 0
-                            for protokoll in protokolle:
-                                n +=1
-                                protokoll.user = profil_ziel
-                                protokoll.anmerkung = "übertragen von user ID: ", quelle
-                                protokoll.save()
-                            nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, profil_quelle.user,profil_ziel.user)
-                            verschoben.text += nachricht
-                            verschoben.save()                            
-                    profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
+                                    user = User.objects.get(id = user_quelle.id)
+                                    verschoben, created = Geloescht.objects.get_or_create(user = user)
+                                    heute = date.today()
+                                    zaehler_quelle = Zaehler.objects.filter(user = user_quelle.profil)
+                                    nachricht = "Der/die Zähler: "
+                                    for q in zaehler_quelle:
+                                        ziele = Zaehler.objects.filter(user = user_ziel.profil, kategorie = q.kategorie)
+                                        if ziele.count() == 0:
+                                            nachricht = nachricht + '"' + str(q.kategorie) + '", '
+                                            q.user = user_ziel.profil
+                                            q.save()
+                                        else:
+                                            ziel = ziele.first()
+                                            if  ziel.sj >0 and ziel.sj == q.sj and ziel.hj == q.hj:
+                                                ziel.fehler_zaehler += q.fehler_zaehler
+                                                ziel.abbr_zaehler += q.abbr_zaehler
+                                                ziel.lsg_zaehler += q.lsg_zaehler
+                                                ziel.hilfe_zaehler += q.hilfe_zaehler
+                                                if ziel.richtig_of < q.richtig_of:
+                                                    ziel.richtig_of = q.richtig_of
+                                                if ziel.letzte < q.letzte:
+                                                    ziel.letzte = q.letzte
+                                                ziel.save()
+                                    if nachricht != "Der/die Zähler: ":
+                                        nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
+                                        verschoben.text += nachricht
+                                        verschoben.save()                            
+                                    n = 0
+                                    for protokoll in protokolle:
+                                        n +=1
+                                        protokoll.user = user_ziel.profil
+                                        protokoll.anmerkung = "übertragen von user ID: ", quelle
+                                        protokoll.save()
+                                    nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
+                                    verschoben.text += nachricht
+                                    verschoben.save()                            
+                        # profile = Profil.objects.filter(gruppe_id = gruppe_id).order_by('vorname','nachname')
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
                 #try:
                 loeschen = loeschen_form.cleaned_data['loeschen']
                 if loeschen:
                     #try:
-                    #user = User.objects.get(id = loeschen)
-                    user = User.objects.filter(id = loeschen).first()
-                    if user == None:
-                        nachricht = "Ein Account mit der ID {} existiert nicht".format(loeschen)
-                    else:
-                        profil = Profil.objects.filter(user = user).first()
-                        if profil == None:
-                            nachricht = "Ein Profil mit der ID {} existiert nicht".format(loeschen)
-                        else: 
-                            gruppe = user.profil.gruppe
-                            if gruppe == None or gruppe.id != gruppe_id:
-                                nachricht = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(loeschen) 
+                    user, nachricht = account_pruefen(loeschen)
+                    if len(nachricht) < 5:
+                        gruppe = user.profil.gruppe
+                        if gruppe == None or gruppe.id != gruppe_id:
+                            nachricht = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(loeschen) 
+                        else:
+                            protokolle = Protokoll.objects.filter(user = user.profil.id) 
+                            if protokolle.count() > 0 and not req.user.is_superuser:
+                                nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
                             else:
-                                protokolle = Protokoll.objects.filter(user = user.profil.id) 
-                                if protokolle.count() > 0 and not req.user.is_superuser:
-                                    nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
-                                else:
-                                    heute = date.today()
-                                    nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user, heute, req.user.profil.vorname, req.user.profil.nachname)
-                                    user.groups.clear()
-                                    group = Group.objects.get(name='Gelöscht')
-                                    user.groups.add(group)
-                                    profil.delete()
-                                    geloescht, created = Geloescht.objects.get_or_create(user = user)
-                                    geloescht.text += nachricht
-                                    geloescht.save()
+                                heute = date.today()
+                                nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user, heute, req.user.profil.vorname, req.user.profil.nachname)
+                                user.groups.clear()
+                                group = Group.objects.get(name='Gelöscht')
+                                user.groups.add(group)
+                                profil.delete()
+                                geloescht, created = Geloescht.objects.get_or_create(user = user)
+                                geloescht.text += nachricht
+                                geloescht.save()
                 # except:
                 #     nachricht = "Mit der letzten Eingabe stimmt was nicht!"        
                 #     context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, "gruppe_id": gruppe_id}
