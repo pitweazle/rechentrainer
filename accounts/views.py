@@ -835,7 +835,7 @@ def suchen(req, gruppe_id=None):
                             nachricht = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(loeschen) 
                         else:
                             protokolle = Protokoll.objects.filter(user = user.profil.id) 
-                            if protokolle.count() > 0 and not req.user.is_superuser:
+                            if protokolle.count() > 0:
                                 nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
                             else:
                                 heute = date.today()
