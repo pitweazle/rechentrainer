@@ -771,8 +771,8 @@ def suchen(req, gruppe_id=None):
                         if gruppe == None or gruppe.id != gruppe_id:
                             nachricht_quelle = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(quelle) 
                         else:
-                            vorname_quelle = user_ziel.profil.vorname 
-                            nachname_quelle = user_ziel.profil.nachname 
+                            vorname_quelle = user_quelle.profil.vorname 
+                            nachname_quelle = user_quelle.profil.nachname 
                         gruppe = user_ziel.profil.gruppe
                         if gruppe == None or gruppe.id != gruppe_id:
                             nachricht_ziel = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(ziel) 
@@ -782,7 +782,7 @@ def suchen(req, gruppe_id=None):
                         nachricht = nachricht_quelle + " - " + nachricht_ziel
                         if len(nachricht) < 5:
                             if  not req.user.is_superuser and (vorname_quelle.upper() != vorname_ziel.upper() or nachname_quelle.upper() != nachname_ziel.upper()):  
-                                nachricht = "Namen stimmen nicht überein!"
+                                nachricht = "Die Namen stimmen nicht überein!"
                             else:
                                 protokolle = Protokoll.objects.filter(user = user_quelle.profil)
                                 if protokolle.count() == 0:
@@ -811,19 +811,19 @@ def suchen(req, gruppe_id=None):
                                                 if ziel.letzte < q.letzte:
                                                     ziel.letzte = q.letzte
                                                 ziel.save()
-                                    if nachricht != "Der/die Zähler: ":
-                                        nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
-                                        verschoben.text += nachricht
-                                        verschoben.save()                            
-                                    n = 0
-                                    for protokoll in protokolle:
-                                        n +=1
-                                        protokoll.user = user_ziel.profil
-                                        protokoll.anmerkung = "übertragen von user ID: ", quelle
-                                        protokoll.save()
-                                    nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
-                                    verschoben.text += nachricht
-                                    verschoben.save()                            
+                                            if nachricht != "Der/die Zähler: ":
+                                                nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
+                                                verschoben.text += nachricht
+                                                verschoben.save()                            
+                                            n = 0
+                                            for protokoll in protokolle:
+                                                n +=1
+                                                protokoll.user = user_ziel.profil
+                                                protokoll.anmerkung = "übertragen von user ID: ", quelle
+                                                protokoll.save()
+                                            nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
+                                            verschoben.text += nachricht
+                                            verschoben.save()                            
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
                 loeschen = loeschen_form.cleaned_data['loeschen']
@@ -839,7 +839,7 @@ def suchen(req, gruppe_id=None):
                                 nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
                             else:
                                 heute = date.today()
-                                nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user, heute, req.user.profil.vorname, req.user.profil.nachname)
+                                nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.username, heute, req.user.profil.vorname, req.user.profil.nachname)
                                 user.groups.clear()
                                 group = Group.objects.get(name='Gelöscht')
                                 user.groups.add(group)
