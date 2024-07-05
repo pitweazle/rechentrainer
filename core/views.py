@@ -6072,6 +6072,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = random.randint(2, typ_end) 
         if typ==3:
             typ=9
+        typ=3
+
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6098,7 +6100,30 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             hilfe_id = 20
             hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
         elif typ == 3:                                                                  # Schaubild
-            pass
+            titel = "Schaubilder"
+            box_hoehe = 360
+            box_breite = 400
+            grid = 20
+            y_null = box_hoehe-40          # y_Null  Lage der x-Achse
+            x_null = 40                    # x_Null  Lage der y-Achse
+            parameter = {'name': 'svg/koosys.svg',
+                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                    'grid' : grid,
+                    'einteilung': 60,
+                    'y_null': y_null,'x_null': x_null,
+                    }
+            beschriftung = {
+                'xvalues': [
+                    (x_null + n*40, str((n*10+420)//60)+":"+str((n*10+420)%60)) for n in range(1 ,9)
+                ],
+                'yvalues': [
+                    (y_null - n*40, n*0.5) for n in range(1, 8)
+                ],
+                }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
+            parameter.update(beschriftung)
+
+            variable = ["Text"]
+
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400
