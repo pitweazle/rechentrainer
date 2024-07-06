@@ -6073,7 +6073,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         if typ==3:
             typ=9
         typ=3
-
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6119,10 +6118,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 'yvalues': [
                     (y_null - n*40, n*0.5) for n in range(1, 8)
                 ],
-                }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
+                } 
             parameter.update(beschriftung)
 
-            variable = ["Text"]
+            variable = [""]
 
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
