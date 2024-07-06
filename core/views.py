@@ -6063,7 +6063,17 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                         return -1, "" 
                 except:
                     return -1, "" 
-        else:
+        elif typ == 3:
+            if typ2 == 1:
+                if eingabe not in ["l", "s", "g"] :
+                    return 0, "Du musst dich zwischen 's' 'l' und 'g' entscheiden"
+                else:
+                    pass
+            elif typ2 == 2:
+                if not ":" in eingabe:
+                    return 0, "Gib die Uhrzeit z.B. so ein: 9:15"
+                else:
+                    pass
             return -1, "" 
     else: 
         if aufgnr == 1:
@@ -6077,7 +6087,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         titel = "Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
-        variable = []
+        variable = [""]
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
@@ -6099,13 +6109,13 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             hilfe_id = 20
             hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
         elif typ == 3:                                                                  # Schaubild
-            titel = "Schaubilder"
+            titel = "Werte aus Schaubildern ablesen"
             box_hoehe = 360
             box_breite = 400
             grid = 20
             y_null = box_hoehe-40          # y_Null  Lage der x-Achse
             x_null = 40                    # x_Null  Lage der y-Achse
-            parameter = {'name': 'svg/koosys.svg',
+            parameter = {'name': 'svg/koosys.svg', 'object': "fahrtstrecke",
                     'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
                     'grid' : grid,
                     'einteilung': 60,
@@ -6120,9 +6130,37 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 ],
                 } 
             parameter.update(beschriftung)
-
-            variable = [""]
-
+            text = "Markus fährt mit dem Fahrrad in die Schule. Auf dem Weg holt er Maria ab.<br>"
+            v1 = v2 = 0
+            while v1 > 4 or v1 < 2:
+                t1 = random.randint(2,8)
+                s1 = random.randint(2,7)
+                v1 = s1/t1
+            while v2 > 4 or v2 < 2:
+                t2 = random.randint(2,6)
+                s2 = random.randint(2,7)
+                v2 = s2/t2
+            pause = random.randint(1,2)
+            fahrtstrecke = {'zeit_1': x_null+t1*grid, 'strecke_1': y_null-s1*grid, 'pause': x_null+(t1+pause)*grid, 'zeit_2': x_null+(t1+pause+t2)*grid, 'strecke_2': y_null-(s1+s2)*grid,}
+            parameter.update(fahrtstrecke)
+            typ2 = 2
+            if typ2 == 1:
+                text += "Ist Markus auf der ersten Wegstrecke schneller(s), langsamer(l) oder gleich schnell(g)?"
+                if v1 == v2:
+                    lsg = ["gleich schnell", "g", "G"]
+                elif v1 > v2:
+                    lsg = ["schneller", "s", "S"]
+                else:
+                    lsg = ["langsamerl", "l", "L"]
+                frage = "l/s/g?" 
+            elif typ2 == 2:
+                text += "Wann kommen sie in der Schule an?"
+                frage = "um"  
+                einheit = "Uhr"  
+                anmerkung = "Gib die Uhrzeit z.B. so ein: 9:15"
+                zeit = (t1+t2+pause)*5
+                lsg = ["7:"+str(zeit)]
+            lsg +=["indiv_0"]
         else:                                                                           # Koordinatensystem
             box_hoehe = 360
             box_breite = 400

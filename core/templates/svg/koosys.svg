@@ -126,6 +126,7 @@
         {%endif%}
     {%endfor%}
 
+<!--Objekte-->
     {% if parameter.object == "koordinaten" %}
         <!--Kreuz-->	
         <line x1="{{parameter.x_koo|add:5}}" y1="{{parameter.y_koo|add:5}}" x2="{{parameter.x_koo|add:-5}}" y2="{{parameter.y_koo|add:-5}}" style="stroke:red;stroke-width:2;" />	
@@ -158,6 +159,15 @@
         {%endfor%}
         <line x1="{{parameter.x_start}}" y1="{{parameter.y_start}}" x2="{{parameter.x_end}}" y2="{{parameter.y_end}}" style="stroke:red;stroke-width:2;" />	
         <text x="{{parameter.x_end|add:-20}}" y="{{parameter.y_end|add:30}}" style="stroke:red;stroke-width:1;">S</text>  
+    {% endif %}
+
+    {% if parameter.object == "fahrtstrecke" %}
+        <path d="M{{parameter.x_null}} {{parameter.y_null}}
+        L{{parameter.zeit_1}} {{parameter.strecke_1}}
+        L{{parameter.pause}} {{parameter.strecke_1}}
+        L{{parameter.zeit_2}} {{parameter.strecke_2}}
+        "
+        style = "fill:none; stroke:blue; stroke-width: 2"/>
     {% endif %}
 
 </svg>
