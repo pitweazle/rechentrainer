@@ -6080,9 +6080,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
-        if typ==3:
-            typ=9
-        typ=3
+        #typ=3
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6143,7 +6141,8 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             pause = random.randint(1,2)
             fahrtstrecke = {'zeit_1': x_null+t1*grid, 'strecke_1': y_null-s1*grid, 'pause': x_null+(t1+pause)*grid, 'zeit_2': x_null+(t1+pause+t2)*grid, 'strecke_2': y_null-(s1+s2)*grid,}
             parameter.update(fahrtstrecke)
-            typ2 = 2
+            typ2 = random.randint(1,2)
+            #typ2 = 2
             if typ2 == 1:
                 text += "Ist Markus auf der ersten Wegstrecke schneller(s), langsamer(l) oder gleich schnell(g)?"
                 if v1 == v2:
