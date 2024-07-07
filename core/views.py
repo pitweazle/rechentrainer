@@ -6199,6 +6199,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             if typ == 4:                                                                # Funktionswert auf Graph?
                 titel = "Funktionswerte" 
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                pro_text = "Liegt der Punkt ({1};{2}) auf Graphen f(x)={0}?"
                 frage = "ja/nein"
                 typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])
