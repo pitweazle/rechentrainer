@@ -806,12 +806,10 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             zahl2 = random.randint(1,2)
             zahl1 = int(random.random()*10**(abs(typ)+zahl2+1))
-            print("Zahl1: ",zahl1)
             if zahl1%5==0:
-                zahl1 += 0.
+                zahl1 += 0.1
             zahl1 = zahl1*10**(typ-zahl2)
             zahl = format_zahl(zahl1,abs(typ)+zahl2)
-            print("Zahl2: ", zahl)
             name = name_liste[abs(typ)] + endung
             name = name.title()
             text = " Runde {} auf {}"
@@ -833,7 +831,6 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             if erg==0:
                 lsg=["0"]
         frage = "{}".format(*variable) + chr(8776)
-        print("Lösung: ",lsg)
         return typ, typ2, titel, text, "", frage, variable, "", "", lsg, hilfe_id, erg, {'name':'normal'}
 
 def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
