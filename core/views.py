@@ -772,6 +772,7 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
     else:
         typ = random.randint(typ_anf, typ_end)
         typ2 = 0
+        erg = None
         titel = "Runden"
         name_liste = ("Einer", "zehn", "hundert", "tausend", "zehntausend", "hunderttausend",  "million")
         n = ""
@@ -804,6 +805,8 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             zahl2 = random.randint(1,2)
             zahl1 = int(random.random()*10**(abs(typ)+zahl2+1))
+            if zahl1%5==0:
+                zahl1 += 0.1
             zahl1 = zahl1*10**(typ-zahl2)
             zahl = format_zahl(zahl1,abs(typ)+zahl2)
             name = name_liste[abs(typ)] + endung
@@ -826,7 +829,6 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             lsg = lsg + ["indiv"]
             if erg==0:
                 lsg=["0"]
-        erg = None
         frage = "{}".format(*variable) + chr(8776)
         return typ, typ2, titel, text, "", frage, variable, "", "", lsg, hilfe_id, erg, {'name':'normal'}
 
@@ -6199,7 +6201,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             if typ == 4:                                                                # Funktionswert auf Graph?
                 titel = "Funktionswerte" 
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
-                pro_text = "Liegt der Punkt ({1};{2}) auf Graphen f(x)={0}?"
+                pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
                 frage = "ja/nein"
                 typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])

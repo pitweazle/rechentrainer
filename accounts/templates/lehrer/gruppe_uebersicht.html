@@ -14,6 +14,7 @@
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
         <a>{{titel}}</a>
+        <a href="{% url 'duell' gruppe_id %}">Zum Rechenduell</a> 
         <div class="dropdown">
             <button class="dropbtn"> 
                 Daten ändern
@@ -26,7 +27,7 @@
                 <a href="{% url 'suchen' gruppe_id %}">Account von Schüler/in löschen</a>        
                 </div>
             {% endif %}
-        </div> 
+         </div> 
     </div> 
 </header>
 <br>

@@ -682,6 +682,27 @@ def schueler_aendern(req, schueler_id):
     context = {'profil_form': profil_form, 'schueler': schueler, 'titel': "Schülerdaten ändern"}
     return render(req, 'lehrer/schueler_aendern.html', context)
 
+# das Rechenduell
+def duell(req, gruppe_id):
+    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    jg = gruppe.jg
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
+
+    schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
+    duell_liste = []
+    for schueler in schueler_liste:
+         duell_liste.append((
+             schueler, 
+         ))
+    print(duell_liste)
+
+    context={'gruppe_id': gruppe_id,'duell_liste': duell_liste}  
+    return render(req, 'lehrer/rechenduell.html', context)
+
+    return HttpResponse(schueler_liste)
+
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):
     if not req.user.is_superuser:
