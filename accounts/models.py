@@ -83,16 +83,22 @@ class Profil(models.Model):
 
 class Duell(models.Model):
     profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
-    gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.SET_NULL, related_name='duellgruppe')
+    gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.CASCADE, related_name='duellgruppe')
     liga = models.SmallIntegerField(default=1)
-    platz = models.SmallIntegerField(blank=True)
-    aufsteiger = models.BooleanField(blank=True)
-    krank = models.BooleanField(blank=True)
+    platz = models.SmallIntegerField(null=True)
+    aufsteiger = models.BooleanField(default=False)
+    krank = models.BooleanField(default=False)
     spiele = models.SmallIntegerField(default=0)
     punkte = models.DecimalField(max_digits=3, decimal_places=1, default=0)
     spiele = models.SmallIntegerField(default=0)
     pps = models.DecimalField(max_digits=4, decimal_places=2, default=0) 
+    class Meta:
+        verbose_name_plural = 'Duell'
     
+    def __str__(self):
+        return f"{self.profil.vorname}, {self.profil.nachname}"
+
+
 class Geloescht(models.Model):
     user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE )
     text = models.CharField(max_length=200)
