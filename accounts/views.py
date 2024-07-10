@@ -698,12 +698,7 @@ def duell(req, gruppe_id):
             duell.save()
 
 
-    duell_liste = []
-    for schueler in schueler_liste:
-         duell_liste.append((
-             schueler, 
-         ))
-    print(duell_liste)
+    duell_liste = Duell.objects.filter(gruppe=gruppe)
 
     context={'gruppe_id': gruppe_id,'duell_liste': duell_liste}  
     return render(req, 'lehrer/rechenduell.html', context)
