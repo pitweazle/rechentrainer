@@ -12,7 +12,7 @@ from django.db.models import Max, Sum, F, Q
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe
 
-from .models import Schule, Lerngruppe, Geloescht
+from .models import Schule, Lerngruppe, Duell, Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
  
 def name_hj():
@@ -691,6 +691,13 @@ def duell(req, gruppe_id):
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
 
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
+    for schueler in schueler_liste:
+        duell, created = Duell.objects.get_or_create(profil = schueler)
+        if created:
+            duell.gruppe = gruppe
+            duell.save()
+
+
     duell_liste = []
     for schueler in schueler_liste:
          duell_liste.append((
