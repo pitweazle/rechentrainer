@@ -84,13 +84,12 @@ class Profil(models.Model):
 class Duell(models.Model):
     profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.CASCADE, related_name='duellgruppe')
-    liga = models.SmallIntegerField(default=1)
-    platz = models.SmallIntegerField(null=True)
+    liga = models.CharField(max_length=1, default="A")
+    platz = models.SmallIntegerField(null=True, blank=True)
     aufsteiger = models.BooleanField(default=False)
-    krank = models.BooleanField(default=False)
+    abwesend = models.BooleanField(default=False)
     spiele = models.SmallIntegerField(default=0)
     punkte = models.DecimalField(max_digits=3, decimal_places=1, default=0)
-    spiele = models.SmallIntegerField(default=0)
     pps = models.DecimalField(max_digits=4, decimal_places=2, default=0) 
     class Meta:
         verbose_name_plural = 'Duell'

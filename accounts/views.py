@@ -692,15 +692,11 @@ def duell(req, gruppe_id):
 
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
     for schueler in schueler_liste:
-        duell, created = Duell.objects.get_or_create(profil = schueler)
-        if created:
-            duell.gruppe = gruppe
-            duell.save()
+        duell, created = Duell.objects.get_or_create(profil = schueler, gruppe = gruppe)
 
+    duell_liste = Duell.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
 
-    duell_liste = Duell.objects.filter(gruppe=gruppe)
-
-    context={'gruppe_id': gruppe_id,'duell_liste': duell_liste}  
+    context={'gruppe': gruppe.name,'duell_liste': duell_liste} 
     return render(req, 'lehrer/rechenduell.html', context)
 
     return HttpResponse(schueler_liste)

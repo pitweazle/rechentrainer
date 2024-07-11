@@ -5,36 +5,51 @@
 <head>       
     <title>Rechentrainer im Web</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'accounts/gruppe_uebersicht.css' %}">  
+    <link rel="stylesheet" href="{% static 'duell.css' %}">
+
 </head>
 
 <header>
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
-        <a>Rechenduell</a>
-
+        <a>Rechenduell {{gruppe}}</a>
     </div> 
 </header>
 <br>
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th >Name</th>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th >Liga</th>
+                    <th >↑</th>
+                    <th >Platz</th>
+                    <th width= "200px">Name</th>
+                    <th >Spiele</th>
+                    <th >Punkte</th>
+                    <th >PPS</th>
+                    <th >*</th>
+                </tr>
+            </thead>
+            <tbody>
             </tr>
-        </thead>
-        <tbody>
-        </tr>
-        {% for schueler in duell_liste %}
-            <tr >
-                <td style="text-align: left";>{{schueler}}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            {% for zeile in duell_liste %}
+                <tr class = {{zeile.liga}}>
+                    <td>{{zeile.liga}}</td>
+                    <td>{% if zeile.aufsteiger %}*{%else%}{%endif%}</td>
+                    <td>{% if zeile.platz %}{{zeile.platz}}{%else%}{%endif%}</td>
+                    <td style="text-align: left";>{{zeile.profil.vorname}} {{zeile.profil.nachname|slice:"30"}}</td>
+                    <td>{{zeile.spiele}}</td>
+                    <td>{{zeile.punkte}}</td>
+                    <td>{{zeile.pps}}</td>
+                    <td>{% if zeile.abwesend %}*{%else%}{%endif%}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
