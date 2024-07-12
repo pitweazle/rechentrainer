@@ -81,7 +81,7 @@ class Profil(models.Model):
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
 
-class Duell(models.Model):
+class Duellant(models.Model):
     profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.CASCADE, related_name='duellgruppe')
     liga = models.CharField(max_length=1, default="A")
@@ -92,7 +92,7 @@ class Duell(models.Model):
     punkte = models.DecimalField(max_digits=3, decimal_places=1, default=0)
     pps = models.DecimalField(max_digits=4, decimal_places=2, default=0) 
     class Meta:
-        verbose_name_plural = 'Duell'
+        verbose_name_plural = 'Duellanten'
     
     def __str__(self):
         return f"{self.profil.vorname}, {self.profil.nachname}"
