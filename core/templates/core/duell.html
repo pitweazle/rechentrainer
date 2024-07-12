@@ -1,0 +1,124 @@
+{% load static %}
+{% load l10n %}
+
+<html lang="de">
+    <head>       
+        <title>Rechentrainer von Peter Doll</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+    </head>
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+{% endblock %}
+
+<body>
+    <div class="container">
+        {% block content %}
+            <div class= "oben">
+                <div class="navbar">
+                    {% if user.is_authenticated %}
+                        <p>{{user.profil.vorname}} {{ user.profil.nachname }} 
+                        {% if user.profil.klasse == "lehrer" %}
+                            </p>
+                        {%else%}
+                            , {{user.profil.klasse}}</p>
+                        {%endif%}
+                    {% else %}
+                        <p>Du bist nicht eingeloggt</p>
+                        <a href="{% url 'einloggen' %}">Log In</a>
+                    {% endif %}
+                </div>
+                {% autoescape off %}
+                <div class="message">
+                    {% for message in messages %}
+                        {% if 'leider falsch' in message.message %}
+                            <p class = "rot">{{ message }}</p>
+                        {% elif 'halb' in message.message %}
+                            <p class = "gelb">{{ message }}</p>
+                        {% elif 'dreimal'  in message.message %}
+                            <p class = "rot">{{ message }}</p>
+                        {% elif 'war richtig!' in message.message %}
+                            <p class = "gruen">{{ message }}</p>
+                        {% else %}
+                            <p class ="gelb">{{ message }}</p>
+                        {% endif%}
+                    {% endfor %}
+                </div>
+                <h2> {{titel }}</h2>
+                <h3>Aufg. Nr. {{aufgnr}}/10 </h3> 
+                <h3>{{text}} {{aufgabe}}</h3>
+            </div>
+{% comment %} 
+            <div class="mitte">
+                <p>
+                {% localize off %}
+                    {% if parameter.name != "normal" and not "tab" in parameter.name %}
+                        {% include parameter.name %} 
+                    {% endif %}
+                {% endlocalize %}
+                </p>
+            </div>
+            <div class="unten">
+                {% if "tab" in parameter.name %}
+                    {% if lsg %}
+                        {% include 'core/wertetabelle_lsg.html'%}
+                    {% else %}
+                        {% include 'core/wertetabelle.html'%}
+                    {% endif %}
+                {% endif %}
+                {% if 'dreimal' in message_unten %}
+                    <button type="button">
+                        <a href="{% url 'uebersicht'  %}">weiter</a>
+                    </button>
+                {% elif lsg %}
+                    {% if eingabe != " " %}
+                        <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
+                    {%endif%}
+                    <button type="button">
+                        <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
+                    </button>
+                {% else %}
+                    {{message_unten}}
+                    {% if not "tab" in parameter.name %}
+                        <form action="{% url 'main' kategorie.slug %}" method="post">
+                            {% csrf_token %}
+                            <fieldset>
+                                {{frage}}
+                                {{form.eingabe}}
+                                {{einheit}}
+                                <input type="submit" value="Prüfen">
+                            </fieldset>
+                        </form>
+                    {%else%}
+                        <table>
+                            <tr>
+                                <td><input type="submit" value="Prüfen"></td>
+                            </tr>
+                        </table>
+                    {% endif %}
+                    <nav>
+                        <button type="button">
+                            <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
+                        </button>
+                        {% if hilfe  %}
+                            <button type="button">
+                                <a href="{% url 'hilfe' zaehler_id protokoll_id %}"> Hilfe</a>
+                            </button>
+                        {% endif %}
+                        <button type="button">
+                            <a href="{% url 'abbrechen' zaehler_id %}">Abbrechen</a>
+                        </button>
+                    </nav>
+                    {% if bis_loeschen > 0 %}
+                        Fehler löschen: noch {{bis_loeschen}} Aufgaben
+                    {% endif %}
+                {% endif%}
+            </div>  
+{% endcomment %}        
+            {% endautoescape %}
+        {% endblock %} 
+    </div>
+</body>

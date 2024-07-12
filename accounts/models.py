@@ -95,7 +95,7 @@ class Duellant(models.Model):
         verbose_name_plural = 'Duellanten'
     
     def __str__(self):
-        return f"{self.profil.vorname}, {self.profil.nachname}"
+        return f"{self.id} {self.profil.vorname}, {self.profil.nachname}"
 
 
 class Geloescht(models.Model):

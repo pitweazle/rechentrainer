@@ -683,7 +683,7 @@ def schueler_aendern(req, schueler_id):
     return render(req, 'lehrer/schueler_aendern.html', context)
 
 # das Rechenduell
-def duell(req, gruppe_id):
+def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     jg = gruppe.jg
     if gruppe.lehrer != req.user and not req.user.is_superuser:
@@ -691,16 +691,20 @@ def duell(req, gruppe_id):
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
 
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
-    print(schueler_liste)
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler, gruppe = gruppe)
 
     duellanten = Duellant.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
+    if req.method == 'POST': 
+        IDs = list(req.POST.getlist('ID'))
+        for duellant in duellanten:
+            duellant.abwesend = True if str(duellant.id) in IDs else False
+            duellant.save()
 
-    context={'gruppe': gruppe.name,'duellanten': duellanten} 
-    return render(req, 'lehrer/rechenduell.html', context)
 
 
+    context={'gruppe': gruppe,'duellanten': duellanten} 
+    return render(req, 'lehrer/duell_uebersicht.html', context)
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):
