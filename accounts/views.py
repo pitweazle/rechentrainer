@@ -12,7 +12,7 @@ from django.db.models import Max, Sum, F, Q
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe
 
-from .models import Schule, Lerngruppe, Duell, Geloescht
+from .models import Schule, Lerngruppe, Duellant, Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
  
 def name_hj():
@@ -691,15 +691,16 @@ def duell(req, gruppe_id):
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
 
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
+    print(schueler_liste)
     for schueler in schueler_liste:
-        duell, created = Duell.objects.get_or_create(profil = schueler, gruppe = gruppe)
+        duellant, created = Duellant.objects.get_or_create(profil = schueler, gruppe = gruppe)
 
-    duell_liste = Duell.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
+    duellanten = Duellant.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
 
-    context={'gruppe': gruppe.name,'duell_liste': duell_liste} 
+    context={'gruppe': gruppe.name,'duellanten': duellanten} 
     return render(req, 'lehrer/rechenduell.html', context)
 
-    return HttpResponse(schueler_liste)
+
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):

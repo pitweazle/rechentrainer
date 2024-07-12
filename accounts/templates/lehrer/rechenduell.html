@@ -19,6 +19,8 @@
 <br>
 <body>
     <div class="container">
+    {% comment %} <form method="post" action="{% url 'duell' %}">
+        {% csrf_token %} {% endcomment %}
         <table>
             <thead>
                 <tr>
@@ -29,27 +31,29 @@
                     <th >Spiele</th>
                     <th >Punkte</th>
                     <th >PPS</th>
-                    <th >*</th>
+                    <th >abwesend</th>
                 </tr>
             </thead>
             <tbody>
             </tr>
-            {% for zeile in duell_liste %}
-                <tr class = {{zeile.liga}}>
-                    <td>{{zeile.liga}}</td>
-                    <td>{% if zeile.aufsteiger %}*{%else%}{%endif%}</td>
-                    <td>{% if zeile.platz %}{{zeile.platz}}{%else%}{%endif%}</td>
-                    <td style="text-align: left";>{{zeile.profil.vorname}} {{zeile.profil.nachname|slice:"30"}}</td>
-                    <td>{{zeile.spiele}}</td>
-                    <td>{{zeile.punkte}}</td>
-                    <td>{{zeile.pps}}</td>
-                    <td>{% if zeile.abwesend %}*{%else%}{%endif%}</td>
+            {% for duellant in duellanten %}
+                <tr class = {{duellant.liga}}>
+                    <td>{{duellant.liga}}</td>
+                    <td>{% if duellant.aufsteiger %}*{%else%}{%endif%}</td>
+                    <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
+                    <td style="text-align: left";>{{duellant.profil.vorname}} {{duellant.profil.nachname|slice:"30"}}</td>
+                    <td>{{duellant.spiele}}</td>
+                    <td>{{duellant.punkte}}</td>
+                    <td>{{duellant.pps}}</td>
+                    <td><input  id="abwesend" name="abwesend" type="Checkbox"></td>
+                    {% comment %} <td>{% if duellant.abwesend %}*{%else%}{%endif%}</td> {% endcomment %}
                 </tr>
             {% empty %}
                 <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
             {% endfor %}
             </tbody>
         </table>
+    {% comment %} </form> {% endcomment %}
     </div>
 </body>
 </html>
