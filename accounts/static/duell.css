@@ -25,16 +25,3 @@ td {
     max-width: 500px;
   }
 
-#wrapper {
-  width: 800px;
-}
-
-#spalte_links {
-  width: 400px;
-  float:left;
-}
-
-#spalte_rechts {
-  width: 400px;
-  float:left;
-}
