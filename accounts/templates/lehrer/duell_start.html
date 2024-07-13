@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="de">
+<head>       
+    <title>Rechentrainer im Web</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'duell_start.css' %}">
+
+</head>
+
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Rechenduell {{gruppe.name}}</a>
+    </div> 
+</header>
+<br>
+    <body>
+        <div class="container">
+            <form action="/duell_uebersicht/{{gruppe.id}}/" method="POST">
+                {% csrf_token %}
+                <table>                        <thead>
+                    <tr>
+                        <th >Duell starten</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kategorie in kategorien %}:
+                        <tr style="text-align: center;"><td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td></tr>
+                    {% endfor %}
+                </table>
+            </form>
+        </div>
+    </body>
+</html>

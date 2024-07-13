@@ -685,26 +685,28 @@ def schueler_aendern(req, schueler_id):
 # das Rechenduell
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    jg = gruppe.jg
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
-
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler, gruppe = gruppe)
-
     duellanten = Duellant.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
-
-
-
     context={'gruppe': gruppe,'duellanten': duellanten} 
     return render(req, 'lehrer/duell_uebersicht.html', context)
+
+def duell_start(req, gruppe_id):
+    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert") 
+    kategorien = Kategorie.objects.all().order_by('zeile')
+    context={'gruppe': gruppe,'kategorien': kategorien} 
+    return render(req, 'lehrer/duell_start.html', context)
+   
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):
