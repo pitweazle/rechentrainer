@@ -6,8 +6,7 @@
     <title>Rechentrainer im Web</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'duell.css' %}">
-
+    <link rel="stylesheet" href="{% static 'duell_uebersicht.css' %}">
 </head>
 
 <header>
@@ -19,6 +18,10 @@
 <br>
     <body>
         <div class="container">
+            <button type="button">
+                <a href="{% url 'duell_start' gruppe.id %}">Duell Start</a>
+            </button> 
+            <p></p>  
             <form action="/duell_uebersicht/{{gruppe.id}}/" method="POST">
                 {% csrf_token %}
                 <table>
@@ -39,7 +42,7 @@
                     {% for duellant in duellanten %}
                         <tr class = {{duellant.liga}}>
                             <td>{{duellant.liga}}</td>
-                            <td>{% if duellant.aufsteiger %}*{%else%}{%endif%}</td>
+                            <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
                             <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
                             <td style="text-align: left";>{{duellant.profil.vorname}} {{duellant.profil.nachname|slice:"30"}}</td>
                             <td>{{duellant.spiele}}</td>
@@ -53,19 +56,25 @@
                                 {%endif%}
                             </td>
                         </tr>
-
                     {% empty %}
                         <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
                     {% endfor %}
-                    <tr>    
-
+                    <tr>
+                        <td colspan="4"></td>
+                        <td colspan="3"><label >Abwesende speichern</label></td> 
+                        <td><input type="submit" name="abwesend" value="übernehmen" ></td>
                     </tr>
                     </tbody>
-
                 </table>
-                <label >Abwesende übernehmen</label> 
-                <input type="submit" name="abwesend" value="speichern"></button>
+                    {% comment %} <label >Abwesende übernehmen</label> 
+                    <input type="submit" name="abwesend" value="speichern" > {% endcomment %}
             </form>
+            {% comment %} <form action="/duell_start/{{gruppe.id}}/" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" name="starten" value="Duell starten">
+                </table>
+            </form>  {% endcomment %}
+       
         </div>
     </body>
 </html>

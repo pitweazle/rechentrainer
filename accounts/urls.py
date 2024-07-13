@@ -36,6 +36,7 @@ urlpatterns = [
     path("gruppe_loeschen/<int:gruppe_id>/", views.gruppe_loeschen, name="gruppe_loeschen"),
     path("suchen/<int:gruppe_id>/", views.suchen, name="suchen"),
     path("duell_uebersicht/<int:gruppe_id>/", views.duell_uebersicht, name="duell_uebersicht"),
+    path("duell_start/<int:gruppe_id>/", views.duell_start, name="duell_start"),
 
     path("datenschutz/", views.datenschutz, name="datenschutz"),
     path("stimmen/", views.stimmen, name="stimmen"),
