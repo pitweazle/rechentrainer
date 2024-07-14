@@ -6438,7 +6438,10 @@ def uebersicht(req, schueler_id=0):
                 loeschen = True            
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
-        if(profil.id) != (req.user.profil.id):
+        if lehrer:
+            profil.duell_gruppe = 0
+            profil.save()    
+        if (profil.id) != (req.user.profil.id):
             if lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
                 if req.user.is_superuser:
                     pass
@@ -6784,6 +6787,8 @@ def optionen(req, slug):
 #Die 10 Aufgaben weden abgebrochen. Dies wird gezählt. Eigentlich wird bei der Erstellung jeweils dieser Zähler hochrechnet und nur wenn eine richtige oder falsche Eingabe erfolgt oder "Lösung anzeigen" 
 #angeklickt wird, wird dieser Zähler wieder um Eins zurückgesetzt. Dadurch wird auch als Abbrechen gezählt, wenn z.B. mit F5 eine neue Aufgabe erzeugt wird.
 def abbrechen(req, zaehler_id):
+    duell_gruppe = req.user.profil.duell_gruppe
+    print("Abbr.:",duell_gruppe)
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     #zaehler.abbr_zaehler += 1
     zaehler.aufgnr = 0
@@ -6799,7 +6804,10 @@ def abbrechen(req, zaehler_id):
     else:
         protokoll.eingabe = "abbr."        
     protokoll.save()
-    return redirect('uebersicht')
+    if duell_gruppe != 0:
+        return redirect('duell_uebersicht', duell_gruppe)
+    else:
+        return redirect('uebersicht')
 
 #Hier wird die Lösung angezeigt:
 def loesung(req, zaehler_id, protokoll_id):
@@ -6821,7 +6829,6 @@ def loesung(req, zaehler_id, protokoll_id):
             text = protokoll.loesung[0]
     except:
         text = protokoll.loesung
-  
     messages.info(req, f'Lösung: {text}') 
     context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung")
@@ -6933,258 +6940,10 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
 
 def duell(req):
     if req.user.is_authenticated: 
-        kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
-        bis_loeschen = "-"
-        titel = ""
-        if req.method == 'POST':
-            protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-            protokoll.versuche += 1
-            zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
-            zaehler.hinweis = ""
-            #wenn in den Aufgaben in "erg" eine Zahl steht
-            if "tab" in protokoll.parameter["name"]:
-                if "term" in protokoll.parameter["name"]:
-                    form = AufgabeFormTerm(req.POST)
-                else:
-                    form = AufgabeFormTab(req.POST)
-            else:
-                if protokoll.wert:
-                    form = AufgabeFormZahl(req.POST)
-                #wenn in den Aufgaben erg=None:
-                else:
-                    form = AufgabeFormStr(req.POST)
-            #Aufgabe beantwortet
-            if form.is_valid():  
-                # zunächst Einträge im Protokoll:
-                if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
-                    eingabe = []
-                    if "term" in protokoll.parameter["name"]:                            # für Terme
-                        eingabe.append(form.cleaned_data['y0'])
-                        eingabe.append(form.cleaned_data['y1'])
-                    eingabe.append(form.cleaned_data['y2'])
-                    eingabe.append(form.cleaned_data['y3'])
-                    eingabe.append(form.cleaned_data['y4'])
-                    pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
-                else:
-                    eingabe = pro_eingabe = form.cleaned_data['eingabe']
-                if protokoll.versuche == 1:
-                    protokoll.eingabe = pro_eingabe
-                elif protokoll.versuche == 2:
-                    protokoll.eingabe ="(1:) {}; (2:) {}".format(protokoll.eingabe, pro_eingabe)
-                else:
-                    protokoll.eingabe = "{}; (3:) {}" .format(protokoll.eingabe, pro_eingabe) 
-                #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
-                #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
-                protokoll.abbr = False
-                if protokoll.wertung == "a": 
-                    protokoll.wertung = "" 
-                    zaehler.abbr_zaehler -= 1  
-                protokoll.end = timezone.now()
-                protokoll.save()
-                #hier wird die Eingabe überprüft:
-                wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
-                if wertung <= 2:
-                    tabelle = 0
-                    richtig = wertung
-                else:
-                    if wertung >= 3000:                                   # Anzahl der Einträge in der Tabelle
-                        tabelle = 3
-                        richtig = str(wertung).count("1")
-                        falsch = str(wertung).count("0")
-                    if wertung >= 300000:
-                        tabelle = 5
-                #wenn Eingabe richtig:
-                if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
-                    if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
-                        rueckmeldung = "Alle Werte waren richtig richtig!"
-                        zaehler.richtig_of += tabelle
-                        zaehler.aufgnr += tabelle
-                        # entfernt eventuelle Einträge "r"
-                        protokoll.wertung = protokoll.wertung.replace("r", "") + richtig*"r"
-                    elif tabelle == 0 :
-                        if "enauer" in rueckmeldung:
-                            rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
-                        else:
-                            rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
-                        zaehler.richtig_of += 1
-                        zaehler.aufgnr += 1                                                                         
-                        protokoll.wertung = protokoll.wertung + "r"
-                    if zaehler.richtig_of >= kategorie.eof:                 # wenn die erforderliche Anzahl richtiger Antworten eingegeben wurde, wird der jeweilige Fehlerzähler zurückgesetzt
-                        if zaehler.fehler_zaehler > 0:
-                            rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Dein Fehlerzähler wurde zurückgesetzt!</b>"
-                        zaehler.fehler_ab = timezone.now()
-                        zaehler.fehler_zaehler = 0
-                        zaehler.lsg_zaehler = 0
-                        zaehler.hilfe_zaehler = 0
-                        zaehler.abbr_zaehler = 0
-                    protokoll.richtig = richtig                        
-                    protokoll.save()
-                    zaehler.save()
-                    #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
-                    mehr = 0
-                    if kategorie.name == "Funktionen":
-                        mehr=5
-                    if zaehler.aufgnr > 10+mehr:
-                        if  zaehler.optionen_text not in ["", "keine",] and user.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
-                            max_stufe = 3
-                            for auswahl in Auswahl.objects.filter(
-                                kategorie=kategorie,
-                                text__in=zaehler.optionen_text.split(";"),
-                                ).all():
-                                if(auswahl.bis_stufe) >= int(user.stufe) and auswahl.update:
-                                    user.stufe = auswahl.bis_stufe+1+int(user.stufe)%2
-                                    user.save()
-                        zaehler.optionen_text = ""
-                        zaehler.hinweis = ""
-                        zaehler.aufgnr = 0
-                        zaehler.letzte = timezone.now()
-                        zaehler.save()
-                        return redirect('uebersicht')
-                    messages.info(req, f'{rueckmeldung}')# {msg}')
-                    return redirect('main', slug)
-                #wenn Aufgabe falsch:
-                else: 
-                    #hier wird die aktuelle Aufgabe ausgelesen:
-                    titel = protokoll.titel
-                    text = protokoll.text
-                    parameter = protokoll.parameter
-                    anmerkung = protokoll.anmerkung
-                    frage = protokoll.frage
-                    einheit = protokoll.einheit
-                    hilfe_id = protokoll.hilfe_id
-                    if tabelle > 0:                                 # Auswertung der Wertetabelle:
-                        str_wertung = (str(wertung)[1:]).replace("1","r").replace("0","f").replace("2","/")
-                        zaehler.richtig_of = 0
-                        zaehler.fehler_zaehler += falsch
-                        protokoll.wertung = str_wertung
-                        if protokoll.falsch < falsch:
-                            protokoll.falsch = falsch
-                        protokoll.richtig = richtig
-                        protokoll.save()
-                        messages.info(req, f'{rueckmeldung}')
-                        color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
-                        color_wertung =color_wertung[:-1].split(",")
-                        y_farbe = {}
-                        if tabelle == 5:
-                            for n in range (0,tabelle):
-                                y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
-                        else:
-                            for n in range (0,tabelle):
-                                y_farbe["color" + str(n+2)] = color_wertung[tabelle-1-n]
-                        parameter.update(y_farbe)
-                    if protokoll.versuche >= 3:
-                        zaehler.aufgnr += tabelle
-                        zaehler.save()                                           
-                        messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
-                        anmerkung = "dreimal"
-                    else:
-                        if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
-                            messages.info(req, rueckmeldung)  
-                            wertung = -1      
-                        if wertung == -1:
-                            protokoll.falsch = 1
-                            protokoll.wertung = "f"
-                            protokoll.save()
-                            zaehler.richtig_of  = 0
-                            zaehler.fehler_zaehler +=1
-                            zaehler.save()
-                            #nach drei Falscheingaben wird die richtige Lösung angezigt und anschließend die Übersichtsseite aufgerufen:
-                            if protokoll.versuche >= 3:                                           
-                                messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
-                                anmerkung = "drei"
-                            else:
-                                messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
-                        else:
-                            if not "tab" in protokoll.parameter["name"]:
-                                messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
-        #hier wird die Aufgabe erstellt:
-        else:
-            zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
-            gerechnet = Protokoll.objects.filter(richtig__gte = 1, user=user, kategorie = kategorie, sj = user.sj, hj = user.hj).count()
-            zaehler = Zaehler.objects.get(user=user, kategorie = kategorie)
-            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt,  = durchschnitt_aufgaben(user)
-            zaehler.sj = user.sj
-            zaehler.hj = user.hj
-            if created:
-                #zaehler.fehler_ab = timezone.now()
-                if user.katmax <= kategorie.zeile:
-                    user.katmax=kategorie.zeile
-                    user.save()             # speichert die höchste gewählte Aufgabenkategorie
-            zaehler.save()
-            if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
-                zaehler.aufgnr = 1
-                # messages.info(req, "Los geht's")
-                zaehler.zeit_summe = 0
-                if richtig_gesamt > 100:
-                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not user.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
-                        return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
-            #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
-            #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
-            if not zaehler.optionen_text :  
-                return redirect('optionen', slug)
-            #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-            if kategorie.slug == "sachaufgaben":
-                try:  
-                    user.voreinst["sachaufg"] = user.voreinst["sachaufg"] + 1
-                except:                                       
-                    user.voreinst.update({"sachaufg" : random.randint(1,20)})
-                user.save()
-                typ_anf = user.voreinst["sachaufg"]
-            else:
-                typ_anf = zaehler.typ_anf            
-            stufe = user.stufe
-            #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
-            if kategorie.name in ("Prozentrechnung","Bruchteile"):
-                if user.kurs == "A" or user.kurs == "Y":
-                    stufe = stufe + 0.2
-            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
-            if kategorie.slug == "sachaufgaben":
-                user.voreinst["sachaufg"] = typ
-                user.save()
-            #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
-            if not titel:
-                titel = kategorie.name
-            #Hier wird der Aufgabentext erzeugt:
-            text = text.format(*variable)
-            #u.U. gibt es einen kürzeren Aufgabentext, der auf der Protokollseite angezeigt wird ("prp_text"):
-            if pro_text != "" :
-                pro_text = pro_text.format(*variable)
-            #Die Frage steht vor dem Eingabefeld:
-            # if kategorie.name == "Wahrscheinlichkeit" and typ == 0:
-            #     pass            # sonst wird ein fehler geworfen da 
-            # else:
-            frage = frage.format(*variable)
-            #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurücgezählt. 
-            #Falls mittels Browser reset eine neue Aufgabe erzeugt wird, wird dies als Abbrechen gewertet.
-            zaehler.abbr_zaehler += 1              
-            zaehler.save() 
-            bis_loeschen = kategorie.eof - zaehler.richtig_of
-            #Alle Angaben der Aufgaben wird in einem Eintrag in "Protokoll" gespeichert:
-            protokoll = Protokoll.objects.create(
-                user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
-                anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "a", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
-            )                                                                   #Protokoll wird erstellt
-            req.session['protokoll_id'] = protokoll.id    
-            req.session['zaehler_id'] = zaehler.id 
-            #Jenachdem, ob ein Wert oder ein Text erwartet wird:
-            if "tab" in protokoll.parameter["name"]:
-                if "term" in protokoll.parameter["name"]:
-                    form = AufgabeFormTerm(req.POST)
-                else:
-                    form = AufgabeFormTab(req.POST)
-            else:
-                if protokoll.wert:
-                    form = AufgabeFormZahl(req.POST)
-                #wenn in den Aufgaben erg=None:
-                else:
-                    form = AufgabeFormStr(req.POST)
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
-            form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit, bis_loeschen = bis_loeschen)
         return render(req, 'core/duell.html')
     else:
         return redirect('anmelden')
-    
 
 # hier läuft alles zusammen <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def main(req, slug):
