@@ -63,6 +63,7 @@ class Profil(models.Model):
     
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     kurs= models.CharField(max_length=1, choices=wahl_kurs.choices, default=wahl_kurs.E_KURS,)
+    duell_gruppe = models.PositiveSmallIntegerField(default = 0)
 
     # werden beim Erstellen eingestellt
     stufe = models.PositiveSmallIntegerField(default=5) #, editable=False)

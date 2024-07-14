@@ -703,6 +703,9 @@ def duell_start(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
+    profil = get_object_or_404(Profil, user=req.user)
+    profil.duell_gruppe = gruppe_id
+    profil.save()    
     kategorien = Kategorie.objects.all().order_by('zeile')
     context={'gruppe': gruppe,'kategorien': kategorien} 
     return render(req, 'lehrer/duell_start.html', context)
