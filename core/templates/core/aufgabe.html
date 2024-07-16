@@ -111,8 +111,12 @@
                             <a href="{% url 'abbrechen' zaehler_id %}">Abbrechen</a>
                         </button>
                     </nav>
-                    {% if bis_loeschen > 0 %}
-                        Fehler löschen: noch {{bis_loeschen}} Aufgaben
+                    {% if duell %}
+                        {% include 'core/duell.html'%}
+                    {% else %}
+                        {% if bis_loeschen > 0 %}
+                            Fehler löschen: noch {{bis_loeschen}} Aufgaben
+                        {% endif %}
                     {% endif %}
                 {% endif%}
             </div>          

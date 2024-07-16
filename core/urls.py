@@ -12,7 +12,7 @@ urlpatterns = [
     path('abbrechen/<int:zaehler_id>', views.abbrechen, name='abbrechen'),
     path('loesung/<int:zaehler_id>/<int:protokoll_id>/', views.loesung, name='loesung'),
     path('hilfe/<int:zaehler_id>/<int:protokoll_id>/', views.hilfe, name='hilfe'),
-    path('duell/', views.duell, name="duell"),
+    path('duell/<slug:slug>/', views.duell, name="duell"),
     path('<slug:slug>/', views.main, name='main'),
     path('optionen/<slug:slug>', views.optionen, name='optionen'),
 ]
