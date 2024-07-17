@@ -1,0 +1,150 @@
+{% load static %}
+{% load l10n %}
+
+<html lang="de">
+    <head>       
+        <title>Rechentrainer von Peter Doll</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'core/duell.css' %}">
+    </head>
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+{% endblock %}
+
+<body>
+    <div class="container">
+        {% block content %}
+            <div class= "oben">
+                <div class="navbar">
+                    {% if user.is_authenticated %}
+                        <p>{{user.profil.vorname}} {{ user.profil.nachname }} 
+                        {% if user.profil.klasse == "lehrer" %}
+                            </p>
+                        {%else%}
+                            , {{user.profil.klasse}}</p>
+                        {%endif%}
+                    {% else %}
+                        <p>Du bist nicht eingeloggt</p>
+                        <a href="{% url 'einloggen' %}">Log In</a>
+                    {% endif %}
+                </div>
+                {% autoescape off %}
+                <div class="message">
+                    {% for message in messages %}
+                        {% if 'leider falsch' in message.message %}
+                            <p class = "rot">{{ message }}</p>
+                        {% elif 'halb' in message.message %}
+                            <p class = "gelb">{{ message }}</p>
+                        {% elif 'dreimal'  in message.message %}
+                            <p class = "rot">{{ message }}</p>
+                        {% elif 'war richtig!' in message.message %}
+                            <p class = "gruen">{{ message }}</p>
+                        {% else %}
+                            <p class ="gelb">{{ message }}</p>
+                        {% endif%}
+                    {% endfor %}
+                </div>
+                <h2> {{titel }}</h2>
+                <h3>Aufg. Nr. {{aufgnr}}/10 </h3> 
+                <h3>{{text}} {{aufgabe}}</h3>
+            </div>
+            <div class="mitte">
+                <p>
+                {% localize off %}
+                    {% if parameter.name != "normal" and not "tab" in parameter.name %}
+                        {% include parameter.name %} 
+                    {% endif %}
+                {% endlocalize %}
+                </p>
+            </div>
+            <div class="unten">
+                {% if "tab" in parameter.name %}
+                    {% if lsg %}
+                        {% include 'core/wertetabelle_lsg.html'%}
+                    {% else %}
+                        {% include 'core/wertetabelle.html'%}
+                    {% endif %}
+                {% endif %}
+                {% if 'dreimal' in message_unten %}
+                    <button type="button">
+                        <a href="{% url 'uebersicht'  %}">weiter</a>
+                    </button>
+                {% elif lsg %}
+                    {% if eingabe != " " %}
+                        <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
+                    {%endif%}
+                    <button type="button">
+                        <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
+                    </button>
+                {% else %}
+                    {{message_unten}}
+                    <form action="{% url 'duell' kategorie.slug %}" method="post">
+                        {% csrf_token %}
+                        <fieldset>
+                            {{frage}}
+                            {{form.eingabe}}
+                            {{einheit}}
+                            <p></p>
+                            <table>
+                                <tr>
+                                    <td class = A  colspan = 2 ><input id="Eins" name = "Kandidat" type="submit" value="Kandidat 1" ></td>
+                                    <td>Punkte</td>
+                                    {% comment %} <td>>-</td>
+                                    <td>+</td> {% endcomment %}
+                                </tr>
+                                <tr>
+                                    <td width= "50px" ></td>
+                                    <td style = "background-color: #FFDEAD;" width= "150px" ><input type="submit" value="beide"></td></tr>
+                                <tr>
+                                    <td class = B colspan = 2 ><input id="Zwei" name = "Kandidat" type="submit" value="Kandidat 2"></td>
+                                    <td>Punkte</td>
+                                    {% comment %} <td>-</td>
+                                    <td><a >+</td> {% endcomment %}
+                                </tr>
+
+                            </table>
+                        </fieldset>
+                    </form>
+                    <script>
+                        document.getElementById('eingabe').addEventListener('keypress', function(event) {
+                            if (event.keyCode == 13) {
+                                event.preventDefault();
+                            }
+                        });
+                    </script>
+                    <p></p>
+                    <table>
+                        <tr><td>
+                            <button type="button">
+                                <a style= "font-weight: bold;" href="{% url 'loesung' zaehler_id protokoll_id % }">nächste Aufgabe</a>
+                            </button>
+                        </td>
+                        <td  style ="background-color: #FFB5C5;">Zeit</td>
+                        <td>
+                            <button type="button">
+                                <a href="{% url 'abbrechen' zaehler_id %}">Abbrechen</a>
+                            </button>
+                        </td></tr>
+                        <tr><td>
+                            <button type="button" >
+                                <a href="{% url 'hilfe' zaehler_id protokoll_id %}">neue Kandidaten mit Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'abbrechen' zaehler_id %}">neue Kandidaten ohne Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
+                            </button>
+                        </td></tr>
+                    </table>
+                {% endif%}
+            {% endautoescape %}
+        {% endblock %}
+    </div>
+</body>
