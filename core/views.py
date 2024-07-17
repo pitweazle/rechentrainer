@@ -7193,3 +7193,179 @@ def main(req, slug):
         return render(req, 'core/aufgabe.html', context)
     else:
         return redirect('anmelden')
+
+def duell(req, slug):
+    if req.user.is_authenticated: 
+        kategorie = get_object_or_404(Kategorie, slug = slug)
+        user = get_user(req.user)
+        profil = get_object_or_404(Profil, user=req.user)
+        duell = True if profil.duell_gruppe != 0 else False
+        titel = ""
+        if req.method == 'POST':
+            print("REQ: ",req.POST)
+            protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
+            protokoll.versuche += 1
+            zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
+            #wenn in den Aufgaben in "erg" eine Zahl steht
+            if "tab" in protokoll.parameter["name"]:
+                if "term" in protokoll.parameter["name"]:
+                    form = AufgabeFormTerm(req.POST)
+                else:
+                    form = AufgabeFormTab(req.POST)
+            else:
+                if protokoll.wert:
+                    form = AufgabeFormZahl(req.POST)
+                #wenn in den Aufgaben erg=None:
+                else:
+                    form = AufgabeFormStr(req.POST)
+            #Aufgabe beantwortet
+            if form.is_valid():  
+                # zunächst Einträge im Protokoll:
+                if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
+                    eingabe = []
+                    if "term" in protokoll.parameter["name"]:                            # für Terme
+                        eingabe.append(form.cleaned_data['y0'])
+                        eingabe.append(form.cleaned_data['y1'])
+                    eingabe.append(form.cleaned_data['y2'])
+                    eingabe.append(form.cleaned_data['y3'])
+                    eingabe.append(form.cleaned_data['y4'])
+                    pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
+                else:
+                    eingabe = pro_eingabe = form.cleaned_data['eingabe']
+                if protokoll.versuche == 1:
+                    protokoll.eingabe = pro_eingabe
+                elif protokoll.versuche == 2:
+                    protokoll.eingabe ="(1:) {}; (2:) {}".format(protokoll.eingabe, pro_eingabe)
+                else:
+                    protokoll.eingabe = "{}; (3:) {}" .format(protokoll.eingabe, pro_eingabe) 
+                #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
+                #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
+                protokoll.abbr = False
+                if protokoll.wertung == "a": 
+                    protokoll.wertung = "" 
+                protokoll.end = timezone.now()
+                protokoll.save()
+                #hier wird die Eingabe überprüft:
+                wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
+                if wertung <= 2:
+                    tabelle = 0
+                    richtig = wertung
+                else:
+                    if wertung >= 3000:                                   # Anzahl der Einträge in der Tabelle
+                        tabelle = 3
+                        richtig = str(wertung).count("1")
+                        falsch = str(wertung).count("0")
+                    if wertung >= 300000:
+                        tabelle = 5
+                #wenn Eingabe richtig:
+                if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
+                    if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
+                        rueckmeldung = "Alle Werte waren richtig richtig!"
+                        zaehler.aufgnr += tabelle
+                        # entfernt eventuelle Einträge "r"
+                        protokoll.wertung = protokoll.wertung.replace("r", "") + richtig*"r"
+                    elif tabelle == 0 :
+                        if "enauer" in rueckmeldung:
+                            rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
+                        else:
+                            rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
+                        zaehler.aufgnr += 1                                                                         
+                        protokoll.wertung = protokoll.wertung + "r"
+                    protokoll.richtig = richtig                        
+                    protokoll.save()
+                    #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
+                    if kategorie.name == "Funktionen":
+                        mehr=5
+                    if zaehler.aufgnr > 10:
+                        return redirect('duell_uebersicht')
+                    messages.info(req, f'{rueckmeldung}')# {msg}')
+                    return redirect('duell', slug)
+                #wenn Aufgabe falsch:
+                else: 
+                    #hier wird die aktuelle Aufgabe ausgelesen:
+                    titel = protokoll.titel
+                    text = protokoll.text
+                    parameter = protokoll.parameter
+                    anmerkung = protokoll.anmerkung
+                    frage = protokoll.frage
+                    einheit = protokoll.einheit
+                    hilfe_id = protokoll.hilfe_id
+                    if protokoll.versuche >= 3:
+                        messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
+                        anmerkung = "dreimal"
+                    else:
+                        if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
+                            messages.info(req, rueckmeldung)  
+                            wertung = -1      
+                        if wertung == -1:
+                            protokoll.falsch = 1
+                            protokoll.wertung = "f"
+                            protokoll.save()
+                            #nach drei Falscheingaben wird die richtige Lösung angezigt und anschließend die Übersichtsseite aufgerufen:
+                            if protokoll.versuche >= 3:                                           
+                                messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
+                                anmerkung = "drei"
+                            else:
+                                messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
+                        else:
+                            if not "tab" in protokoll.parameter["name"]:
+                                messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
+        #hier wird die Aufgabe erstellt:
+        else:
+            zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
+            zaehler = Zaehler.objects.get(user=user, kategorie = kategorie)
+            if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
+                zaehler.aufgnr = 1
+                
+            #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
+            #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
+            if not zaehler.optionen_text :  
+                return redirect('optionen', slug)
+            #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
+            if kategorie.slug == "sachaufgaben":
+                try:  
+                    user.voreinst["sachaufg"] = user.voreinst["sachaufg"] + 1
+                except:                                       
+                    user.voreinst.update({"sachaufg" : random.randint(1,20)})
+                user.save()
+                typ_anf = user.voreinst["sachaufg"]
+            else:
+                typ_anf = zaehler.typ_anf            
+            stufe = user.stufe
+            #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
+            if kategorie.name in ("Prozentrechnung","Bruchteile"):
+                if user.kurs == "A" or user.kurs == "Y":
+                    stufe = stufe + 0.2
+            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
+            if kategorie.slug == "sachaufgaben":
+                user.voreinst["sachaufg"] = typ
+                user.save()
+            if not titel:
+                titel = kategorie.name
+            text = text.format(*variable)
+            if pro_text != "" :
+                pro_text = pro_text.format(*variable)
+            frage = frage.format(*variable)
+            protokoll = Protokoll.objects.create(
+                user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
+                anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "a", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
+            )                                                                   #Protokoll wird erstellt
+            req.session['protokoll_id'] = protokoll.id    
+            req.session['zaehler_id'] = zaehler.id 
+            #Jenachdem, ob ein Wert oder ein Text erwartet wird:
+            if "tab" in protokoll.parameter["name"]:
+                if "term" in protokoll.parameter["name"]:
+                    form = AufgabeFormTerm(req.POST)
+                else:
+                    form = AufgabeFormTab(req.POST)
+            else:
+                if protokoll.wert:
+                    form = AufgabeFormZahl(req.POST)
+                #wenn in den Aufgaben erg=None:
+                else:
+                    form = AufgabeFormStr(req.POST)
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, duell = duell,
+            form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit )
+        return render(req, 'core/aufgabe_duell.html', context)
+    else:
+        return redirect('anmelden')
