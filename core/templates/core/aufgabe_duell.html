@@ -16,7 +16,7 @@
 {% endblock %}
 
 <body>
-    {{kategorie.id}}{{duell}}
+    {{kategorie.name}}{{gruppe}}
     <div class="container">
         {% block content %}
             <div class= "oben">
@@ -79,7 +79,7 @@
                         <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
                     {%endif%}
                     <button type="button">
-                        <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
+                        <a href="{% url 'duell_aufgabe' gruppe kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
                     {{message_unten}}
@@ -121,7 +121,7 @@
                     <table>
                         <tr><td>
                             <button type="button">
-                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' kategorie.slug gruppe %}">nächste Aufgabe</a>
+                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' gruppe kategorie.slug %}">nächste Aufgabe</a>
                             </button>
                         </td>
                         <td  style ="background-color: #FFB5C5;">Zeit</td>
