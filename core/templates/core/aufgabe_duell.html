@@ -16,6 +16,7 @@
 {% endblock %}
 
 <body>
+    {{kategorie.id}}{{duell}}
     <div class="container">
         {% block content %}
             <div class= "oben">
@@ -82,7 +83,7 @@
                     </button>
                 {% else %}
                     {{message_unten}}
-                    <form action="{% url 'duell' kategorie.slug %}" method="post">
+                    <form action="{% url 'duell_kontrolle' kategorie.slug %}" method="post">
                         {% csrf_token %}
                         <fieldset>
                             {{frage}}
@@ -120,26 +121,26 @@
                     <table>
                         <tr><td>
                             <button type="button">
-                                <a style= "font-weight: bold;" href="{% url 'loesung' zaehler_id protokoll_id % }">nächste Aufgabe</a>
+                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' kategorie.slug gruppe %}">nächste Aufgabe</a>
                             </button>
                         </td>
                         <td  style ="background-color: #FFB5C5;">Zeit</td>
                         <td>
                             <button type="button">
-                                <a href="{% url 'abbrechen' zaehler_id %}">Abbrechen</a>
+                                <a href="{% url 'duell_uebersicht' gruppe %}">Abbrechen</a>
                             </button>
                         </td></tr>
                         <tr><td>
                             <button type="button" >
-                                <a href="{% url 'hilfe' zaehler_id protokoll_id %}">neue Kandidaten mit Punktabzug</a>
+                                <a >neue Kandidaten mit Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'abbrechen' zaehler_id %}">neue Kandidaten ohne Punktabzug</a>
+                                <a >neue Kandidaten ohne Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'loesung' zaehler_id protokoll_id %}">Lösung</a>
+                                <a href="{% url 'duell_loesung' gruppe zaehler_id protokoll_id %}">Lösung</a>
                             </button>
                         </td></tr>
                     </table>

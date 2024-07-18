@@ -708,7 +708,7 @@ def duell_start(req, gruppe_id):
         return HttpResponse("Zugriff verweigert") 
  
     kategorien = Kategorie.objects.all().order_by('zeile')
-    context={'gruppe': gruppe,'kategorien': kategorien} 
+    context={'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'lehrer/duell_start.html', context)
    
 
