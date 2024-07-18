@@ -622,7 +622,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
                 frage = "Die Zahl heißt:"
                 erg = int((zahl1+v*100)*z/100)
-                lsg = str(erg)
+                lsg = [str(erg)]
             else:
                 bruch = True
                 typ2 = random.randint(1,4)
