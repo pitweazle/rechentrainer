@@ -7,16 +7,23 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
         <link rel="stylesheet" href="{% static 'core/duell.css' %}">
+
+        <style>
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            input[type="number"] {
+                -moz-appearance: textfield;
+            }
+        </style>
     </head>
 
-{% block css_files %}
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
-{% endblock %}
-
 <body>
-    {{kategorie.name}}{{gruppe}}
     <div class="container">
         {% block content %}
             <div class= "oben">
