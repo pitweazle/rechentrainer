@@ -494,8 +494,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         typ = random.randint(typ_anf, typ_end+stufe%2)
         typ2 = 0 
         hilfe_id = 0
-        anm = ""
-        pro_text = ""    
+        anm = einheit = pro_text = ""    
         parameter = {'name':'normal'}
         if typ == 1:                                                                 #Zahlen schreiben
             titel = "Zahlen schreiben"
@@ -582,7 +581,8 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 zahl2 = -zahl2
             pro_text = "{} ? {}"
             text = 'Kleiner, größer oder gleich?<br>' + pro_text 
-            frage = ""
+            frage = str(zahl1)
+            einheit = str(zahl2)
             variable = [zahl1_str, zahl2_str]
             anm = "(Setze das entsprechende Zeichen ein)" 
             erg = None
@@ -622,7 +622,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
                 frage = "Die Zahl heißt:"
                 erg = int((zahl1+v*100)*z/100)
-                lsg = str(erg)
+                lsg = [str(erg)]
             else:
                 bruch = True
                 typ2 = random.randint(1,4)
@@ -674,7 +674,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 variable = [""]
                 anm = "Schreibe als Bruch (7/9) oder als gemischte Zahl (1 2/7)"
             parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': anf, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': int(zahl1)+20, 'bruch':bruch}
-        return typ, typ2, titel, text, pro_text, frage, variable, "", anm, lsg, hilfe_id, erg, parameter 
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anm, lsg, hilfe_id, erg, parameter 
 
 def malget10(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -6283,7 +6283,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-            #print(hilfe_id, ": ",hilfe_text.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -6439,7 +6438,7 @@ def uebersicht(req, schueler_id=0):
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
         if lehrer:
-            profil.gruppe = 0
+            profil.gruppe = None
             profil.save()    
         if (profil.id) != (req.user.profil.id):
             if lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
@@ -6803,10 +6802,10 @@ def abbrechen(req, zaehler_id):
     else:
         protokoll.eingabe = "abbr."        
     protokoll.save()
-    if gruppe != 0:
-        return redirect('duell_uebersicht', gruppe)
-    else:
-        return redirect('uebersicht')
+    # if gruppe != 0:
+    #     return redirect('duell_uebersicht', gruppe)
+    # else:
+    return redirect('uebersicht')
 
 #Hier wird die Lösung angezeigt:
 def loesung(req, zaehler_id, protokoll_id):
@@ -6942,8 +6941,8 @@ def main(req, slug):
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
-        profil = get_object_or_404(Profil, user=req.user)
-        duell = True if profil.gruppe != 0 else False
+        # profil = get_object_or_404(Profil, user=req.user)
+        # duell = True if profil.gruppe else False
         bis_loeschen = "-"
         titel = ""
         if req.method == 'POST':
@@ -7188,14 +7187,13 @@ def main(req, slug):
                 #wenn in den Aufgaben erg=None:
                 else:
                     form = AufgabeFormStr(req.POST)
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, duell = duell,
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
             form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit, bis_loeschen = bis_loeschen)
         return render(req, 'core/aufgabe.html', context)
     else:
         return redirect('anmelden')
 
 def duell_aufgabe(req, slug, gruppe):
-    print("Aufgabe ", gruppe)
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
@@ -7260,14 +7258,13 @@ def duell_aufgabe(req, slug, gruppe):
     else:
         return redirect('anmelden')
     
-def duell_kontrolle(req, slug, gruppe):
+def duell_kontrolle(req, gruppe, slug):
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
         profil = get_object_or_404(Profil, user=req.user)
         duell = True if profil.gruppe != 0 else False
         titel = ""
-        print("REQ: ",req.POST)
         protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
         protokoll.versuche += 1
         zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
@@ -7382,7 +7379,6 @@ def duell_kontrolle(req, slug, gruppe):
         return redirect('anmelden')
 
 def duell_loesung(req, gruppe, zaehler_id, protokoll_id):
-    print("Lösung ", gruppe)
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
     text = ""
@@ -7394,6 +7390,6 @@ def duell_loesung(req, gruppe, zaehler_id, protokoll_id):
     except:
         text = protokoll.loesung
     messages.info(req, f'Lösung: {text}') 
-    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = text, frage = protokoll.frage, eingabe = protokoll.eingabe,
+    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = protokoll.eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung", gruppe = gruppe)
     return render(req, 'core/aufgabe_duell.html', context)

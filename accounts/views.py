@@ -689,7 +689,11 @@ def duell_uebersicht(req, gruppe_id):
         return HttpResponse("Zugriff verweigert")
     profil = get_object_or_404(Profil, user=req.user)
     profil.duell_gruppe = gruppe_id
-    profil.save()  
+    profil.save() 
+    zaehler = Zaehler.objects.filter(user=profil)
+    for kategorie in zaehler:
+        kategorie.aufgnr = 1
+        kategorie.save()
     schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler, gruppe = gruppe)
