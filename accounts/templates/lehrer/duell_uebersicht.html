@@ -44,7 +44,7 @@
                             <td>{{duellant.liga}}</td>
                             <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
                             <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
-                            <td style="text-align: left";>{{duellant.profil.vorname}} {{duellant.profil.nachname|slice:"30"}}</td>
+                            <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern' gruppe.id duellant.id %}">{{duellant.profil.vorname}} {{duellant.profil.nachname}}</a></td>
                             <td>{{duellant.spiele}}</td>
                             <td>{{duellant.punkte}}</td>
                             <td>{{duellant.pps}}</td>

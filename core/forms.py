@@ -27,14 +27,6 @@ class AufgabeFormTerm(forms.Form):
     y4 = forms.DecimalField(label='', max_digits=5,
                                 decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
     
-# class AuswahlForm(forms.Form):
-#     optionen=forms.ModelMultipleChoiceField(queryset=Kategorie.objects, widget=forms.CheckboxSelectMultiple, required=False)
-#     def __init__(self, *args, **kwargs):
-#         kategorie = kwargs.pop('kategorie')
-#         super().__init__(*args, **kwargs)
-#         self.fields['optionen'].queryset = kategorie.auswahl_set.all().filter(bis_jg__gte= 7)
-#         #self.fields['optionen'].queryset = kategorie.auswahl_set.all()
-
 class AuswahlForm(forms.Form):
     optionen = forms.ModelMultipleChoiceField(
         queryset=Kategorie.objects.all(),
