@@ -14,6 +14,7 @@ urlpatterns = [
     path('hilfe/<int:zaehler_id>/<int:protokoll_id>/', views.hilfe, name='hilfe'),
     path('duell_aufgabe/<int:gruppe>/<slug:slug>/', views.duell_aufgabe, name='duell_aufgabe'),
     path('duell_kontrolle/<slug:slug>/', views.duell_kontrolle, name='duell_kontrolle'),
+    path('duell_auslosen/<int:gruppe>', views.duell_auslosen, name='duell_auslosen'),
     path('duell_loesung/<int:gruppe>/<int:zaehler_id>/<int:protokoll_id>/', views.duell_loesung, name='duell_loesung'),
     path('<slug:slug>/', views.main, name='main'),
     path('optionen/<slug:slug>', views.optionen, name='optionen'),

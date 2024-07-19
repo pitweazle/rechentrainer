@@ -24,8 +24,8 @@ from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormT
 from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu
 
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
-from .models import Profil
-from .models import Auswahl
+from .models import Profil, Auswahl
+from accounts.models import Duellant
 
 from django.db.models import Sum, F, Count, Q, Max, Avg
 from accounts.views import name_hj, name_next_hj, hj_pruefen, quote_farbe
@@ -7200,11 +7200,12 @@ def duell_aufgabe(req, slug, gruppe):
         # profil = get_object_or_404(Profil, user=req.user)
         # gruppe = profil.gruppe 
         titel = ""
+        kandidat_1, kandidat_2 = duell_auslosen(gruppe)
+        print("Kandidaten: ", kandidat_1, kandidat_2)
         zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
         zaehler = Zaehler.objects.get(user=user, kategorie = kategorie)
         if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
             zaehler.aufgnr = 1
-            
         #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
         #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
         if not zaehler.optionen_text :  
@@ -7252,7 +7253,7 @@ def duell_aufgabe(req, slug, gruppe):
             #wenn in den Aufgaben erg=None:
             else:
                 form = AufgabeFormStr(req.POST)
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, gruppe = gruppe,
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, gruppe = gruppe, kandidat_1 = kandidat_1, kandidat_2 = kandidat_2,
             form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit )
         return render(req, 'core/aufgabe_duell.html', context)
     else:
@@ -7393,3 +7394,10 @@ def duell_loesung(req, gruppe, zaehler_id, protokoll_id):
     context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = protokoll.eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung", gruppe = gruppe)
     return render(req, 'core/aufgabe_duell.html', context)
+
+def duell_auslosen(gruppe):
+    duellanten = Duellant.objects.filter(profil__gruppe=gruppe)
+    kandidat_1 = duellanten.first()
+    kandidat_2 = duellanten.last()
+    print("Losen: ", kandidat_1)
+    return  kandidat_1, kandidat_2

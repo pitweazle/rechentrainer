@@ -99,7 +99,7 @@
                             <p></p>
                             <table>
                                 <tr>
-                                    <td class = A  colspan = 2 ><input id="Eins" name = "Kandidat" type="submit" value="Kandidat 1" ></td>
+                                    <td class = {{kandidat_1.liga}}  colspan = 2 ><input id="Eins" name = "Kandidat" type="submit" value={{kandidat_1.name}} class = {{kandidat_1.liga}}></td>
                                     <td>Punkte</td>
                                     {% comment %} <td>>-</td>
                                     <td>+</td> {% endcomment %}
@@ -108,7 +108,7 @@
                                     <td width= "50px" ></td>
                                     <td style = "background-color: #FFDEAD;" width= "150px" ><input type="submit" value="beide"></td></tr>
                                 <tr>
-                                    <td class = B colspan = 2 ><input id="Zwei" name = "Kandidat" type="submit" value="Kandidat 2"></td>
+                                    <td class = {{kandidat_2.liga}} colspan = 2 ><input id="Zwei" name = "Kandidat" type="submit" value={{kandidat_2.name}} class = {{kandidat_2.liga}}></td>
                                     <td>Punkte</td>
                                     {% comment %} <td>-</td>
                                     <td><a >+</td> {% endcomment %}
@@ -139,11 +139,11 @@
                         </td></tr>
                         <tr><td>
                             <button type="button" >
-                                <a >neue Kandidaten mit Punktabzug</a>
+                                <a href="{% url 'duell_auslosen' gruppe %}">neue Kandidaten mit Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a >neue Kandidaten ohne Punktabzug</a>
+                                <a href="{% url 'duell_auslosen' gruppe %}">neue Kandidaten ohne Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
