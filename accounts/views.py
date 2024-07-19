@@ -694,10 +694,16 @@ def duell_uebersicht(req, gruppe_id):
     for kategorie in zaehler:
         kategorie.aufgnr = 1
         kategorie.save()
-    schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("user__profil__vorname")
+    schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
-        duellant, created = Duellant.objects.get_or_create(profil = schueler, gruppe = gruppe)
-    duellanten = Duellant.objects.filter(gruppe=gruppe).order_by("liga", "platz", "profil")
+        print(schueler)
+        duellant, created = Duellant.objects.get_or_create(profil = schueler)
+        #if created:
+        duellant.name = schueler.vorname + "_" + schueler.nachname
+        duellant.save()
+    duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
+    for schueler in duellanten:
+        print(schueler)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
