@@ -10,7 +10,7 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.db.models import Max, Sum, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, Duellant_Aendern_Form, ProtokollFilter_Gruppe
 
 from .models import Schule, Lerngruppe, Duellant, Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
@@ -720,7 +720,11 @@ def duell_start(req, gruppe_id):
     kategorien = Kategorie.objects.all().order_by('zeile')
     context={'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'lehrer/duell_start.html', context)
-   
+
+def duellant_aendern(req, gruppe_id, duellant_id):
+    duellant = Duellant.objects.get(pk = duellant_id)
+    form = Duellant_Aendern_Form(req.POST, instance=duellant)
+    return render(req, 'lehrer/duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellant': duellant, 'form': form,})
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):

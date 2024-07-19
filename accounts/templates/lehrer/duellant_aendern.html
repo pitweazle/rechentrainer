@@ -1,0 +1,18 @@
+{% extends 'auswahl.html' %}   
+{% block content %}
+
+  <body>
+    {{duellant}}
+    <form action="/duellant_aendern/{{duellant.id}}/" method="POST">
+      <table>
+        {% csrf_token %}
+        {{form.as_table}}
+      </table>
+      <button type="submit">ändern</button>  
+    </form>
+    <br>
+    <button>
+      <a href="{% url 'duell_uebersicht' gruppe_id %}">zurück</a>
+    </button>
+  </body>
+{% endblock %}
