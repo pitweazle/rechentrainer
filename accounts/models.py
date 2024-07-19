@@ -83,9 +83,14 @@ class Profil(models.Model):
         verbose_name_plural = 'Profile'
 
 class Duellant(models.Model):
+    LIGAWAHL = (
+        ("A", "A"),
+        ("B", "B"),
+        ("C", "C")
+    )
     profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    liga = models.CharField(max_length=1, default="A")
+    liga = models.CharField(max_length=1, choices=LIGAWAHL, default="A")
     platz = models.SmallIntegerField(null=True, blank=True)
     aufsteiger = models.BooleanField(default=False)
     abwesend = models.BooleanField(default=False)
