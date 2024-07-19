@@ -251,9 +251,9 @@ def doch_neues_halbjahr(req):
 
 def neues_halbjahr(req):
     sj, hj = name_hj()
-    print(sj,"/",hj)
+    #print(sj,"/",hj)
     user = get_object_or_404(Profil, user_id = req.user.id)
-    print(user.sj,"/",user.hj)
+    #print(user.sj,"/",user.hj)
     user.voreinst["no_hj"] = False
     user.voreinst["frage_hj"] = 0
     user.hj = hj
@@ -696,35 +696,41 @@ def duell_uebersicht(req, gruppe_id):
         kategorie.save()
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
-        print(schueler)
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
         #if created:
         duellant.name = schueler.vorname + "_" + schueler.nachname
         duellant.save()
     duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
-    for schueler in duellanten:
-        print(schueler)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
-    context={'gruppe': gruppe,'duellanten': duellanten} 
+    print("Duellanten: ",duellanten)
+    context={'gruppe_id': gruppe_id,'duellanten': duellanten,  'titel': "Schülerdaten ändern"} 
     return render(req, 'lehrer/duell_uebersicht.html', context)
 
 def duell_start(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
- 
     kategorien = Kategorie.objects.all().order_by('zeile')
-    context={'gruppe': gruppe, 'kategorien': kategorien} 
+    context={'gruppe_id': gruppe_id, 'kategorien': kategorien} 
     return render(req, 'lehrer/duell_start.html', context)
 
 def duellant_aendern(req, gruppe_id, duellant_id):
+    duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
     duellant = Duellant.objects.get(pk = duellant_id)
-    form = Duellant_Aendern_Form(req.POST, instance=duellant)
-    return render(req, 'lehrer/duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellant': duellant, 'form': form,})
+    if duellant.profil.gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert") 
+    if req.method == 'POST':
+        form = Duellant_Aendern_Form(req.POST, instance=duellant)
+        if  form.is_valid():
+            form.save()  
+        return render(req, 'lehrer/duell_uebersicht.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten,})
+    form = Duellant_Aendern_Form(instance=duellant)
+    print("Ändern: ",duellanten)
+    return render(req, 'lehrer/duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form,})
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):

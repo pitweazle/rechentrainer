@@ -19,10 +19,10 @@
     <body>
         <div class="container">
             <button type="button">
-                <a href="{% url 'duell_start' gruppe.id %}">Duell Start</a>
+                <a href="{% url 'duell_start' gruppe_id %}">Duell Start</a>
             </button> 
             <p></p>  
-            <form action="/duell_uebersicht/{{gruppe.id}}/" method="POST">
+            <form action="/duell_uebersicht/{{gruppe_id}}/" method="POST">
                 {% csrf_token %}
                 <table>
                     <thead>
@@ -44,7 +44,7 @@
                             <td>{{duellant.liga}}</td>
                             <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
                             <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
-                            <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern' gruppe.id duellant.id %}">{{duellant.profil.vorname}} {{duellant.profil.nachname}}</a></td>
+                            <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern' gruppe_id duellant.id %}">{{duellant.name}}</a></td>
                             <td>{{duellant.spiele}}</td>
                             <td>{{duellant.punkte}}</td>
                             <td>{{duellant.pps}}</td>

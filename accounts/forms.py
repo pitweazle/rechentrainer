@@ -129,4 +129,7 @@ class Duellant_Aendern_Form(forms.ModelForm):
         model = Duellant
         fields = ['name', 'liga', 'spiele', 'punkte']
         help_texts = {'name': "Keine Leerzeichen - Unterstrich verwenden!"}
-        widgets = {'liga': forms.TextInput(attrs={'size': 1}), }
+        widgets = {'spiele': forms.NumberInput(attrs={'size': 3}),
+                   'punkte': forms.NumberInput(attrs={'size': 3})
+                    }
+
