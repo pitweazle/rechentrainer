@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import  Kategorie, Auswahl, Protokoll, Zaehler, Hilfe, Sachaufgabe
+from .models import  Kategorie, Auswahl, Protokoll, Zaehler, Hilfe, Sachaufgabe, Duell_Protokoll
 
 class AuswahlInline(admin.TabularInline):
     model = Auswahl
@@ -24,6 +24,7 @@ class ProtokollAdmin(admin.ModelAdmin):
     
     list_display = ('id', 'start', 'kategorie', 'name') 
     # ordering = ["user__vorname", "kategorie__zeile"]
+
   
 class HilfeAdmin(admin.ModelAdmin):
     list_filter=("kategorie", "hilfe_id")
@@ -34,5 +35,7 @@ admin.site.register(Kategorie, KategorieAdmin)
 admin.site.register(Hilfe, HilfeAdmin)
 admin.site.register(Protokoll, ProtokollAdmin)
 admin.site.register(Zaehler, ZaehlerAdmin)
+
+admin.site.register(Duell_Protokoll)
 
 

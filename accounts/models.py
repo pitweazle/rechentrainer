@@ -104,7 +104,6 @@ class Duellant(models.Model):
     def __str__(self):
         return f"{self.profil.vorname}_{self.profil.nachname}"
 
-
 class Geloescht(models.Model):
     user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE )
     text = models.CharField(max_length=200)
