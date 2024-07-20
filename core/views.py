@@ -7239,9 +7239,9 @@ def duell_aufgabe(req, slug, gruppe_id):
         )                                                                   #Protokoll wird erstellt
         gruppe = get_object_or_404(Lerngruppe, pk = gruppe_id)
         print("Gruppe: ", gruppe)
-        # duell_protokoll = Duell_Protokoll.objects.create(
-        #     protokoll = protokoll, duellant_1 = duellant_1, duellant_2 = duellant_2   
-        # ) 
+        duell_protokoll = Duell_Protokoll.objects.get_or_create(
+            protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2   
+        ) 
               
         req.session['protokoll_id'] = protokoll.id    
         req.session['zaehler_id'] = zaehler.id 
