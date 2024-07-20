@@ -132,11 +132,11 @@ class Protokoll(models.Model):
         verbose_name_plural = 'Protokolle'
 
 class Duell_Protokoll(models.Model):
-    protokoll = models.OneToOneField(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
+    protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
     duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', on_delete=models.CASCADE)
     duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', on_delete=models.CASCADE)
-    protokoll = models.TextField(null=True, blank=True)
+    wertung = models.TextField(null=True, blank=True)
 
     def name(self):        
         return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"
