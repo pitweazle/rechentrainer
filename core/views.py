@@ -23,7 +23,7 @@ from django.shortcuts import redirect
 from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
 from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu
 
-from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe#, Duell_Protokoll
+from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe, Duell_Protokoll
 from .models import Profil, Auswahl
 from accounts.models import Lerngruppe, Duellant
 
