@@ -691,22 +691,28 @@ def duell_uebersicht(req, gruppe_id):
     profil.duell_gruppe = gruppe_id
     profil.save() 
     zaehler = Zaehler.objects.filter(user=profil)
+    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    for duellant in duellanten:
+        duellant.punkte +=duellant.punkte_spiel
+        duellant.punkte_spiel = 0
+        if duellant.spiele != 0:
+            duellant.pps = duellant.punkte/duellant.spiele
+        duellant.save()
     for kategorie in zaehler:
         kategorie.aufgnr = 1
         kategorie.save()
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
-        #if created:
-        duellant.name = schueler.vorname + "_" + schueler.nachname
-        duellant.save()
+        if created:
+            duellant.name = schueler.vorname + "_" + schueler.nachname
+            duellant.save()
     duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
-    print("Duellanten: ",duellanten)
     context={'gruppe_id': gruppe_id,'duellanten': duellanten,  'titel': "Schülerdaten ändern"} 
     return render(req, 'lehrer/duell_uebersicht.html', context)
 
@@ -726,7 +732,10 @@ def duellant_aendern(req, gruppe_id, duellant_id):
     if req.method == 'POST':
         form = Duellant_Aendern_Form(req.POST, instance=duellant)
         if  form.is_valid():
-            form.save()  
+            form.save() 
+            if duellant.spiele != 0:
+                duellant.pps = duellant.punkte/duellant.spiele
+                duellant.save()             
         return render(req, 'lehrer/duell_uebersicht.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten,})
     form = Duellant_Aendern_Form(instance=duellant)
     print("Ändern: ",duellanten)

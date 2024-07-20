@@ -13,22 +13,21 @@
 <header>
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
-        <a>Rechenduell {{gruppe.name}}</a>
+        <a>Rechenduell {{gruppe_id}}</a>
     </div> 
 </header>
 <br>
     <body>
         <div class="container">
-            <form action="/duell_uebersicht/{{gruppe.id}}/" method="POST">
-                {% csrf_token %}
-                <table>                        <thead>
-                    <tr>
-                        <th >Duell starten</th>
-                    </tr>
-                </thead>
+                <table>                        
+                    <thead>
+                        <tr>
+                            <th >Duell starten:</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     {% for kategorie in kategorien %}:
-                        <tr style="text-align: center;"><td style="text-align: center;"><a class="button" href="{% url 'duell_aufgabe' gruppe.id kategorie.slug %}">{{kategorie.name}}</td></tr>
+                        <tr style="text-align: center;"><td style="text-align: center;"><a class="button" href="{% url 'duell_aufgabe' gruppe_id kategorie.slug %}">{{kategorie.name}}</a></td></tr>
                     {% endfor %}
                 </table>
             </form>

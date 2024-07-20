@@ -90,7 +90,7 @@
                     </button>
                 {% else %}
                     {{message_unten}}
-                    <form action="{% url 'duell_kontrolle' kategorie.slug %}" method="post">
+                    <form action="{% url 'duell_kontrolle' gruppe_id kategorie.slug %}" method="post">
                         {% csrf_token %}
                         <fieldset>
                             {{frage}}
@@ -99,8 +99,8 @@
                             <p></p>
                             <table>
                                 <tr>
-                                    <td class = {{kandidat_1.liga}}  colspan = 2 ><input id="Eins" name = "Kandidat" type="submit" value={{kandidat_1.name}} class = {{kandidat_1.liga}}></td>
-                                    <td>Punkte</td>
+                                    <td class = {{kandidat_1.liga}}  colspan = 2 ><input id="Eins" name = "Kandidat" type="submit" value={{kandidat_1.id}} class = {{kandidat_1.liga}}>{{kandidat_1}}</td>
+                                    <td>{{kandidat_1.punkte_spiel}}</td>
                                     {% comment %} <td>>-</td>
                                     <td>+</td> {% endcomment %}
                                 </tr>
@@ -108,8 +108,8 @@
                                     <td width= "50px" ></td>
                                     <td style = "background-color: #FFDEAD;" width= "150px" ><input type="submit" value="beide"></td></tr>
                                 <tr>
-                                    <td class = {{kandidat_2.liga}} colspan = 2 ><input id="Zwei" name = "Kandidat" type="submit" value={{kandidat_2.name}} class = {{kandidat_2.liga}}></td>
-                                    <td>Punkte</td>
+                                    <td class = {{kandidat_2.liga}} colspan = 2 ><input id="Zwei" name = "Kandidat" type="submit" value={{kandidat_2.id}} class = {{kandidat_2.liga}}>{{kandidat_2}}</td>
+                                    <td>{{kandidat_2.punkte_spiel}}</td>
                                     {% comment %} <td>-</td>
                                     <td><a >+</td> {% endcomment %}
                                 </tr>
@@ -128,26 +128,26 @@
                     <table>
                         <tr><td>
                             <button type="button">
-                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' gruppe kategorie.slug %}">nächste Aufgabe</a>
+                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' gruppe_id kategorie.slug %}">nächste Aufgabe</a>
                             </button>
                         </td>
                         <td  style ="background-color: #FFB5C5;">Zeit</td>
                         <td>
                             <button type="button">
-                                <a href="{% url 'duell_uebersicht' gruppe %}">Abbrechen</a>
+                                <a href="{% url 'duell_uebersicht' gruppe_id %}">Abbrechen</a>
                             </button>
                         </td></tr>
                         <tr><td>
                             <button type="button" >
-                                <a href="{% url 'duell_auslosen' gruppe %}">neue Kandidaten mit Punktabzug</a>
+                                <a href="{% url 'duell_auslosen' gruppe_id %}">neue Kandidaten mit Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'duell_auslosen' gruppe %}">neue Kandidaten ohne Punktabzug</a>
+                                <a href="{% url 'duell_auslosen' gruppe_id %}">neue Kandidaten ohne Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'duell_loesung' gruppe zaehler_id protokoll_id %}">Lösung</a>
+                                <a href="{% url 'duell_loesung' gruppe_id zaehler_id protokoll_id %}">Lösung</a>
                             </button>
                         </td></tr>
                     </table>
