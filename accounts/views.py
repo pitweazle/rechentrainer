@@ -691,6 +691,7 @@ def duell_uebersicht(req, gruppe_id):
     profil.duell_gruppe = gruppe_id
     profil.save() 
     zaehler = Zaehler.objects.filter(user=profil)
+   
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
