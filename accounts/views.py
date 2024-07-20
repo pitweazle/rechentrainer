@@ -714,7 +714,7 @@ def duell_uebersicht(req, gruppe_id):
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
-    context={'gruppe_id': gruppe_id,'duellanten': duellanten,  'titel': "Schülerdaten ändern"} 
+    context={'gruppe_id': gruppe_id, 'gruppe': gruppe,'duellanten': duellanten,  'titel': "Schülerdaten ändern"} 
     return render(req, 'lehrer/duell_uebersicht.html', context)
 
 def duell_start(req, gruppe_id):
@@ -722,7 +722,7 @@ def duell_start(req, gruppe_id):
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
     kategorien = Kategorie.objects.all().order_by('zeile')
-    context={'gruppe_id': gruppe_id, 'kategorien': kategorien} 
+    context={'gruppe_id': gruppe_id, 'gruppe': gruppe,'kategorien': kategorien} 
     return render(req, 'lehrer/duell_start.html', context)
 
 def duellant_aendern(req, gruppe_id, duellant_id):
@@ -739,7 +739,6 @@ def duellant_aendern(req, gruppe_id, duellant_id):
                 duellant.save()             
         return render(req, 'lehrer/duell_uebersicht.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten,})
     form = Duellant_Aendern_Form(instance=duellant)
-    print("Ändern: ",duellanten)
     return render(req, 'lehrer/duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form,})
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
