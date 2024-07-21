@@ -7306,6 +7306,8 @@ def duell_kontrolle(req, gruppe_id, slug):
         #duell = True if profil.gruppe != 0 else False
         titel = ""
         protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
+        duell_protokoll = Duell_Protokoll.objects.get(protokoll = protokoll)
+        print(duell_protokoll.duellant_1)
         protokoll.versuche += 1
         #duell_protokoll = Duell_Protokoll.objects.get(pk = protokoll.id)
         zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
@@ -7425,7 +7427,7 @@ def duell_kontrolle(req, gruppe_id, slug):
                         if not "tab" in protokoll.parameter["name"]:
                             messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
 
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, gruppe_id = gruppe_id,
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, gruppe_id = gruppe_id, duellant_1 = duell_protokoll.duellant_1, duellant_2 = duell_protokoll.duellant_2,
             form = form, zaehler_id = zaehler.id,  protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = protokoll.anmerkung, einheit = protokoll.einheit )
         return render(req, 'core/aufgabe_duell.html', context)
     else:
