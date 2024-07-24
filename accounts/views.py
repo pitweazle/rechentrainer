@@ -691,7 +691,6 @@ def duell_uebersicht(req, gruppe_id):
     profil.duell_gruppe = gruppe_id
     profil.save() 
     zaehler = Zaehler.objects.filter(user=profil)
-   
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
@@ -706,7 +705,7 @@ def duell_uebersicht(req, gruppe_id):
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
         if created:
-            duellant.name = schueler.vorname + "_" + schueler.nachname
+            duellant.name = schueler.vorname
             duellant.save()
     duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
     if req.method == 'POST': 

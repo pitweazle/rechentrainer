@@ -7238,11 +7238,9 @@ def duell_aufgabe(req, slug, gruppe_id):
             anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "a", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
         )                                                                   #Protokoll wird erstellt
         gruppe = get_object_or_404(Lerngruppe, pk = gruppe_id)
-        print("Gruppe: ", gruppe)
         duell_protokoll = Duell_Protokoll.objects.get_or_create(
             protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2   
         ) 
-              
         req.session['protokoll_id'] = protokoll.id    
         req.session['zaehler_id'] = zaehler.id 
         #Jenachdem, ob ein Wert oder ein Text erwartet wird:
@@ -7326,8 +7324,7 @@ def duell_kontrolle(req, gruppe_id, slug):
         #Aufgabe beantwortet
         if form.is_valid():
             duellant = req.POST.get('duellant')
-            duellant = Duellant.objects.get(pk=int(duellant))
-
+            duellant = Duellant.objects.get(name=duellant)
 
             # zunächst Einträge im Protokoll:
             if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
