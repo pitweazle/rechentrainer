@@ -44,3 +44,11 @@ button {
   color: #339999;
  }
 
+input[type=button], input[type=submit] {
+	height: 35px;
+	width: 250px;  
+}
+
+td {
+  padding: 0px;
+}
