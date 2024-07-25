@@ -1,5 +1,5 @@
 from django import forms
-from .models import Kategorie, Auswahl, Zaehler, Sachaufgabe
+from .models import Kategorie, Sachaufgabe
 
 class AufgabeFormZahl(forms.Form):
     eingabe = forms.DecimalField(label='', localize=True, max_digits=15, decimal_places=5, widget=forms.NumberInput(attrs={'autofocus': True, 'autocomplete': 'off'}))

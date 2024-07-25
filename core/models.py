@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
-from accounts.models import Profil, Lerngruppe, Duellant
+from accounts.models import Profil, Lerngruppe
 
 class wahl_farbe(models.TextChoices):
     Gruppe_A = 'background-color: #B0E2FF',
@@ -130,20 +130,6 @@ class Protokoll(models.Model):
     class Meta:
         verbose_name = 'Protokoll'
         verbose_name_plural = 'Protokolle'
-
-class Duell_Protokoll(models.Model):
-    protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
-    gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
-    duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', on_delete=models.CASCADE)
-    duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', on_delete=models.CASCADE)
-    wertung = models.TextField(null=True, blank=True)
-
-    def name(self):        
-        return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"
-
-    class Meta:
-        verbose_name = 'Duell_Protokoll'
-        verbose_name_plural = 'Duell_Protokolle'
 
 class Zaehler(models.Model):
     user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 

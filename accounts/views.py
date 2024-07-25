@@ -10,9 +10,9 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, Duellant_Aendern_Form, ProtokollFilter_Gruppe
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
 
-from .models import Schule, Lerngruppe, Duellant, Geloescht
+from .models import Schule, Lerngruppe,  Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
  
 def name_hj():
@@ -681,71 +681,6 @@ def schueler_aendern(req, schueler_id):
     profil_form = Schueler_Aendern_Form(instance=schueler,)
     context = {'profil_form': profil_form, 'schueler': schueler, 'titel': "Schülerdaten ändern"}
     return render(req, 'lehrer/schueler_aendern.html', context)
-
-# das Rechenduell
-def duell_uebersicht(req, gruppe_id):
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    profil = get_object_or_404(Profil, user=req.user)
-    profil.duell_gruppe = gruppe_id
-    profil.save() 
-    zaehler = Zaehler.objects.filter(user=profil)
-    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
-    for duellant in duellanten:
-        duellant.punkte +=duellant.punkte_spiel
-        duellant.punkte_spiel = 0
-        if duellant.spiele != 0:
-            duellant.pps = duellant.punkte/duellant.spiele
-        duellant.save()
-    for kategorie in zaehler:
-        kategorie.aufgnr = 1
-        kategorie.save()
-    schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
-    for schueler in schueler_liste:
-        duellant, created = Duellant.objects.get_or_create(profil = schueler)
-        if created:
-            duellant.name = schueler.vorname
-            duellant.save()
-    dubletten = Duellant.objects.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
-    if not dubletten:
-        print("keine Dubletten")
-    else:
-        for dublette in dubletten:
-            print(dublette["name"])
-        print(dubletten)
-    duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
-    if req.method == 'POST': 
-        IDs = list(req.POST.getlist('ID'))
-        for duellant in duellanten:
-            duellant.abwesend = True if str(duellant.id) in IDs else False
-            duellant.save()
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe,'duellanten': duellanten,  'titel': "Schülerdaten ändern"} 
-    return render(req, 'lehrer/duell_uebersicht.html', context)
-
-def duell_start(req, gruppe_id):
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert") 
-    kategorien = Kategorie.objects.all().order_by('zeile')
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe,'kategorien': kategorien} 
-    return render(req, 'lehrer/duell_start.html', context)
-
-def duellant_aendern(req, gruppe_id, duellant_id):
-    duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
-    duellant = Duellant.objects.get(pk = duellant_id)
-    if duellant.profil.gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert") 
-    if req.method == 'POST':
-        form = Duellant_Aendern_Form(req.POST, instance=duellant)
-        if  form.is_valid():
-            form.save() 
-            if duellant.spiele != 0:
-                duellant.pps = duellant.punkte/duellant.spiele
-                duellant.save()             
-        return render(req, 'lehrer/duell_uebersicht.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten,})
-    form = Duellant_Aendern_Form(instance=duellant)
-    return render(req, 'lehrer/duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form,})
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):
