@@ -29,7 +29,7 @@ class Duell_Protokoll(models.Model):
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
     duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', on_delete=models.CASCADE)
     duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', on_delete=models.CASCADE)
-    wertung = models.TextField(null=True, blank=True)
+    wertung = models.JSONField()
 
     def name(self):        
         return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"

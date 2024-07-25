@@ -19,7 +19,13 @@
     <body>
         <div class="container">
             <button type="button">
-                <a href="{% url 'duell_start' gruppe_id %}">Duell Start</a>
+                {% if dubletten_liste %}
+                    Diese(n) Namen gibt es mehrfach: {{dubletten_liste}}<br>Bitte jeweils durch Klick auf den Namen umbenennen.
+                {% elif leerstellen_liste %}
+                    Diese(n) Namen enthalten Leerstellen: {{leerstellen_liste}}<br>Bitte Leerstelle entfernen oder z.B. durch einen Unterstrich ersetzen.
+                {% else %}
+                    <a href="{% url 'duell_start' gruppe_id %}">Duell Start</a>
+                {% endif %}
             </button> 
             <p></p>  
             <form action="/duell_uebersicht/{{gruppe_id}}/" method="POST">
