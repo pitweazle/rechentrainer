@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
-from .models import   Ort, Schule, Profil, Lerngruppe, Duellant, Geloescht
+from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht
 
 class OrtAdmin(admin.ModelAdmin):
     ordering = ['plz',]
@@ -44,5 +44,4 @@ admin.site.register(Ort, OrtAdmin)
 admin.site.register(Schule, SchuleAdmin)
 admin.site.register(Profil, ProfilAdmin)
 admin.site.register(Lerngruppe, LerngruppeAdmin)
-admin.site.register(Duellant)
 admin.site.register(Geloescht)

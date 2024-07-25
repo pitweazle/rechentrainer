@@ -3,9 +3,8 @@ from django.db import models
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
 
-from .models import Profil, Ort, Schule, Lerngruppe, Duellant
+from .models import Profil, Ort, Schule, Lerngruppe
 
 class wahl_kurs(models.TextChoices):
     GYMNASIUM = 'Y', 'Gymnasium'
@@ -124,12 +123,5 @@ class Zusammen_Form(forms.Form):
 class Loeschen_Form(forms.Form):
     loeschen = forms.IntegerField(label="Accounts löschen", required=False, help_text="Bitte ID eingeben")
 
-class Duellant_Aendern_Form(forms.ModelForm):
-    class Meta:
-        model = Duellant
-        fields = ['name', 'liga', 'spiele', 'punkte']
-        help_texts = {'name': "Keine Leerzeichen - Unterstrich verwenden!"}
-        widgets = {'spiele': forms.NumberInput(attrs={'size': 3}),
-                   'punkte': forms.NumberInput(attrs={'size': 3})
-                    }
+
 

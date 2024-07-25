@@ -82,28 +82,6 @@ class Profil(models.Model):
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
 
-class Duellant(models.Model):
-    LIGAWAHL = (
-        ("A", "A"),
-        ("B", "B"),
-        ("C", "C")
-    )
-    profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    liga = models.CharField(max_length=1, choices=LIGAWAHL, default="A")
-    platz = models.SmallIntegerField(null=True, blank=True)
-    aufsteiger = models.BooleanField(default=False)
-    abwesend = models.BooleanField(default=False)
-    spiele = models.SmallIntegerField(default=0)
-    punkte = models.DecimalField(max_digits=3, decimal_places=1, default=0)
-    punkte_spiel = models.DecimalField(max_digits=2, decimal_places=1, default=0)
-    pps = models.DecimalField(max_digits=4, decimal_places=2, default=0) 
-    class Meta:
-        verbose_name_plural = 'Duellanten'
-    
-    def __str__(self):
-        return f"{self.profil.vorname}_{self.profil.nachname}"
-
 class Geloescht(models.Model):
     user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE )
     text = models.CharField(max_length=200)
