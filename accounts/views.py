@@ -7,7 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.http import HttpResponse, FileResponse, Http404
 
-from django.db.models import Max, Sum, F, Q
+from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, Duellant_Aendern_Form, ProtokollFilter_Gruppe
@@ -707,6 +707,13 @@ def duell_uebersicht(req, gruppe_id):
         if created:
             duellant.name = schueler.vorname
             duellant.save()
+    dubletten = Duellant.objects.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
+    if not dubletten:
+        print("keine Dubletten")
+    else:
+        for dublette in dubletten:
+            print(dublette["name"])
+        print(dubletten)
     duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
