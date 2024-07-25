@@ -29,12 +29,7 @@
             <div class= "oben">
                 <div class="navbar">
                     {% if user.is_authenticated %}
-                        <p>{{user.profil.vorname}} {{ user.profil.nachname }} 
-                        {% if user.profil.klasse == "lehrer" %}
-                            </p>
-                        {%else%}
-                            , {{user.profil.klasse}}</p>
-                        {%endif%}
+                        <p>Duell {{gruppe.name}}</p>
                     {% else %}
                         <p>Du bist nicht eingeloggt</p>
                         <a href="{% url 'einloggen' %}">Log In</a>
@@ -100,7 +95,7 @@
                             <table>
                                 <tr>
                                     <td><input type="submit" id="Eins" name = "duellant" value={{duellant_1.name}} class = {{duellant_1.liga}} ></td>
-                                    <td>{{duellant_1.punkte_spiel}}</td>
+                                    <td style= "font-weight: bold;">{{duellant_1.punkte_spiel}}</td>
                                     {% comment %} <td>>-</td>
                                     <td>+</td> {% endcomment %}
                                 </tr>
@@ -108,7 +103,7 @@
                                     <td><input type="submit" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>
                                 <tr>
                                     <td><input type="submit" id="Zwei" name = "duellant" value={{duellant_2.name}} class = {{duellant_2.liga}} ></td>
-                                    <td>{{duellant_2.punkte_spiel}}</td>
+                                    <td style= "font-weight: bold;">{{duellant_2.punkte_spiel}}</td>
                                     {% comment %} <td>-</td>
                                     <td><a >+</td> {% endcomment %}
                                 </tr>
@@ -117,7 +112,7 @@
                         </fieldset>
                     </form>
                     <script>
-                        document.getElementById('eingabe').addEventListener('keypress', function(event) {
+                        document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
                             if (event.keyCode == 13) {
                                 event.preventDefault();
                             }

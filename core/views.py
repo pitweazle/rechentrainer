@@ -7255,7 +7255,8 @@ def duell_aufgabe(req, slug, gruppe_id):
             #wenn in den Aufgaben erg=None:
             else:
                 form = AufgabeFormStr(req.POST)
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, gruppe_id = gruppe_id, duellant_1 = duellant_1, duellant_2 = duellant_2,
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, 
+            gruppe_id = gruppe_id, duellant_1 = duellant_1, duellant_2 = duellant_2, gruppe = gruppe, 
             form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit )
         return render(req, 'core/aufgabe_duell.html', context)
     else:
