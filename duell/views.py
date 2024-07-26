@@ -152,7 +152,7 @@ def duell_aufgabe(req, slug, gruppe_id):
             else:
                 form = AufgabeFormStr(req.POST)
         context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, 
-            gruppe_id = gruppe_id, duellant_1 = duellant_1, duellant_2 = duellant_2, gruppe = gruppe, 
+            gruppe_id = gruppe_id, duellant_1 = duellant_1, duellant_2 = duellant_2, gruppe = gruppe, farbe_1 = "null", farbe_2 = "null", 
             form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit )
         return render(req, 'aufgabe_duell.html', context)
     else:
@@ -191,12 +191,11 @@ def duell_loesung(req, gruppe_id, zaehler_id, protokoll_id):
     messages.info(req, f'Lösung: {text}') 
     context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = protokoll.eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung", gruppe = gruppe)
-    return render(req, 'core/aufgabe_duell.html', context)
+    return render(req, 'aufgabe_duell.html', context)
 
 def duell_kontrolle(req, gruppe_id, slug):
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
-        titel = anmerkung = ""
         protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
         duell_protokoll = Duell_Protokoll.objects.get(protokoll = protokoll)
         protokoll.versuche += 1
@@ -265,55 +264,51 @@ def duell_kontrolle(req, gruppe_id, slug):
                         rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
                     else:
                         rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
-                    zaehler.aufgnr += 1                                                                         
+                    zaehler.aufgnr += 1
+                    zaehler.save()                                                                         
                     protokoll.wertung = protokoll.wertung + "r"
                     duellant.punkte_spiel +=1
                     duellant.save()
-                    print("duellant richtig: ",duellant, duellant.punkte_spiel)
-                duell_wertung.eingabe =  eingabe
-                duell_wertung.punkte =  duellant.punkte_spiel
+                duell_wertung.eingabe = eingabe
+                duell_wertung.punkte = duellant.punkte_spiel
                 duell_wertung.save()
                 #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
-                if kategorie.name == "Funktionen":
-                    mehr=5
                 if zaehler.aufgnr > 10:
                     return redirect('duell_uebersicht')
                 messages.info(req, f'{rueckmeldung}')# {msg}')
                 return redirect('duell_kontrolle', gruppe_id, slug)
             #wenn Aufgabe falsch:
             else: 
-                #hier wird die aktuelle Aufgabe ausgelesen:
-                titel = protokoll.titel
-                # text = protokoll.text
-                # parameter = protokoll.parameter
-                anmerkung = protokoll.anmerkung
-                # frage = protokoll.frage
-                # einheit = protokoll.einheit
-                # hilfe_id = protokoll.hilfe_id
-                if protokoll.versuche >= 3:
-                    messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
-                    anmerkung = "dreimal"
+                if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
+                    messages.info(req, rueckmeldung)  
+                    wertung = -1 
+                if wertung == -1:
+                    duellant.punkte_spiel -=Decimal(0.5)
+                    duellant.save()
+                    messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
                 else:
-                    if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
-                        messages.info(req, rueckmeldung)  
-                        wertung = -1 
-                    if wertung == -1:
-                        duellant.punkte_spiel -=Decimal(0.5)
-                        #nach drei Falscheingaben wird die richtige Lösung angezigt und anschließend die Übersichtsseite aufgerufen:
-                        if protokoll.versuche >= 3:                                           
-                            messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
-                            anmerkung = "drei"
-                        else:
-                            messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
-                    else:
-                        if not "tab" in protokoll.parameter["name"]:
-                            messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht 
-                    duell_wertung.eingabe =  eingabe
-                    duell_wertung.punkte =  duellant.punkte_spiel
-                    duell_wertung.save()
-        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, gruppe_id = gruppe_id, duellant_1 = duell_protokoll.duellant_1, duellant_2 = duell_protokoll.duellant_2,
-            form = form, zaehler_id = zaehler.id,  protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = anmerkung, einheit = protokoll.einheit )
-        return render(req, 'core/aufgabe_duell.html', context)
+                    if not "tab" in protokoll.parameter["name"]:
+                        messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht 
+                duell_wertung.eingabe = eingabe
+                duell_wertung.punkte = duellant.punkte_spiel
+                duell_wertung.save()
+        farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
+        farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
+        context = dict(kategorie = kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, 
+            gruppe_id = gruppe_id, duellant_1 = duell_protokoll.duellant_1, duellant_2 = duell_protokoll.duellant_2, farbe_1 = farbe_1, farbe_2 = farbe_2,
+            form = form, zaehler_id = zaehler.id,  protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = protokoll.anmerkung, einheit = protokoll.einheit )
+        return render(req, 'aufgabe_duell.html', context)
     else:
         return redirect('anmelden')
 
+def farbe(punkte):
+    if punkte == 0:
+        farbe = "null" 
+    elif punkte > 0:
+        farbe = "plus" 
+    else:
+        farbe = "minus"
+    return farbe
+
+def duellant_edit(req, gruppe_id, duellant_id, punkte):
+    return HttpResponse(punkte)

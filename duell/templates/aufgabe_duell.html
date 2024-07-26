@@ -24,6 +24,7 @@
     </head>
 
 <body>
+    {{farbe_1}}
     <div class="container">
         {% block content %}
             <div class= "oben">
@@ -95,17 +96,17 @@
                             <table>
                                 <tr>
                                     <td><input type="submit" id="Eins" name = "duellant" value={{duellant_1.name}} class = {{duellant_1.liga}} ></td>
-                                    <td style= "font-weight: bold;">{{duellant_1.punkte_spiel}}</td>
-                                    {% comment %} <td>>-</td>
-                                    <td>+</td> {% endcomment %}
+                                    <td class = "{{farbe_1}}">{{duellant_1.punkte_spiel}}</td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' gruppe_id duellant_1.id "-0.5" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' gruppe_id duellant_1.id "0.5" %}">+</a></td>
                                 </tr>
                                 <tr>
                                     <td><input type="submit" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>
                                 <tr>
                                     <td><input type="submit" id="Zwei" name = "duellant" value={{duellant_2.name}} class = {{duellant_2.liga}} ></td>
-                                    <td style= "font-weight: bold;">{{duellant_2.punkte_spiel}}</td>
-                                    {% comment %} <td>-</td>
-                                    <td><a >+</td> {% endcomment %}
+                                    <td class = "{{farbe_2}}">{{duellant_2.punkte_spiel}}</td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' gruppe_id duellant_2.id "-0.5" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' gruppe_id duellant_2.id "0.5" %}">+</a></td>
                                 </tr>
 
                             </table>
@@ -125,7 +126,7 @@
                                 <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' gruppe_id kategorie.slug %}">nächste Aufgabe</a>
                             </button>
                         </td>
-                        <td  style ="background-color: #FFB5C5;">Zeit</td>
+                        <td  style = "background-color: #FFDEAD;">Zeit</td>
                         <td>
                             <button type="button">
                                 <a href="{% url 'duell_uebersicht' gruppe_id %}">Abbrechen</a>
