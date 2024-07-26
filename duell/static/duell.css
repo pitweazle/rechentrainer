@@ -10,12 +10,22 @@
     background-color: #FFFACD;
   }
   
-.D {
-    background-color: #FFDEAD;
+.plus {
+    width: 40px;
+    background-color: #66df9ce3;
+    font-weight: bold; 
   }
   
-.E {
-    background-color: #FFB5C5;
+.minus {
+    width: 40px;
+    background-color: #fa9f7b;
+    font-weight: bold; 
+  }
+
+.null {
+    width: 40px;
+    background-color: #FFDEAD;
+    font-weight: bold; 
   }
 
 .duell {
@@ -24,6 +34,7 @@
   padding: 5px;
   margin: 5px;    
 }
+
 button {
   width: 120px;
   height: 40; 
@@ -50,5 +61,5 @@ input[type=button], input[type=submit] {
 }
 
 td {
-  padding: 0px;
+  padding:0px;
 }
