@@ -25,15 +25,31 @@ class Duellant(models.Model):
         return f"{self.profil.vorname}_{self.profil.nachname}"
 
 class Duell_Protokoll(models.Model):
-    protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
+    protokoll = models.OneToOneField(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
-    duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', on_delete=models.CASCADE)
-    duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', on_delete=models.CASCADE)
-    wertung = models.JSONField()
+    duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', null = True, on_delete=models.SET_NULL)
+    duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', null = True, on_delete=models.SET_NULL)
 
-    def name(self):        
+    def __str__(self):      
         return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"
 
     class Meta:
         verbose_name = 'Duell_Protokoll'
         verbose_name_plural = 'Duell_Protokolle'
+
+class Duell_Wertung(models.Model):
+    duell_protokoll = models.ForeignKey(Duell_Protokoll, related_name='duellwertung', on_delete=models.CASCADE)
+    datum = models.DateTimeField('datum', auto_now_add=True)
+    duellant = models.ForeignKey(Duellant, related_name='duellant', null = True, on_delete=models.SET_NULL)
+    eingabe = models.CharField(max_length=20, blank=True)
+    punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
+
+    def __str__(self):      
+        return f"{self.duellant}: {self.eingabe}, {self.punkte} Punkte"
+
+    class Meta:
+        verbose_name = 'Duell_Wertung'
+        verbose_name_plural = 'Duell_Wertungen'
+
+
+    
