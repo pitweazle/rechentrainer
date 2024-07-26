@@ -28,7 +28,6 @@ def duell_uebersicht(req, gruppe_id):
     profil = get_object_or_404(Profil, user=req.user)
     profil.duell_gruppe = gruppe_id
     profil.save() 
-    zaehler = Zaehler.objects.filter(user=profil)
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
@@ -36,6 +35,7 @@ def duell_uebersicht(req, gruppe_id):
         if duellant.spiele != 0:
             duellant.pps = duellant.punkte/duellant.spiele
         duellant.save()
+    zaehler = Zaehler.objects.filter(user=profil)
     for kategorie in zaehler:
         kategorie.aufgnr = 1
         kategorie.save()
@@ -154,7 +154,7 @@ def duell_aufgabe(req, slug, gruppe_id):
         context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage, 
             gruppe_id = gruppe_id, duellant_1 = duellant_1, duellant_2 = duellant_2, gruppe = gruppe, 
             form = form, zaehler_id = zaehler.id, hilfe = hilfe_id, protokoll_id = protokoll.id, parameter = parameter, message_unten = anmerkung, einheit = einheit )
-        return render(req, 'core/aufgabe_duell.html', context)
+        return render(req, 'aufgabe_duell.html', context)
     else:
         return redirect('anmelden')
 

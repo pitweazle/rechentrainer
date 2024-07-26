@@ -22,9 +22,9 @@
                     <a href="{% url 'password_reset' %}">Passwort zurücksetzen</a>
                     <a href="{% url 'profil' %}">mein Profil</a>
                     <a href="{% url 'logout' %}">Abmelden</a> 
-                    {% if loeschen %}
+                    {% comment %} {% if loeschen %}
                         <a href="{% url 'aufgaben_loeschen' user.id %}">alle Aufgaben löschen</a>
-                    {% endif %}       
+                    {% endif %}        {% endcomment %}
                 </div>
             {% endif %}
         </div>
