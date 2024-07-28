@@ -6939,6 +6939,7 @@ def main(req, slug):
         bis_loeschen = "-"
         titel = ""
         if req.method == 'POST':
+            print(req.session.get('protokoll_id'))
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
             protokoll.versuche += 1
             zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))

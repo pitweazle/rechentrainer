@@ -29,7 +29,7 @@
             <div class= "oben">
                 <div class="navbar">
                     {% if user.is_authenticated %}
-                        <p>Duell {{gruppe.name}}</p>
+                        <p>Duell {{duell_protokoll.gruppe.name}}</p>
                     {% else %}
                         <p>Du bist nicht eingeloggt</p>
                         <a href="{% url 'einloggen' %}">Log In</a>
@@ -51,9 +51,9 @@
                         {% endif%}
                     {% endfor %}
                 </div>
-                <h2> {{titel }}</h2>
-                <h3>Aufg. Nr. {{aufgnr}}/10 </h3> 
-                <h3>{{text}} {{aufgabe}}</h3>
+                <h2> {{protokoll.titel }}</h2>
+                <h3>Aufg. Nr. {{protokoll.aufgnr}}/10 </h3> 
+                <h3>{{protokoll.text}} {{protokoll.aufgabe}}</h3>
             </div>
             <div class="mitte">
                 <p>
@@ -78,34 +78,34 @@
                     </button>
                 {% elif lsg %}
                     {% if eingabe != " " %}
-                        <p class="rot"><b>Deine Eingabe: {{eingabe}}</b></p>
+                        <p class="rot"><b>Deine Eingabe: {{protokoll.eingabe}}</b></p>
                     {%endif%}
                     <button type="button">
-                        <a href="{% url 'duell_aufgabe' gruppe kategorie.slug  %}">nächste Aufgabe</a> 
+                        <a href="{% url 'duell_aufgabe' duell_protokoll.gruppe protokoll.kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
                     {{message_unten}}
-                    <form action="{% url 'duell_kontrolle' gruppe_id kategorie.slug %}" method="post">
+                    <form action="{% url 'duell_kontrolle' %}" method="post">
                         {% csrf_token %}
                         <fieldset>
-                            {{frage}}
+                            {{protokoll.frage}}
                             {{form.eingabe}}
-                            {{einheit}}
+                            {{protokoll.einheit}}
                             <p></p>
                             <table>
                                 <tr>
-                                    <td><input type="submit" id="Eins" name = "duellant" value={{duellant_1.name}} class = {{duellant_1.liga}} ></td>
-                                    <td class = "{{farbe_1}}">{{duellant_1.punkte_spiel}}</td>
-                                    <td class = "minus"><a href="{% url 'duellant_edit' gruppe_id duellant_1.id duell_protokoll_id "minus" %}">-</a></td>
-                                    <td class = "plus"><a href="{% url 'duellant_edit' gruppe_id duellant_1.id duell_protokoll_id "plus" %}">+</a></td>
+                                    <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_1.name}} class = {{duell_protokoll.duellant_1.liga}} ></td>
+                                    <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
                                 </tr>
                                 <tr>
                                     <td><input type="submit" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>
                                 <tr>
-                                    <td><input type="submit" id="Zwei" name = "duellant" value={{duellant_2.name}} class = {{duellant_2.liga}} ></td>
-                                    <td class = "{{farbe_2}}">{{duellant_2.punkte_spiel}}</td>
-                                    <td class = "minus"><a href="{% url 'duellant_edit' gruppe_id duellant_2.id duell_protokoll_id "minus" %}">-</a></td>
-                                    <td class = "plus"><a href="{% url 'duellant_edit' gruppe_id duellant_2.id duell_protokoll_id "plus" %}">+</a></td>
+                                    <td><input type="submit" id="Zwei" name = "duellant" value={{duell_protokoll.duellant_2.name}} class = {{duell_protokoll.duellant_2.liga}} ></td>
+                                    <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
                                 </tr>
 
                             </table>
@@ -122,26 +122,26 @@
                     <table>
                         <tr><td>
                             <button type="button">
-                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' gruppe_id kategorie.slug %}">nächste Aufgabe</a>
+                                <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' protokoll.kategorie.slug %}">nächste Aufgabe</a>
                             </button>
                         </td>
                         <td  style = "background-color: #FFDEAD;">Zeit</td>
                         <td>
                             <button type="button">
-                                <a href="{% url 'duell_uebersicht' gruppe_id %}">Abbrechen</a>
+                                <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">Abbrechen</a>
                             </button>
                         </td></tr>
                         <tr><td>
                             <button type="button" >
-                                <a href="{% url 'duell_auslosen' gruppe_id %}">neue Kandidaten mit Punktabzug</a>
+                                <a href="{% url 'duell_auslosen' %}">neue Kandidaten mit Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'duell_auslosen' gruppe_id %}">neue Kandidaten ohne Punktabzug</a>
+                                <a href="{% url 'duell_auslosen'  %}">neue Kandidaten ohne Punktabzug</a>
                             </button>
                         </td><td>
                             <button type="button">
-                                <a href="{% url 'duell_loesung' gruppe_id zaehler_id protokoll_id %}">Lösung</a>
+                                <a href="{% url 'duell_loesung'  %}">Lösung</a>
                             </button>
                         </td></tr>
                     </table>

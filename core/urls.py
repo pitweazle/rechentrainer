@@ -3,6 +3,7 @@ from .import views
 
 urlpatterns = [
     path('', include("accounts.urls")), 
+    path("", include("duell.urls")),
     path('kategorien/', views.kategorien, name='kategorien'),
     path('uebersicht/', views.uebersicht, name='uebersicht'),
     path('uebersicht/<int:schueler_id>/', views.uebersicht, name='schueler_uebersicht'),
