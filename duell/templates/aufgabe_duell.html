@@ -84,26 +84,37 @@
                         <a href="{% url 'duell_aufgabe' duell_protokoll.gruppe protokoll.kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
-                    {{message_unten}}
                     <form action="{% url 'duell_kontrolle' %}" method="post">
                         {% csrf_token %}
                         <fieldset>
                             {{protokoll.frage}}
+                            {{richtig}}
                             {{form.eingabe}}
                             {{protokoll.einheit}}
                             <p></p>
                             <table>
                                 <tr>
-                                    <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_1.name}} class = {{duell_protokoll.duellant_1.liga}} ></td>
+                                    {% if richtig %}
+                                        <td class = {{duell_protokoll.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_1.name}}</td>
+                                    {% else %}
+                                        <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_1.name}} class = {{duell_protokoll.duellant_1.liga}}></td>
+                                    {% endif %}
                                     <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
                                 </tr>
                                 <tr>
-                                    <td><input type="submit" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>
+                                    {% if richtig %}
+                                        <td class = "null">gleich schnell</td>
+                                    {% else %}
+                                        <td><input type="submit" name = "duellant" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>                                    
+                                    {% endif %}
                                 <tr>
-                                    <td><input type="submit" id="Zwei" name = "duellant" value={{duell_protokoll.duellant_2.name}} class = {{duell_protokoll.duellant_2.liga}} ></td>
-                                    <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
+                                    {% if richtig %}
+                                        <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
+                                    {% else %}
+                                        <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_2.name}} class = {{duell_protokoll.duellant_2.liga}}></td>
+                                    {% endif %}                                    <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
                                 </tr>
