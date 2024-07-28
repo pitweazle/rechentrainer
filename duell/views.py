@@ -226,9 +226,10 @@ def duell_kontrolle(req):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
-    #Aufgabe beantwortet
+    #Aufgabe beantwortetA
     if form.is_valid():
         duellant = req.POST.get('duellant')
+        beide = True if duellant == None else False
         duellant = Duellant.objects.get(name=duellant)
         duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
         # zunächst Einträge im Protokoll:
@@ -243,12 +244,7 @@ def duell_kontrolle(req):
             pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
         else:
             eingabe = pro_eingabe = form.cleaned_data['eingabe']
-        if protokoll.versuche == 1:
             protokoll.eingabe = pro_eingabe
-        elif protokoll.versuche == 2:
-            protokoll.eingabe ="(1:) {}; (2:) {}".format(protokoll.eingabe, pro_eingabe)
-        else:
-            protokoll.eingabe = "{}; (3:) {}" .format(protokoll.eingabe, pro_eingabe) 
         #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
         #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
         protokoll.abbr = False
@@ -283,9 +279,13 @@ def duell_kontrolle(req):
             duell_wertung.eingabe = eingabe
             duell_wertung.punkte = duellant.punkte_spiel
             duell_wertung.save()
-            #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
-            messages.info(req, f'{rueckmeldung}')# {msg}')
-            return redirect('duell_kontrolle')
+            messages.info(req, f'{rueckmeldung}')
+            farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
+            farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
+            context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+                farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe),
+                message_unten = protokoll.anmerkung)
+            return render(req, 'aufgabe_duell.html', context)
         #wenn Aufgabe falsch:
         else: 
             if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
