@@ -27,7 +27,7 @@
                     </thead>
                 <tbody>
                     {% for kategorie in kategorien %}:
-                        <tr style="text-align: center;"><td style="text-align: center;"><a class="button" href="{% url 'duell_aufgabe' gruppe_id kategorie.slug %}">{{kategorie.name}}</a></td></tr>
+                        <tr style="text-align: center;"><td style="text-align: center;"><a class="button" href="{% url 'duell_aufgabe' kategorie.slug %}">{{kategorie.name}}</a></td></tr>
                     {% endfor %}
                 </table>
             </form>
