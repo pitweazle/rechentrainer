@@ -203,9 +203,18 @@ def duell_loesung(req):
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-        farbe_1 = farbe_1, farbe_2 = farbe_2, 
+        farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe).replace(".",","),
         message_unten = protokoll.anmerkung, hinweis = "Lösung")
     return render(req, 'aufgabe_duell.html', context)
+ 
+def sub_punkte(duell_protokoll, duellant, eingabe, punkte):
+    #duellant = Duellant.objects.get(name=duellant_name)
+    duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
+    duellant.punkte_spiel += punkte
+    duellant.save()
+    duell_wertung.eingabe = eingabe
+    duell_wertung.punkte = duellant.punkte_spiel
+    duell_wertung.save()
 
 def duell_kontrolle(req):
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
@@ -228,10 +237,6 @@ def duell_kontrolle(req):
             form = AufgabeFormStr(req.POST)
     #Aufgabe beantwortetA
     if form.is_valid():
-        duellant = req.POST.get('duellant')
-        beide = True if duellant == None else False
-        duellant = Duellant.objects.get(name=duellant)
-        duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
         # zunächst Einträge im Protokoll:
         if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
             eingabe = []
@@ -262,6 +267,8 @@ def duell_kontrolle(req):
                 falsch = str(wertung).count("0")
             if wertung >= 300000:
                 tabelle = 5
+        duellant_name = req.POST.get('duellant')
+        beide = True if duellant_name == "gleich schnell" else False
         #wenn Eingabe richtig:
         if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
             if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
@@ -274,16 +281,20 @@ def duell_kontrolle(req):
                     rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
                 else:
                     rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
-                duellant.punkte_spiel +=1
-                duellant.save()
-            duell_wertung.eingabe = eingabe
-            duell_wertung.punkte = duellant.punkte_spiel
-            duell_wertung.save()
+            punkte = 1
+            if beide:
+                duellant = duell_protokoll.duellant_1
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+                duellant = duell_protokoll.duellant_2
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+            else: 
+                duellant = Duellant.objects.get(name=duellant_name)
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
             messages.info(req, f'{rueckmeldung}')
             farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
             farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
             context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-                farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe),
+                farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe).replace(".",","),
                 message_unten = protokoll.anmerkung)
             return render(req, 'aufgabe_duell.html', context)
         #wenn Aufgabe falsch:
@@ -292,15 +303,19 @@ def duell_kontrolle(req):
                 messages.info(req, rueckmeldung)  
                 wertung = -1 
             if wertung == -1:
-                duellant.punkte_spiel -=Decimal(0.5)
-                duellant.save()
+                punkte = Decimal(-0.5)
                 messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
             else:
                 if not "tab" in protokoll.parameter["name"]:
                     messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht 
-            duell_wertung.eingabe = eingabe
-            duell_wertung.punkte = duellant.punkte_spiel
-            duell_wertung.save()
+            if beide:
+                duellant = duell_protokoll.duellant_1
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+                duellant = duell_protokoll.duellant_2
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+            else: 
+                duellant = Duellant.objects.get(name=duellant_name)
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
