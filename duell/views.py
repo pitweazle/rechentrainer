@@ -48,7 +48,7 @@ def duell_uebersicht(req, gruppe_id):
     dubletten = Duellant.objects.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
     dubletten_liste = []
     if not dubletten:
-        print("keine Dubletten")
+        pass
     else:
         for dublette in dubletten:
             dubletten_liste.append(dublette["name"])
@@ -62,13 +62,12 @@ def duell_uebersicht(req, gruppe_id):
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
+    req.session['gruppe_id'] = gruppe_id  
     context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
     return render(req, 'duell_uebersicht.html', context)
 
-def duell_start(req):
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
-    #gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+def duell_start(req, gruppe_id):
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
     kategorien = Kategorie.objects.all().order_by('zeile')
@@ -95,9 +94,7 @@ def duellant_aendern(req, gruppe_id, duellant_id):
     return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form,})
 
 def duell_aufgabe(req, slug):
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
-    #gruppe = get_object_or_404(Lerngruppe, pk=gruppe.id)
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
     kategorie = get_object_or_404(Kategorie, slug = slug)
@@ -144,7 +141,6 @@ def duell_aufgabe(req, slug):
         user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
         anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
     )                                                                   #Protokoll wird erstellt
-    #gruppe = get_object_or_404(Lerngruppe, pk = gruppe.id)
     duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
