@@ -8,6 +8,6 @@ urlpatterns = [
     path('duell_aufgabe/<slug:slug>/', views.duell_aufgabe, name='duell_aufgabe'),
     path('duell_kontrolle/', views.duell_kontrolle, name='duell_kontrolle'),
     path('duellant_edit/<int:duellant_id>/<str:punkte>/', views.duellant_edit, name='duellant_edit'),
-    path('duell_auslosen/', views.duell_auslosen, name='duell_auslosen'),
+    path('neu_auslosen/<str:mit>/', views.neu_auslosen, name='neu_auslosen'),
     path('duell_loesung/', views.duell_loesung, name='duell_loesung'),
 ]
