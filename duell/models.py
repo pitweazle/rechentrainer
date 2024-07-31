@@ -25,7 +25,7 @@ class Duellant(models.Model):
         return f"{self.profil.vorname}_{self.profil.nachname}"
 
 class Duell_Protokoll(models.Model):
-    protokoll = models.OneToOneField(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
+    protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
     duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', null = True, on_delete=models.SET_NULL)
     duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', null = True, on_delete=models.SET_NULL)
