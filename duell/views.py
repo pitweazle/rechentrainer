@@ -366,18 +366,15 @@ def neu_auslosen(req, mit):
         return HttpResponse("Zugriff verweigert")
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    print("alt: ",duell_protokoll.id)
     if mit == "mit":
         duell_protokoll.duellant_1.punkte_spiel -=Decimal(0.5)
         duell_protokoll.duellant_2.punkte_spiel -=Decimal(0.5)
         duell_protokoll.save()
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
-    duell_protokoll_neu = Duell_Protokoll.objects.create(
+    duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
-    print("neu: ",duell_protokoll_neu.id)
-    req.session.pop('duell_id', duell_protokoll_neu.id)
-    #req.session.modified = True 
+    req.session['duell_id'] = duell_protokoll.id    
     if protokoll.wert:
         form = AufgabeFormZahl(req.POST)
     else:
