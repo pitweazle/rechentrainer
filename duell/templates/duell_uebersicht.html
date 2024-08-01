@@ -66,21 +66,21 @@
                         <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
                     {% endfor %}
                     <tr>
-                        <td colspan="4"></td>
+                        <td colspan="4"><button><a href="{% url 'duell_loeschen' %}">Duell löschen</a></button></td>
+                        {% comment %} <td >
+                            <form method="post" action="{% url 'duell_loeschen' %}">
+                                {% csrf_token %}
+                                <a><input type="submit"  value= "loeschen"></a>
+                            </form>
+                        </td> {% endcomment %}
                         <td colspan="3"><label >Abwesende speichern</label></td> 
                         <td><input type="submit" name="abwesend" value="übernehmen" ></td>
                     </tr>
                     </tbody>
                 </table>
-                    {% comment %} <label >Abwesende übernehmen</label> 
-                    <input type="submit" name="abwesend" value="speichern" > {% endcomment %}
+
             </form>
-            {% comment %} <form action="/duell_start/{{gruppe.id}}/" method="POST">
-                    {% csrf_token %}
-                    <input type="submit" name="starten" value="Duell starten">
-                </table>
-            </form>  {% endcomment %}
-       
+
         </div>
     </body>
 </html>

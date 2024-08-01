@@ -1,0 +1,15 @@
+{% extends 'auswahl.html' %}  
+{% block content %}
+
+    <body>
+        <p>Ich frage sicherheitshalber nochmal:</p>
+        <p>Sollen die Daten für das Rechenduell der Gruppe "{{gruppe.name}}" gelöscht werden?</p>
+        <p>(Durch Klick auf 'Rechenduell' in der Übersicht der Lerngruppe kann später ein neues Duell gestartet werden.)</p>
+        <form action="/duell_loeschen/" method="POST">
+            {% csrf_token %}
+            <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
+            <label >ja, ich bin sicher</label> 
+            <input type="submit" name="loeschen" value="loeschen"></button>
+        </form>
+    </body>
+{% endblock %}

@@ -392,22 +392,23 @@ def neu_auslosen(req, mit):
 
 def duell_loeschen(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+    gruppen = Lerngruppe.objects.filter(lehrer=req.user)
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
     try:    
-        duell_gruppe = Duell_Protokoll.objects.get(pk = gruppe.id)
+        duellanten = Duellant.objects.filter(profil__gruppe = gruppe)
     except:
         messages.error(req, "Diese Duellgruppe existiert nicht")        
-        return render(req, 'index.html')        
+        return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})        
     if req.method == 'POST':
         bestaetigt = req.POST.get('bestaetigt', 'off')        
         if bestaetigt == "on":
-            for mitglied in duell_gruppe:
-                mitglied.delete()
-                messages.success(req, "Die Duellgruppe wurde gelöscht")
+            for duellant in duellanten:
+                duellant.delete()
+            messages.success(req, "Die Duellgruppe wurde gelöscht")
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
-        return render(req, 'index.html')
-    return render(req, 'duell_loeschen.html', context={'titel': "Duellgruppe löschen",}) 
+        return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
+    return render(req, 'duell_loeschen.html' , context={'titel': "Duellgruppe löschen", 'gruppe' : gruppe}) 
     
         
