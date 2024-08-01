@@ -21,10 +21,14 @@
                 <div class="dropdown-content">
                     <a href="{% url 'password_reset' %}">Passwort zurücksetzen</a>
                     <a href="{% url 'profil' %}">mein Profil</a>
-                    <a href="{% url 'logout' %}">Abmelden</a> 
+                    {% comment %} <a href="{% url 'logout' %}">Abmelden</a> 
                     {% if loeschen %}
                         <a href="{% url 'aufgaben_loeschen' user.id %}">alle Aufgaben löschen</a>
-                    {% endif %}       
+                    {% endif %}        {% endcomment %}
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <a><input type="submit"  value= "abmelden"></a>
+                    </form>
                 </div>
             {% endif %}
         </div>
