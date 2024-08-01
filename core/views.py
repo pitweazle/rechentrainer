@@ -1,34 +1,27 @@
-import math
-import decimal
-import string
-import random
-import re
+import math, decimal, string, random, re
 
-from py_expression_eval import Parser
-
-#from decimal import Decimal
 from fractions import Fraction
 from math import gcd
 
+from py_expression_eval import Parser
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
 from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu
 
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
-from .models import Profil
-from .models import Auswahl
+from .models import Profil, Auswahl
 
-from django.db.models import Sum, F, Count, Q, Max, Avg
-from accounts.views import name_hj, name_next_hj, hj_pruefen, quote_farbe
+from django.db.models import Sum, F,  Max
+from accounts.views import name_hj, name_next_hj,  quote_farbe
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def format_zahl(wert, stellen=2, trailing_zeros=True):
@@ -494,8 +487,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         typ = random.randint(typ_anf, typ_end+stufe%2)
         typ2 = 0 
         hilfe_id = 0
-        anm = ""
-        pro_text = ""    
+        anm = einheit = pro_text = ""    
         parameter = {'name':'normal'}
         if typ == 1:                                                                 #Zahlen schreiben
             titel = "Zahlen schreiben"
@@ -582,7 +574,8 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 zahl2 = -zahl2
             pro_text = "{} ? {}"
             text = 'Kleiner, größer oder gleich?<br>' + pro_text 
-            frage = ""
+            frage = str(zahl1)
+            einheit = str(zahl2)
             variable = [zahl1_str, zahl2_str]
             anm = "(Setze das entsprechende Zeichen ein)" 
             erg = None
@@ -674,7 +667,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 variable = [""]
                 anm = "Schreibe als Bruch (7/9) oder als gemischte Zahl (1 2/7)"
             parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': anf, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': int(zahl1)+20, 'bruch':bruch}
-        return typ, typ2, titel, text, pro_text, frage, variable, "", anm, lsg, hilfe_id, erg, parameter 
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anm, lsg, hilfe_id, erg, parameter 
 
 def malget10(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -771,7 +764,6 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             return 0, "" 
     else:
         typ = random.randint(typ_anf, typ_end)
-        erg = None
         typ2 = 0
         erg = None
         titel = "Runden"
@@ -6284,7 +6276,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-            #print(hilfe_id, ": ",hilfe_text.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -6386,7 +6377,10 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
             woche_halbjahr = 0
             spaeter = 0
         else:
-            spaeter = (startdatum - d0).days//7        
+            try:
+                spaeter = (startdatum.date() - d0).days//7 
+            except:       
+                spaeter = (startdatum - d0).days//7        
     if woche_halbjahr < 0:
         woche_halbjahr = 0
     if spaeter < 0:
@@ -6439,7 +6433,10 @@ def uebersicht(req, schueler_id=0):
                 loeschen = True            
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
-        if(profil.id) != (req.user.profil.id):
+        if lehrer:
+            profil.gruppe = None
+            profil.save()    
+        if (profil.id) != (req.user.profil.id):
             if lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
                 if req.user.is_superuser:
                     pass
@@ -6785,6 +6782,7 @@ def optionen(req, slug):
 #Die 10 Aufgaben weden abgebrochen. Dies wird gezählt. Eigentlich wird bei der Erstellung jeweils dieser Zähler hochrechnet und nur wenn eine richtige oder falsche Eingabe erfolgt oder "Lösung anzeigen" 
 #angeklickt wird, wird dieser Zähler wieder um Eins zurückgesetzt. Dadurch wird auch als Abbrechen gezählt, wenn z.B. mit F5 eine neue Aufgabe erzeugt wird.
 def abbrechen(req, zaehler_id):
+    gruppe = req.user.profil.gruppe
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     #zaehler.abbr_zaehler += 1
     zaehler.aufgnr = 0
@@ -6800,6 +6798,9 @@ def abbrechen(req, zaehler_id):
     else:
         protokoll.eingabe = "abbr."        
     protokoll.save()
+    # if gruppe != 0:
+    #     return redirect('duell_uebersicht', gruppe)
+    # else:
     return redirect('uebersicht')
 
 #Hier wird die Lösung angezeigt:
@@ -6822,7 +6823,6 @@ def loesung(req, zaehler_id, protokoll_id):
             text = protokoll.loesung[0]
     except:
         text = protokoll.loesung
-  
     messages.info(req, f'Lösung: {text}') 
     context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung")
@@ -6937,9 +6937,12 @@ def main(req, slug):
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
         user = get_user(req.user)
+        # profil = get_object_or_404(Profil, user=req.user)
+        # duell = True if profil.gruppe else False
         bis_loeschen = "-"
         titel = ""
         if req.method == 'POST':
+            print(req.session.get('protokoll_id'))
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
             protokoll.versuche += 1
             zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
@@ -7186,5 +7189,4 @@ def main(req, slug):
         return render(req, 'core/aufgabe.html', context)
     else:
         return redirect('anmelden')
-
 
