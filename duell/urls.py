@@ -10,4 +10,5 @@ urlpatterns = [
     path('duellant_edit/<int:duellant_id>/<str:punkte>/', views.duellant_edit, name='duellant_edit'),
     path('neu_auslosen/<str:mit>/', views.neu_auslosen, name='neu_auslosen'),
     path('duell_loesung/', views.duell_loesung, name='duell_loesung'),
+    path('duell_loeschen/', views.duell_loeschen, name='duell_loeschen'),
 ]
