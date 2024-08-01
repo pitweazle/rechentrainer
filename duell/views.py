@@ -16,7 +16,7 @@ from .forms import Duellant_Aendern_Form
 
 from accounts.models import Profil, Lerngruppe
 from core.models import Kategorie, Protokoll, Zaehler 
-from .models import  Duellant, Duell_Protokoll, Duell_Wertung
+from .models import  Duellant, Duell_Protokoll#, Duell_Wertung
 
 from core.views import aufgaben, kontrolle
 
@@ -209,12 +209,12 @@ def duell_loesung(req):
  
 def sub_punkte(duell_protokoll, duellant, eingabe, punkte):
     #duellant = Duellant.objects.get(name=duellant_name)
-    duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
+    #duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
     duellant.punkte_spiel += punkte
     duellant.save()
-    duell_wertung.eingabe = eingabe
-    duell_wertung.punkte = duellant.punkte_spiel
-    duell_wertung.save()
+    #duell_wertung.eingabe = eingabe
+    #duell_wertung.punkte = duellant.punkte_spiel
+    #duell_wertung.save()
 
 def duell_kontrolle(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
@@ -366,18 +366,15 @@ def neu_auslosen(req, mit):
         return HttpResponse("Zugriff verweigert")
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    print("alt: ",duell_protokoll.id)
     if mit == "mit":
         duell_protokoll.duellant_1.punkte_spiel -=Decimal(0.5)
         duell_protokoll.duellant_2.punkte_spiel -=Decimal(0.5)
         duell_protokoll.save()
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
-    duell_protokoll_neu = Duell_Protokoll.objects.create(
+    duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
-    print("neu: ",duell_protokoll_neu.id)
-    req.session.pop('duell_id', duell_protokoll_neu.id)
-    #req.session.modified = True 
+    req.session['duell_id'] = duell_protokoll.id    
     if protokoll.wert:
         form = AufgabeFormZahl(req.POST)
     else:
