@@ -35,10 +35,6 @@ def duell_uebersicht(req, gruppe_id):
         if duellant.spiele != 0:
             duellant.pps = duellant.punkte/duellant.spiele
         duellant.save()
-    #zaehler = Zaehler.objects.filter(user=profil)
-    # for kategorie in zaehler:
-    #     kategorie.aufgnr = 1
-    #     kategorie.save()
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
@@ -57,6 +53,7 @@ def duell_uebersicht(req, gruppe_id):
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
     duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
+    duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
@@ -101,7 +98,7 @@ def duell_aufgabe(req, slug):
         return HttpResponse("Zugriff verweigert")
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
-    duell_rang(gruppe.id)
+
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     aufgnr = req.session.get('aufgabe_nr')
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
@@ -173,8 +170,6 @@ def duell_aufgabe(req, slug):
 def sub_auslosen(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     duellanten = duellanten.filter(abwesend=False).order_by("spiele")
-    for duellant in duellanten:
-        print(duellant, duellant.spiele)
     duellant_1 = duellanten.first()
     duellant_1.spiele +=1
     duellant_1.save()
@@ -194,6 +189,17 @@ def duell_rang(gruppe_id):
         if duellant.spiele != 0:
             duellant.pps = duellant.punkte/duellant.spiele
         duellant.save()
+    if duellanten.filter(spiele=0, abwesend=False).count()>0:
+        print("exit")
+        exit
+    for liga in ["A","B","C"]:
+        duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
+        rang=0
+        for duellant in duellanten_liga:
+            rang +=1
+            duellant.platz=rang
+            duellant.save()
+            print(liga, duellant, duellant.pps)
 
 def duell_loesung(req):
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
