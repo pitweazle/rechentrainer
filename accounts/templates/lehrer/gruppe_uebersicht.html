@@ -34,10 +34,10 @@
 <body>
     <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
         {% csrf_token %}
-        <h2 style= "text-align: left;">Zeitraum:
+        <h1 style= "text-align: left;">Zeitraum:
             {{form_filter}}
             <input name="filter" type="submit" value="anwenden">
-        </h2>
+        </h1>
     </form>
     <br> 
     <table>
