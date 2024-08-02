@@ -172,14 +172,16 @@ def duell_aufgabe(req, slug):
 
 def sub_auslosen(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
-    duellanten_ids = []
+    duellanten = duellanten.filter(abwesend=False).order_by("spiele")
     for duellant in duellanten:
-        duellanten_ids.append(duellant.id)
-    auswahl = (random.sample(duellanten_ids,2))
-    duellant_1 = duellanten.get(id = auswahl[0])
+        print(duellant, duellant.spiele)
+    duellant_1 = duellanten.first()
     duellant_1.spiele +=1
     duellant_1.save()
-    duellant_2 = duellanten.get(id = auswahl[1])
+    duellanten = duellanten.exclude(name=duellant_1.name)
+    duellanten_liga = duellanten.filter(liga=duellant_1.liga)
+    print(duellanten_liga.count())
+    duellant_2 = duellanten_liga.first()
     duellant_2.spiele +=1
     duellant_2.save()
     return  duellant_1, duellant_2 
