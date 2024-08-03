@@ -174,9 +174,25 @@ def sub_auslosen(gruppe_id):
     duellant_1.spiele +=1
     duellant_1.save()
     duellanten = duellanten.exclude(name=duellant_1.name)
-    duellanten_liga = duellanten.filter(liga=duellant_1.liga)
-    print(duellanten_liga.count())
-    duellant_2 = duellanten_liga.first()
+    duellanten_liste = []
+    if duellant_1.liga == "A":                                            # wenn nicht oberste Liga 
+        duellanten = duellanten.filter(liga="A")
+        for duellant in duellanten:
+            duellanten_liste.append(duellant.id)
+    else:
+        liga_B = duellanten.filter(liga="B").count()
+        liga_C = duellanten.filter(liga="C").count()
+        if liga_B + liga_C == 0:                                        # es gibt nur eine Liga
+            exit
+        liga_A = duellanten.filter(liga="A").count()
+        for duellant in duellanten:
+            duellanten_liste.append(duellant.id)
+        if duellant_1.liga == "C":
+            duellanten_liste = duellanten_liste[-(liga_C+2):]           # die Kandidaten in Liga C plus zwei in Liga B
+        else:
+            duellanten_liste = duellanten_liste[-(liga_A+2):-liga_C]    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
+    print(duellanten_liste)
+    duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
     duellant_2.save()
     return  duellant_1, duellant_2 
@@ -190,16 +206,21 @@ def duell_rang(gruppe_id):
             duellant.pps = duellant.punkte/duellant.spiele
         duellant.save()
     if duellanten.filter(spiele=0, abwesend=False).count()>0:
-        print("exit")
         exit
     for liga in ["A","B","C"]:
         duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
-        rang=0
+        rang = 0
+        pps_speicher = 99
+        platz_speicher = 99
         for duellant in duellanten_liga:
             rang +=1
-            duellant.platz=rang
+            if duellant.pps == pps_speicher:
+                duellant.platz = platz_speicher
+            else:
+                duellant.platz=rang
+            pps_speicher = duellant.pps
+            platz_speicher = duellant.platz
             duellant.save()
-            print(liga, duellant, duellant.pps)
 
 def duell_loesung(req):
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
