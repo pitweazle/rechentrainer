@@ -191,7 +191,6 @@ def sub_auslosen(gruppe_id):
             duellanten_liste = duellanten_liste[-(liga_C+2):]           # die Kandidaten in Liga C plus zwei in Liga B
         else:
             duellanten_liste = duellanten_liste[-(liga_A+2):-liga_C]    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
-    print(duellanten_liste)
     duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
     duellant_2.save()
@@ -207,20 +206,22 @@ def duell_rang(gruppe_id):
         duellant.save()
     if duellanten.filter(spiele=0, abwesend=False).count()>0:
         exit
-    for liga in ["A","B","C"]:
-        duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
-        rang = 0
-        pps_speicher = 99
-        platz_speicher = 99
-        for duellant in duellanten_liga:
-            rang +=1
-            if duellant.pps == pps_speicher:
-                duellant.platz = platz_speicher
-            else:
-                duellant.platz=rang
-            pps_speicher = duellant.pps
-            platz_speicher = duellant.platz
-            duellant.save()
+    else:
+        for liga in ["A","B","C"]:
+            print("Liga")
+            duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
+            rang = 0
+            pps_speicher = 99
+            platz_speicher = 99
+            for duellant in duellanten_liga:
+                rang +=1
+                if duellant.pps == pps_speicher:
+                    duellant.platz = platz_speicher
+                else:
+                    duellant.platz=rang
+                pps_speicher = duellant.pps
+                platz_speicher = duellant.platz
+                duellant.save()
 
 def duell_loesung(req):
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
@@ -399,6 +400,7 @@ def neu_auslosen(req, mit):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
+    duell_rang(gruppe.id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
     if mit == "mit":
@@ -430,11 +432,23 @@ def duell_loeschen(req):
         messages.error(req, "Diese Duellgruppe existiert nicht")        
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})        
     if req.method == 'POST':
-        bestaetigt = req.POST.get('bestaetigt', 'off')        
+        nur_punkte = req.POST.get('nur_punkte', 'off') 
+        bestaetigt = req.POST.get('bestaetigt', 'off') 
         if bestaetigt == "on":
-            for duellant in duellanten:
-                duellant.delete()
-            messages.success(req, "Die Duellgruppe wurde gelöscht")
+            if nur_punkte == "on":
+                for duellant in duellanten:
+                    duellant.punkte = 0
+                    duellant.spiele = 0
+                    duellant.punkte_spiel = 0
+                    duellant.pps = 0
+                    duellant.platz = None
+                    duellant.abwesen = False
+                    duellant.save()
+                messages.success(req, "Die Daten wurden der Duellgruppe wurden gelöscht")
+            else:
+                for duellant in duellanten:
+                    duellant.delete()
+                messages.success(req, "Die Duellgruppe wurde gelöscht")
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
