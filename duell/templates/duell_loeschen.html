@@ -7,8 +7,12 @@
         <p>(Durch Klick auf 'Rechenduell' in der Übersicht der Lerngruppe kann später ein neues Duell gestartet werden.)</p>
         <form action="/duell_loeschen/" method="POST">
             {% csrf_token %}
+            <input  id="nur_punkte" name="nur_punkte" type="Checkbox">
+            <label >nur die Punktestände löschen</label> 
+            <br>
             <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
             <label >ja, ich bin sicher</label> 
+            <br>
             <input type="submit" name="loeschen" value="loeschen"></button>
         </form>
         <button>
