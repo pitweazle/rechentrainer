@@ -365,7 +365,14 @@ def duell_kontrolle(req):
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
             else: 
                 duellant = Duellant.objects.get(name=duellant_name)
-                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+                if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+                    if duellant.liga > duell_protokoll.duellant_2.liga:
+                        meldung = auf_abstieg(duellant, duell_protokoll.duellant_2)
+                        rueckmeldung += meldung
+                    elif duellant.liga > duell_protokoll.duellant_1.liga:
+                        meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
+                        rueckmeldung += meldung
+
             messages.info(req, f'{rueckmeldung}')
             farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
             farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
@@ -398,6 +405,19 @@ def duell_kontrolle(req):
         farbe_1 = farbe_1, farbe_2 = farbe_2, 
         form = form,    message_unten = protokoll.anmerkung)
     return render(req, 'aufgabe_duell.html', context)
+
+def auf_abstieg(aufsteiger, absteiger):
+    stringwert = ord(aufsteiger.liga)
+    aufsteiger.liga = chr(stringwert-1)
+    aufsteiger.aufsteiger = True
+    aufsteiger.save()
+    stringwert = ord(absteiger.liga)
+    absteiger.liga = chr(stringwert+1)
+    absteiger.aufsteiger = False
+    absteiger.save()
+    meldung = "<br> " + aufsteiger.name+  " steigt auf - " + absteiger.name + " steigt ab"
+    return meldung  
+
 
 def farbe(punkte):
     if punkte == 0:
