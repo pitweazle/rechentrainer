@@ -12,13 +12,14 @@ from django.shortcuts import redirect, render,  get_object_or_404
 from django.db.models import Count 
 
 from core.forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
-from .forms import Duellant_Aendern_Form
+from .forms import Duellant_Aendern_Form, Duell_AuswahlForm
 
 from accounts.models import Profil, Lerngruppe
-from core.models import Kategorie, Protokoll, Zaehler 
+from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from .models import  Duellant, Duell_Protokoll#, Duell_Wertung
 
 from core.views import aufgaben, kontrolle
+from accounts.views import stufe_aus_jg
 
 # das Rechenduell
 def duell_uebersicht(req, gruppe_id):
@@ -69,6 +70,10 @@ def duell_start(req, gruppe_id):
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
     kategorien = Kategorie.objects.all().order_by('zeile')
+    zaehler = Zaehler.objects.filter(user = req.user.profil)
+    for item in zaehler:
+        item.optionen_text = ""
+        item.save()
     req.session['aufgabe_nr'] = 0  
     context={'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'duell_start.html', context)
@@ -98,7 +103,6 @@ def duell_aufgabe(req, slug):
         return HttpResponse("Zugriff verweigert")
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
-
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     aufgnr = req.session.get('aufgabe_nr')
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
@@ -113,7 +117,7 @@ def duell_aufgabe(req, slug):
     #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
     #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
     if not zaehler.optionen_text :  
-        return redirect('optionen', slug)
+        return redirect('duell_optionen', slug)
     #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
     if kategorie.slug == "sachaufgaben":
         try:  
@@ -123,13 +127,16 @@ def duell_aufgabe(req, slug):
         user.save()
         typ_anf = user.voreinst["sachaufg"]
     else:
-        typ_anf = zaehler.typ_anf            
-    stufe = user.stufe
+        typ_anf = zaehler.typ_anf  
+    typ_end = zaehler.typ_end  
+
+    jg = gruppe.jg          
+    stufe=(stufe_aus_jg(gruppe.jg))
     #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
     if kategorie.name in ("Prozentrechnung","Bruchteile"):
         if user.kurs == "A" or user.kurs == "Y":
             stufe = stufe + 0.2
-    typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
+    typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, aufgnr = aufgnr, typ_anf = typ_anf, typ_end = typ_end, optionen = "") 
     if kategorie.slug == "sachaufgaben":
         user.voreinst["sachaufg"] = typ
         user.save()
@@ -166,6 +173,40 @@ def duell_aufgabe(req, slug):
         farbe_1 = "null", farbe_2 = "null", 
         form = form,    message_unten = anmerkung)
     return render(req, 'aufgabe_duell.html', context)
+
+def duell_optionen(req, slug):
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+    jg = gruppe.jg          
+    stufe=(stufe_aus_jg(gruppe.jg))
+    kategorie = get_object_or_404(Kategorie, slug = slug)
+    form = Duell_AuswahlForm(kategorie = kategorie)
+    user = req.user  
+    if req.method == 'POST':
+        form = Duell_AuswahlForm(req.POST, kategorie = kategorie, jg=jg, stufe=stufe)
+        if form.is_valid():
+            optionen_text = ';'.join(map(str, form.cleaned_data['optionen']))
+            if optionen_text == "":
+                optionen_text = "keine"
+        else:
+            optionen_text = "keine"  
+    else:
+        form = Duell_AuswahlForm(kategorie=kategorie, jg=jg, stufe=stufe)
+        anzahl = kategorie.auswahl_set.all().count()
+        if anzahl>0:
+            anzahl = Auswahl.objects.filter(bis_jg__gte = jg, bis_stufe__gte = stufe, kategorie = kategorie).count()
+            if anzahl>0:
+                return render(req, 'duell_optionen.html', {'kategorie': kategorie, 'auswahl_form':form})
+            else:
+                optionen_text = "keine"    
+        else:
+            optionen_text = "keine"
+    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, user = user.profil)
+    zaehler.optionen_text = optionen_text       
+    typ_anf, typ_end = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, optionen = zaehler.optionen_text)
+    zaehler.typ_anf = typ_anf
+    zaehler.typ_end = typ_end
+    zaehler.save()
+    return redirect('duell_aufgabe', slug)
 
 def sub_auslosen(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
@@ -208,7 +249,6 @@ def duell_rang(gruppe_id):
         exit
     else:
         for liga in ["A","B","C"]:
-            print("Liga")
             duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
             rang = 0
             pps_speicher = 99

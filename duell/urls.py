@@ -6,6 +6,7 @@ urlpatterns = [
     path("duell_start/<int:gruppe_id>/", views.duell_start, name="duell_start"),
     path("duellant_aendern/<int:gruppe_id>/<int:duellant_id>/", views.duellant_aendern, name="duellant_aendern"),
     path('duell_aufgabe/<slug:slug>/', views.duell_aufgabe, name='duell_aufgabe'),
+    path('duell_optionen/<slug:slug>/', views.duell_optionen, name='duell_optionen'),
     path('duell_kontrolle/', views.duell_kontrolle, name='duell_kontrolle'),
     path('duellant_edit/<int:duellant_id>/<str:punkte>/', views.duellant_edit, name='duellant_edit'),
     path('neu_auslosen/<str:mit>/', views.neu_auslosen, name='neu_auslosen'),
