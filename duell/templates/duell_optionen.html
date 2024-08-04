@@ -1,0 +1,26 @@
+{% load static %}
+
+<html lang="de">
+    <head>       
+        <title>Rechentrainer im Web</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+    </head>
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/optionen.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<h2> {{ note }} </h2>
+<h2>{{ kategorie.name }}</h2>
+<ul>    
+<form action="{% url 'duell_optionen' kategorie.slug %}" method="Post">
+    {% csrf_token %}
+    {{auswahl_form}}
+    <input type="submit" value="weiter">
+</form>
+</ul>
+{% endblock %}
