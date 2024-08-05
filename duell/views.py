@@ -16,7 +16,7 @@ from .forms import Duellant_Aendern_Form, Duell_AuswahlForm
 
 from accounts.models import Profil, Lerngruppe
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
-from .models import  Duellant, Duell_Protokoll#, Duell_Wertung
+from .models import  Duellant, Duell_Protokoll, Duell_Wertung
 
 from core.views import aufgaben, kontrolle
 from accounts.views import stufe_aus_jg
@@ -165,13 +165,19 @@ def duell_aufgabe(req, slug):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
+    if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+        meldung = "Aufstiegsduell:"
+    else:
+        meldung = ""
     req.session['protokoll_id'] = protokoll.id  
-    #req.session['zaehler'] = zaehler.id    
+    #req.session['zaehler'] = zaehler.id    S
     req.session['duell_id'] = duell_protokoll.id 
-    req.session['aufgabe_nr'] = aufgnr  
+    req.session['aufgabe_nr'] = aufgnr 
+    aufsteiger_1 = "↑" if duell_protokoll.duellant_1.aufsteiger else ""
+    aufsteiger_2 = "↑" if duell_protokoll.duellant_2.aufsteiger else "" 
     context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = parameter,   
-        farbe_1 = "null", farbe_2 = "null", 
-        form = form,    message_unten = anmerkung)
+        farbe_1 = "null", farbe_2 = "null", aufsteiger_1 = aufsteiger_1, aufsteiger_2 = aufsteiger_2, 
+        form = form,    message_unten = anmerkung, meldung = meldung)
     return render(req, 'aufgabe_duell.html', context)
 
 def duell_optionen(req, slug):
@@ -363,8 +369,9 @@ def duell_kontrolle(req):
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
                 duellant = duell_protokoll.duellant_2
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
-            else: 
+            else:
                 duellant = Duellant.objects.get(name=duellant_name)
+                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
                 if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
                     if duellant.liga > duell_protokoll.duellant_2.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_2)
@@ -372,6 +379,17 @@ def duell_kontrolle(req):
                     elif duellant.liga > duell_protokoll.duellant_1.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
                         rueckmeldung += meldung
+                else:
+                    if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
+                        print("ja")
+                        if duellant == duell_protokoll.duellant_2:
+                            meldung = abstieg(duell_protokoll.duellant_1)
+                            rueckmeldung += "<br>" + meldung
+                        if duellant == duell_protokoll.duellant_1:
+                            meldung = abstieg(duell_protokoll.duellant_2)
+                            rueckmeldung += "<br>" + meldung
+                    else:
+                        print("nein")
 
             messages.info(req, f'{rueckmeldung}')
             farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
@@ -415,9 +433,16 @@ def auf_abstieg(aufsteiger, absteiger):
     absteiger.liga = chr(stringwert+1)
     absteiger.aufsteiger = False
     absteiger.save()
-    meldung = "<br> " + aufsteiger.name+  " steigt auf - " + absteiger.name + " steigt ab"
+    meldung = "<br> " + aufsteiger.name + " steigt auf - " + absteiger.name + " steigt ab"
     return meldung  
 
+def abstieg(absteiger):
+    stringwert = ord(absteiger.liga)
+    absteiger.liga = chr(stringwert+1)
+    absteiger.aufsteiger = False
+    absteiger.save()
+    meldung = absteiger.name + " steigt wieder ab"
+    return meldung  
 
 def farbe(punkte):
     if punkte == 0:
@@ -476,9 +501,13 @@ def neu_auslosen(req, mit):
         form = AufgabeFormZahl(req.POST)
     else:
         form = AufgabeFormStr(req.POST)
+    if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+        meldung = "Aufstiegsduell:"
+    else:
+        meldung = ""
     context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
     farbe_1 = farbe(duellant_1.punkte_spiel), farbe_2 = farbe(duellant_2.punkte_spiel), 
-    form = form,    message_unten = protokoll.anmerkung)
+    form = form,    message_unten = protokoll.anmerkung, meldung = meldung)
     return render(req, 'aufgabe_duell.html', context)
 
 def duell_loeschen(req):
@@ -502,13 +531,13 @@ def duell_loeschen(req):
                     duellant.punkte_spiel = 0
                     duellant.pps = 0
                     duellant.platz = None
-                    duellant.abwesen = False
+                    duellant.abwesend = False
+                    duellant.aufsteiger = False
                     duellant.save()
-                messages.success(req, "Die Daten wurden der Duellgruppe wurden gelöscht")
+                duell_wertung = Duell_Wertung.objects.filter(duell_protokoll__gruppe = gruppe)
+                duell_wertung.all().delete() 
             else:
-                for duellant in duellanten:
-                    duellant.delete()
-                messages.success(req, "Die Duellgruppe wurde gelöscht")
+                duellanten.all().delete()
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})

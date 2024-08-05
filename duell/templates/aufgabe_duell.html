@@ -93,7 +93,7 @@
                                 {{form.eingabe}}
                                 {{protokoll.einheit}}
                             </div>
-                            <p></p>
+                            <h2 style="text-align: left";>{{meldung}}</h2>
                             <table>
                                 <tr>
                                     {% if richtig %}
@@ -101,6 +101,7 @@
                                     {% else %}
                                         <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_1.name}} class = {{duell_protokoll.duellant_1.liga}}></td>
                                     {% endif %}
+                                    <td>{{aufsteiger_1}}</td>
                                     <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
@@ -116,7 +117,9 @@
                                         <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
                                     {% else %}
                                         <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_2.name}} class = {{duell_protokoll.duellant_2.liga}}></td>
-                                    {% endif %}                                    <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
+                                    {% endif %} 
+                                    <td>{{aufsteiger_2}}</td>
+                                    <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
                                 </tr>
