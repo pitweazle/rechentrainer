@@ -216,16 +216,23 @@ def duell_optionen(req, slug):
 
 def sub_auslosen(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
-    duellanten = duellanten.filter(abwesend=False).order_by("spiele")
-    duellant_1 = duellanten.first()
+    duellanten = duellanten.exclude(abwesend=True).order_by("-spiele")
+    duellanten_liste = []
+    for duellant in duellanten:
+        duellanten_liste.append(duellant.id)
+    print("alle: ", duellanten_liste)
+    duellant_1 = duellanten.last()
+    #print("erster: ", duellant_1.id)
     duellant_1.spiele +=1
     duellant_1.save()
     duellanten = duellanten.exclude(name=duellant_1.name)
+    duellanten = duellanten.order_by("liga","-spiele")
     duellanten_liste = []
-    if duellant_1.liga == "A":                                            # wenn nicht oberste Liga 
+    if duellant_1.liga == "A":                                            # wenn in der oberste Liga 
         duellanten = duellanten.filter(liga="A")
         for duellant in duellanten:
             duellanten_liste.append(duellant.id)
+        #print("nur A-Liste: ", duellanten_liste)
     else:
         liga_B = duellanten.filter(liga="B").count()
         liga_C = duellanten.filter(liga="C").count()
@@ -234,10 +241,14 @@ def sub_auslosen(gruppe_id):
         liga_A = duellanten.filter(liga="A").count()
         for duellant in duellanten:
             duellanten_liste.append(duellant.id)
+        #print("Liste ohne 1. Duellant: ", duellanten_liste)
+        
         if duellant_1.liga == "C":
             duellanten_liste = duellanten_liste[-(liga_C+2):]           # die Kandidaten in Liga C plus zwei in Liga B
+            #print("Liste für C Liga: ", duellanten_liste)
         else:
-            duellanten_liste = duellanten_liste[-(liga_A+2):-liga_C]    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
+            duellanten_liste = duellanten_liste    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
+            #print("Liste für B Liga: ", duellanten_liste[(liga_A-2):-liga_C])
     duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
     duellant_2.save()

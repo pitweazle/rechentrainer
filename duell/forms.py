@@ -26,3 +26,23 @@ class Duell_AuswahlForm(forms.Form):
                 bis_jg__gte=jg,
                 bis_stufe__gte=stufe
             )
+
+class AufgabeFormTab(forms.Form):
+    y2 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
+    y3 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    y4 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    
+class AufgabeFormTerm(forms.Form):
+    y0 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
+    y1 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    y2 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    y3 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    y4 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
