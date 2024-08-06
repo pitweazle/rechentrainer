@@ -13,6 +13,8 @@
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
         <a>Rechenduell {{gruppe}}</a>
+        <a href="{% url 'duell_how_to' %}">Wie funktioniert das Duell?</a>
+
     </div> 
 </header>
 <br>
@@ -49,7 +51,7 @@
                         <tr class = {{duellant.liga}}>
                             <td>{{duellant.liga}}</td>
                             <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
-                            <td>{% if duellant.platz %}{{duellant.id}}{%else%}{%endif%}</td>
+                            <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
                             <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern' gruppe_id duellant.id %}">{{duellant.name}}</a></td>
                             <td>{{duellant.spiele}}</td>
                             <td>{{duellant.punkte}}</td>

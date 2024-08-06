@@ -266,18 +266,26 @@ def duell_rang(gruppe_id):
         exit
     else:
         for liga in ["A","B","C"]:
-            duellanten_liga = duellanten.filter(liga=liga).order_by("-pps")
+            duellanten_liga = duellanten.filter(liga=liga).order_by("-pps","-spiele")
             rang = 0
             pps_speicher = 99
             platz_speicher = 99
+            spiele_speicher = 99
             for duellant in duellanten_liga:
                 rang +=1
-                if duellant.pps == pps_speicher:
-                    duellant.platz = platz_speicher
+                if duellant.pps == pps_speicher: 
+                    if duellant.pps > 0:
+                        if duellant.spiele == spiele_speicher:
+                            duellant.platz = platz_speicher
+                        else:
+                            duellant.platz=rang
+                    else:
+                        duellant.platz = platz_speicher
                 else:
                     duellant.platz=rang
                 pps_speicher = duellant.pps
                 platz_speicher = duellant.platz
+                spiele_speicher = duellant.spiele
                 duellant.save()
 
 def duell_loesung(req):
@@ -553,5 +561,8 @@ def duell_loeschen(req):
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
     return render(req, 'duell_loeschen.html' , context={'titel': "Duellgruppe löschen", 'gruppe' : gruppe}) 
-    
+
+def duell_how_to(req):
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+    return render(req, 'duell_how_to.html', {'gruppe_id': gruppe.id})    
         
