@@ -29,6 +29,11 @@ def duell_uebersicht(req, gruppe_id):
     profil.duell_gruppe = gruppe_id
     profil.save() 
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    if duellanten.count() == 0:                         # löscht die gespeicherten Aufgabennummern der einzelnen Kategorien der Lehrkraft
+        zaehler = Zaehler.objects.filter(user = req.user.profil)
+        for kategorie in zaehler:
+            kategorie.aufgnr = 0
+            kategorie.save()
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
         duellant.punkte_spiel = 0
