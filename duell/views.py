@@ -41,7 +41,7 @@ def duell_uebersicht(req, gruppe_id):
         if created:
             duellant.name = schueler.vorname
             duellant.save()
-    dubletten = Duellant.objects.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
+    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
     dubletten_liste = []
     if not dubletten:
         pass
@@ -52,7 +52,7 @@ def duell_uebersicht(req, gruppe_id):
     for duellant in duellanten:
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
-    duellanten = Duellant.objects.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
+    duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
     duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
@@ -330,13 +330,15 @@ def duell_kontrolle(req):
             parser = Parser()
             eingabe=round(round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3),3)
             protokoll.loesung = protokoll.parameter['y5']
-            protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            print("Tab: ", protokoll.parameter)
+            if isinstance(protokoll.parameter['y5'], str):
+                protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            else:
+                protokoll.wert = protokoll.parameter['y5']
             protokoll.save()
         else:
             eingabe = pro_eingabe = form.cleaned_data['eingabe']
         protokoll.eingabe = pro_eingabe
-        #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
-        #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
         protokoll.abbr = False
         protokoll.end = timezone.now()
         protokoll.save()
@@ -514,7 +516,7 @@ def duell_loeschen(req):
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})        
     if req.method == 'POST':
         nur_punkte = req.POST.get('nur_punkte', 'off') 
-        bestaetigt = req.POST.get('bestaetigt', 'off') 
+        bestaetigt = req.POST.get('bestaetigt', 'off')
         if bestaetigt == "on":
             if nur_punkte == "on":
                 for duellant in duellanten:

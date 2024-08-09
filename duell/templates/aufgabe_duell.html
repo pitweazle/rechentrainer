@@ -73,14 +73,16 @@
                                     <th class = "linie_rechts">{{parameter.titel_x}}</th>
                                     <th>{{parameter.titel_y}}</th>
                                 </tr>
-                                <tr>
-                                    <td class = "linie_rechts">{{parameter.x0}}</td>
-                                    <td>{{parameter.y0}}</td>                                                                       
-                                </tr>
-                                <tr>
-                                    <td class = "linie_rechts">{{parameter.x1}}</td>
-                                    <td>{{parameter.y1}}</td>                                                                    
-                                </tr>
+                                {% if parameter.name != "tab_term" %}
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x0}}</td>
+                                        <td>{{parameter.y0}}</td>                                                                       
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x1}}</td>
+                                        <td>{{parameter.y1}}</td>                                                                    
+                                    </tr>
+                                {% endif %}
                                 <tr>
                                     <td class = "linie_rechts">{{parameter.x5}}</td>
                                     <td>{{parameter.y5}}</td>                                                                    
@@ -92,33 +94,26 @@
                                     <th class = "linie_rechts">{{parameter.titel_x}}</th>
                                     <th>{{parameter.titel_y}}</th>
                                 </tr>
-                                    {% if 'term' in parameter.name or 'funktion' in parameter.name%}  
-                                        <tr>
-                                            <td class = "linie_rechts">{{parameter.x0}}</td>
-                                            <td class = "{{parameter.color0}}">{{form.y0}}</td>                                                                    
-                                        </tr>
-                                        <tr>
-                                            <td class = "linie_rechts">{{parameter.x1}}</td>
-                                            <td class = "{{parameter.color1}}">{{form.y1}}</td>                                                                    
-                                        </tr> 
-                                    {% else %}
-                                        <tr>
-                                            <td class = "linie_rechts">{{parameter.x0}}</td>
-                                            <td>{{parameter.y0}}</td>                                                                       
-                                        </tr>
-                                        <tr>
-                                            <td class = "linie_rechts">{{parameter.x1}}</td>
-                                            <td>{{parameter.y1}}</td>                                                                    
-                                        </tr>
-                                    {% endif %}
+                                {% if 'term' in parameter.name or 'funktion' in parameter.name%}  
+
+                                {% else %}
                                     <tr>
-                                        <td class = "linie_rechts">{{parameter.x5}}</td>
-                                        {% if richtig %}
-                                            <td>{{richtig}}</td>
-                                        {% else%}
-                                            <td class = "{{parameter.color2}}">{{form.y5}}</td>
-                                        {% endif %}                                                                    
+                                        <td class = "linie_rechts">{{parameter.x0}}</td>
+                                        <td>{{parameter.y0}}</td>                                                                       
                                     </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x1}}</td>
+                                        <td>{{parameter.y1}}</td>                                                                    
+                                    </tr>
+                                {% endif %}
+                                <tr>
+                                    <td class = "linie_rechts">{{parameter.x5}}</td>
+                                    {% if richtig %}
+                                        <td>{{richtig}}</td>
+                                    {% else%}
+                                        <td class = "{{parameter.color2}}">{{form.y5}}</td>
+                                    {% endif %} 
+                                </tr>
                             </table>
                         {% endif %}
                     {% else %}

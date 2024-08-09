@@ -4032,6 +4032,7 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 typ = random.randint(1,2)
         else:
             typ = random.randint(3, typ_end) 
+        #typ=1
         titel = "Zuordnungen" 
         text = "default{}"
         pro_text = ""
@@ -4848,6 +4849,7 @@ def sortieren(zahl,buchstaben):
 
 def wertetabelle(parameter,stufe):
     zahlen = [0,1,2,-1,0.5]
+    zahlen.append(random.randint(-2,2))                                            # nur für das Duell
     lsg = [""]
     absolut = koeffizient = 0
     while absolut == 0:
@@ -4862,7 +4864,7 @@ def wertetabelle(parameter,stufe):
     y_werte = {}
     y_farbe = {}
     lsg = []
-    for n in range (0,5):
+    for n in range (0,6):
         x_werte["x" + str(n)] = zahlen[n]
         y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
         #y_farbe["color" + str(n)] = "leer"
@@ -4929,6 +4931,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             typ = random.randint(typ_anf, typ_end) 
         else:
             typ = random.randint(2, typ_end) 
+        #typ=1
         typ2 = 0
         titel = "Terme" 
         text = "default{}"
