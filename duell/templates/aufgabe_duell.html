@@ -130,7 +130,7 @@
                                 {% if richtig %}
                                     <td class = {{duell_protokoll.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_1.name}}</td>
                                 {% else %}
-                                    <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_1.name}} class = {{duell_protokoll.duellant_1.liga}}></td>
+                                    <td><input type="submit" id="Eins" name = "duellant" class="no-color" value="" ></td>
                                 {% endif %}
                                 <td>{{aufsteiger_1}}</td>
                                 <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
@@ -147,7 +147,8 @@
                                 {% if richtig %}
                                     <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
                                 {% else %}
-                                    <td><input type="submit" id="Eins" name = "duellant" value={{duell_protokoll.duellant_2.name}} class = {{duell_protokoll.duellant_2.liga}}></td>
+                                    
+                                    <td><input type="submit" id="Zwei" name = "duellant" class="no-color" value=""  ></td>
                                 {% endif %} 
                                 <td>{{aufsteiger_2}}</td>
                                 <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
@@ -157,6 +158,61 @@
                         </table>
                     </fieldset>
                 </form>
+
+                <script>
+                    let einsStars = "";
+                    let zweiStars = "";
+                    let starCount = 0;
+                    let sekunden = 0;
+            
+                    // Funktion, um die Uhr zu starten
+                    function starteUhr() {
+                        setInterval(function() {
+                            sekunden++;
+                            document.getElementById('uhr').textContent = sekunden;
+                        }, 1000); // Update jede Sekunde
+                    }
+            
+                    // Funktion, um alle halbe Sekunde einen Stern hinzuzufügen
+                    const addStarsInterval = setInterval(function() {
+                        starCount++;
+                        einsStars += "*";
+                        zweiStars += "*";
+                        document.getElementById('Eins').value = einsStars;
+                        document.getElementById('Zwei').value = zweiStars;
+            
+                        // Wenn 4 Sterne erreicht sind, stoppen und nach 2 Sekunden die Namen anzeigen
+                        if (starCount === 4) {
+                            clearInterval(addStarsInterval);
+                            
+                            setTimeout(function() {
+                                document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
+                                document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
+                                
+                                // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                                document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
+                                document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                            }, 2000);
+                        }
+                    }, 500);
+                    // Überprüfe, ob das Ergebnis korrekt ist, um die Uhr zu starten oder zu stoppen
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+
+                        if (!richtig) {
+                            // Starte die Uhr, wenn 'richtig' leer oder None ist
+                            if (!localStorage.getItem('sekunden')) {
+                                starteUhr();
+                            } else {
+                                document.getElementById('uhr').textContent = sekunden + " Sek.";
+                            }
+                        } else {
+                            // Zeige die gespeicherte Zeit an, wenn 'richtig' nicht leer ist
+                            document.getElementById('uhr').textContent = sekunden;
+                        }
+                    });
+                </script>
+            
                 <script>
                     document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
                         if (event.keyCode == 13) {
@@ -164,14 +220,14 @@
                         }
                     });
                 </script>
-                <p></p>
+                <p>{{richtig}}</p>
                 <table>
                     <tr><td>
                         <button type="button">
                             <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' protokoll.kategorie.slug %}">nächste Aufgabe</a>
                         </button>
                     </td>
-                    <td  style = "background-color: #FFDEAD;">Zeit</td>
+                    <td  class="zeitfeld" id="uhr">0</td>
                     <td>
                         <button type="button">
                             <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">Abbrechen</a>
