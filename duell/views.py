@@ -20,7 +20,6 @@ from core.views import aufgaben, kontrolle
 from .models import  Duellant, Duell_Protokoll, Duell_Wertung
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab
 
-
 # das Rechenduell
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
@@ -61,7 +60,6 @@ def duell_uebersicht(req, gruppe_id):
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
     req.session['gruppe_id'] = gruppe_id  
-    req.session['aufgabe_nr'] = 0  
     context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
     return render(req, 'duell_uebersicht.html', context)
 
@@ -74,7 +72,6 @@ def duell_start(req, gruppe_id):
     for item in zaehler:
         item.optionen_text = ""
         item.save()
-    req.session['aufgabe_nr'] = 0  
     context={'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'duell_start.html', context)
 
@@ -104,16 +101,9 @@ def duell_aufgabe(req, slug):
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
-    aufgnr = req.session.get('aufgabe_nr')
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
-    # if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
-    #     zaehler.aufgnr = 1
-    # zaehler.aufgnr += 1
-    # zaehler.save()
-    # if zaehler.aufgnr > 10:
-    aufgnr +=1
-    if aufgnr > 10:
-        return redirect('duell_uebersicht', gruppe.id)
+    if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
+        zaehler.aufgnr = 1
     #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
     #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
     if not zaehler.optionen_text :  
@@ -135,7 +125,7 @@ def duell_aufgabe(req, slug):
     if kategorie.name in ("Prozentrechnung","Bruchteile"):
         if user.kurs == "A" or user.kurs == "Y":
             stufe = stufe + 0.2
-    typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, aufgnr = aufgnr, typ_anf = typ_anf, typ_end = typ_end, optionen = "") 
+    typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = typ_end, optionen = "") 
     if kategorie.slug == "sachaufgaben":
         user.voreinst["sachaufg"] = typ
         user.save()
@@ -147,17 +137,17 @@ def duell_aufgabe(req, slug):
     frage = frage.format(*variable)
     protokoll = Protokoll.objects.create(
         user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
-        anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = aufgnr,        
+        anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
     )                                                                   #Protokoll wird erstellt
     duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
     #Jenachdem, ob ein Wert oder ein Text erwartet wird:
     if "tab" in protokoll.parameter["name"]:
-        if "term" in protokoll.parameter["name"]:
-            form = DuellFormTerm(req.POST)
-        else:
-            form = AufgabeFormTab(req.POST)
+        # if "term" in protokoll.parameter["name"]:
+        #     form = DuellFormTerm(req.POST)
+        # else:
+        form = AufgabeFormTab(req.POST)
     else:
         if protokoll.wert:
             form = AufgabeFormZahl(req.POST)
@@ -169,9 +159,7 @@ def duell_aufgabe(req, slug):
     else:
         meldung = ""
     req.session['protokoll_id'] = protokoll.id  
-    #req.session['zaehler'] = zaehler.id    S
     req.session['duell_id'] = duell_protokoll.id 
-    req.session['aufgabe_nr'] = aufgnr 
     aufsteiger_1 = "↑" if duell_protokoll.duellant_1.aufsteiger else ""
     aufsteiger_2 = "↑" if duell_protokoll.duellant_2.aufsteiger else "" 
     context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = parameter,   
@@ -302,7 +290,7 @@ def duell_loesung(req):
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe).replace(".",","),
-        message_unten = protokoll.anmerkung, hinweis = "Lösung", lsg = True)
+        message_unten = protokoll.anmerkung, lsg = True)
     return render(req, 'aufgabe_duell.html', context)
  
 def sub_punkte(duell_protokoll, duellant, eingabe, punkte):
@@ -321,12 +309,13 @@ def duell_kontrolle(req):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     protokoll.versuche += 1
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
+    zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
     #wenn in den Aufgaben in "erg" eine Zahl steht
     if "tab" in protokoll.parameter["name"]:
-        if "term" in protokoll.parameter["name"]:
-            form = AufgabeFormTerm(req.POST)
-        else:
-            form = AufgabeFormTab(req.POST)
+        # if "term" in protokoll.parameter["name"]:
+        #     form = AufgabeFormTerm(req.POST)
+        # else:
+        form = AufgabeFormTab(req.POST)
     else:
         if protokoll.wert:
             form = AufgabeFormZahl(req.POST)
@@ -363,6 +352,14 @@ def duell_kontrolle(req):
             else:
                 rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
             punkte = 1
+            if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
+                zaehler.aufgnr = 1
+            zaehler.aufgnr += 1
+            zaehler.save()
+            if zaehler.aufgnr > 10:
+                zaehler.aufgnr = 0
+                zaehler.save()                
+                return redirect('duell_uebersicht', gruppe.id)
             if beide:
                 duellant = duell_protokoll.duellant_1
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
