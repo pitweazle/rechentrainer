@@ -4032,7 +4032,6 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 typ = random.randint(1,2)
         else:
             typ = random.randint(3, typ_end) 
-        typ=2
         titel = "Zuordnungen" 
         text = "default{}"
         pro_text = ""
@@ -4051,12 +4050,13 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 zahlen = [2,1,3,4]
             else:
                 zahlen = [2,3,4,5]
+            zahlen.append(random.randint(3,6))                                            # nur für das Duell
             lsg = []
             x_werte = {}
             y_werte = {}
             for n in zahlen[1:]:                                # berechnet die Lösungen
                 lsg.append(format_zahl(zahl1/n, 2))
-            for n in range (1,5):
+            for n in range (1,6):
                 x_werte["x" + str(n)] = zahlen[n-1]
                 y_werte["y" + str(n)] = format_zahl(zahl1/zahlen[n-1],2)
             parameter = {'name': 'tab_antiprop', 'titel_x': 'Teile', 'titel_y': 'Preis', 'x0': '[Anzahl]', 'y0': '[Euro]'}
