@@ -1,5 +1,5 @@
 import random
-import json
+from py_expression_eval import Parser
 
 from decimal import *
 
@@ -7,19 +7,19 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse 
-from django.shortcuts import redirect, render,  get_object_or_404
 
 from django.db.models import Count 
 
-from core.forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
-from .forms import Duellant_Aendern_Form, Duell_AuswahlForm
-
 from accounts.models import Profil, Lerngruppe
-from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
-from .models import  Duellant, Duell_Protokoll, Duell_Wertung
-
-from core.views import aufgaben, kontrolle
 from accounts.views import stufe_aus_jg
+
+from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
+from core.forms import AufgabeFormZahl, AufgabeFormStr
+from core.views import aufgaben, kontrolle
+
+from .models import  Duellant, Duell_Protokoll, Duell_Wertung
+from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab
+
 
 # das Rechenduell
 def duell_uebersicht(req, gruppe_id):
@@ -129,7 +129,6 @@ def duell_aufgabe(req, slug):
     else:
         typ_anf = zaehler.typ_anf  
     typ_end = zaehler.typ_end  
-
     jg = gruppe.jg          
     stufe=(stufe_aus_jg(gruppe.jg))
     #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
@@ -156,7 +155,7 @@ def duell_aufgabe(req, slug):
     #Jenachdem, ob ein Wert oder ein Text erwartet wird:
     if "tab" in protokoll.parameter["name"]:
         if "term" in protokoll.parameter["name"]:
-            form = AufgabeFormTerm(req.POST)
+            form = DuellFormTerm(req.POST)
         else:
             form = AufgabeFormTab(req.POST)
     else:
@@ -220,9 +219,7 @@ def sub_auslosen(gruppe_id):
     duellanten_liste = []
     for duellant in duellanten:
         duellanten_liste.append(duellant.id)
-    print("alle: ", duellanten_liste)
     duellant_1 = duellanten.last()
-    #print("erster: ", duellant_1.id)
     duellant_1.spiele +=1
     duellant_1.save()
     duellanten = duellanten.exclude(name=duellant_1.name)
@@ -232,7 +229,6 @@ def sub_auslosen(gruppe_id):
         duellanten = duellanten.filter(liga="A")
         for duellant in duellanten:
             duellanten_liste.append(duellant.id)
-        #print("nur A-Liste: ", duellanten_liste)
     else:
         liga_B = duellanten.filter(liga="B").count()
         liga_C = duellanten.filter(liga="C").count()
@@ -241,14 +237,11 @@ def sub_auslosen(gruppe_id):
         liga_A = duellanten.filter(liga="A").count()
         for duellant in duellanten:
             duellanten_liste.append(duellant.id)
-        #print("Liste ohne 1. Duellant: ", duellanten_liste)
-        
+       
         if duellant_1.liga == "C":
             duellanten_liste = duellanten_liste[-(liga_C+2):]           # die Kandidaten in Liga C plus zwei in Liga B
-            #print("Liste für C Liga: ", duellanten_liste)
         else:
             duellanten_liste = duellanten_liste    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
-            #print("Liste für B Liga: ", duellanten_liste[(liga_A-2):-liga_C])
     duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
     duellant_2.save()
@@ -290,8 +283,12 @@ def duell_rang(gruppe_id):
 
 def duell_loesung(req):
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
+    #gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
+    if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
+        protokoll.loesung = [protokoll.parameter['y5']]
+        #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+        protokoll.save()
     text = ""
     try:
         if isinstance(protokoll.loesung[0], list):
@@ -305,7 +302,7 @@ def duell_loesung(req):
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe).replace(".",","),
-        message_unten = protokoll.anmerkung, hinweis = "Lösung")
+        message_unten = protokoll.anmerkung, hinweis = "Lösung", lsg = True)
     return render(req, 'aufgabe_duell.html', context)
  
 def sub_punkte(duell_protokoll, duellant, eingabe, punkte):
@@ -336,21 +333,19 @@ def duell_kontrolle(req):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
-    #Aufgabe beantwortetA
+    #Aufgabe beantwortet
     if form.is_valid():
         # zunächst Einträge im Protokoll:
         if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
-            eingabe = []
-            if "term" in protokoll.parameter["name"]:                            # für Terme
-                eingabe.append(form.cleaned_data['y0'])
-                eingabe.append(form.cleaned_data['y1'])
-            eingabe.append(form.cleaned_data['y2'])
-            eingabe.append(form.cleaned_data['y3'])
-            eingabe.append(form.cleaned_data['y4'])
-            pro_eingabe = "; ".join([str(e) for e in eingabe]).replace(".",",")
+            eingabe = pro_eingabe = str(form.cleaned_data['y5'])
+            parser = Parser()
+            eingabe=round(round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3),3)
+            protokoll.loesung = protokoll.parameter['y5']
+            protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            protokoll.save()
         else:
             eingabe = pro_eingabe = form.cleaned_data['eingabe']
-            protokoll.eingabe = pro_eingabe
+        protokoll.eingabe = pro_eingabe
         #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
         #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
         protokoll.abbr = False
@@ -358,30 +353,15 @@ def duell_kontrolle(req):
         protokoll.save()
         #hier wird die Eingabe überprüft:
         wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
-        if wertung <= 2:
-            tabelle = 0
-            richtig = wertung
-        else:
-            if wertung >= 3000:                                   # Anzahl der Einträge in der Tabelle
-                tabelle = 3
-                richtig = str(wertung).count("1")
-                falsch = str(wertung).count("0")
-            if wertung >= 300000:
-                tabelle = 5
+        richtig = wertung
         duellant_name = req.POST.get('duellant')
         beide = True if duellant_name == "gleich schnell" else False
         #wenn Eingabe richtig:
-        if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
-            if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
-                rueckmeldung = "Alle Werte waren richtig richtig!"
-                #zaehler.aufgnr += tabelle
-                # entfernt eventuelle Einträge "r"
-                protokoll.wertung = protokoll.wertung.replace("r", "") + richtig*"r"
-            elif tabelle == 0 :
-                if "enauer" in rueckmeldung:
-                    rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
-                else:
-                    rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
+        if wertung > 0  :
+            if "enauer" in rueckmeldung:
+                rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
+            else:
+                rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
             punkte = 1
             if beide:
                 duellant = duell_protokoll.duellant_1
@@ -400,16 +380,12 @@ def duell_kontrolle(req):
                         rueckmeldung += meldung
                 else:
                     if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
-                        print("ja")
                         if duellant == duell_protokoll.duellant_2:
                             meldung = abstieg(duell_protokoll.duellant_1)
                             rueckmeldung += "<br>" + meldung
                         if duellant == duell_protokoll.duellant_1:
                             meldung = abstieg(duell_protokoll.duellant_2)
                             rueckmeldung += "<br>" + meldung
-                    else:
-                        print("nein")
-
             messages.info(req, f'{rueckmeldung}')
             farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
             farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)

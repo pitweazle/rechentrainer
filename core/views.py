@@ -4032,6 +4032,7 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 typ = random.randint(1,2)
         else:
             typ = random.randint(3, typ_end) 
+        typ=2
         titel = "Zuordnungen" 
         text = "default{}"
         pro_text = ""
@@ -4070,12 +4071,13 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 zahlen = [2,1,3,4]
             else:
                 zahlen = [2,3,4,5]
+            zahlen.append(random.randint(3,6))                                            # nur für das Duell
             lsg = []
             x_werte = {}
             y_werte = {}
             for n in zahlen[1:]:                                # berechnet die Lösungen
                 lsg.append(format_zahl(zahl1*n, 2))
-            for n in range (1,5):
+            for n in range (1,6):
                 x_werte["x" + str(n)] = zahlen[n-1]
                 y_werte["y" + str(n)] = format_zahl(zahlen[n-1]*zahl1,2)
             parameter = {'name': 'tab_prop', 'titel_x': 'Teile', 'titel_y': 'Preis', 'x0': '[Anzahl]', 'y0': '[Euro]'}
@@ -6869,7 +6871,7 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
-    if wert != None:                                     
+    if wert != None:  
         if  decimal.Decimal(eingabe) == wert:
             return 1, ""
         #return abs(given - wert) < decimal.Decimal('0.001') <- das würde man benötigen um Rundungsfehler von Python auszugleichen, ich nutze aber eigentlich nur Ganzahlen
@@ -6912,7 +6914,9 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                         return -1, ""
                 except:
                    return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
+            print("C")
             for loe in (lsg):
+                print(loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
