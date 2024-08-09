@@ -28,21 +28,9 @@ class Duell_AuswahlForm(forms.Form):
             )
 
 class AufgabeFormTab(forms.Form):
-    y2 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
-    y3 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
-    y4 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+    y5 = forms.DecimalField(label='', max_digits=5,
+                                decimal_places=2, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
     
-class AufgabeFormTerm(forms.Form):
-    y0 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
-    y1 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
-    y2 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
-    y3 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
-    y4 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
+# class AufgabeFormTerm(forms.Form):
+#     y5 = forms.DecimalField(label='', max_digits=5,
+#                                 decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
