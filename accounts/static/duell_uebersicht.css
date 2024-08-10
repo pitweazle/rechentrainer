@@ -1,0 +1,33 @@
+.A{
+    background-color: #B0E2FF;
+  }
+  
+.B {
+    background-color: #9AFF9A;
+  }
+  
+.C {
+    background-color: #FFFACD;
+  }
+  
+.D {
+    background-color: #FFDEAD;
+  }
+  
+.E {
+    background-color: #FFB5C5;
+  }
+
+td {
+    text-align: center;
+}
+.container {
+    max-width: 500px;
+  }
+
+button {
+  font-weight: bold;  
+}
+
+
+

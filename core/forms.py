@@ -1,5 +1,5 @@
 from django import forms
-from .models import Kategorie, Auswahl, Zaehler, Sachaufgabe
+from .models import Kategorie, Sachaufgabe
 
 class AufgabeFormZahl(forms.Form):
     eingabe = forms.DecimalField(label='', localize=True, max_digits=15, decimal_places=5, widget=forms.NumberInput(attrs={'autofocus': True, 'autocomplete': 'off'}))
@@ -27,14 +27,6 @@ class AufgabeFormTerm(forms.Form):
     y4 = forms.DecimalField(label='', max_digits=5,
                                 decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off'}))
     
-# class AuswahlForm(forms.Form):
-#     optionen=forms.ModelMultipleChoiceField(queryset=Kategorie.objects, widget=forms.CheckboxSelectMultiple, required=False)
-#     def __init__(self, *args, **kwargs):
-#         kategorie = kwargs.pop('kategorie')
-#         super().__init__(*args, **kwargs)
-#         self.fields['optionen'].queryset = kategorie.auswahl_set.all().filter(bis_jg__gte= 7)
-#         #self.fields['optionen'].queryset = kategorie.auswahl_set.all()
-
 class AuswahlForm(forms.Form):
     optionen = forms.ModelMultipleChoiceField(
         queryset=Kategorie.objects.all(),

@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
-from accounts.models import Profil
+from accounts.models import Profil, Lerngruppe
 
 class wahl_farbe(models.TextChoices):
     Gruppe_A = 'background-color: #B0E2FF',
@@ -123,13 +123,13 @@ class Protokoll(models.Model):
 
     def zweigabe(self):
         return self.eingabe.replace(".",",")
-        2
+        
     def name(self):        
         return f"{self.user.nachname}, {self.user.vorname}, {self.user.klasse}, {self.user.gruppe}"
 
     class Meta:
         verbose_name = 'Protokoll'
-        verbose_name_plural = 'Protokoll'
+        verbose_name_plural = 'Protokolle'
 
 class Zaehler(models.Model):
     user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 
