@@ -2,25 +2,87 @@
 {% load l10n %}
 
 <html lang="de">
-    <head>       
-        <title>Rechentrainer von Peter Doll</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-        <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
-        <link rel="stylesheet" href="{% static 'duell.css' %}">
+<head>       
+    <title>Rechentrainer von Peter Doll</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+    <link rel="stylesheet" href="{% static 'duell.css' %}">
 
-        <style>
-            input::-webkit-outer-spin-button,
-            input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+
+    <script>
+        let einsStars = "";
+        let zweiStars = "";
+        let starCount = 0;
+        let sekunden = 0;
+
+        // Funktion, um die Uhr zu starten
+        function starteUhr() {
+            setInterval(function() {
+                sekunden++;
+                document.getElementById('uhr').textContent = sekunden;
+            }, 1000); // Update jede Sekunde
+        }
+
+        // Funktion, um alle halbe Sekunde einen Stern hinzuzufügen
+        const addStarsInterval = setInterval(function() {
+            starCount++;
+            einsStars += "*";
+            zweiStars += "*";
+            document.getElementById('Eins').value = einsStars;
+            document.getElementById('Zwei').value = zweiStars;
+
+            // Wenn 4 Sterne erreicht sind, stoppen und nach 2 Sekunden die Namen anzeigen
+            if (starCount === 4) {
+                clearInterval(addStarsInterval);
+                
+                setTimeout(function() {
+                    document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
+                    document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
+                    
+                    // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                    document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
+                    document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                }, 2000);
             }
-            input[type="number"] {
-                -moz-appearance: textfield;
+        }, 500);
+        // Überprüfe, ob das Ergebnis korrekt ist, um die Uhr zu starten oder zu stoppen
+        document.addEventListener('DOMContentLoaded', function() {
+            const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+            const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
+
+            if (!richtig && !edit) {
+                // Starte die Uhr, wenn 'richtig' leer oder None ist
+                if (!localStorage.getItem('sekunden')) {
+                    starteUhr();
+                } else {
+                    document.getElementById('uhr').textContent = sekunden + " Sek.";
+                }
+            } else {
+                // Zeige die gespeicherte Zeit an, wenn 'richtig' nicht leer ist
+                document.getElementById('uhr').textContent = sekunden;
             }
-        </style>
-    </head>
+        });
+    </script>
+    <script>
+        document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</head>
 <body>
     <div class="container">
         {% block content %}
@@ -118,9 +180,12 @@
                         {% endif %}
                     {% else %}
                         <div class = "fett">
+                            {% if richtig %}
+                                Eingabe:
+                            {% endif %}
                             {{protokoll.frage}}
-                            {{richtig}}
                             {{form.eingabe}}
+                            {{richtig}}
                             {{protokoll.einheit}}
                         </div>
                     {%endif%}
@@ -158,76 +223,14 @@
                         </table>
                     </fieldset>
                 </form>
-
-                <script>
-                    let einsStars = "";
-                    let zweiStars = "";
-                    let starCount = 0;
-                    let sekunden = 0;
-            
-                    // Funktion, um die Uhr zu starten
-                    function starteUhr() {
-                        setInterval(function() {
-                            sekunden++;
-                            document.getElementById('uhr').textContent = sekunden;
-                        }, 1000); // Update jede Sekunde
-                    }
-            
-                    // Funktion, um alle halbe Sekunde einen Stern hinzuzufügen
-                    const addStarsInterval = setInterval(function() {
-                        starCount++;
-                        einsStars += "*";
-                        zweiStars += "*";
-                        document.getElementById('Eins').value = einsStars;
-                        document.getElementById('Zwei').value = zweiStars;
-            
-                        // Wenn 4 Sterne erreicht sind, stoppen und nach 2 Sekunden die Namen anzeigen
-                        if (starCount === 4) {
-                            clearInterval(addStarsInterval);
-                            
-                            setTimeout(function() {
-                                document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
-                                document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
-                                
-                                // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
-                                document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
-                                document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
-                            }, 2000);
-                        }
-                    }, 500);
-                    // Überprüfe, ob das Ergebnis korrekt ist, um die Uhr zu starten oder zu stoppen
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
-
-                        if (!richtig) {
-                            // Starte die Uhr, wenn 'richtig' leer oder None ist
-                            if (!localStorage.getItem('sekunden')) {
-                                starteUhr();
-                            } else {
-                                document.getElementById('uhr').textContent = sekunden + " Sek.";
-                            }
-                        } else {
-                            // Zeige die gespeicherte Zeit an, wenn 'richtig' nicht leer ist
-                            document.getElementById('uhr').textContent = sekunden;
-                        }
-                    });
-                </script>
-            
-                <script>
-                    document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
-                        if (event.keyCode == 13) {
-                            event.preventDefault();
-                        }
-                    });
-                </script>
-                <p>{{richtig}}</p>
+                <p></p>
                 <table>
                     <tr><td>
                         <button type="button">
                             <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' protokoll.kategorie.slug %}">nächste Aufgabe</a>
                         </button>
                     </td>
-                    <td  class="zeitfeld" id="uhr">0</td>
+                    <td  class="zeitfeld null" id="uhr">0</td>
                     <td>
                         <button type="button">
                             <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">Abbrechen</a>
@@ -250,4 +253,5 @@
             {% endautoescape %}
         {% endblock %}
     </div>
+    
 </body>

@@ -15,7 +15,7 @@ from accounts.views import stufe_aus_jg
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from core.forms import AufgabeFormZahl, AufgabeFormStr
-from core.views import aufgaben, kontrolle
+from core.views import format_zahl, aufgaben, kontrolle
 
 from .models import  Duellant, Duell_Protokoll, Duell_Wertung
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab
@@ -97,7 +97,7 @@ def duellant_aendern(req, gruppe_id, duellant_id):
                 duellant.save()             
         return duell_uebersicht(req, gruppe_id)
     form = Duellant_Aendern_Form(instance=duellant)
-    return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form,})
+    return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form, 'edit':True})
 
 def duell_aufgabe(req, slug):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
@@ -337,9 +337,10 @@ def duell_kontrolle(req):
             protokoll.loesung = protokoll.parameter['y5']
             print("Tab: ", protokoll.parameter)
             if isinstance(protokoll.parameter['y5'], str):
-                protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
-            else:
-                protokoll.wert = protokoll.parameter['y5']
+               protokoll.parameter['y5'] = format_zahl(protokoll.parameter['y5'],2).replace(",",".")
+               protokoll.save()
+               #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            protokoll.wert = protokoll.parameter['y5']
             protokoll.save()
         else:
             eingabe = pro_eingabe = form.cleaned_data['eingabe']
@@ -523,6 +524,10 @@ def duell_loeschen(req):
         nur_punkte = req.POST.get('nur_punkte', 'off') 
         bestaetigt = req.POST.get('bestaetigt', 'off')
         if bestaetigt == "on":
+            zaehler = Zaehler.objects.filter(user = req.user.profil)
+            for kategorie in zaehler:
+                kategorie.aufgnr = 0
+                kategorie.save()
             if nur_punkte == "on":
                 for duellant in duellanten:
                     duellant.punkte = 0
