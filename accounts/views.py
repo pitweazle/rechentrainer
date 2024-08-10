@@ -2,17 +2,17 @@ from datetime import date, datetime, timedelta, time
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login#, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.http import HttpResponse, FileResponse, Http404
 
-from django.db.models import Max, Sum, F, Q
+from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
 
-from .models import Schule, Lerngruppe, Geloescht
+from .models import Schule, Lerngruppe,  Geloescht
 from core.models import Zaehler, Profil, Kategorie, Protokoll
  
 def name_hj():
@@ -58,7 +58,7 @@ def stufen(req):
     return render(req, 'lehrer/stufen.html', context={'titel': "Was bedeuten die Stufen?",})
 
 # registrieren und anmelden:
-def stufe(jg, kurs):
+def stufe_aus_jg(jg, kurs="E"):
     stufe = 0
     if kurs == "i":
         stufe = 0
@@ -93,7 +93,7 @@ def registrieren(req):
                 profil = profil_form.save(commit=False)
                 kurs = profil_form.cleaned_data['kurs']
                 jg = profil_form.cleaned_data['jg']
-                profil.stufe = stufe(jg, kurs)
+                profil.stufe = stufe_aus_jg(jg, kurs)
                 sj, hj = name_hj()
                 profil.sj = sj
                 profil.hj = hj
@@ -251,9 +251,9 @@ def doch_neues_halbjahr(req):
 
 def neues_halbjahr(req):
     sj, hj = name_hj()
-    print(sj,"/",hj)
+    #print(sj,"/",hj)
     user = get_object_or_404(Profil, user_id = req.user.id)
-    print(user.sj,"/",user.hj)
+    #print(user.sj,"/",user.hj)
     user.voreinst["no_hj"] = False
     user.voreinst["frage_hj"] = 0
     user.hj = hj
@@ -273,7 +273,7 @@ def neues_halbjahr(req):
             if str(user.jg) in user.klasse:
                 user.klasse = user.klasse.replace(str(user.jg), str(user.jg+1),1)
             user.jg +=1
-            neue_stufe = stufe(user.jg, user.kurs)
+            neue_stufe = stufe_aus_jg(user.jg, user.kurs)
             if neue_stufe > user.stufe:
                 user.stufe = neue_stufe
             user.save() 
@@ -382,7 +382,7 @@ def profil_lehrer(req):
                 profil_form.save()
                 jg = profil_form.cleaned_data['jg']
                 kurs = profil_form.cleaned_data['kurs']
-                #lehrer.stufe = stufe(jg, kurs)                       # sorgt dafür, dass Stufe zu Jg und Kurs passt
+                #lehrer.stufe = stufe_aus_jg(jg, kurs)                       # sorgt dafür, dass Stufe zu Jg und Kurs passt
                 lehrer.stufe = profil_form.cleaned_data['stufe']    # mit dieser Zeile kann man die Stufe ohne Vorgaben ändern
                 lehrer.save()
                 return render(req, 'lehrer/aendern_fertig.html')                            
@@ -673,7 +673,7 @@ def schueler_aendern(req, schueler_id):
             profil_form.save()
             jg = profil_form.cleaned_data['jg']
             kurs = profil_form.cleaned_data['kurs']
-            schueler.stufe = stufe(jg, kurs)
+            schueler.stufe = stufe_aus_jg(jg, kurs)
             schueler.save() 
             return render(req, 'lehrer/aendern_fertig.html', {'titel': "Daten wurden geändert"})
         else:
@@ -695,7 +695,7 @@ def karteileichen(req):
                 a.klasse = a.klasse.replace(str(a.jg), str(a.jg+1),1)
             a.jg +=1
             try:
-                neue_stufe = stufe(a.jg, a.kurs)
+                neue_stufe = stufe_aus_jg(a.jg, a.kurs)
                 if neue_stufe > a.stufe:
                     a.stufe = neue_stufe
                 print(a, "neuer_Jg: ", a.jg, ", Stufe: ", a.stufe, "neue Stufe: ",  neue_stufe,)

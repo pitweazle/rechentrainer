@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="de">
+    <head>       
+        <title>Rechentrainer von Peter Doll</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
+    </head>
+
+    <header>
+        <div class="navbar">
+            <a href="{% url 'index' %}">&#8962 Home</a>
+            <a href="{% url 'duell_uebersicht' gruppe_id %}">zurück</a>
+            <a>{{duellant}}</a>
+
+        </div> 
+    </header>
+
+    <body>
+        <container>
+            {% block content %}
+            <form action="/duellant_aendern/{{gruppe_id}}/{{duellant.id}}/" method="POST">
+            <table>
+                {% csrf_token %}
+                {{form.as_table}}
+            </table>
+            <button type="submit">Änderungen speichern</button>  
+            </form>
+            {% endblock %}
+        </container>
+    </body>
+</html>

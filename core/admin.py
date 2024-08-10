@@ -32,7 +32,10 @@ admin.site.register(Sachaufgabe)
 
 admin.site.register(Kategorie, KategorieAdmin)
 admin.site.register(Hilfe, HilfeAdmin)
-admin.site.register(Protokoll, ProtokollAdmin)
+
 admin.site.register(Zaehler, ZaehlerAdmin)
+admin.site.register(Protokoll, ProtokollAdmin)
+
+
 
 
