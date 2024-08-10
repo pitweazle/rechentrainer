@@ -29,10 +29,17 @@
 
         // Funktion, um die Uhr zu starten
         function starteUhr() {
-            setInterval(function() {
+            uhrInterval = setInterval(function() {
                 sekunden++;
-                document.getElementById('uhr').textContent = sekunden;
+                localStorage.setItem('sekunden', sekunden); // Speichern der Zeit im Local Storage
+                document.getElementById('uhr').textContent = sekunden + " Sek.";
             }, 1000); // Update jede Sekunde
+        }
+
+        // Funktion, um die Uhr zu stoppen
+        function stoppeUhr() {
+            clearInterval(uhrInterval); // Stoppe das Intervall
+            localStorage.removeItem('sekunden'); // Lösche die Zeit, wenn der Sieger angezeigt wird
         }
 
         // Funktion, um Sterne hinzuzufügen
@@ -60,6 +67,24 @@
 
         // Starte die Uhr, sobald die Seite geladen wird
         window.onload = starteUhr;
+
+        {% comment %} document.addEventListener('DOMContentLoaded', function() {
+            const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+            const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
+        
+            if (!richtig) {
+                // Starte die Uhr, wenn weder 'richtig' noch 'edit' gesetzt sind
+                if (!localStorage.getItem('sekunden')) {
+                    starteUhr();
+                } else {
+                    document.getElementById('uhr').textContent = s" Sek.";
+                }
+            } else {
+                // Zeige die gespeicherte Zeit an, wenn 'richtig' gesetzt ist oder 'edit' wahr ist
+                document.getElementById('uhr').textContent = sekunden + " Sek.";
+            }
+        }); {% endcomment %}
+
     </script>
        
 
