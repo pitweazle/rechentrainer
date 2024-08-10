@@ -159,8 +159,10 @@ def duell_aufgabe(req, slug):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
-    if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+    if duellant_1.liga != duellant_2.liga:
         meldung = "Aufstiegsduell:"
+    elif duellant_1.aufsteiger != duellant_2.aufsteiger:
+        meldung = 'Relegationsspiel'
     else:
         meldung = ""
     req.session['protokoll_id'] = protokoll.id  
@@ -384,7 +386,8 @@ def duell_kontrolle(req):
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
                         rueckmeldung += meldung
                 else:
-                    if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
+                    if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:
+                    # if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
                         if duellant == duell_protokoll.duellant_2:
                             meldung = abstieg(duell_protokoll.duellant_1)
                             rueckmeldung += "<br>" + meldung
