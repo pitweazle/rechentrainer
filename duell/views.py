@@ -169,7 +169,7 @@ def duell_aufgabe(req, slug):
     aufsteiger_2 = "↑" if duell_protokoll.duellant_2.aufsteiger else "" 
     context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = parameter,   
         farbe_1 = "null", farbe_2 = "null", aufsteiger_1 = aufsteiger_1, aufsteiger_2 = aufsteiger_2, 
-        form = form,    message_unten = anmerkung, meldung = meldung)
+        form = form, message_unten = anmerkung, meldung = meldung)
     return render(req, 'aufgabe_duell.html', context)
 
 def duell_optionen(req, slug):

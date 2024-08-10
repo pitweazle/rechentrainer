@@ -22,6 +22,10 @@
     </style>
 
     <script>
+
+    </script>
+
+    <script>
         let einsStars = "";
         let zweiStars = "";
         let starCount = 0;
@@ -34,6 +38,17 @@
                 document.getElementById('uhr').textContent = sekunden;
             }, 1000); // Update jede Sekunde
         }
+
+        // Funktion zum Ausblenden und Einblenden der Meldung
+        function toggleMeldung() {
+            const meldungElement = document.getElementById('meldung');
+            if (meldungElement) {
+                meldungElement.style.visibility = 'hidden'; // Ausblenden
+                setTimeout(function() {
+                    meldungElement.style.visibility = 'visible'; // Einblenden nach 2 Sekunden
+                }, 2000);
+            }
+    }
 
         // Funktion, um alle halbe Sekunde einen Stern hinzuzufügen
         const addStarsInterval = setInterval(function() {
@@ -54,15 +69,16 @@
                     // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
                     document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
                     document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                    document.getElementById('meldung').textContent = '{{meldung}}';
+                    
                 }, 2000);
             }
         }, 500);
         // Überprüfe, ob das Ergebnis korrekt ist, um die Uhr zu starten oder zu stoppen
         document.addEventListener('DOMContentLoaded', function() {
             const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
-            const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
 
-            if (!richtig && !edit) {
+            if (!richtig) {
                 // Starte die Uhr, wenn 'richtig' leer oder None ist
                 if (!localStorage.getItem('sekunden')) {
                     starteUhr();
@@ -75,6 +91,62 @@
             }
         });
     </script>
+    {% comment %} <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+            const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
+        
+            console.log("Richtig:", richtig); // Debugging-Ausgabe
+            console.log("Edit:", edit); // Debugging-Ausgabe
+        
+            if (!richtig && edit === "False") {
+                // Starte die Uhr, wenn weder 'richtig' noch 'edit' gesetzt sind
+                if (!localStorage.getItem('sekunden')) {
+                    starteUhr();
+                } else {
+                    document.getElementById('uhr').textContent = sekunden + " Sek.";
+                }
+        
+                // Füge die Sterne alle halbe Sekunde hinzu und zeige nach 2 Sekunden die Namen an
+                const addStarsInterval = setInterval(function() {
+                    starCount++;
+                    einsStars += "*";
+                    zweiStars += "*";
+                    document.getElementById('Eins').value = einsStars;
+                    document.getElementById('Zwei').value = zweiStars;
+        
+                    if (starCount === 4) {
+                        clearInterval(addStarsInterval);
+        
+                        setTimeout(function() {
+                            document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
+                            document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
+        
+                            // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                            document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
+                            document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                        }, 2000);
+                    }
+                }, 500);
+        
+            } else {
+                // Zeige die Namen und die Liga-Farben sofort an, wenn 'edit' wahr ist
+                document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
+                document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
+                document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
+                document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                
+                // Zeige die gespeicherte Zeit an
+                document.getElementById('uhr').textContent = sekunden + " Sek.";
+            }
+        });
+        
+        function starteUhr() {
+            uhrInterval = setInterval(function() {
+                sekunden++;
+                localStorage.setItem('sekunden'
+    </script> {% endcomment %}
+        
     <script>
         document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
             if (event.keyCode == 13) {
@@ -189,7 +261,7 @@
                             {{protokoll.einheit}}
                         </div>
                     {%endif%}
-                    <h2 style="text-align: left";>{{meldung}}</h2>
+                    <h2 id="meldung" style="text-align: left";></h2>
                         <table>
                             <tr>
                                 {% if richtig %}
