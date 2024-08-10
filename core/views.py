@@ -4032,7 +4032,6 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 typ = random.randint(1,2)
         else:
             typ = random.randint(3, typ_end) 
-        #typ=1
         titel = "Zuordnungen" 
         text = "default{}"
         pro_text = ""
