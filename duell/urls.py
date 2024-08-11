@@ -13,4 +13,5 @@ urlpatterns = [
     path('duell_loesung/', views.duell_loesung, name='duell_loesung'),
     path('duell_loeschen/', views.duell_loeschen, name='duell_loeschen'),
     path('duell_how_to/', views.duell_how_to, name='duell_how_to'),
+    path("duell_protokoll/<int:gruppe_id>/", views.duell_protokoll, name="duell_protokoll"),
 ]

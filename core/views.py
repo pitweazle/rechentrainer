@@ -6699,7 +6699,7 @@ def protokoll(req, schueler_id=0):
             user_profil = get_object_or_404(Profil, id = schueler_id)               # Schülerin oder Schüler
         if(user_profil.id) != (req.user.profil.id) and (user_profil.gruppe.lehrer.id) != (req.user.id) and not req.user.is_superuser:
             return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(user=user_profil).order_by('id').reverse()  # Protokoll des Users
+        protokoll = Protokoll.objects.filter(user=user_profil).exclude(wertung = "Duell").order_by('id').reverse()  # Protokoll des Users
         next_sj, next_hj = name_next_hj()
         auswahl = "heute"
         wahl = "heute"

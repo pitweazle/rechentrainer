@@ -562,4 +562,12 @@ def duell_loeschen(req):
 def duell_how_to(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     return render(req, 'duell_how_to.html', {'gruppe_id': gruppe.id})    
-        
+
+def duell_protokoll(req, gruppe_id):
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+    if gruppe.lehrer != req.user:
+        return HttpResponse("Zugriff verweigert")
+    else:
+        duell_protokoll = Duell_Protokoll.objects.filter(gruppe_id=gruppe_id, protokoll__wertung = "Duell").order_by('id').reverse()
+        context = dict(duell_protokoll= duell_protokoll)
+        return render(req, 'duell_protokoll.html', context)
