@@ -216,6 +216,7 @@ def sub_auslosen(gruppe_id):
         duellanten_liste.append(duellant.id)
     duellant_1 = duellanten.last()
     duellant_1.spiele +=1
+    duellant_1.punkte_spiel = 0
     duellant_1.save()
     duellanten = duellanten.exclude(name=duellant_1.name)
     duellanten = duellanten.order_by("liga","-spiele")
@@ -239,6 +240,7 @@ def sub_auslosen(gruppe_id):
             duellanten_liste = duellanten_liste    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
     duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
+    duellant_2.punkte_spiel = 0
     duellant_2.save()
     return  duellant_1, duellant_2 
 
@@ -420,6 +422,13 @@ def duell_kontrolle(req):
             else: 
                 duellant = Duellant.objects.get(name=duellant_name)
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+            farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
+            farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
+            context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+                farbe_1 = farbe_1, farbe_2 = farbe_2, 
+                form = form,    message_unten = protokoll.anmerkung, falsch = True)
+            return render(req, 'aufgabe_duell.html', context)
+
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
