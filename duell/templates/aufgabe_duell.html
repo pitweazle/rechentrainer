@@ -43,7 +43,11 @@
             clearInterval(uhrInterval); // Stoppe das Intervall
         }
 
-        // Funktion, um Sterne hinzuzufügen
+    document.addEventListener('DOMContentLoaded', function() {
+        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+        const falsch = "{{ falsch|default:False }}"; // Holt den Wert von 'falsch' aus dem Template
+        const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
+
         const addStarsInterval = setInterval(function() {
             starCount++;
             einsStars += "*";
@@ -52,29 +56,30 @@
             document.getElementById('Zwei').value = zweiStars;
 
             // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4) {
+            if (starCount === 4 || falsch != 'False') {
                 clearInterval(addStarsInterval);
 
                 // Sofortige Anzeige der Namen und Farben
                 document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
                 document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
                 
-                // Farben sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
                 document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
                 document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
                 document.getElementById('meldung').textContent = '{{meldung}}';
             }
-        }, 500); // Update alle 500 Millisekunden
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
-        const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
-
-        if (richtig || edit === "True") {
+            }, 500); // Update alle 500 Millisekunden
+        
+        if ((richtig || edit === "True")) {
             sekunden = localStorage.getItem('sekunden')
             stoppeUhr()
             document.getElementById('uhr').textContent = sekunden + " Sek.";
-        } 
+        }
+        else if (falsch === "True"){
+            sekunden = localStorage.getItem('sekunden')
+            document.getElementById('uhr').textContent = sekunden + " Sek."; 
+            starteUhr();
+        }
         else {
             localStorage.clear('sekunden');
             starteUhr();
@@ -82,8 +87,6 @@
     });
 
     </script>
-       
-
 </head>
 <body>
     <div class="container">
@@ -209,7 +212,7 @@
                                 {% endif %}
                                 <td>{{aufsteiger_1}}</td>
                                 <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
-                                {% if richtig %}
+                                {% if richtig or falsch %}
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
                                 {%endif%}
@@ -221,7 +224,7 @@
                                     <td><input type="submit" name = "duellant" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>                                    
                                 {% endif %}
                             <tr>
-                                {% if richtig %}
+                                {% if richtig  or falsch %}
                                     <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
                                 {% else %}
                                     
