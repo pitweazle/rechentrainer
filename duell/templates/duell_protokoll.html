@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/protokoll.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include 'includes/header.html' %} 
+    <body>
+        {%if lehrer and not loeschen%}
+            <button>        
+                <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+            </button>
+        {%endif%}
+
+        <div class="container">
+            <h2>{{schueler.vorname}} {{schueler.nachname}}
+            </h2>
+
+  
+
+            <h2>Protokoll:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Datum/Hj.</th>
+                        <th>Kategorie (Typ)</th>
+                        <th>Aufgnr.</th>
+                        <th>Aufgabe</th>
+                        <th>Ergebnis</th>
+                        <th width = "150"> Eingabe</th>
+                        <th>r</th>
+                        <th>f</th>
+                        <th>Duellant 1</th>
+                        <th>Liga</th>  
+                        <th>Duellant 2</th>
+                        <th>Liga</th>                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% autoescape off %}
+                    {% for zeile in duell_protokoll %}
+                        <tr>
+                            <td>{{zeile.protokoll.start|date:"d.m.y H:i"}}</td>
+                            <td>{{zeile.protokoll..kategorie.name }} <br>({{zeile.protokoll.typ}})</td>
+                            <td>{{zeile.protokoll.aufgnr}} </td>
+                            {% if zeile.protokoll.pro_text != ""  %}
+                                <td>{{ zeile.protokoll.pro_text}}</td>
+                            {% else %}
+                                <td>{{zeile.protokoll.text}}</td>
+                            {% endif%}
+                            <td>{%if zeile.protokoll.wert%}
+                                    {{zeile.protokoll.wert.normalize}}
+                                {%else%}
+                                    {{zeile.protokoll.loesung.0}}
+                                {%endif%}
+                            </td>
+                            {% if zeile.protokoll.falsch > 0 %}
+                                {% if zeile.protokoll.richtig > 0 %}
+                                    <td class="gelb">{{zeile.protokoll.zweigabe}}</td>
+                                {%else%}
+                                    <td class="rot">{{zeile.protokoll.zweigabe}}</td>
+                                {%endif%}
+                            {% elif zeile.protokoll.richtig > 0 %}
+                                <td class="gruen">{{zeile.protokoll.zweigabe}}</td>
+                            {% else %}
+                                <td class="rot">{{zeile.protokoll.zweigabe}}</td>
+                            {% endif%}
+                            <td>{{ zeile.protokoll.richtig.normalize}}</td>
+                            <td>{{ zeile.protokoll.falsch}}</td>                
+                            <td>{{ zeile.duellant_1.name}}</td>                
+                            <td>{{ zeile.duellant_1.liga}}</td>       
+                            <td>{{ zeile.duellant_2.name}}</td>                
+                            <td>{{ zeile.duellant_2.liga}}</td>            
+                        </tr>
+                    {% empty %}
+                        <strong>Leider keine Kategorien vorhanden.</strong> 
+                    {% endfor %}
+                    {% endautoescape %}
+                </tbody>
+            </table>
+        </body>
+    </div>
+{% endblock %}
+
