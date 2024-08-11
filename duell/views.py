@@ -481,7 +481,7 @@ def duellant_edit(req, duellant_id, punkte):
         form = AufgabeFormStr(req.POST)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, 
-        form = form,    message_unten = protokoll.anmerkung)
+        message_unten = protokoll.anmerkung, edit = True, richtig = protokoll.eingabe)
     return render(req, 'aufgabe_duell.html', context)
 
 def neu_auslosen(req, mit):

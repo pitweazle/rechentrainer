@@ -22,10 +22,12 @@
     </style>
 
     <script>
+
         let einsStars = "";
         let zweiStars = "";
         let starCount = 0;
-        let sekunden = 0;
+        let sekunden = 0
+        let uhrInterval;
 
         // Funktion, um die Uhr zu starten
         function starteUhr() {
@@ -39,7 +41,6 @@
         // Funktion, um die Uhr zu stoppen
         function stoppeUhr() {
             clearInterval(uhrInterval); // Stoppe das Intervall
-            localStorage.removeItem('sekunden'); // Lösche die Zeit, wenn der Sieger angezeigt wird
         }
 
         // Funktion, um Sterne hinzuzufügen
@@ -65,25 +66,20 @@
             }
         }, 500); // Update alle 500 Millisekunden
 
-        // Starte die Uhr, sobald die Seite geladen wird
-        window.onload = starteUhr;
+    document.addEventListener('DOMContentLoaded', function() {
+        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
+        const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
 
-        {% comment %} document.addEventListener('DOMContentLoaded', function() {
-            const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
-            const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
-        
-            if (!richtig) {
-                // Starte die Uhr, wenn weder 'richtig' noch 'edit' gesetzt sind
-                if (!localStorage.getItem('sekunden')) {
-                    starteUhr();
-                } else {
-                    document.getElementById('uhr').textContent = s" Sek.";
-                }
-            } else {
-                // Zeige die gespeicherte Zeit an, wenn 'richtig' gesetzt ist oder 'edit' wahr ist
-                document.getElementById('uhr').textContent = sekunden + " Sek.";
-            }
-        }); {% endcomment %}
+        if (richtig || edit === "True") {
+            sekunden = localStorage.getItem('sekunden')
+            stoppeUhr()
+            document.getElementById('uhr').textContent = sekunden + " Sek.";
+        } 
+        else {
+            localStorage.clear('sekunden');
+            starteUhr();
+        }
+    });
 
     </script>
        
@@ -96,6 +92,7 @@
                 <div class="navbar">
                     {% if user.is_authenticated %}
                         <p>Duell {{duell_protokoll.gruppe.name}}</p>
+                        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
                     {% else %}
                         <p>Du bist nicht eingeloggt</p>
                         <a href="{% url 'einloggen' %}">Log In</a>
@@ -212,8 +209,10 @@
                                 {% endif %}
                                 <td>{{aufsteiger_1}}</td>
                                 <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
-                                <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
-                                <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
+                                {% if richtig %}
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
+                                {%endif%}
                             </tr>
                             <tr>
                                 {% if richtig %}
@@ -230,8 +229,10 @@
                                 {% endif %} 
                                 <td>{{aufsteiger_2}}</td>
                                 <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
-                                <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
-                                <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
+                                {% if richtig %}
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
+                                {%endif%}
                             </tr>
                         </table>
                     </fieldset>
