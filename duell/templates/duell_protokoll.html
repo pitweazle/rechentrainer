@@ -33,10 +33,14 @@
                     <th>r/f</th>
                     <th>Duellant 1</th>
                     <th>Liga</th>
-                    <th></th>  
+                    <th></th>
+                    <th>Eingabe</th>
                     <th>Duellant 2</th>
                     <th>Liga</th> 
-                    <th></th>                      
+                    <th></th> 
+                    <th>Eingabe</th>
+                    <th>Auf-/Abstieg</th>                      
+                     
                 </tr>
             </thead>
             <tbody>
@@ -71,14 +75,18 @@
                             {% else %}
                                 <td></td> 
                             {% endif %}
-                        </td>       
+                        </td>
+                        <td>{{zeile.eingabe}}</td>
                         <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.name}}</td>                
                         <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.liga}}</td>
                         {% if zeile.duell_protokoll.duellant_2.aufsteiger %}
                             <td class = {{zeile.duell_protokoll.duellant_2.liga}}>↑</td>
                         {% else %}
                             <td></td>  
-                        {% endif %}            
+                        {% endif %} 
+                        <td>{{zeile.eingabe}}</td>
+                        <td>{{zeile.anmerkung}}</td>
+           
                     </tr>
                 {% empty %}
                     <strong>Leider keine Kategorien vorhanden.</strong> 
