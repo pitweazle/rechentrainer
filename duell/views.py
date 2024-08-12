@@ -171,7 +171,7 @@ def duell_aufgabe(req, slug):
     aufsteiger_2 = "↑" if duell_protokoll.duellant_2.aufsteiger else "" 
     context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = parameter,   
         farbe_1 = "null", farbe_2 = "null", aufsteiger_1 = aufsteiger_1, aufsteiger_2 = aufsteiger_2, 
-        form = form, message_unten = anmerkung, meldung = meldung)
+        form = form, message_unten = anmerkung, meldung = meldung, neu = "neu")
     return render(req, 'aufgabe_duell.html', context)
 
 def duell_optionen(req, slug):
@@ -319,6 +319,7 @@ def duell_kontrolle(req):
     protokoll.versuche += 1
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
     zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
+    context = dict()
     #wenn in den Aufgaben in "erg" eine Zahl steht
     if "tab" in protokoll.parameter["name"]:
         # if "term" in protokoll.parameter["name"]:
@@ -388,21 +389,16 @@ def duell_kontrolle(req):
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
                         rueckmeldung += meldung
                 else:
-                    if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:
+                    if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:          # einer der Duellanten ist Aufsteiger
                     # if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
-                        if duellant == duell_protokoll.duellant_2:
+                        if duellant != duell_protokoll.duellant_2 and duell_protokoll.duellant_2.aufsteiger:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
                             meldung = abstieg(duell_protokoll.duellant_1)
                             rueckmeldung += "<br>" + meldung
-                        if duellant == duell_protokoll.duellant_1:
+                        if duellant != duell_protokoll.duellant_1 and duell_protokoll.duellant_1.aufsteiger:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
                             meldung = abstieg(duell_protokoll.duellant_2)
                             rueckmeldung += "<br>" + meldung
             messages.info(req, f'{rueckmeldung}')
-            farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
-            farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
-            context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-                farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = str(protokoll.eingabe).replace(".",","),
-                message_unten = protokoll.anmerkung)
-            return render(req, 'aufgabe_duell.html', context)
+            context['richtig'] = str(protokoll.eingabe).replace(".",",")
         #wenn Aufgabe falsch:
         else: 
             if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
@@ -422,16 +418,10 @@ def duell_kontrolle(req):
             else: 
                 duellant = Duellant.objects.get(name=duellant_name)
                 sub_punkte(duell_protokoll, duellant, eingabe, punkte )
-            farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
-            farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
-            context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-                farbe_1 = farbe_1, farbe_2 = farbe_2, 
-                form = form,    message_unten = protokoll.anmerkung, falsch = True)
-            return render(req, 'aufgabe_duell.html', context)
-
+            #context['falsch'] = str(protokoll.eingabe).replace(".",",")
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
-    context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+    context.update(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, 
         form = form,    message_unten = protokoll.anmerkung)
     return render(req, 'aufgabe_duell.html', context)
@@ -569,5 +559,5 @@ def duell_protokoll(req, gruppe_id):
         return HttpResponse("Zugriff verweigert")
     else:
         duell_protokoll = Duell_Protokoll.objects.filter(gruppe_id=gruppe_id, protokoll__wertung = "Duell").order_by('id').reverse()
-        context = dict(duell_protokoll= duell_protokoll)
+        context = dict(protokoll= duell_protokoll, gruppe = gruppe)
         return render(req, 'duell_protokoll.html', context)
