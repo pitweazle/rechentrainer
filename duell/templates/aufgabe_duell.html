@@ -44,8 +44,6 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
-
-
         const addStarsInterval = setInterval(function() {
             starCount++;
             einsStars += "*";
@@ -72,7 +70,6 @@
             localStorage.clear('sekunden');
             starteUhr();
         }
-
         else {
             sekunden = localStorage.getItem('sekunden')
             stoppeUhr()
@@ -80,71 +77,6 @@
         }
     });
     </script>
-
-    {% comment %} <script>
-        let einsStars = "";
-        let zweiStars = "";
-        let starCount = 0;
-        let sekunden = 0
-        let uhrInterval;
-
-        // Funktion, um die Uhr zu starten
-        function starteUhr() {
-            uhrInterval = setInterval(function() {
-                sekunden++;
-                localStorage.setItem('sekunden', sekunden); // Speichern der Zeit im Local Storage
-                document.getElementById('uhr').textContent = sekunden + " Sek.";
-            }, 1000); // Update jede Sekunde
-        }
-
-        // Funktion, um die Uhr zu stoppen
-        function stoppeUhr() {
-            clearInterval(uhrInterval); // Stoppe das Intervall
-        }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'richtig' aus dem Template
-        const falsch = "{{ falsch|default:False }}"; // Holt den Wert von 'falsch' aus dem Template
-        const edit = "{{ edit|default:False }}"; // Holt den Wert von 'edit' aus dem Template
-
-        const addStarsInterval = setInterval(function() {
-            starCount++;
-            einsStars += "*";
-            zweiStars += "*";
-            document.getElementById('Eins').value = einsStars;
-            document.getElementById('Zwei').value = zweiStars;
-
-            // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4 || falsch != 'False') {
-                clearInterval(addStarsInterval);
-
-                // Sofortige Anzeige der Namen und Farben
-                document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
-                document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
-                
-                // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
-                document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
-                document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
-                document.getElementById('meldung').textContent = '{{meldung}}';
-            }
-            }, 500); // Update alle 500 Millisekunden
-        
-        if ((richtig || edit === "True")) {
-            sekunden = localStorage.getItem('sekunden')
-            stoppeUhr()
-            document.getElementById('uhr').textContent = sekunden + " Sek.";
-        }
-        else if (falsch === "True"){
-            sekunden = localStorage.getItem('sekunden')
-            document.getElementById('uhr').textContent = sekunden + " Sek."; 
-            starteUhr();
-        }
-        else {
-            localStorage.clear('sekunden');
-            starteUhr();
-        }
-    });
-    </script> {% endcomment %}
 </head>
 <body>
     <div class="container">
