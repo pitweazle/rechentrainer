@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+{% extends 'layout.html' %}   
+{% load static %}
+
+<html lang="de">
+<head>       
+    <title>Rechentrainer im Web</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'duell.css' %}">
+</head>
+
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+        <a>{{titel}}</a>
+    </div> 
+</header>
+
+<body>
+        {% block content %}
+        {% endblock %}
+</body>
+</html>
