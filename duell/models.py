@@ -43,7 +43,7 @@ class Duell_Wertung(models.Model):
     duellant = models.ForeignKey(Duellant, related_name='duellant', null = True, on_delete=models.CASCADE)
     eingabe = models.CharField(max_length=20, blank=True)
     punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
-    anmerkung = models.CharField(max_length=20, blank=True, default = "")
+    anmerkung = models.CharField(max_length=40, blank=True, default = "")
 
     def __str__(self):      
         return f"{self.duellant}: {self.eingabe}, {self.punkte} Punkte"

@@ -311,7 +311,9 @@ def sub_punkte(req, duell_protokoll, duellant, eingabe, punkte):
     protokoll.save()
     duell_wertung.eingabe = eingabe
     duell_wertung.punkte = duellant.punkte_spiel
+    print(duell_wertung)
     duell_wertung.save()
+    return duell_wertung
 
 def duell_kontrolle(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
@@ -377,19 +379,21 @@ def duell_kontrolle(req):
                 return redirect('duell_uebersicht', gruppe.id)
             if beide:
                 duellant = duell_protokoll.duellant_1
-                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
                 duellant = duell_protokoll.duellant_2
-                sub_punkte(duell_protokoll, duellant, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
             else:
                 duellant = Duellant.objects.get(name=duellant_name)
-                sub_punkte(req, duell_protokoll, duellant, eingabe, 1 )
+                wechsel = sub_punkte(req, duell_protokoll, duellant, eingabe, 1 )
                 if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
                     if duellant.liga > duell_protokoll.duellant_2.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_2)
                         rueckmeldung += meldung
                     elif duellant.liga > duell_protokoll.duellant_1.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
-                        rueckmeldung += meldung
+                        rueckmeldung += "<br>" + meldung
+                    wechsel.anmerkung=meldung
+                    wechsel.save()
                 else:
                     if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:          # einer der Duellanten ist Aufsteiger
                     # if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
@@ -399,6 +403,8 @@ def duell_kontrolle(req):
                         if duellant != duell_protokoll.duellant_1 and duell_protokoll.duellant_1.aufsteiger:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
                             meldung = abstieg(duell_protokoll.duellant_2)
                             rueckmeldung += "<br>" + meldung
+                    wechsel.anmerkung=meldung
+                    wechsel.save()
             messages.info(req, f'{rueckmeldung}')
             context['richtig'] = str(protokoll.eingabe).replace(".",",")
         #wenn Aufgabe falsch:
@@ -435,7 +441,7 @@ def auf_abstieg(aufsteiger, absteiger):
     absteiger.liga = chr(stringwert+1)
     absteiger.aufsteiger = False
     absteiger.save()
-    meldung = "<br> " + aufsteiger.name + " steigt auf - " + absteiger.name + " steigt ab"
+    meldung = aufsteiger.name + " steigt auf - " + absteiger.name + " steigt ab"
     return meldung  
 
 def abstieg(absteiger):
