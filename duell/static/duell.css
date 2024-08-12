@@ -18,6 +18,15 @@ button {
   color: #339999;
  }
 
+ .navbar a {
+  float: left;
+  font-size: 16px;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
 input[type=button], input[type=submit] {
 	height: 35px;
 	width: 280px;  
@@ -25,6 +34,7 @@ input[type=button], input[type=submit] {
 
 td {
   padding:0px;
+  text-align: center;
 }
 
 .A{
