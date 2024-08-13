@@ -37,11 +37,20 @@ class Duell_Protokoll(models.Model):
         verbose_name = 'Duell_Protokoll'
         verbose_name_plural = 'Duell_Protokolle'
 
-class Duell_Wertung(models.Model):
+class Duell_Eingabe(models.Model):
     duell_protokoll = models.ForeignKey(Duell_Protokoll, related_name='duellwertung', on_delete=models.CASCADE)
     duellant_nr = models.SmallIntegerField(default=0)
+    punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
     anmerkung = models.CharField(max_length=40, blank=True, default = "")
 
+    def __str__(self):
+        if self.duellant_nr == 1:      
+            return f"{self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_1}: {self.punkte} Punkte"
+        elif self.duellant_nr == 3:      
+            return f"{self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_2}: {self.punkte} Punkte"        
+        else:      
+            return f"{self.duell_protokoll}: {self.punkte} Punkte"        
+
     class Meta:
-        verbose_name = 'Duell_Wertung'
-        verbose_name_plural = 'Duell_Wertungen'
+        verbose_name = 'Duell_Eingabe'
+        verbose_name_plural = 'Duell_Eingaben'
