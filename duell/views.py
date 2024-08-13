@@ -303,7 +303,6 @@ def duell_loesung(req):
     return render(req, 'aufgabe_duell.html', context)
  
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, punkte, beide = False):
-    print("C: ",punkte)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
     duellant.punkte_spiel += punkte
@@ -401,12 +400,10 @@ def duell_kontrolle(req):
                 zaehler.save()                
                 return redirect('duell_uebersicht', gruppe.id)
             if beide:
-                print("beide")
                 duellant = duell_protokoll.duellant_1
                 sub_punkte(req, duell_protokoll, duellant, 2, punkte, True )
                 duellant = duell_protokoll.duellant_2
                 doppelt = sub_punkte(req, duell_protokoll, duellant, 2, punkte )
-                print(doppelt)
                 doppelt.delete()
                 doppelt.save()
             else:
@@ -447,7 +444,6 @@ def duell_kontrolle(req):
                 if not "tab" in protokoll.parameter["name"]:
                     messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht 
                 punkte = Decimal(-0.5)
-            print("A: ", punkte)
             if beide:
                 duellant = duell_protokoll.duellant_1
                 sub_punkte(req, duell_protokoll, duellant, 2, punkte )
@@ -459,7 +455,6 @@ def duell_kontrolle(req):
                     duellant_nr = 1
                 else:
                     duellant_nr = 3
-                print("B: ",punkte)
                 wechsel = sub_punkte(req, duell_protokoll, duellant, duellant_nr, punkte )
             context['falsch'] = str(protokoll.eingabe).replace(".",",")
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
