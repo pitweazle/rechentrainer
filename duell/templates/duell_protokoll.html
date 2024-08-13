@@ -35,12 +35,13 @@
                     <th>Liga</th>
                     <th></th>
                     <th>Eingabe</th>
+                    <th>Punkte</th>
                     <th>Duellant 2</th>
                     <th>Liga</th> 
                     <th></th> 
                     <th>Eingabe</th>
-                    <th>Auf-/Abstieg</th>                      
-                     
+                    <th>Punkte</th>
+                    <th></th>                      
                 </tr>
             </thead>
             <tbody>
@@ -78,7 +79,9 @@
                         </td>
                         {% if zeile.duellant_nr < 3%} 
                             <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                            <td>{{zeile.punkte}}</td>
                         {% else %}
+                            <td></td> 
                             <td></td> 
                         {% endif %}
                         <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.name}}</td>                
@@ -88,9 +91,11 @@
                         {% else %}
                             <td></td>  
                         {% endif %}
-                        {% if zeile.duellant_nr > 1 %} 
+                        {% if zeile.duellant_nr > 1%} 
                             <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                            <td>{{zeile.punkte}}</td>
                         {% else %}
+                            <td></td> 
                             <td></td> 
                         {% endif %}
                         <td>{{zeile.anmerkung}}</td>
