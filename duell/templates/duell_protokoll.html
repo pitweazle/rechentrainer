@@ -46,23 +46,28 @@
             </thead>
             <tbody>
                 {% autoescape off %}
-                {% for zeile in protokoll %}
+                {% for zeile in duell_eingabe %}
                     <tr>
                         <td>{{zeile.duell_protokoll.protokoll.start|date:"d.m. H:i"}}</td>
                         <td>{{zeile.duell_protokoll.protokoll.kategorie.name }} <br>({{zeile.duell_protokoll.protokoll.typ}})</td>
                         <td>{{zeile.duell_protokoll.protokoll.aufgnr}} </td>
-                        {% if zeile.duell_protokoll.protokoll.pro_text != ""  %}
-                            <td>{{ zeile.duell_protokoll.protokoll.pro_text}}</td>
-                        {% else %}
-                            <td>{{zeile.duell_protokoll.protokoll.text}}</td>
-                        {% endif%}
-                        <td>{%if zeile.duell_protokoll.protokoll.wert%}
-                                {{zeile.duell_protokoll.protokoll.wert.normalize}}
-                            {%else%}
-                                {{zeile.duell_protokoll.protokoll.loesung.0}}
-                            {%endif%}
-                        </td>
-                            <td class = "{{zeile.farbe}}">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
+                        {% if zeile.anmerkung != "edit" %} 
+                            {% if zeile.duell_protokoll.protokoll.pro_text != ""  %}
+                                <td>{{ zeile.duell_protokoll.protokoll.pro_text}}</td>
+                            {% else %}
+                                <td>{{zeile.duell_protokoll.protokoll.text}}</td>
+                            {% endif%}
+                            <td>{%if zeile.duell_protokoll.protokoll.wert%}
+                                    {{zeile.duell_protokoll.protokoll.wert.normalize}}
+                                {%else%}
+                                    {{zeile.duell_protokoll.protokoll.loesung.0}}
+                                {%endif%}
+                            </td>
+
+                                <td class = "{{zeile.duell_protokoll.protokoll.farbe}}">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
+                            {% else %}
+                                <td></td><td></td><td></td>
+                            {% endif %}                            
                         <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.name}}</td>                
                         <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.liga}}</td>
                             {% if zeile.duell_protokoll.duellant_1.aufsteiger %}
@@ -101,6 +106,7 @@
                             <td></td> 
                         {% endif %}
                         <td>{{zeile.anmerkung}}</td>
+                        <td>{{zeile.id}}</td>
                     </tr>
                 {% empty %}
                     <strong>Leider keine Kategorien vorhanden.</strong> 
