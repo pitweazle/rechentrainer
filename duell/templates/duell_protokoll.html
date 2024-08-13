@@ -76,15 +76,23 @@
                                 <td></td> 
                             {% endif %}
                         </td>
-                        <td>{{zeile.eingabe}}</td>
+                        {% if zeile.duellant_nr < 3%} 
+                            <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                        {% else %}
+                            <td></td> 
+                        {% endif %}
                         <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.name}}</td>                
                         <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.liga}}</td>
                         {% if zeile.duell_protokoll.duellant_2.aufsteiger %}
                             <td class = {{zeile.duell_protokoll.duellant_2.liga}}>↑</td>
                         {% else %}
                             <td></td>  
-                        {% endif %} 
-                        <td>{{zeile.eingabe}}</td>
+                        {% endif %}
+                        {% if zeile.duellant_nr > 1 %} 
+                            <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                        {% else %}
+                            <td></td> 
+                        {% endif %}
                         <td>{{zeile.anmerkung}}</td>
            
                     </tr>

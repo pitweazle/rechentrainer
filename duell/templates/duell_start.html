@@ -14,6 +14,9 @@
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
         <a>Rechenduell {{gruppe}}</a>
+        <a href="{% url 'duell_protokoll' gruppe.id %}">Protokoll</a>
+
+        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
     </div> 
 </header>
 <br>
