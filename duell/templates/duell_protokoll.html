@@ -62,13 +62,7 @@
                                 {{zeile.duell_protokoll.protokoll.loesung.0}}
                             {%endif%}
                         </td>
-                        {% if zeile.duell_protokoll.protokoll.richtig > 0 %}
-                            <td class="gruen">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
-                        {% elif zeile.duell_protokoll.protokoll.richtig < 0 %}
-                            <td class="rot">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
-                        {% else %}
-                            <td>{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
-                        {% endif %}
+                            <td class = "{{zeile.farbe}}">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td>
                         <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.name}}</td>                
                         <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.liga}}</td>
                             {% if zeile.duell_protokoll.duellant_1.aufsteiger %}
@@ -78,8 +72,12 @@
                             {% endif %}
                         </td>
                         {% if zeile.duellant_nr < 3%} 
-                            <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
-                            <td>{{zeile.punkte}}</td>
+                            {% if zeile.anmerkung != "edit" %} 
+                                <td class = "{{zeile.farbe}}">{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                            <td class = "{{zeile.farbe}}">{{zeile.punkte}}</td>
                         {% else %}
                             <td></td> 
                             <td></td> 
@@ -91,15 +89,18 @@
                         {% else %}
                             <td></td>  
                         {% endif %}
-                        {% if zeile.duellant_nr > 1%} 
-                            <td>{{zeile.duell_protokoll.protokoll.eingabe}}</td>
-                            <td>{{zeile.punkte}}</td>
+                        {% if zeile.duellant_nr > 1%}
+                            {% if zeile.anmerkung != "edit" %} 
+                                <td class = "{{zeile.farbe}}">{{zeile.duell_protokoll.protokoll.eingabe}}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                            <td class = "{{zeile.farbe}}">{{zeile.punkte}}</td>
                         {% else %}
                             <td></td> 
                             <td></td> 
                         {% endif %}
                         <td>{{zeile.anmerkung}}</td>
-           
                     </tr>
                 {% empty %}
                     <strong>Leider keine Kategorien vorhanden.</strong> 
