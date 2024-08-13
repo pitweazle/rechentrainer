@@ -40,6 +40,7 @@ class Duell_Protokoll(models.Model):
 class Duell_Eingabe(models.Model):
     duell_protokoll = models.ForeignKey(Duell_Protokoll, related_name='duellwertung', on_delete=models.CASCADE)
     duellant_nr = models.SmallIntegerField(default=0)
+    eingabe = models.CharField(max_length=20, blank=True)
     punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
     anmerkung = models.CharField(max_length=40, blank=True, default = "")
 
