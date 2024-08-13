@@ -124,14 +124,14 @@ class Protokoll(models.Model):
     def zweigabe(self):
         return self.eingabe.replace(".",",")
     
-    def farbe(self):                        # wird im Duell_Protokoll benötigt
-        if self.richtig > 0:
-            farbe = "gruen"
-        elif self.richtig <0:
-            farbe = "rot"
-        else:
-            farbe = "null"
-        return farbe
+    # def farbe(self):                        # wird im Duell_Protokoll benötigt
+    #     if self.richtig > 0:
+    #         farbe = "gruen"
+    #     elif self.richtig <0:
+    #         farbe = "rot"
+    #     else:
+    #         farbe = "null"
+    #     return farbe
         
     def name(self):        
         return f"{self.user.nachname}, {self.user.vorname}, {self.user.klasse}, {self.user.gruppe}"
