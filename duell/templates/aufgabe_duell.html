@@ -44,6 +44,8 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const falsch = "{{ falsch|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+
         const addStarsInterval = setInterval(function() {
             starCount++;
             einsStars += "*";
@@ -52,7 +54,7 @@
             document.getElementById('Zwei').value = zweiStars;
 
             // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4) {
+            if (starCount === 4 || falsch) {
                 clearInterval(addStarsInterval);
 
                 // Sofortige Anzeige der Namen und Farben
