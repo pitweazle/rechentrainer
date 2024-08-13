@@ -39,14 +39,8 @@ class Duell_Protokoll(models.Model):
 
 class Duell_Wertung(models.Model):
     duell_protokoll = models.ForeignKey(Duell_Protokoll, related_name='duellwertung', on_delete=models.CASCADE)
-    datum = models.DateTimeField('datum', auto_now_add = True)
-    duellant = models.ForeignKey(Duellant, related_name='duellant', null = True, on_delete=models.CASCADE)
-    eingabe = models.CharField(max_length=20, blank=True)
-    punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
+    duellant_nr = models.SmallIntegerField(default=0)
     anmerkung = models.CharField(max_length=40, blank=True, default = "")
-
-    def __str__(self):      
-        return f"{self.duellant}: {self.eingabe}, {self.punkte} Punkte"
 
     class Meta:
         verbose_name = 'Duell_Wertung'

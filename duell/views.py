@@ -302,20 +302,21 @@ def duell_loesung(req):
         message_unten = protokoll.anmerkung, lsg = True)
     return render(req, 'aufgabe_duell.html', context)
  
-def sub_punkte(req, duell_protokoll, duellant, eingabe, punkte):
+def sub_punkte(req, duell_protokoll, duellant, duellant_nr, punkte):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant)
+    duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll)
     duellant.punkte_spiel += punkte
     duellant.save()
     protokoll.richtig = punkte 
     protokoll.save()
-    duell_wertung.eingabe = eingabe
-    duell_wertung.punkte = duellant.punkte_spiel
-    print(duell_wertung)
+    duell_wertung.duellant_nr = duellant_nr
     duell_wertung.save()
     return duell_wertung
 
+
+
 def duell_kontrolle(req):
+    meldung = ""
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
@@ -378,17 +379,25 @@ def duell_kontrolle(req):
                 zaehler.save()                
                 return redirect('duell_uebersicht', gruppe.id)
             if beide:
+                print("beide")
                 duellant = duell_protokoll.duellant_1
-                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, 2, punkte )
                 duellant = duell_protokoll.duellant_2
-                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
+                doppelt = sub_punkte(req, duell_protokoll, duellant, 2, punkte )
+                print(doppelt)
+                doppelt.delete()
+                doppelt.save()
             else:
                 duellant = Duellant.objects.get(name=duellant_name)
-                wechsel = sub_punkte(req, duell_protokoll, duellant, eingabe, 1 )
+                if duellant.name == duell_protokoll.duellant_1.name:
+                    duellant_nr = 1
+                else:
+                    duellant_nr = 3
+                wechsel = sub_punkte(req, duell_protokoll, duellant, duellant_nr, 1 )
                 if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
                     if duellant.liga > duell_protokoll.duellant_2.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_2)
-                        rueckmeldung += meldung
+                        rueckmeldung += "<br>" + meldung
                     elif duellant.liga > duell_protokoll.duellant_1.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_1)
                         rueckmeldung += "<br>" + meldung
@@ -418,12 +427,16 @@ def duell_kontrolle(req):
                 punkte = Decimal(-0.5)
             if beide:
                 duellant = duell_protokoll.duellant_1
-                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, 2, punkte )
                 duellant = duell_protokoll.duellant_2
-                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
-            else: 
+                sub_punkte(req, duell_protokoll, duellant, 2, punkte )
+            else:
                 duellant = Duellant.objects.get(name=duellant_name)
-                sub_punkte(req, duell_protokoll, duellant, eingabe, punkte )
+                if duellant.name == duell_protokoll.duellant_1.name:
+                    duellant_nr = 1
+                else:
+                    duellant_nr = 3
+                wechsel = sub_punkte(req, duell_protokoll, duellant, duellant_nr, 1 )
             #context['falsch'] = str(protokoll.eingabe).replace(".",",")
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
@@ -472,11 +485,9 @@ def duellant_edit(req, duellant_id, punkte):
     duell_wertung = Duell_Wertung.objects.create(duell_protokoll = duell_protokoll, duellant = duellant) 
     if punkte == "plus":
         duellant.punkte_spiel +=Decimal(0.5)
-        duell_wertung.punkte +=Decimal(0.5)
     elif punkte == "minus":
         duellant.punkte_spiel -=Decimal(0.5)
-        duell_wertung.punkte -=Decimal(0.5)
-    duell_wertung.eingabe = "edit"
+    duell_wertung.anmerkung = "edit"
     duellant.save()
     duell_wertung.save()
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
