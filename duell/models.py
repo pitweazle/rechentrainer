@@ -45,11 +45,11 @@ class Duell_Eingabe(models.Model):
 
     def __str__(self):
         if self.duellant_nr == 1:      
-            return f"{self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_1}: {self.punkte} Punkte"
+            return f"{self.id:} {self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_1}: {self.punkte} Punkte"
         elif self.duellant_nr == 3:      
-            return f"{self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_2}: {self.punkte} Punkte"        
+            return f"{self.id:} {self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_2}: {self.punkte} Punkte"        
         else:      
-            return f"{self.duell_protokoll}: {self.punkte} Punkte" 
+            return f"{self.id:} {self.duell_protokoll}: {self.punkte} Punkte" 
 
     @property
     def farbe(self):

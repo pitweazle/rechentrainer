@@ -52,7 +52,7 @@
             document.getElementById('Zwei').value = zweiStars;
 
             // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4 && neu) {
+            if (starCount === 4) {
                 clearInterval(addStarsInterval);
 
                 // Sofortige Anzeige der Namen und Farben
@@ -174,7 +174,9 @@
                                 Eingabe:
                             {% endif %}
                             {{protokoll.frage}}
-                            {{form.eingabe}}
+                            {% if not richtig %}
+                                {{form.eingabe}}
+                            {% endif %}
                             {{richtig}}
                             {{protokoll.einheit}}
                         </div>
@@ -208,15 +210,14 @@
                                     <td><input type="submit" name = "duellant" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>                                    
                                 {% endif %}
                             <tr>
-                                {% if richtig  or falsch %}
+                                {% if richtig %}
                                     <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
                                 {% else %}
-                                    
                                     <td><input type="submit" id="Zwei" name = "duellant" class="no-color" value=""  ></td>
                                 {% endif %} 
                                 <td>{{aufsteiger_2}}</td>
                                 <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
-                                {% if richtig %}
+                                {% if richtig or falsch %}
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
                                 {%endif%}
