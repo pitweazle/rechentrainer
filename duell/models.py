@@ -49,7 +49,17 @@ class Duell_Eingabe(models.Model):
         elif self.duellant_nr == 3:      
             return f"{self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_2}: {self.punkte} Punkte"        
         else:      
-            return f"{self.duell_protokoll}: {self.punkte} Punkte"        
+            return f"{self.duell_protokoll}: {self.punkte} Punkte" 
+
+    @property
+    def farbe(self):
+        if self.punkte > 0:
+            farbe = "gruen"
+        elif self.punkte <0:
+            farbe = "rot"
+        else:
+            farbe = "null"
+        return farbe
 
     class Meta:
         verbose_name = 'Duell_Eingabe'

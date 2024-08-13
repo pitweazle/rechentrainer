@@ -503,7 +503,7 @@ def duellant_edit(req, duellant_id, punkte):
     duellant = Duellant.objects.get(id=duellant_id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     #zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
-    duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll, duellant = duellant) 
+    duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll) 
     if punkte == "plus":
         duellant.punkte_spiel +=Decimal(0.5)
         duell_eingabe.punkte = Decimal(0.5)

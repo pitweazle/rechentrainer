@@ -83,13 +83,7 @@
         {% block content %}
             <div class= "oben">
                 <div class="navbar">
-                    {% if user.is_authenticated %}
-                        <p>Duell {{duell_protokoll.gruppe.name}}</p>
-                        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
-                    {% else %}
-                        <p>Du bist nicht eingeloggt</p>
-                        <a href="{% url 'einloggen' %}">Log In</a>
-                    {% endif %}
+                    <p>Duell {{duell_protokoll.gruppe.name}}</p>
                 </div>
                 {% autoescape off %}
                 <div class="message">
@@ -260,5 +254,4 @@
             {% endautoescape %}
         {% endblock %}
     </div>
-    
 </body>
