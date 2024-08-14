@@ -15,11 +15,11 @@
     </div> 
 </header>
 <body>
-    <form action="{% url 'duell_protokoll' gruppe.id %}" method="POST">
+    {% comment %} <form action="{% url 'duell_protokoll' gruppe.id %}" method="POST">
         {% csrf_token %}
         {{form}}
         <input type="submit" value="anwenden">
-    </form> 
+    </form>  {% endcomment %}
 
     <div class="container">
         <table>
