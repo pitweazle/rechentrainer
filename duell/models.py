@@ -22,7 +22,7 @@ class Duellant(models.Model):
         verbose_name_plural = 'Duellanten'
     
     def __str__(self):
-        return f"{self.profil.vorname}_{self.profil.nachname}"
+        return f"{self.name}"
 
 class Duell_Protokoll(models.Model):
     protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
