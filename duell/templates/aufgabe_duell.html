@@ -85,7 +85,8 @@
         {% block content %}
             <div class= "oben">
                 <div class="navbar">
-                    <p>Duell {{duell_protokoll.gruppe.name}}</p>
+                    <a>Duell {{duell_protokoll.gruppe.name}}</a>
+                    <a href="{% url 'duell_protokoll' duell_protokoll.gruppe.id %}">Protokoll</a>
                 </div>
                 {% autoescape off %}
                 <div class="message">
