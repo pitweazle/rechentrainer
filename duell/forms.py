@@ -2,6 +2,7 @@ from django import forms
 from django.db import models
 from .models import Duellant
 from core.models import Kategorie
+from django.forms import ModelChoiceField
 
 class Duellant_Aendern_Form(forms.ModelForm):
     class Meta:
@@ -29,8 +30,9 @@ class Duell_AuswahlForm(forms.Form):
 
 class AufgabeFormTab(forms.Form):
     y5 = forms.DecimalField(label='', max_digits=5,
-                                decimal_places=2, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
+        decimal_places=2, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
     
-# class AufgabeFormTerm(forms.Form):
-#     y5 = forms.DecimalField(label='', max_digits=5,
-#                                 decimal_places=2, required=False, localize=True, widget=forms.TextInput(attrs={'size': 3, 'autocomplete': 'off', 'autofocus': True,}))
+class DuellProtokollFilter(forms.Form):
+    auswahl = forms.ModelChoiceField(queryset=Duellant.objects.filter(profil__gruppe=1), empty_label="(alle)", 
+    )
+    
