@@ -313,11 +313,12 @@ def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, bei
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
         duell_eingabe.duellant_nr = duellant_nr
-        if beide:
+        if beide == True:
             duell_eingabe.anmerkung = "gleich schnell"
         else:
             duell_eingabe.anmerkung = duellant.name
         duell_eingabe.save()
+        return duell_eingabe
 
 def sub_eingabe(req, duellant, beide, punkte):
     duell_protokoll = Duell_Protokoll.objects.get(protokoll = req.session.get('protokoll_id'))
@@ -406,14 +407,14 @@ def duell_kontrolle(req):
                 sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Erste" )
                 duellant = duell_protokoll.duellant_2
                 sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweite" )
+            else: 
+                duellant = Duellant.objects.get(name=duellant_name)
                 if duellant.name == duell_protokoll.duellant_1.name:
                     duellant_nr = 1
                 else:
                     duellant_nr = 3
-            else:
-                duellant = Duellant.objects.get(name=duellant_name)
-                wechsel = sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, 1 )
-                if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+                wechsel = sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, False )
+                if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:                          # zwei verschiedene Ligen
                     if duellant.liga > duell_protokoll.duellant_2.liga:
                         meldung = auf_abstieg(duellant, duell_protokoll.duellant_2)
                         rueckmeldung += "<br>" + meldung
@@ -425,14 +426,14 @@ def duell_kontrolle(req):
                 else:
                     if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:          # einer der Duellanten ist Aufsteiger
                     # if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
-                        if duellant != duell_protokoll.duellant_2 and duell_protokoll.duellant_2.aufsteiger:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
-                            meldung = abstieg(duell_protokoll.duellant_1)
-                            rueckmeldung += "<br>" + meldung
-                        if duellant != duell_protokoll.duellant_1 and duell_protokoll.duellant_1.aufsteiger:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
+                        if duell_protokoll.duellant_1.aufsteiger and duellant == duell_protokoll.duellant_2:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
                             meldung = abstieg(duell_protokoll.duellant_2)
                             rueckmeldung += "<br>" + meldung
-                    wechsel.anmerkung=meldung
-                    wechsel.save()
+                        if duell_protokoll.duellant_2.aufsteiger and duellant == duell_protokoll.duellant_1:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
+                            meldung = abstieg(duell_protokoll.duellant_1)
+                            rueckmeldung += "<br>" + meldung
+                        wechsel.anmerkung=meldung
+                        wechsel.save()
             messages.info(req, f'{rueckmeldung}')
             context['richtig'] = eingabe
         #wenn Aufgabe falsch:
@@ -529,10 +530,18 @@ def neu_auslosen(req, mit):
     duell_rang(gruppe.id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
+    duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
     if mit == "mit":
         duell_protokoll.duellant_1.punkte_spiel -=Decimal(0.5)
         duell_protokoll.duellant_2.punkte_spiel -=Decimal(0.5)
         duell_protokoll.save()
+        duell_eingabe.duellant_nr = 2
+        duell_eingabe.punkte = -Decimal(0.5)
+        duell_eingabe.anmerkung = "neue Kandidaten mit Punktabzug"
+    else:
+        duell_eingabe.duellant_nr = 2
+        duell_eingabe.anmerkung = "neue Kandidaten ohne Punktabzug"
+    duell_eingabe.save()
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
@@ -598,6 +607,8 @@ def duell_protokoll(req, gruppe_id):
         return HttpResponse("Zugriff verweigert")
     else:
         duell_eingabe = Duell_Eingabe.objects.filter(duell_protokoll__gruppe=gruppe).order_by('id').reverse()
-        form = DuellProtokollFilter
+        form = DuellProtokollFilter#(
+            #     req.POST, req.FILES, gruppe
+            # )
         context = dict(duell_eingabe = duell_eingabe, gruppe = gruppe, form = form)
         return render(req, 'duell_protokoll.html', context)

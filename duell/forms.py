@@ -35,4 +35,18 @@ class AufgabeFormTab(forms.Form):
 class DuellProtokollFilter(forms.Form):
     auswahl = forms.ModelChoiceField(queryset=Duellant.objects.filter(profil__gruppe=1), empty_label="(alle)", 
     )
+
+# class DuellProtokollFilter(forms.Form):
+#     auswahl = forms.ModelMultipleChoiceField(
+#         queryset=Duellant.objects.all(),
+#         widget=forms.CheckboxSelectMultiple,
+#         required=False,
+#     )
+
+#     def __init__(self, *args, gruppe=None, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         if gruppe is not None :
+#             self.fields['auswahl'].queryset = Duellant.auswahl_set.filter(
+#                 profil__gruppe = gruppe
+#             )
     
