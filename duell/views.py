@@ -308,7 +308,7 @@ def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, bei
     duellant.save()
     protokoll.richtig = punkte 
     protokoll.save()
-    if beide != "Zweite":
+    if beide != "Zweiter":
         duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
@@ -404,9 +404,9 @@ def duell_kontrolle(req):
                 return redirect('duell_uebersicht', gruppe.id)
             if beide:
                 duellant = duell_protokoll.duellant_1
-                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Erste" )
+                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Erster" )
                 duellant = duell_protokoll.duellant_2
-                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweite" )
+                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweiter" )
             else: 
                 duellant = Duellant.objects.get(name=duellant_name)
                 if duellant.name == duell_protokoll.duellant_1.name:
@@ -447,9 +447,9 @@ def duell_kontrolle(req):
                 punkte = Decimal(-0.5)
             if beide:
                 duellant = duell_protokoll.duellant_1
-                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Erster" )
                 duellant = duell_protokoll.duellant_2
-                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte )
+                sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweiter" )
             else:
                 duellant = Duellant.objects.get(name=duellant_name)
                 if duellant.name == duell_protokoll.duellant_1.name:
