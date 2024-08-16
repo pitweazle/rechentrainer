@@ -87,6 +87,7 @@
                 <div class="navbar">
                     <a>Duell {{duell_protokoll.gruppe.name}}</a>
                     <a href="{% url 'duell_protokoll' duell_protokoll.gruppe.id %}">Protokoll</a>
+                    <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">zur Übersicht</a>
                 </div>
                 {% autoescape off %}
                 <div class="message">
