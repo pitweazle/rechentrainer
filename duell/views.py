@@ -598,8 +598,7 @@ def duell_loeschen(req):
     return render(req, 'duell_loeschen.html' , context={'titel': "Duellgruppe löschen", 'gruppe' : gruppe}) 
 
 def duell_how_to(req):
-    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
-    return render(req, 'duell_how_to.html', {'gruppe_id': gruppe.id})    
+    return render(req, 'duell_how_to.html')    
 
 def duell_protokoll(req, gruppe_id):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
