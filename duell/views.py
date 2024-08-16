@@ -426,11 +426,11 @@ def duell_kontrolle(req):
                 else:
                     if duell_protokoll.duellant_1.aufsteiger != duell_protokoll.duellant_2.aufsteiger:          # einer der Duellanten ist Aufsteiger
                     # if (duell_protokoll.duellant_1.aufsteiger or duell_protokoll.duellant_2.aufsteiger) and not (duell_protokoll.duellant_1.aufsteiger and duell_protokoll.duellant_2.aufsteiger):
-                        if duell_protokoll.duellant_1.aufsteiger and duellant == duell_protokoll.duellant_2:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
-                            meldung = abstieg(duell_protokoll.duellant_2)
-                            rueckmeldung += "<br>" + meldung
-                        if duell_protokoll.duellant_2.aufsteiger and duellant == duell_protokoll.duellant_1:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
+                        if duell_protokoll.duellant_1.aufsteiger and duellant == duell_protokoll.duellant_2:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
                             meldung = abstieg(duell_protokoll.duellant_1)
+                            rueckmeldung += "<br>" + meldung
+                        if duell_protokoll.duellant_2.aufsteiger and duellant == duell_protokoll.duellant_1:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
+                            meldung = abstieg(duell_protokoll.duellant_2)
                             rueckmeldung += "<br>" + meldung
                         wechsel.anmerkung=meldung
                         wechsel.save()
