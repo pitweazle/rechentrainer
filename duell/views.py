@@ -313,7 +313,7 @@ def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, bei
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
         duell_eingabe.duellant_nr = duellant_nr
-        if beide == True:
+        if beide:
             duell_eingabe.anmerkung = "gleich schnell"
         else:
             duell_eingabe.anmerkung = duellant.name
