@@ -160,3 +160,7 @@ li a:active {
     color: #7e0154;
 }
   
+input[type=button], input[type=submit], input[type=reset] {
+    font-weight: bold;
+  }
+  
