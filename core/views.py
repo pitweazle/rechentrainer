@@ -4050,15 +4050,18 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 zahlen = [2,1,3,4]
             else:
                 zahlen = [2,3,4,5]
-            zahlen.append(random.randint(3,6))                                            # nur für das Duell
+            zahlen.append(random.randint(3,6))                          # nur für das Duell
             lsg = []
             x_werte = {}
             y_werte = {}
-            for n in zahlen[1:]:                                # berechnet die Lösungen
+            for n in zahlen[1:]:                                        # berechnet die Lösungen
                 lsg.append(format_zahl(zahl1/n, 2))
             for n in range (1,6):
                 x_werte["x" + str(n)] = zahlen[n-1]
-                y_werte["y" + str(n)] = format_zahl(zahl1/zahlen[n-1],2)
+                if n == 5:
+                    y_werte["y" + str(n)] = zahl1/zahlen[n-1]
+                else:
+                    y_werte["y" + str(n)] = format_zahl(zahl1/zahlen[n-1],2)
             parameter = {'name': 'tab_antiprop', 'titel_x': 'Teile', 'titel_y': 'Preis', 'x0': '[Anzahl]', 'y0': '[Euro]'}
             parameter.update(x_werte)
             parameter.update(y_werte) 
@@ -4071,15 +4074,18 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 zahlen = [2,1,3,4]
             else:
                 zahlen = [2,3,4,5]
-            zahlen.append(random.randint(3,6))                                            # nur für das Duell
+            zahlen.append(random.randint(3,6))                          # nur für das Duell
             lsg = []
             x_werte = {}
             y_werte = {}
-            for n in zahlen[1:]:                                # berechnet die Lösungen
+            for n in zahlen[1:]:                                        # berechnet die Lösungen
                 lsg.append(format_zahl(zahl1*n, 2))
             for n in range (1,6):
                 x_werte["x" + str(n)] = zahlen[n-1]
-                y_werte["y" + str(n)] = format_zahl(zahlen[n-1]*zahl1,2)
+                if n == 5:
+                    y_werte["y" + str(n)] = zahlen[n-1]*zahl1
+                else:
+                    y_werte["y" + str(n)] = format_zahl(zahlen[n-1]*zahl1,2)
             parameter = {'name': 'tab_prop', 'titel_x': 'Teile', 'titel_y': 'Preis', 'x0': '[Anzahl]', 'y0': '[Euro]'}
             parameter.update(x_werte)
             parameter.update(y_werte)
@@ -4164,6 +4170,7 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                     einheit = "Tage"
                     lsg = str(erg)+"Tage"
                     hilfe_id = 110 + stufe%2
+        print("lsg: ", lsg)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
 
 def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -4930,7 +4937,6 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             typ = random.randint(typ_anf, typ_end) 
         else:
             typ = random.randint(2, typ_end) 
-        #typ=1
         typ2 = 0
         titel = "Terme" 
         text = "default{}"
