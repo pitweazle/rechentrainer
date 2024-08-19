@@ -165,7 +165,7 @@
                                 <tr>
                                     <td class = "linie_rechts">{{parameter.x5}}</td>
                                     {% if richtig %}
-                                        <td>{{richtig}}</td>
+                                        <td>{{eingabe}}</td>
                                     {% else%}
                                         <td class = "{{parameter.color2}}">{{form.y5}}</td>
                                     {% endif %} 
@@ -181,7 +181,7 @@
                             {% if not richtig %}
                                 {{form.eingabe}}
                             {% endif %}
-                            {{richtig}}
+                            {{eingabe}}
                             {{protokoll.einheit}}
                         </div>
                     {%endif%}

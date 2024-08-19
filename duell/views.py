@@ -317,7 +317,6 @@ def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, bei
         duell_eingabe.anmerkung = "gleich schnell"
     else:
         duell_eingabe.anmerkung = duellant.name
-        print("Name: ",duellant.name)
     duell_eingabe.save()
     return duell_eingabe
 
@@ -365,11 +364,9 @@ def duell_kontrolle(req):
             parser = Parser()
             eingabe=round(round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3),3)
             protokoll.loesung = protokoll.parameter['y5']
-            print("Tab: ", protokoll.parameter)
-            if isinstance(protokoll.parameter['y5'], str):
-               protokoll.parameter['y5'] = format_zahl(protokoll.parameter['y5'],2).replace(",",".")
-               protokoll.save()
-               #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            if not protokoll.wert:
+                protokoll.loesung = format_zahl(protokoll.parameter['y5'],2)
+            #    #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
             protokoll.wert = protokoll.parameter['y5']
             protokoll.save()
         else:
