@@ -45,6 +45,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
         const falsch = "{{ falsch|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const edit = "{{ edit|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+
 
         const addStarsInterval = setInterval(function() {
             starCount++;
@@ -54,7 +57,7 @@
             document.getElementById('Zwei').value = zweiStars;
 
             // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4 || falsch) {
+            if (starCount === 4 || falsch || edit || richtig) {
                 clearInterval(addStarsInterval);
 
                 // Sofortige Anzeige der Namen und Farben
@@ -176,13 +179,14 @@
                         <div class = "fett">
                             {% if richtig %}
                                 Eingabe:
-                            {% endif %}
-                            {{protokoll.frage}}
-                            {% if not richtig %}
+                                {{protokoll.frage}}
+                                {{eingabe}}
+                                {{protokoll.einheit}}
+                            {% else %}
+                                {{protokoll.frage}}
                                 {{form.eingabe}}
+                                {{protokoll.einheit}}
                             {% endif %}
-                            {{eingabe}}
-                            {{protokoll.einheit}}
                         </div>
                     {%endif%}
                     <script>
@@ -198,11 +202,11 @@
                                 {% if richtig %}
                                     <td class = {{duell_protokoll.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_1.name}}</td>
                                 {% else %}
-                                    <td><input type="submit" id="Eins" name = "duellant" class="no-color" value="" ></td>
-                                {% endif %}
+                                    <td><input type="submit" id="Eins" name = "duellant" class="no-color" value=""  ></td>
+                                {% endif %} 
                                 <td>{{aufsteiger_1}}</td>
                                 <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
-                                {% if richtig or falsch %}
+                                {% if not neu %}
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
                                 {%endif%}
@@ -221,7 +225,7 @@
                                 {% endif %} 
                                 <td>{{aufsteiger_2}}</td>
                                 <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
-                                {% if richtig or falsch %}
+                                {% if not neu %}
                                     <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
                                     <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
                                 {%endif%}
