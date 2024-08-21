@@ -245,7 +245,6 @@ def sub_auslosen(gruppe_id):
     return  duellant_1, duellant_2 
 
 def duell_rang(gruppe_id):
-    print("Achtung Rang!")
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
@@ -306,12 +305,12 @@ def duell_loesung(req):
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     #duellant = Duellant.objects.get(name=duellant.name)
-    print(duellant, " - Punkt A: ",punkte) 
-    duellant.punkte_spiel = punkte
+    #print(duellant, " - Punkt A: ",punkte) 
+    duellant.punkte_spiel += punkte
     duellant.save()
     #protokoll.save()
-    print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
-    print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
+    #print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
+    #print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
     protokoll.richtig = punkte 
     protokoll.save()
     if beide != "Zweiter":                                                                                  # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
@@ -528,7 +527,6 @@ def neu_auslosen(req, mit):
         duell_eingabe.duellant_nr = 2
         duell_eingabe.anmerkung = "neue Kandidaten ohne Punktabzug"
     duell_eingabe.save()
-    print("Auslosen - neu_auslosen")
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
