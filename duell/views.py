@@ -305,7 +305,7 @@ def duell_loesung(req):
  
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duellant = Duellant.objects.get(name=duellant.name)
+    #duellant = Duellant.objects.get(name=duellant.name)
     print(duellant, " - Punkt A: ",punkte) 
     duellant.punkte_spiel = punkte
     duellant.save()
@@ -313,20 +313,17 @@ def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, bei
     print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
     print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
     protokoll.richtig = punkte 
+    protokoll.save()
     if beide != "Zweiter":                                                                                  # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
         duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
         duell_eingabe.duellant_nr = duellant_nr
-        print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
-        print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
         if beide:
             duell_eingabe.anmerkung = "gleich schnell"
         else:
             duell_eingabe.anmerkung = duellant.name
         duell_eingabe.save()
-    print(duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1.punkte_spiel)
-    print(duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2.punkte_spiel)
     return duell_eingabe
 
 def sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide):
@@ -341,7 +338,6 @@ def sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide
         else:
             duellant_nr = 3
         duell_eingabe = sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, False )    # übergibt die "duellant_nr", die wird benötigt damit im Protokoll die Eingabe und Punkte links(1) oder rechts(3) zugeordnet werden
-
     return duell_eingabe
 
 def duell_kontrolle(req):
@@ -407,7 +403,7 @@ def duell_kontrolle(req):
                 zaehler.aufgnr = 1
             zaehler.aufgnr += 1
             zaehler.save()
-            if zaehler.aufgnr > 10:
+            if zaehler.aufgnr >= 10:
                 zaehler.aufgnr = 0
                 zaehler.save()                
                 return redirect('duell_uebersicht', gruppe.id)
@@ -448,8 +444,6 @@ def duell_kontrolle(req):
         context['falsch'] = True
     farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
     farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
-    print(duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1.punkte_spiel)
-    print(duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2.punkte_spiel)
     context.update(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, eingabe = eingabe,
         form = form, message_unten = protokoll.anmerkung)
@@ -509,8 +503,10 @@ def duellant_edit(req, duellant_id, punkte):
     else:
         form = AufgabeFormStr(req.POST)
     context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-        farbe_1 = farbe_1, farbe_2 = farbe_2,  edit = True,
-        form = form, message_unten = protokoll.anmerkung)
+        farbe_1 = farbe_1, farbe_2 = farbe_2,  edit = Protokoll.richtig,
+        message_unten = protokoll.anmerkung)
+    if protokoll.richtig <= 0: 
+        context["form"] = form   
     return render(req, 'duell_aufgabe.html', context)
 
 def neu_auslosen(req, mit):
