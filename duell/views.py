@@ -34,12 +34,7 @@ def duell_uebersicht(req, gruppe_id):
         for kategorie in zaehler:
             kategorie.aufgnr = 0
             kategorie.save()
-    for duellant in duellanten:
-        duellant.punkte +=duellant.punkte_spiel
-        duellant.punkte_spiel = 0
-        if duellant.spiele != 0:
-            duellant.pps = duellant.punkte/duellant.spiele
-        duellant.save()
+    duell_rang(gruppe.id)
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
@@ -103,9 +98,9 @@ def duell_aufgabe(req, slug):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
+    duell_rang(gruppe.id)
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
-    duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
     if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
         zaehler.aufgnr = 1
@@ -140,6 +135,7 @@ def duell_aufgabe(req, slug):
     if pro_text != "" :
         pro_text = pro_text.format(*variable)
     frage = frage.format(*variable)
+    duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     protokoll = Protokoll.objects.create(
         user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
         anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
@@ -159,6 +155,7 @@ def duell_aufgabe(req, slug):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
+
     if duellant_1.liga != duellant_2.liga:
         meldung = "Aufstiegsduell:"
     elif duellant_1.aufsteiger != duellant_2.aufsteiger:
@@ -238,13 +235,17 @@ def sub_auslosen(gruppe_id):
             duellanten_liste = duellanten_liste[-(liga_C+2):]           # die Kandidaten in Liga C plus zwei in Liga B
         else:
             duellanten_liste = duellanten_liste    # die Kandidaten in Liga B plus zwei in Liga A ohne Liga C
-    duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
+    if duellant_1.liga == "A":
+        duellant_2 = duellanten.last()                                  # wählt den/die mit den wenigsten Spielen aus
+    else:
+        duellant_2 = duellanten.get(id = random.choice(duellanten_liste))
     duellant_2.spiele +=1
     duellant_2.punkte_spiel = 0
     duellant_2.save()
     return  duellant_1, duellant_2 
 
 def duell_rang(gruppe_id):
+    print("Achtung Rang!")
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
         duellant.punkte +=duellant.punkte_spiel
@@ -304,23 +305,28 @@ def duell_loesung(req):
  
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duellant.punkte_spiel += punkte
-    print(duellant.name, ": ", duellant.punkte_spiel)
+    duellant = Duellant.objects.get(name=duellant.name)
+    print(duellant, " - Punkt A: ",punkte) 
+    duellant.punkte_spiel = punkte
     duellant.save()
+    #protokoll.save()
+    print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
+    print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
     protokoll.richtig = punkte 
-    protokoll.save()
     if beide != "Zweiter":                                                                                  # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
         duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
         duell_eingabe.eingabe = eingabe
-        #duell_eingabe.punkte += punkte
-        #duell_eingabe.duellant_nr = duellant_nr
-    if beide:
-        duell_eingabe.anmerkung = "gleich schnell"
-    else:
-        duell_eingabe.anmerkung = duellant.name
-    duell_eingabe.punkte += punkte
-    print(duell_eingabe.anmerkung, ": ", duell_eingabe.punkte)
-    duell_eingabe.save()
+        duell_eingabe.punkte = punkte
+        duell_eingabe.duellant_nr = duellant_nr
+        print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
+        print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
+        if beide:
+            duell_eingabe.anmerkung = "gleich schnell"
+        else:
+            duell_eingabe.anmerkung = duellant.name
+        duell_eingabe.save()
+    print(duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1.punkte_spiel)
+    print(duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2.punkte_spiel)
     return duell_eingabe
 
 def sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide):
@@ -328,13 +334,14 @@ def sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide
         duellant = duell_protokoll.duellant_1
         duell_eingabe = sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Erster" )       
         duellant = duell_protokoll.duellant_2
-        sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweiter", duell_eingabe )
+        sub_punkte(req, duell_protokoll, duellant, 2, eingabe, punkte, "Zweiter")
     else: 
         if duellant.name == duell_protokoll.duellant_1.name:
             duellant_nr = 1
         else:
             duellant_nr = 3
         duell_eingabe = sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, False )    # übergibt die "duellant_nr", die wird benötigt damit im Protokoll die Eingabe und Punkte links(1) oder rechts(3) zugeordnet werden
+
     return duell_eingabe
 
 def duell_kontrolle(req):
@@ -525,6 +532,7 @@ def neu_auslosen(req, mit):
         duell_eingabe.duellant_nr = 2
         duell_eingabe.anmerkung = "neue Kandidaten ohne Punktabzug"
     duell_eingabe.save()
+    print("Auslosen - neu_auslosen")
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
     duell_protokoll = Duell_Protokoll.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
