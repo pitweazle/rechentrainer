@@ -246,19 +246,21 @@
                             <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">Abbrechen</a>
                         </button>
                     </td></tr>
-                    <tr><td>
-                        <button type="button" >
-                            <a href="{% url 'neu_auslosen' "mit" %}">neue Kandidaten mit Punktabzug</a>
-                        </button>
-                    </td><td>
-                        <button type="button">
-                            <a href="{% url 'neu_auslosen' "ohne"  %}">neue Kandidaten ohne Punktabzug</a>
-                        </button>
-                    </td><td>
-                        <button type="button">
-                            <a href="{% url 'duell_loesung'  %}">Lösung</a>
-                        </button>
-                    </td></tr>
+                    {% if not richtig %}
+                        <tr><td>
+                            <button type="button" >
+                                <a href="{% url 'neu_auslosen' "mit" %}">neue Kandidaten mit Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'neu_auslosen' "ohne"  %}">neue Kandidaten ohne Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'duell_loesung'  %}">Lösung</a>
+                            </button>
+                        </td></tr>
+                    {% endif %}
                 </table>
             {% endautoescape %}
         {% endblock %}

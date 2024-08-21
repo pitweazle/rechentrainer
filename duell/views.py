@@ -98,7 +98,7 @@ def duell_aufgabe(req, slug):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
-    duell_rang(gruppe.id)
+    #duell_rang(gruppe.id)
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
@@ -305,8 +305,10 @@ def duell_loesung(req):
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     #duellant = Duellant.objects.get(name=duellant.name)
-    #print(duellant, " - Punkt A: ",punkte) 
+    #print(duellant, " - Punkt A: ",punkte)
+    #print (duellant.punkte_spiel)
     duellant.punkte_spiel += punkte
+    #print (duellant.punkte_spiel)
     duellant.save()
     #protokoll.save()
     #print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
@@ -512,7 +514,7 @@ def neu_auslosen(req, mit):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
-    duell_rang(gruppe.id)
+    #duell_rang(gruppe.id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
     duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
