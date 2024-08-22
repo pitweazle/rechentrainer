@@ -102,8 +102,6 @@ def duell_aufgabe(req, slug):
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
-    if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
-        zaehler.aufgnr = 1
     #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
     #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
     if not zaehler.optionen_text :  
@@ -350,6 +348,8 @@ def duell_kontrolle(req):
     protokoll.versuche += 1
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
     zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
+    if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
+        zaehler.aufgnr = 1
     context = dict()
     #wenn in den Aufgaben in "erg" eine Zahl steht
     if "tab" in protokoll.parameter["name"]:
@@ -392,7 +392,11 @@ def duell_kontrolle(req):
             duellant = None
         else:
             beide = False
-            duellant = Duellant.objects.get(name=duellant_name)
+            try:
+                duellant = Duellant.objects.get(name=duellant_name)
+            except:
+                duellant = Duellant.objects.filter(name=duellant_name)
+                return HttpResponse("Hier gibt es zwei Duellanten mit gleichem Namen: ", duellant)
         #wenn Eingabe richtig:
         if wertung > 0  :
             if "enauer" in rueckmeldung:
@@ -400,14 +404,6 @@ def duell_kontrolle(req):
             else:
                 rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
             punkte = 1
-            if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
-                zaehler.aufgnr = 1
-            zaehler.aufgnr += 1
-            zaehler.save()
-            if zaehler.aufgnr >= 10:
-                zaehler.aufgnr = 0
-                zaehler.save()                
-                return redirect('duell_uebersicht', gruppe.id)
             duell_eingabe = sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide)
             if not beide:
                 if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:                          # zwei verschiedene Ligen
@@ -431,6 +427,12 @@ def duell_kontrolle(req):
                         duell_eingabe.anmerkung=meldung
                         duell_eingabe.save()
             messages.info(req, f'{rueckmeldung}')
+            zaehler.aufgnr += 1
+            zaehler.save()
+            if zaehler.aufgnr > 10:
+                zaehler.aufgnr = 0
+                zaehler.save()                
+                return redirect('duell_uebersicht', gruppe.id)
             context['richtig'] = True
         #wenn Aufgabe falsch:
         else:
