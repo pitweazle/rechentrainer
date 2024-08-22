@@ -21,6 +21,19 @@
 <br>
     <body>
         <div class="container">
+            {% comment %} <div class="message">
+                {% for message in messages %}
+                    {% if 'leider falsch' in message.message %}
+                        <p class = "rot">{{ message }}</p>
+                    {% elif 'halb' in message.message %}
+                        <p class = "gelb">{{ message }}</p>
+                    {% elif 'war richtig!' in message.message %}
+                        <p class = "gruen">{{ message }}</p>
+                    {% else %}
+                        <p class ="gelb">{{ message }}</p>
+                    {% endif%}
+                {% endfor %}
+            </div> {% endcomment %}
             <button type="button">
                 {% if dubletten_liste %}
                     Diese(n) Namen gibt es mehrfach: {{dubletten_liste}}<br>Bitte jeweils durch Klick auf den Namen umbenennen.
