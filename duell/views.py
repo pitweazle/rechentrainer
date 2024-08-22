@@ -52,7 +52,7 @@ def duell_uebersicht(req, gruppe_id):
     for duellant in duellanten:
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
-    duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil")
+    duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil__vorname", )
     duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
