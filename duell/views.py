@@ -102,6 +102,8 @@ def duell_aufgabe(req, slug):
     kategorie = get_object_or_404(Kategorie, slug = slug)
     user = req.user.profil
     zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
+    if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
+        zaehler.aufgnr = 1
     #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
     #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
     if not zaehler.optionen_text :  
@@ -348,8 +350,7 @@ def duell_kontrolle(req):
     protokoll.versuche += 1
     duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
     zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
-    if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
-        zaehler.aufgnr = 1
+
     context = dict()
     #wenn in den Aufgaben in "erg" eine Zahl steht
     if "tab" in protokoll.parameter["name"]:
@@ -552,7 +553,7 @@ def neu_auslosen(req, mit):
 def duell_loeschen(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     gruppen = Lerngruppe.objects.filter(lehrer=req.user)
-    if gruppe.lehrer != req.user:
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     try:    
         duellanten = Duellant.objects.filter(profil__gruppe = gruppe)
