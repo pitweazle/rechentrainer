@@ -6895,7 +6895,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
             lsg = lsg[0]
             punkte = 3*10**len(lsg)
             rueckmeldung = ""
-            for n in range(len(lsg)):
+            for n in range(len(lsg)-1):
                 if eingabe[n] is not None:                      # überprüft ob Einträge richtig sind
                     if (float(lsg[n].replace(",", "."))) == float(eingabe[n]):
                         punkte += 1*10**(n)
