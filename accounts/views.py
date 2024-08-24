@@ -1,8 +1,8 @@
 from datetime import date, datetime, timedelta, time
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import logout, UserCreationForm
-from django.contrib.auth import authenticate, login#, logout
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.http import HttpResponse, FileResponse, Http404
