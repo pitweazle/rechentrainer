@@ -303,23 +303,19 @@ def duell_loesung(req):
     return render(req, 'duell_aufgabe.html', context)
  
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
-    protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    #duellant = Duellant.objects.get(name=duellant.name)
-    #print(duellant, " - Punkt A: ",punkte)
-    #print (duellant.punkte_spiel)
     duellant.punkte_spiel += punkte
-    #print (duellant.punkte_spiel)
+    print(duellant, " - Punkt : ",punkte)
     duellant.save()
-    #protokoll.save()
-    #print("Protokoll: :", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
-    #print("Protokoll: :", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
+    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
+    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
+    protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     protokoll.richtig = punkte 
     protokoll.save()
-    if beide != "Zweiter":                                                                                  # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
+    if beide != "Zweiter":                                                                    # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
         duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
-        duell_eingabe.duellant_nr = duellant_nr
+        duell_eingabe.duellant_nr = duellant_nr                                               # legt fest ob im Protokoll die Eingabe und der Punkt links oder rechts angezeigt wird
         if beide:
             duell_eingabe.anmerkung = "gleich schnell"
         else:
