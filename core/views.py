@@ -6952,7 +6952,7 @@ def main(req, slug):
         # profil = get_object_or_404(Profil, user=req.user)
         # duell = True if profil.gruppe else False
         bis_loeschen = "-"
-        titel = ""
+        titel = text = ""
         if req.method == 'POST':
             print(req.session.get('protokoll_id'))
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))

@@ -304,14 +304,11 @@ def duell_loesung(req):
  
 def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
     duellant.punkte_spiel += punkte
-    print(duellant, " - Punkt : ",punkte)
     duellant.save()
-    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
-    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
-    protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    protokoll.richtig = punkte 
-    protokoll.save()
     if beide != "Zweiter":                                                                    # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
+        protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
+        protokoll.richtig = punkte 
+        protokoll.save()
         duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
         duell_eingabe.eingabe = eingabe
         duell_eingabe.punkte = punkte
