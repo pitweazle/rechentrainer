@@ -6815,6 +6815,8 @@ def abbrechen(req, zaehler_id):
 
 #Hier wird die Lösung angezeigt:
 def loesung(req, zaehler_id, protokoll_id):
+    if not req.user.is_authenticated:
+        return redirect('anmelden')
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     zaehler.richtig_of = 0 
     zaehler.lsg_zaehler += 1
