@@ -20,7 +20,6 @@ from core.views import format_zahl, aufgaben, kontrolle
 from .models import  Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter
 
-# das Rechenduell
 def duell_rang(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe_id)
@@ -65,7 +64,6 @@ def duell_rang(gruppe_id):
                 platz_speicher = duellant.platz
                 spiele_speicher = duellant.spiele
                 duellant.save()
-
 
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
@@ -307,10 +305,10 @@ def duell_loesung(req):
     except:
         text = protokoll.loesung
     messages.info(req, f'Lösung: {text}') 
-    farbe_1 = farbe(duell.duellant_1.punkte_spiel)
-    farbe_2 = farbe(duell.duellant_2.punkte_spiel)
-    context = dict(protokoll = protokoll, duell = duell, parameter = protokoll.parameter,   
-        farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = protokoll.loesung[0],
+    farbe_1, duellant_1_punkte, farbe_2, duellant_2_punkte = sub_punkte_auslesen(req)
+    context = dict(protokoll = protokoll, duell = duell, parameter = protokoll.parameter, richtig = protokoll.loesung[0],  
+        farbe_1 = farbe_1, farbe_2 = farbe_2,
+        duellant_1_punkte = duellant_1_punkte, duellant_2_punkte = duellant_2_punkte,
         message_unten = protokoll.anmerkung, lsg = True)
     return render(req, 'duell_aufgabe.html', context)
  
@@ -538,9 +536,6 @@ def neu_auslosen(req, mit):
     duell = Duell.objects.get(pk = req.session.get('duell_id'))
     duell_protokoll = Duell_Protokoll.objects.create(duell = duell)
     if mit == "mit":
-        duell.duellant_1.punkte_spiel -=Decimal(0.5)
-        duell.duellant_2.punkte_spiel -=Decimal(0.5)
-        duell.save()
         duell_protokoll.duellant_nr = 2
         duell_protokoll.punkte = -Decimal(0.5)
         duell_protokoll.anmerkung = "neue Kandidaten mit Punktabzug"
