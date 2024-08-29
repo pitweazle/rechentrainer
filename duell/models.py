@@ -16,7 +16,6 @@ class Duellant(models.Model):
     abwesend = models.BooleanField(default=False)
     spiele = models.SmallIntegerField(default=0)
     punkte = models.DecimalField(max_digits=3, decimal_places=1, default=0)
-    punkte_spiel = models.DecimalField(max_digits=2, decimal_places=1, default=0)
     pps = models.DecimalField(max_digits=4, decimal_places=2, default=0) 
     class Meta:
         verbose_name_plural = 'Duellanten'
@@ -24,7 +23,7 @@ class Duellant(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-class Duell_Protokoll(models.Model):
+class Duell(models.Model):
     protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
     duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', null = True, on_delete=models.SET_NULL)
@@ -34,11 +33,11 @@ class Duell_Protokoll(models.Model):
         return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"
 
     class Meta:
-        verbose_name = 'Duell_Protokoll'
-        verbose_name_plural = 'Duell_Protokolle'
+        verbose_name = 'Duell'
+        verbose_name_plural = 'Duelle'
 
-class Duell_Eingabe(models.Model):
-    duell_protokoll = models.ForeignKey(Duell_Protokoll, related_name='duellwertung', on_delete=models.CASCADE)
+class Duell_Protokoll(models.Model):
+    duell = models.ForeignKey(Duell, related_name='duellprotokoll', on_delete=models.CASCADE)
     duellant_nr = models.SmallIntegerField(default=0)
     eingabe = models.CharField(max_length=20, blank=True)
     punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)

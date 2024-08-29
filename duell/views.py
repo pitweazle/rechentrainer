@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse 
 
-from django.db.models import Count 
+from django.db.models import Count, Sum 
 
 from accounts.models import Profil, Lerngruppe
 from accounts.views import stufe_aus_jg
@@ -17,7 +17,7 @@ from core.models import Kategorie, Auswahl, Protokoll, Zaehler
 from core.forms import AufgabeFormZahl, AufgabeFormStr
 from core.views import format_zahl, aufgaben, kontrolle
 
-from .models import  Duellant, Duell_Protokoll, Duell_Eingabe
+from .models import  Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter
 
 # das Rechenduell
@@ -34,7 +34,7 @@ def duell_uebersicht(req, gruppe_id):
         for kategorie in zaehler:
             kategorie.aufgnr = 0
             kategorie.save()
-    duell_rang(gruppe.id)
+    #duell_rang(gruppe.id)
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
@@ -53,7 +53,7 @@ def duell_uebersicht(req, gruppe_id):
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
     duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil__vorname", )
-    duell_rang(gruppe.id)
+    #duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
@@ -140,7 +140,7 @@ def duell_aufgabe(req, slug):
         user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
         anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
     )                                                                   #Protokoll wird erstellt
-    duell_protokoll = Duell_Protokoll.objects.create(
+    duell = Duell.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
     #Jenachdem, ob ein Wert oder ein Text erwartet wird:
@@ -163,10 +163,10 @@ def duell_aufgabe(req, slug):
     else:
         meldung = ""
     req.session['protokoll_id'] = protokoll.id  
-    req.session['duell_id'] = duell_protokoll.id 
-    aufsteiger_1 = "↑" if duell_protokoll.duellant_1.aufsteiger else ""
-    aufsteiger_2 = "↑" if duell_protokoll.duellant_2.aufsteiger else "" 
-    context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = parameter,   
+    req.session['duell_id'] = duell.id 
+    aufsteiger_1 = "↑" if duell.duellant_1.aufsteiger else ""
+    aufsteiger_2 = "↑" if duell.duellant_2.aufsteiger else "" 
+    context = dict(protokoll = protokoll,  duell = duell, parameter = parameter,   
         farbe_1 = "null", farbe_2 = "null", aufsteiger_1 = aufsteiger_1, aufsteiger_2 = aufsteiger_2, 
         form = form, message_unten = anmerkung, meldung = meldung, neu = "neu")
     return render(req, 'duell_aufgabe.html', context)
@@ -247,8 +247,8 @@ def sub_auslosen(gruppe_id):
 def duell_rang(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
     for duellant in duellanten:
-        duellant.punkte +=duellant.punkte_spiel
-        duellant.punkte_spiel = 0
+        #duellant.punkte +=duellant.punkte_spiel
+        #duellant.punkte_spiel = 0
         if duellant.spiele != 0:
             duellant.pps = duellant.punkte/duellant.spiele
         duellant.save()
@@ -279,8 +279,8 @@ def duell_rang(gruppe_id):
                 duellant.save()
 
 def duell_loesung(req):
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    #gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
+    duell = Duell.objects.get(pk = req.session.get('duell_id'))
+    #gruppe = get_object_or_404(Lerngruppe, pk=duell.gruppe_id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
         protokoll.loesung = [protokoll.parameter['y5']]
@@ -295,55 +295,168 @@ def duell_loesung(req):
     except:
         text = protokoll.loesung
     messages.info(req, f'Lösung: {text}') 
-    farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
-    farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
-    context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+    farbe_1 = farbe(duell.duellant_1.punkte_spiel)
+    farbe_2 = farbe(duell.duellant_2.punkte_spiel)
+    context = dict(protokoll = protokoll, duell = duell, parameter = protokoll.parameter,   
         farbe_1 = farbe_1, farbe_2 = farbe_2, richtig = protokoll.loesung[0],
         message_unten = protokoll.anmerkung, lsg = True)
     return render(req, 'duell_aufgabe.html', context)
  
-def sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, beide = False, duell_eingabe = None):
-    duellant.punkte_spiel += punkte
-    print(duellant, " - Punkt : ",punkte)
-    duellant.save()
-    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_1, " - ", duell_protokoll.duellant_1, duell_protokoll.duellant_1.punkte_spiel)
-    print("Protokoll: :", duell_protokoll, " - ", duell_protokoll.duellant_2, " - ", duell_protokoll.duellant_2, duell_protokoll.duellant_2.punkte_spiel)
-    return
+def sub_punkte(req, duell, duellant, duellant_nr, eingabe, punkte, beide = False, duell_protokoll = None):
+    if beide != "Zweiter":                                                                    # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
+        protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
+        protokoll.richtig = punkte 
+        protokoll.save()
+        duell_protokoll = Duell_Protokoll.objects.create(duell = duell)
+        duell_protokoll.eingabe = eingabe
+        duell_protokoll.punkte = punkte
+        duell_protokoll.duellant_nr = duellant_nr                                               # legt fest ob im Protokoll die Eingabe und der Punkt links oder rechts angezeigt wird
+        if beide:
+            duell_protokoll.anmerkung = "gleich schnell"
+        else:
+            duell_protokoll.anmerkung = duellant.name
+        duell_protokoll.save()
+    return duell_protokoll
 
-def sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide):
-    if duellant.name == duell_protokoll.duellant_1.name:
-        duellant_nr = 1
-    else:
-        duellant_nr = 3
-    sub_punkte(req, duell_protokoll, duellant, duellant_nr, eingabe, punkte, False )    # übergibt die "duellant_nr", die wird benötigt damit im Protokoll die Eingabe und Punkte links(1) oder rechts(3) zugeordnet werden
-    return
+def sub_eingabe_speichern(req, duell, duellant, eingabe, punkte, beide = None):
+    if beide:
+        duellant = duell.duellant_1
+        duell_protokoll = sub_punkte(req, duell, duellant, 2, eingabe, punkte, "Erster" )       
+        duellant = duell.duellant_2
+        sub_punkte(req, duell, duellant, 2, eingabe, punkte, "Zweiter")
+    else: 
+        if duellant.name == duell.duellant_1.name:
+            duellant_nr = 1
+        else:
+            duellant_nr = 3
+        duell_protokoll = sub_punkte(req, duell, duellant, duellant_nr, eingabe, punkte, False )    # übergibt die "duellant_nr", die wird benötigt damit im Protokoll die Eingabe und Punkte links(1) oder rechts(3) zugeordnet werden
+    return duell_protokoll
+
+def sub_punkte_auslesen(req):
+    duell = Duell.objects.get(pk = req.session.get('duell_id'))
+    duell_protokoll = Duell_Protokoll.objects.filter(duell = duell)
+    duellant_1 = duell_protokoll.filter(duellant_nr__lte=2)
+    duellant_1_punkte = duellant_1.aggregate(sum=Sum('punkte'))['sum']
+    if duellant_1_punkte == None:
+        duellant_1_punkte = 0
+    duellant_2 = duell_protokoll.filter(duellant_nr__gte=2)
+    duellant_2_punkte = duellant_2.aggregate(sum=Sum('punkte'))['sum']
+    if duellant_2_punkte == None:
+        duellant_2_punkte = 0
+    farbe_1 = farbe(duellant_1_punkte)
+    farbe_2 = farbe(duellant_2_punkte)
+    return farbe_1, duellant_1_punkte, farbe_2, duellant_2_punkte,
 
 def duell_kontrolle(req):
+    meldung = ""
+    gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+    if gruppe.lehrer != req.user:
+        return HttpResponse("Zugriff verweigert")
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
+    protokoll.versuche += 1
+    duell = Duell.objects.get(pk = req.session.get('duell_id'))
+    zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
     context = dict()
-    form = AufgabeFormZahl(req.POST)
+    #wenn in den Aufgaben in "erg" eine Zahl steht
+    if "tab" in protokoll.parameter["name"]:
+        # if "term" in protokoll.parameter["name"]:
+        #     form = AufgabeFormTerm(req.POST)
+        # else:
+        form = AufgabeFormTab(req.POST)
+    else:
+        if protokoll.wert:
+            form = AufgabeFormZahl(req.POST)
+        #wenn in den Aufgaben erg=None:
+        else:
+            form = AufgabeFormStr(req.POST)
+    #Aufgabe beantwortet
     if form.is_valid():
-        eingabe =  form.cleaned_data['eingabe']
-        req.session['eingabe'] = duell_protokoll.id
+        # zunächst Einträge im Protokoll:
+        if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
+            eingabe = pro_eingabe = str(form.cleaned_data['y5'])
+            parser = Parser()
+            eingabe=round(round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3),3)
+            protokoll.loesung = protokoll.parameter['y5']
+            if not protokoll.wert:
+                protokoll.loesung = format_zahl(protokoll.parameter['y5'],2)
+            #    #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
+            protokoll.wert = protokoll.parameter['y5']
+            protokoll.save()
+        else:
+            eingabe = pro_eingabe = form.cleaned_data['eingabe']
+        req.session['eingabe'] = duell.id
+        #protokoll.eingabe = pro_eingabe
+        protokoll.abbr = False
+        protokoll.end = timezone.now()
+        protokoll.save()
+        #hier wird die Eingabe überprüft:
         wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
+        #richtig = wertung
         duellant_name = req.POST.get('duellant')
-        beide = False
-        duellant = Duellant.objects.get(name=duellant_name)
+        if duellant_name == "gleich schnell":
+            beide = True 
+            duellant = None
+        else:
+            beide = False
+            try:
+                duellant = Duellant.objects.get(name=duellant_name)
+            except:
+                duellant = Duellant.objects.filter(name=duellant_name)
+                return HttpResponse("Hier gibt es zwei Duellanten mit gleichem Namen: ", duellant)
         #wenn Eingabe richtig:
         if wertung > 0  :
-            rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
+            if "enauer" in rueckmeldung:
+                rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
+            else:
+                rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
             punkte = 1
-            sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide)
+            duell_protokoll = sub_eingabe_speichern(req, duell, duellant, eingabe, punkte, beide)
+            if not beide:
+                if duell.duellant_1.liga != duell.duellant_2.liga:                          # zwei verschiedene Ligen
+                    if duellant.liga > duell.duellant_2.liga:
+                        meldung = auf_abstieg(duellant, duell.duellant_2)
+                        rueckmeldung += "<br>" + meldung
+                    elif duellant.liga > duell.duellant_1.liga:
+                        meldung = auf_abstieg(duellant, duell.duellant_1)
+                        rueckmeldung += "<br>" + meldung
+                    duell_protokoll.anmerkung=meldung
+                    duell_protokoll.save()
+                else:
+                    if duell.duellant_1.aufsteiger != duell.duellant_2.aufsteiger:          # einer der Duellanten ist Aufsteiger
+                    # if (duell.duellant_1.aufsteiger or duell.duellant_2.aufsteiger) and not (duell.duellant_1.aufsteiger and duell.duellant_2.aufsteiger):
+                        if duell.duellant_1.aufsteiger and duellant == duell.duellant_2:    # duellant_1 ist aufsteiger, hat verloren und steigt wieder ab
+                            meldung = abstieg(duell.duellant_1)
+                            rueckmeldung += "<br>" + meldung
+                        if duell.duellant_2.aufsteiger and duellant == duell.duellant_1:    # duellant_2 ist aufsteiger, hat verloren und steigt wieder ab
+                            meldung = abstieg(duell.duellant_2)
+                            rueckmeldung += "<br>" + meldung
+                        duell_protokoll.anmerkung=meldung
+                        duell_protokoll.save()
             messages.info(req, f'{rueckmeldung}')
+            zaehler.aufgnr += 1
+            zaehler.save()
+            if zaehler.aufgnr > 10:
+                zaehler.aufgnr = 0
+                zaehler.save()                
+                return redirect('duell_uebersicht', gruppe.id)
             context['richtig'] = True
+        #wenn Aufgabe falsch:
         else:
-            punkte = Decimal(-0.5)
-            messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
-            sub_eingabe_speichern(req, duell_protokoll, duellant, eingabe, punkte, beide)
+            if wertung < 0:
+                punkte = Decimal(-0.5)
+                messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
+            else:
+                if not "tab" in protokoll.parameter["name"]:
+                    messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht 
+                punkte = Decimal(-0.5)
+            sub_eingabe_speichern(req, duell, duellant, eingabe, punkte, beide)
         context['falsch'] = True
-    context.update(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
-        eingabe = eingabe, form = form)
+    farbe_1, duellant_1_punkte, farbe_2, duellant_2_punkte = sub_punkte_auslesen(req)
+    context.update(protokoll = protokoll, duell = duell, 
+        duellant_1_punkte = duellant_1_punkte, duellant_2_punkte = duellant_2_punkte,
+        farbe_1 = farbe_1, farbe_2 = farbe_2, eingabe = eingabe,
+        parameter = protokoll.parameter,   
+        form = form, message_unten = protokoll.anmerkung)
     return render(req, 'duell_aufgabe.html', context)
 
 def auf_abstieg(aufsteiger, absteiger):
@@ -376,29 +489,28 @@ def farbe(punkte):
     return farbe
 
 def duellant_edit(req, duellant_id, punkte):
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    gruppe = get_object_or_404(Lerngruppe, pk=duell_protokoll.gruppe_id)
+    duell = Duell.objects.get(pk = req.session.get('duell_id'))
+    gruppe = get_object_or_404(Lerngruppe, pk=duell.gruppe_id)
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
     duellant = Duellant.objects.get(id=duellant_id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll) 
+    #zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
+    duell_protokoll = Duell_Protokoll.objects.create(duell = duell) 
     if punkte == "plus":
-        duellant.punkte_spiel +=Decimal(0.5)
-        duell_eingabe.punkte = Decimal(0.5)
+        punkte = Decimal(0.5)
     elif punkte == "minus":
-        duellant.punkte_spiel -=Decimal(0.5)
-        duell_eingabe.punkte = -Decimal(0.5)
-    duellant.save()
-    duell_eingabe.anmerkung = "edit"
-    duell_eingabe.save()
-    farbe_1 = farbe(duell_protokoll.duellant_1.punkte_spiel)
-    farbe_2 = farbe(duell_protokoll.duellant_2.punkte_spiel)
+        punkte = -Decimal(0.5)
+    duell_protokoll.anmerkung = "edit"
+    duell_protokoll.save()
+    sub_eingabe_speichern(req, duell, duellant, "", punkte)
+    farbe_1, duellant_1_punkte, farbe_2, duellant_2_punkte = sub_punkte_auslesen(req)
     if protokoll.wert:
         form = AufgabeFormZahl(req.POST)
     else:
         form = AufgabeFormStr(req.POST)
-    context = dict(protokoll = protokoll, duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+    context = dict(protokoll = protokoll, duell = duell, parameter = protokoll.parameter,
+        duellant_1_punkte = duellant_1_punkte, duellant_2_punkte = duellant_2_punkte,
         farbe_1 = farbe_1, farbe_2 = farbe_2,  edit = Protokoll.richtig,
         message_unten = protokoll.anmerkung)
     if protokoll.richtig <= 0: 
@@ -411,33 +523,33 @@ def neu_auslosen(req, mit):
         return HttpResponse("Zugriff verweigert")
     #duell_rang(gruppe.id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
-    duell_protokoll = Duell_Protokoll.objects.get(pk = req.session.get('duell_id'))
-    duell_eingabe = Duell_Eingabe.objects.create(duell_protokoll = duell_protokoll)
+    duell = Duell.objects.get(pk = req.session.get('duell_id'))
+    duell_protokoll = Duell_Protokoll.objects.create(duell = duell)
     if mit == "mit":
-        duell_protokoll.duellant_1.punkte_spiel -=Decimal(0.5)
-        duell_protokoll.duellant_2.punkte_spiel -=Decimal(0.5)
-        duell_protokoll.save()
-        duell_eingabe.duellant_nr = 2
-        duell_eingabe.punkte = -Decimal(0.5)
-        duell_eingabe.anmerkung = "neue Kandidaten mit Punktabzug"
+        duell.duellant_1.punkte_spiel -=Decimal(0.5)
+        duell.duellant_2.punkte_spiel -=Decimal(0.5)
+        duell.save()
+        duell_protokoll.duellant_nr = 2
+        duell_protokoll.punkte = -Decimal(0.5)
+        duell_protokoll.anmerkung = "neue Kandidaten mit Punktabzug"
     else:
-        duell_eingabe.duellant_nr = 2
-        duell_eingabe.anmerkung = "neue Kandidaten ohne Punktabzug"
-    duell_eingabe.save()
+        duell_protokoll.duellant_nr = 2
+        duell_protokoll.anmerkung = "neue Kandidaten ohne Punktabzug"
+    duell_protokoll.save()
     duellant_1, duellant_2 = sub_auslosen(gruppe.id)
-    duell_protokoll = Duell_Protokoll.objects.create(
+    duell = Duell.objects.create(
         protokoll = protokoll, gruppe = gruppe, duellant_1 = duellant_1, duellant_2 = duellant_2 
     ) 
-    req.session['duell_id'] = duell_protokoll.id    
+    req.session['duell_id'] = duell.id    
     if protokoll.wert:
         form = AufgabeFormZahl(req.POST)
     else:
         form = AufgabeFormStr(req.POST)
-    if duell_protokoll.duellant_1.liga != duell_protokoll.duellant_2.liga:
+    if duell.duellant_1.liga != duell.duellant_2.liga:
         meldung = "Aufstiegsduell:"
     else:
         meldung = ""
-    context = dict(protokoll = protokoll,  duell_protokoll = duell_protokoll, parameter = protokoll.parameter,   
+    context = dict(protokoll = protokoll,  duell = duell, parameter = protokoll.parameter,   
     farbe_1 = farbe(duellant_1.punkte_spiel), farbe_2 = farbe(duellant_2.punkte_spiel), 
     form = form,    message_unten = protokoll.anmerkung, meldung = meldung)
     return render(req, 'duell_aufgabe.html', context)
@@ -470,8 +582,8 @@ def duell_loeschen(req):
                     duellant.abwesend = False
                     duellant.aufsteiger = False
                     duellant.save()
-                duell_eingabe = Duell_Eingabe.objects.filter(duell_protokoll__gruppe = gruppe)
-                duell_eingabe.all().delete() 
+                duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe = gruppe)
+                duell_protokoll.all().delete() 
             else:
                 duellanten.all().delete()
         else:
@@ -487,9 +599,9 @@ def duell_protokoll(req, gruppe_id):
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
     else:
-        duell_eingabe = Duell_Eingabe.objects.filter(duell_protokoll__gruppe=gruppe).order_by('id').reverse()
+        duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe).order_by('id').reverse()
         form = DuellProtokollFilter#(
             #     req.POST, req.FILES, gruppe
             # )
-        context = dict(duell_eingabe = duell_eingabe, gruppe = gruppe, form = form)
-        return render(req, 'duell_protokoll.html', context)
+        context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
+        return render(req, 'duell.html', context)

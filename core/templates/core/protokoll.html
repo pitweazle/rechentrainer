@@ -72,7 +72,8 @@
                     {% for zeile in protokoll %}
                         <tr>
                             <td>
-                                <a class="button" href="{% url 'details' zeile.id %}">{{zeile.start|date:"d.m.y H:i"}}
+                                {{zeile.start|date:"d.m.y H:i"}}
+                                {% comment %} <a class="button" href="{% url 'details' zeile.id %}">{{zeile.start|date:"d.m.y H:i"}} {% endcomment %}
                                 {% if wahl == "Alle Aufgaben" %} 
                                     {{zeile.sj}}/{{zeile.hj}} 
                                 {% endif %}

@@ -61,12 +61,12 @@
                 clearInterval(addStarsInterval);
 
                 // Sofortige Anzeige der Namen und Farben
-                document.getElementById('Eins').value = '{{duell_protokoll.duellant_1.name}}';
-                document.getElementById('Zwei').value = '{{duell_protokoll.duellant_2.name}}';
+                document.getElementById('Eins').value = '{{duell.duellant_1.name}}';
+                document.getElementById('Zwei').value = '{{duell.duellant_2.name}}';
                 
                 // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
-                document.getElementById('Eins').className = '{{ duell_protokoll.duellant_1.liga }}';
-                document.getElementById('Zwei').className = '{{ duell_protokoll.duellant_2.liga }}';
+                document.getElementById('Eins').className = '{{ duell.duellant_1.liga }}';
+                document.getElementById('Zwei').className = '{{ duell.duellant_2.liga }}';
                 document.getElementById('meldung').textContent = '{{meldung}}';
             }
             }, 500); // Update alle 500 Millisekunden
@@ -88,9 +88,8 @@
         {% block content %}
             <div class= "oben">
                 <div class="navbar">
-                    <a>Duell {{duell_protokoll.gruppe.name}}</a>
-                    <a href="{% url 'duell_protokoll' duell_protokoll.gruppe.id %}">Protokoll</a>
-                    <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">zur Übersicht</a>
+                    <a>Duell {{duell.gruppe.name}}</a>
+                    <a href="{% url 'duell_protokoll' duell.gruppe.id %}">Protokoll</a>
                 </div>
                 {% autoescape off %}
                 <div class="message">
@@ -198,15 +197,15 @@
                         <table>
                             <tr>
                                 {% if richtig %}
-                                    <td class = {{duell_protokoll.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_1.name}}</td>
+                                    <td class = {{duell.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell.duellant_1.name}}</td>
                                 {% else %}
                                     <td><input type="submit" id="Eins" name = "duellant" class="no-color" value=""  ></td>
                                 {% endif %} 
                                 <td>{{aufsteiger_1}}</td>
-                                <td class = "{{farbe_1}}">{{duell_protokoll.duellant_1.punkte_spiel}}</td>
+                                <td class = "{{farbe_1}}">{{duellant_1_punkte}}</td>
                                 {% if not neu %}
-                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "minus" %}">-</a></td>
-                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_1.id "plus" %}">+</a></td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell.duellant_1.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell.duellant_1.id "plus" %}">+</a></td>
                                 {%endif%}
                             </tr>
                             <tr>
@@ -217,15 +216,15 @@
                                 {% endif %}
                             <tr>
                                 {% if richtig %}
-                                    <td class = {{duell_protokoll.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell_protokoll.duellant_2.name}}</td>
+                                    <td class = {{duell.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell.duellant_2.name}}</td>
                                 {% else %}
                                     <td><input type="submit" id="Zwei" name = "duellant" class="no-color" value=""  ></td>
                                 {% endif %} 
                                 <td>{{aufsteiger_2}}</td>
-                                <td class = "{{farbe_2}}">{{duell_protokoll.duellant_2.punkte_spiel}}</td>
+                                <td class = "{{farbe_2}}">{{duellant_2_punkte}}</td>
                                 {% if not neu %}
-                                    <td class = "minus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "minus" %}">-</a></td>
-                                    <td class = "plus"><a href="{% url 'duellant_edit' duell_protokoll.duellant_2.id "plus" %}">+</a></td>
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell.duellant_2.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell.duellant_2.id "plus" %}">+</a></td>
                                 {%endif%}
                             </tr>
                         </table>
@@ -241,7 +240,7 @@
                     <td  class="zeitfeld null" id="uhr">0</td>
                     <td>
                         <button type="button">
-                            <a href="{% url 'duell_uebersicht' duell_protokoll.gruppe.id %}">Abbrechen</a>
+                            <a href="{% url 'duell_uebersicht' duell.gruppe.id %}">Abbrechen</a>
                         </button>
                     </td></tr>
                     {% if not richtig %}
