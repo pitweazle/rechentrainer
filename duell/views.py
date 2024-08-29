@@ -411,8 +411,8 @@ def duell_kontrolle(req):
             try:
                 duellant = Duellant.objects.get(name=duellant_name)
             except:
-                duellant = Duellant.objects.filter(name=duellant_name)
-                return HttpResponse("Hier gibt es zwei Duellanten mit gleichem Namen: ", duellant)
+                duellant = Duellant.objects.filter(name=duellant_name).last()
+                #return HttpResponse("Hier gibt es zwei Duellanten mit gleichem Namen: ", duellant)
         #wenn Eingabe richtig:
         if wertung > 0  :
             if "enauer" in rueckmeldung:
