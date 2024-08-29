@@ -45,11 +45,11 @@ class Duell_Protokoll(models.Model):
 
     def __str__(self):
         if self.duellant_nr == 1:      
-            return f"{self.id:} {self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_1}: {self.punkte} Punkte"
+            return f"{self.id:} {self.duell.gruppe} {self.duell.duellant_1}: {self.punkte} Punkte"
         elif self.duellant_nr == 3:      
-            return f"{self.id:} {self.duell_protokoll.gruppe} {self.duell_protokoll.duellant_2}: {self.punkte} Punkte"        
+            return f"{self.id:} {self.duell.gruppe} {self.duell.duellant_2}: {self.punkte} Punkte"        
         else:      
-            return f"{self.id:} {self.duell_protokoll}: {self.punkte} Punkte" 
+            return f"{self.id:} {self.duell}: {self.punkte} Punkte" 
 
     @property
     def farbe(self):
@@ -62,5 +62,5 @@ class Duell_Protokoll(models.Model):
         return farbe
 
     class Meta:
-        verbose_name = 'Duell_Eingabe'
-        verbose_name_plural = 'Duell_Eingaben'
+        verbose_name = 'Duell_Protokoll'
+        verbose_name_plural = 'Duell_Protokoll'

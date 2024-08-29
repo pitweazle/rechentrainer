@@ -46,31 +46,31 @@
             </thead>
             <tbody>
                 {% autoescape off %}
-                {% for zeile in duell_eingabe %}
+                {% for zeile in duell_protokoll %}
                     <tr>
-                        <td>{{zeile.duell_protokoll.protokoll.start|date:"d.m. H:i"}}</td>
-                        <td>{{zeile.duell_protokoll.protokoll.kategorie.name }} <br>({{zeile.duell_protokoll.protokoll.typ}})</td>
-                        <td>{{zeile.duell_protokoll.protokoll.aufgnr}} </td>
+                        <td>{{zeile.duell.protokoll.start|date:"d.m. H:i"}}</td>
+                        <td>{{zeile.duell.protokoll.kategorie.name }} <br>({{zeile.duell.protokoll.typ}})</td>
+                        <td>{{zeile.duell.protokoll.aufgnr}} </td>
                         {% if zeile.anmerkung != "edit" %} 
-                            {% if zeile.duell_protokoll.protokoll.pro_text != ""  %}
-                                <td>{{ zeile.duell_protokoll.protokoll.pro_text}}</td>
+                            {% if zeile.duell.protokoll.pro_text != ""  %}
+                                <td>{{ zeile.duell.protokoll.pro_text}}</td>
                             {% else %}
-                                <td>{{zeile.duell_protokoll.protokoll.text}}</td>
+                                <td>{{zeile.duell.protokoll.text}}</td>
                             {% endif%}
-                            <td>{%if zeile.duell_protokoll.protokoll.wert%}
-                                    {{zeile.duell_protokoll.protokoll.wert.normalize}}
+                            <td>{%if zeile.duell.protokoll.wert%}
+                                    {{zeile.duell.protokoll.wert.normalize}}
                                 {%else%}
-                                    {{zeile.duell_protokoll.protokoll.loesung.0}}
+                                    {{zeile.duell.protokoll.loesung.0}}
                                 {%endif%}
                             </td>
-                                {% comment %} <td class = "{{zeile.duell_protokoll.protokoll.farbe}}">{{ zeile.duell_protokoll.protokoll.richtig.normalize}}</td> {% endcomment %}
+                                {% comment %} <td class = "{{zeile.duell.protokoll.farbe}}">{{ zeile.duell.protokoll.richtig.normalize}}</td> {% endcomment %}
                             {% else %}
                                 <td></td><td></td>
                             {% endif %}                            
-                        <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.name}}</td>                
-                        <td class = {{zeile.duell_protokoll.duellant_1.liga}}>{{ zeile.duell_protokoll.duellant_1.liga}}</td>
-                            {% if zeile.duell_protokoll.duellant_1.aufsteiger %}
-                                <td class = {{zeile.duell_protokoll.duellant_1.liga}}>↑</td>
+                        <td class = {{zeile.duell.duellant_1.liga}}>{{ zeile.duell.duellant_1.name}}</td>                
+                        <td class = {{zeile.duell.duellant_1.liga}}>{{ zeile.duell.duellant_1.liga}}</td>
+                            {% if zeile.duell.duellant_1.aufsteiger %}
+                                <td class = {{zeile.duell.duellant_1.liga}}>↑</td>
                             {% else %}
                                 <td></td> 
                             {% endif %}
@@ -86,10 +86,10 @@
                             <td></td> 
                             <td></td> 
                         {% endif %}
-                        <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.name}}</td>                
-                        <td class = {{zeile.duell_protokoll.duellant_2.liga}}>{{zeile.duell_protokoll.duellant_2.liga}}</td>
-                        {% if zeile.duell_protokoll.duellant_2.aufsteiger %}
-                            <td class = {{zeile.duell_protokoll.duellant_2.liga}}>↑</td>
+                        <td class = {{zeile.duell.duellant_2.liga}}>{{zeile.duell.duellant_2.name}}</td>                
+                        <td class = {{zeile.duell.duellant_2.liga}}>{{zeile.duell.duellant_2.liga}}</td>
+                        {% if zeile.duell.duellant_2.aufsteiger %}
+                            <td class = {{zeile.duell.duellant_2.liga}}>↑</td>
                         {% else %}
                             <td></td>  
                         {% endif %}

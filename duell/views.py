@@ -21,6 +21,52 @@ from .models import  Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter
 
 # das Rechenduell
+def duell_rang(gruppe_id):
+    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe_id)
+    for duellant in duellanten:
+        duell_protokoll_1 = duell_protokoll.filter(duell__duellant_1 = duellant, duellant_nr__lte=2)
+        duellant_1_punkte = duell_protokoll_1.aggregate(sum=Sum('punkte'))['sum']
+        if duellant_1_punkte == None:
+            duellant_1_punkte = 0
+        duellant.punkte = duellant_1_punkte
+        duellant.save()
+        duell_protokoll_2 = duell_protokoll.filter(duell__duellant_2 = duellant, duellant_nr__gte=2)
+        duellant_2_punkte = duell_protokoll_2.aggregate(sum=Sum('punkte'))['sum']
+        if duellant_2_punkte == None:
+            duellant_2_punkte = 0
+        duellant.punkte += duellant_2_punkte
+        duellant.save()
+        if duellant.spiele != 0:
+            duellant.pps = duellant.punkte/duellant.spiele
+        duellant.save()
+    if duellanten.filter(spiele=0, abwesend=False).count()>0:
+        exit
+    else:
+        for liga in ["A","B","C"]:
+            duellanten_liga = duellanten.filter(liga=liga).order_by("-pps","-spiele")
+            rang = 0
+            pps_speicher = 99
+            platz_speicher = 99
+            spiele_speicher = 99
+            for duellant in duellanten_liga:
+                rang +=1
+                if duellant.pps == pps_speicher: 
+                    if duellant.pps > 0:
+                        if duellant.spiele == spiele_speicher:
+                            duellant.platz = platz_speicher
+                        else:
+                            duellant.platz=rang
+                    else:
+                        duellant.platz = platz_speicher
+                else:
+                    duellant.platz=rang
+                pps_speicher = duellant.pps
+                platz_speicher = duellant.platz
+                spiele_speicher = duellant.spiele
+                duellant.save()
+
+
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.lehrer != req.user and not req.user.is_superuser:
@@ -34,7 +80,7 @@ def duell_uebersicht(req, gruppe_id):
         for kategorie in zaehler:
             kategorie.aufgnr = 0
             kategorie.save()
-    #duell_rang(gruppe.id)
+    duell_rang(gruppe.id)
     schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
     for schueler in schueler_liste:
         duellant, created = Duellant.objects.get_or_create(profil = schueler)
@@ -243,40 +289,6 @@ def sub_auslosen(gruppe_id):
     duellant_2.punkte_spiel = 0
     duellant_2.save()
     return  duellant_1, duellant_2 
-
-def duell_rang(gruppe_id):
-    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
-    for duellant in duellanten:
-        #duellant.punkte +=duellant.punkte_spiel
-        #duellant.punkte_spiel = 0
-        if duellant.spiele != 0:
-            duellant.pps = duellant.punkte/duellant.spiele
-        duellant.save()
-    if duellanten.filter(spiele=0, abwesend=False).count()>0:
-        exit
-    else:
-        for liga in ["A","B","C"]:
-            duellanten_liga = duellanten.filter(liga=liga).order_by("-pps","-spiele")
-            rang = 0
-            pps_speicher = 99
-            platz_speicher = 99
-            spiele_speicher = 99
-            for duellant in duellanten_liga:
-                rang +=1
-                if duellant.pps == pps_speicher: 
-                    if duellant.pps > 0:
-                        if duellant.spiele == spiele_speicher:
-                            duellant.platz = platz_speicher
-                        else:
-                            duellant.platz=rang
-                    else:
-                        duellant.platz = platz_speicher
-                else:
-                    duellant.platz=rang
-                pps_speicher = duellant.pps
-                platz_speicher = duellant.platz
-                spiele_speicher = duellant.spiele
-                duellant.save()
 
 def duell_loesung(req):
     duell = Duell.objects.get(pk = req.session.get('duell_id'))
@@ -604,4 +616,4 @@ def duell_protokoll(req, gruppe_id):
             #     req.POST, req.FILES, gruppe
             # )
         context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
-        return render(req, 'duell.html', context)
+        return render(req, 'duell_protokoll.html', context)
