@@ -4170,7 +4170,6 @@ def zuordnungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                     einheit = "Tage"
                     lsg = str(erg)+"Tage"
                     hilfe_id = 110 + stufe%2
-        print("lsg: ", lsg)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
 
 def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -6085,6 +6084,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
+        typ=1
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
@@ -6895,7 +6895,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
     else:
         if isinstance(eingabe, list):                           # für Wertetabellen
             lsg = lsg[0]
-            punkte = 3*10**len(lsg)
+            punkte = 3*10**(len(lsg)-1)
             rueckmeldung = ""
             for n in range(len(lsg)-1):
                 if eingabe[n] is not None:                      # überprüft ob Einträge richtig sind
@@ -6924,9 +6924,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                         return -1, ""
                 except:
                    return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
-            print("C")
             for loe in (lsg):
-                print(loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
@@ -6956,7 +6954,6 @@ def main(req, slug):
         bis_loeschen = "-"
         titel = text = ""
         if req.method == 'POST':
-            print(req.session.get('protokoll_id'))
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
             protokoll.versuche += 1
             zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
