@@ -75,7 +75,7 @@ class Profil(models.Model):
     details = models.BooleanField(default = True)
 
     def __str__(self):
-        return f"{self.pk}, {self.vorname} {self.nachname}, {self.klasse}"
+        return f"Username: {self.user}: {self.vorname} {self.nachname}, {self.klasse}"
 
     class Meta:
         verbose_name = 'Profil'
