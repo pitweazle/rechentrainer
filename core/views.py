@@ -1321,7 +1321,7 @@ def sub_dreiecke(typ):
             ((xkoo[n]+xkoo[n+1])/2+seiten_x[n], (ykoo[n]+ykoo[n+1])/2+seiten_y[n], seiten[n]) for n in range(0,3)
             ],
     } 
-    lsg = lsg + ["indiv_0"]    
+    #lsg = lsg + ["indiv_0"]    
     return typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter
 
 #diese Funktion wird aus 'geometrie' und 'Körper' aufgerufen - aus "begriffe der Geometrie" mit jeweiligem jg - aus "Quader und Prismen" mit jg=-1 und Maßen:
@@ -6046,27 +6046,36 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ > 6:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
-            elif "1x" in eingabe:
+            if "1x" in eingabe:
                 return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
-            elif not "x" in eingabe:
+            if not "x" in eingabe:
                 return 0, "In der Funktionsgleichung muss ein 'x' vorkommen"
-            elif  "*" in eingabe:
+            if  "*" in eingabe:
                 return 0, "'*' lässt man weg"
-            else:
-                try:
-                    eingabe=eingabe.replace(",",".")
-                    eingabe=eingabe.split("x")
-                    zahl = float(eingabe[0])*10
-                    if not eingabe[1]:
-                        zahl +=2000
-                    else:
-                        zahl=zahl + (float(eingabe[1])*10+20)*100
-                    if round(zahl,2) == round(float(lsg[1]),2):
-                        return 1, ""
-                    else:
-                        return -1, "" 
-                except:
+            #else:
+            wert_eingabe, rueckmeldung = termwert(eingabe)                  # akkzeptiert auch Brüche
+            #print("Wert: ",wert_eingabe)
+            #print ("Lösung: ", lsg[0])
+            wert_loesung, rueckmeldung = termwert(lsg[0].replace(",","."))
+            #print("Wert: ",wert_loesung)
+            if wert_eingabe == wert_loesung:
+                #print("richtig")
+                return 1, ""
+            try:
+                eingabe=eingabe.replace(",",".")
+                eingabe=eingabe.split("x")
+                zahl = float(eingabe[0])*10
+                if not eingabe[1]:
+                    zahl +=2000
+                else:
+                    zahl=zahl + (float(eingabe[1])*10+20)*100
+                if round(zahl,2) == round(float(lsg[1]),2):
+                    return 1, ""
+                else:
                     return -1, "" 
+            except:
+                return -1, "" 
+        
         elif typ == 3:
             if typ2 == 1:
                 if eingabe not in ["l", "s", "g"] :
@@ -6225,7 +6234,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 pro_text = "Funktionsgleichung ablesen"
                 frage = "y="
                 if stufe%2 == 0:
-                    typ2 = 2
+                    typ2 = 5
                 else:
                     typ2 = random.randint(2,5)
                 if typ2 == 2:
