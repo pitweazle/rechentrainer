@@ -6084,7 +6084,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
-        typ=1
         typ2 = 0
         titel = "Funktionen" 
         text = "default{}"
