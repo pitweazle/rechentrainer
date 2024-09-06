@@ -6800,7 +6800,7 @@ def optionen(req, slug):
 #Die 10 Aufgaben weden abgebrochen. Dies wird gezählt. Eigentlich wird bei der Erstellung jeweils dieser Zähler hochrechnet und nur wenn eine richtige oder falsche Eingabe erfolgt oder "Lösung anzeigen" 
 #angeklickt wird, wird dieser Zähler wieder um Eins zurückgesetzt. Dadurch wird auch als Abbrechen gezählt, wenn z.B. mit F5 eine neue Aufgabe erzeugt wird.
 def abbrechen(req, zaehler_id):
-    gruppe = req.user.profil.gruppe
+    #gruppe = req.user.profil.gruppe
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     #zaehler.abbr_zaehler += 1
     zaehler.aufgnr = 0
