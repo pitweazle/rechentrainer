@@ -155,7 +155,21 @@ def account_loeschen(req):
 
 def hj_pruefen(req):
     if req.user.is_authenticated:
-        user = req.user.profil
+        email = req.user.email
+        try:
+            user = req.user.profil
+        except:
+            zeilen = []
+            doppelte_accounts = User.objects.filter(email=req.user.email, email__contains = "@")
+            for account in doppelte_accounts:
+                try:
+                    profil = Profil.objects.get(user = account)
+                    gesamt = Protokoll.objects.filter(user = profil)
+                    zeilen.append((account, profil, gesamt.count()))
+                except:
+                    zeilen.append((account, None, ""))
+            logout(req)
+            return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
         heute = datetime.now()
         if heute.month == 1 or heute.month == 7:                            #Frage nach neuem Halbjahr
             next_sj, next_hj = name_next_hj()

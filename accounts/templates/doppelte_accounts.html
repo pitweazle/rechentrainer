@@ -1,0 +1,39 @@
+{% extends 'auswahl.html' %}  
+{% block content %}
+<body>
+  <h2>Der Account mit dem du dich angemeldet hast existiert nicht (mehr)</h2>
+  {% if email %}
+    <p>Hier ist eine Liste mit Accounts die du wahrscheinlich angelegt hast:</p>
+    <p>(Diese Accounts wurden alle mit der Emailadresse {{email}} angelegt.)</p>
+    <table>
+      <thead>
+          <tr>
+              <th >Benutzername</th>
+              <th >Vorname</th>
+              <th >Nachname</th>
+              <th >Aufgaben</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for account, profil, summe in zeilen %}
+          <tr>
+              <td>{{account}}</td><td>{{account.profil.vorname }}</td><td>{{account.profil.nachname}}</td><td>{{summe}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>Wenn hier bei einem Benutzername nicht dein Vor- und Nachname aufgeführt ist, kannst du diesen Account auch nicht (mehr) nutzen.</p>
+    <p>Du kannst auch erkennen, wieviele Aufgaben mit dem jeweiligen Account insgesamt gerechnet wurden.</p>
+    <p>Versuche dich also an dein Passwort für den Account mit den meisten Aufgaben zu erinnern oder logge dich mit diesem Username ein und fordere ein neues Passwort an.</p>
+  {% else %}
+    <p>Du hast wahrscheinlich zwei oder noch mehr Accounts angelegt und deinen Anmeldenamen oder dein Passwort vergessen.</p>
+    <p>Leider hast du keine Emailadresse angegeben. Daher kann ich dir nicht sagen, welche Namen du deinem richtigen Account gegeben hast. 
+      Frage doch mal deinen Lehrer / deine Lehrerin oder schicke dem Rechentrainer eine Email: info@rechentrainer.app (der kann dir allerdings dein Passwort auch nicht sagen - es aber vielleicht zurücksetzen).</p>
+    <p><b>Und schreibe dir deinen Nutzername und dein Passwort auf und achte darauf dass nicht nur beim Passwort sondern auch beim Nutzername große und kleine Buchstaben unterschieden werden!</b></p>
+  {% endif %}
+  <br>
+  <button>
+      <a  class="button" href="{% url 'index' %}">weiter</<>
+  </button>
+</body>  
+{% endblock %}
