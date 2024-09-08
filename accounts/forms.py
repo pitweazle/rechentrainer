@@ -79,6 +79,12 @@ class Gruppe_Aendern_Form(forms.ModelForm):
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
         }
+        widgets = {
+            'aufgaben_pro_woche': forms.NumberInput(attrs={
+                'max': '120',    # For maximum number
+                'min': '0',    # For minimum number
+            }),
+        }
         help_texts = {'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
 
 class Gruppe_Neu_Form(forms.ModelForm):
