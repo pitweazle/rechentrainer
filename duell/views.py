@@ -576,6 +576,10 @@ def duell_loeschen(req):
         bestaetigt = req.POST.get('bestaetigt', 'off')
         if bestaetigt == "on":
             zaehler = Zaehler.objects.filter(user = req.user.profil)
+            duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe = gruppe)
+            duell_protokoll.all().delete() 
+            duell = Duell.objects.filter(gruppe = gruppe)
+            duell.all().delete() 
             for kategorie in zaehler:
                 kategorie.aufgnr = 0
                 kategorie.save()
@@ -589,8 +593,6 @@ def duell_loeschen(req):
                     duellant.abwesend = False
                     duellant.aufsteiger = False
                     duellant.save()
-                duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe = gruppe)
-                duell_protokoll.all().delete() 
             else:
                 duellanten.all().delete()
         else:
