@@ -6960,7 +6960,7 @@ def main(req, slug):
         # profil = get_object_or_404(Profil, user=req.user)
         # duell = True if profil.gruppe else False
         bis_loeschen = "-"
-        titel = text = ""
+        titel = text = frage = ""
         if req.method == 'POST':
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
             protokoll.versuche += 1
