@@ -6455,11 +6455,10 @@ def uebersicht(req, schueler_id=0):
             profil.gruppe = None
             profil.save()    
         if (profil.id) != (req.user.profil.id):
-            if lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
-                if req.user.is_superuser:
-                    pass
-                else:
-                    return HttpResponse("Zugriff verweigert")
+            if req.user.is_superuser:
+                pass
+            elif lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
+                return HttpResponse("Zugriff verweigert")
         protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)
         if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
             richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
