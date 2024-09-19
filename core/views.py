@@ -6054,7 +6054,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 return 0, "'*' lässt man weg"
             #else:
             wert_eingabe, rueckmeldung = termwert(eingabe)                  # akkzeptiert auch Brüche
-            #print("Wert: ",wert_eingabe)
             #print ("Lösung: ", lsg[0])
             wert_loesung, rueckmeldung = termwert(lsg[0].replace(",","."))
             #print("Wert: ",wert_loesung)
@@ -6981,7 +6980,7 @@ def main(req, slug):
                 else:
                     form = AufgabeFormStr(req.POST)
             #Aufgabe beantwortet
-            if form.is_valid():  
+            if form.is_valid():
                 # zunächst Einträge im Protokoll:
                 if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
                     eingabe = []
@@ -7124,6 +7123,18 @@ def main(req, slug):
                         else:
                             if not "tab" in protokoll.parameter["name"]:
                                 messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
+            else:
+                titel = protokoll.titel
+                text = protokoll.text
+                parameter = protokoll.parameter
+                anmerkung = protokoll.anmerkung
+                frage = protokoll.frage
+                einheit = protokoll.einheit
+                hilfe_id = protokoll.hilfe_id
+                messages.info(req, 'Da stimmt eine Eingabe nicht! <br>Hier gehören z.B. keine Buchstaben rein.')
+                context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
+                    form = form, zaehler_id = zaehler.id, hilfe = 0, protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = "",  bis_loeschen = bis_loeschen)
+                return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
             zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
