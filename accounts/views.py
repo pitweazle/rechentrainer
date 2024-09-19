@@ -277,7 +277,8 @@ def neues_halbjahr(req):
         zaehler.fehler_zaehler = 0  
         zaehler.lsg_zaehler = 0  
         zaehler.hilfe_zaehler = 0  
-        zaehler.abbr_zaehler = 0  
+        zaehler.abbr_zaehler = 0 
+        zaehler.bonus = 0 
         zaehler.save()
     if user.hj == 2:
         halbjahr = "Halbjahr"
@@ -483,8 +484,10 @@ def gruppe_uebersicht(req, gruppe_id):
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
         protokoll = Protokoll.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
+        zaehler = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
     else:
         protokoll = Protokoll.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
+        zaehler = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
         #protokoll = protokoll.exclude(user__user__groups__name = 'Lehrer')
         #protokoll = protokoll.exclude(user__klasse = "Lehrer")
     if req.method == 'POST':
@@ -504,6 +507,11 @@ def gruppe_uebersicht(req, gruppe_id):
     prozent_summe_farbe = False
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
+    try:
+        bonus_gesamt = zaehler.aggregate(Sum('bonus'))['bonus__sum']
+        richtig_gesamt += bonus_gesamt
+    except:
+        pass
     falsch_gesamt = 0
     katmax_max = protokoll.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
@@ -528,6 +536,10 @@ def gruppe_uebersicht(req, gruppe_id):
             hj_stimmt = user.sj == sj and user.hj == hj
             richtig_sum = 0
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
+            try:
+                zaehler_user = zaehler.filter(user = user)                  # die Gesamtsummen der einzelnen User
+            except:
+                pass
             summen = (
             protokoll_user
             .values("user")
@@ -537,6 +549,10 @@ def gruppe_uebersicht(req, gruppe_id):
             dauer_text = "0:00"
             for g in summen:
                 richtig_sum = g['richtig_sum']
+                try:
+                    richtig_sum += zaehler_user.bonus
+                except:
+                    pass
                 dauer = g['zeit_sum']
                 try:
                     seconds = int(dauer.total_seconds())
@@ -557,6 +573,13 @@ def gruppe_uebersicht(req, gruppe_id):
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
                 richtig_kat = k['richtig_sum']
+                # print("Kategorie: ", k)
+                # try:
+                #     zaehler_kategorie = zaehler_user.filter(kategorie = k)
+                #     print("Bonus: ",zaehler_kategorie)
+                #     richtig_kat += zaehler_kategorie.bonus
+                # except:
+                #     pass
                 #falsch_kat = k['falsch_sum']
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
@@ -571,11 +594,13 @@ def gruppe_uebersicht(req, gruppe_id):
                     fehler.save()
                 else:
                     zaehler = zaehler.first()
+                    richtig_kat += zaehler.bonus
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
                     # if zaehler.first().fehler_zaehler < falsch_kat:
                     #     falsch_kat = zaehler.first().fehler_zaehler
+                richtig_sum += richtig_kat
                 falsch_sum += falsch_kat
                 kategorie_fehler[index] += falsch_kat
                 quote = quote_farbe(richtig_kat, falsch_kat)

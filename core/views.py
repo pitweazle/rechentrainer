@@ -6360,6 +6360,8 @@ def durchschnitt_aufgaben(user):
     letzte = queryset.letzte.strftime("%d.%m.%y %H:%M")
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
+    bonus_gesamt = zaehler.aggregate(Sum('bonus'))['bonus__sum']
+    richtig_gesamt += bonus_gesamt
     falsch_gesamt = zaehler.aggregate(sum=Sum('fehler_zaehler'))['sum']
     abbr_gesamt = zaehler.aggregate(sum=Sum('abbr_zaehler'))['sum']
     lsg_gesamt = zaehler.aggregate(sum=Sum('lsg_zaehler'))['sum']
@@ -6534,6 +6536,7 @@ def uebersicht(req, schueler_id=0):
                 for k in kategorie_werte:
                     zeile = [[],[]] 
                     richtig_kat = k['richtig_sum']
+                    richtig_kat += zaehler_kategorie.bonus
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
