@@ -158,6 +158,7 @@ class Zaehler(models.Model):
     hilfe_zaehler = models.SmallIntegerField(default=0) 
     lsg_zaehler = models.SmallIntegerField(default=0) 
     hinweis = models.CharField(max_length=100, blank=True)
+    bonus = models.SmallIntegerField(default=0)
 
     def __str__(self):
         return f"({self.id}, {self.user}, {self.user.user}, {self.kategorie}, {self.sj})/{self.hj})"
