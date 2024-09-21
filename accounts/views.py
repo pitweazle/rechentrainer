@@ -484,10 +484,10 @@ def gruppe_uebersicht(req, gruppe_id):
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
         protokoll = Protokoll.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
-        zaehler = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
+        zaehler_gruppe = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
     else:
         protokoll = Protokoll.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
-        zaehler = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
+        zaehler_gruppe = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
         #protokoll = protokoll.exclude(user__user__groups__name = 'Lehrer')
         #protokoll = protokoll.exclude(user__klasse = "Lehrer")
     if req.method == 'POST':
@@ -508,7 +508,7 @@ def gruppe_uebersicht(req, gruppe_id):
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
     try:
-        bonus_gesamt = zaehler.aggregate(Sum('bonus'))['bonus__sum']
+        bonus_gesamt = zaehler_gruppe.aggregate(Sum('bonus'))['bonus__sum']
         richtig_gesamt += bonus_gesamt
     except:
         pass
@@ -536,8 +536,10 @@ def gruppe_uebersicht(req, gruppe_id):
             hj_stimmt = user.sj == sj and user.hj == hj
             richtig_sum = 0
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
+            bonus_summe = 0
             try:
-                zaehler_user = zaehler.filter(user = user)                  # die Gesamtsummen der einzelnen User
+                zaehler_user = zaehler_gruppe.filter(user = user)                  # die Gesamtsummen der einzelnen User
+                bonus_summe = zaehler_user.aggregate(sum=Sum('bonus'))['sum']
             except:
                 pass
             summen = (
@@ -567,13 +569,11 @@ def gruppe_uebersicht(req, gruppe_id):
                 protokoll_user
                 .values("kategorie__zeile")
                 .annotate(richtig_sum=Sum('richtig'))
-                #.annotate(falsch_sum=Sum('falsch'))
                 )
             falsch_sum = 0
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
                 richtig_kat = k['richtig_sum']
-                # print("Kategorie: ", k)
                 # try:
                 #     zaehler_kategorie = zaehler_user.filter(kategorie = k)
                 #     print("Bonus: ",zaehler_kategorie)
@@ -591,10 +591,8 @@ def gruppe_uebersicht(req, gruppe_id):
                         fehler.text += str(kat_name)+ ", "
                     else:
                         fehler.text += str(kat_name)+ ", "
-                    fehler.save()
                 else:
                     zaehler = zaehler.first()
-                    richtig_kat += zaehler.bonus
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
