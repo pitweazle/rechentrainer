@@ -6757,6 +6757,13 @@ def protokoll(req, schueler_id=0):
                 wahl = auswahl_liste[auswahl]
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else  0
+        zaehler_user = Zaehler.objects.filter(user = user_profil)
+        bonus_summe = zaehler_user.aggregate(sum=Sum('bonus'))['sum']
+        if bonus_summe != None:
+            if auswahl == "Halbjahr":
+                richtig += bonus_summe 
+        else:
+            pass
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
         falsch = temp if temp else  0
         abbr = protokoll.filter(abbr=True).count()
