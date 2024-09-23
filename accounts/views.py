@@ -579,10 +579,10 @@ def gruppe_uebersicht(req, gruppe_id):
                         fehler.text += str(kat_name)+ ", "
                 else:
                     zaehler = zaehler.first()
+                    richtig_kat += zaehler.bonus
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
-                    print(user, zaehler)
                     # if zaehler.first().fehler_zaehler < falsch_kat:
                     #     falsch_kat = zaehler.first().fehler_zaehler
                 richtig_sum += richtig_kat
