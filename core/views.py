@@ -6535,7 +6535,7 @@ def uebersicht(req, schueler_id=0):
                 for k in kategorie_werte:
                     zeile = [[],[]] 
                     richtig_kat = k['richtig_sum']
-                    richtig_kat += k.bonus
+                    richtig_kat += zaehler_kategorie.bonus
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
@@ -7161,7 +7161,7 @@ def main(req, slug):
                 frage = protokoll.frage
                 einheit = protokoll.einheit
                 hilfe_id = protokoll.hilfe_id
-                messages.info(req, 'Da stimmt eine Eingabe nicht! <br>Hier gehören z.B. keine Buchstaben rein.')
+                messages.info(req, 'Da stimmt eine Eingabe nicht! <br>In eine Wertetabelle gehören z.B. keine Buchstaben rein.')
                 context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
                     form = form, zaehler_id = zaehler.id, hilfe = 0, protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = "",  bis_loeschen = bis_loeschen)
                 return render(req, 'core/aufgabe.html', context)                
