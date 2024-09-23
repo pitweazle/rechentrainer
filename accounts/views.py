@@ -530,20 +530,21 @@ def gruppe_uebersicht(req, gruppe_id):
         else:
             schueler_liste = Profil.objects.filter(gruppe=None).order_by("user__profil__vorname") 
         aufgaben_der_schueler = []
+        #richtig_sum = falsch_sum = 0            # Die Summen aller SuS in den Kategorien
         for user in schueler_liste:
+            richtig_user = falsch_user = 0
             hj_stimmt = user.sj == sj and user.hj == hj
-            richtig_sum = 0
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
             summen = (
             protokoll_user
             .values("user")
-            .annotate(richtig_sum=Sum('richtig'))
-            .annotate(zeit_sum=Sum(F('end') - F('start')))
+            #.annotate(richtig_user=Sum('richtig'))
+            .annotate(zeit_user=Sum(F('end') - F('start')))
             ) 
             dauer_text = "0:00"
             for g in summen:
-                richtig_sum = g['richtig_sum']
-                dauer = g['zeit_sum']
+                #richtig_user = g['richtig_user']
+                dauer = g['zeit_user']
                 try:
                     seconds = int(dauer.total_seconds())
                     mm = int(seconds/60)
@@ -556,12 +557,11 @@ def gruppe_uebersicht(req, gruppe_id):
             kategorie_werte = (                                                     # die Summen der einzelnen Kategoren des jeweiligen Users
                 protokoll_user
                 .values("kategorie__zeile")
-                .annotate(richtig_sum=Sum('richtig'))
+                .annotate(richtig_kat=Sum('richtig'))
                 )
-            falsch_sum = 0
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
-                richtig_kat = k['richtig_sum']
+                richtig_kat = k['richtig_kat']
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(user = user, kategorie = kat_name)
@@ -585,8 +585,10 @@ def gruppe_uebersicht(req, gruppe_id):
                     abbr_kat = zaehler.abbr_zaehler
                     # if zaehler.first().fehler_zaehler < falsch_kat:
                     #     falsch_kat = zaehler.first().fehler_zaehler
-                richtig_sum += richtig_kat
-                falsch_sum += falsch_kat
+                richtig_user += richtig_kat
+                #richtig_sum += richtig_kat
+                falsch_user += falsch_kat
+                #falsch_sum += falsch_kat
                 kategorie_fehler[index] += falsch_kat
                 quote = quote_farbe(richtig_kat, falsch_kat)
                 aufgaben[index] = (quote, richtig_kat)
@@ -596,8 +598,8 @@ def gruppe_uebersicht(req, gruppe_id):
             if soll_hj < 10*pflicht_kat and prozent_summe < 50:
                 note = "-"
                 prozent_summe_farbe = None
-            quote_sum = quote_farbe(richtig_sum, falsch_sum)
-            aufgaben[0] = (quote_sum, int(richtig_sum))
+            quote_user = quote_farbe(richtig_user, falsch_user)
+            aufgaben[0] = (quote_user, int(richtig_user))
             aufgaben_der_schueler.append((
                 user, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer_text, aufgaben
             ))
@@ -605,7 +607,7 @@ def gruppe_uebersicht(req, gruppe_id):
             mm = int(seconds/60)
             hh, mm = divmod(mm, 60)
             gesamtzeit_text = f"{hh}:{mm:02d}" 
-            falsch_gesamt += falsch_sum
+            #falsch_gesamt += falsch_sum
         gesamtsummen = (
             protokoll                                                           # hier werden die Gesamtsummen der einzelnen Kategorien bestimmt
             .values("kategorie__zeile")
@@ -614,7 +616,7 @@ def gruppe_uebersicht(req, gruppe_id):
             )  
         for k in gesamtsummen: 
             index = int(k['kategorie__zeile'])
-            #richtig_sum = k['richtig_sum']
+            richtig_sum = k['richtig_sum']
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
     # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
@@ -622,8 +624,8 @@ def gruppe_uebersicht(req, gruppe_id):
     #     richtig_gesamt = bonus_summe 
     # else:
     #     richtig_gesamt = 0 
-    quote_sum = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
-    kategorie_summen[0] = (quote_sum, int(richtig_gesamt))
+    quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
+    kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
     context={'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'wahl': wahl,
         'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text, 'note_anzeigen': note_anzeigen}  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
