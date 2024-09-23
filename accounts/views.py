@@ -278,7 +278,7 @@ def neues_halbjahr(req):
         zaehler.lsg_zaehler = 0  
         zaehler.hilfe_zaehler = 0  
         zaehler.abbr_zaehler = 0 
-        zaehler.bonus = 0 
+        #zaehler.bonus = 0 
         zaehler.save()
     if user.hj == 2:
         halbjahr = "Halbjahr"
@@ -536,12 +536,6 @@ def gruppe_uebersicht(req, gruppe_id):
             hj_stimmt = user.sj == sj and user.hj == hj
             richtig_sum = 0
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
-            bonus_summe = 0
-            try:
-                zaehler_user = zaehler_gruppe.filter(user = user)                  # die Gesamtsummen der einzelnen User
-                bonus_summe = zaehler_user.aggregate(sum=Sum('bonus'))['sum']
-            except:
-                pass
             summen = (
             protokoll_user
             .values("user")
@@ -551,10 +545,6 @@ def gruppe_uebersicht(req, gruppe_id):
             dauer_text = "0:00"
             for g in summen:
                 richtig_sum = g['richtig_sum']
-                try:
-                    richtig_sum += zaehler_user.bonus
-                except:
-                    pass
                 dauer = g['zeit_sum']
                 try:
                     seconds = int(dauer.total_seconds())
@@ -574,13 +564,6 @@ def gruppe_uebersicht(req, gruppe_id):
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
                 richtig_kat = k['richtig_sum']
-                # try:
-                #     zaehler_kategorie = zaehler_user.filter(kategorie = k)
-                #     print("Bonus: ",zaehler_kategorie)
-                #     richtig_kat += zaehler_kategorie.bonus
-                # except:
-                #     pass
-                #falsch_kat = k['falsch_sum']
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(user = user, kategorie = kat_name)
@@ -596,6 +579,7 @@ def gruppe_uebersicht(req, gruppe_id):
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
+                    print(user, zaehler)
                     # if zaehler.first().fehler_zaehler < falsch_kat:
                     #     falsch_kat = zaehler.first().fehler_zaehler
                 richtig_sum += richtig_kat
