@@ -348,7 +348,10 @@ def ort_wahl(req):
     return render(req, 'ort_wahl.html', context={'ort_form': ort_form, 'titel': "Schulort wählen"})
 
 def schule_wahl(req, schule_id):
-    user = get_object_or_404(Profil, user = req.user)
+    try:
+        user = get_object_or_404(Profil, user = req.user)
+    except:
+        return redirect('anmelden')
     try:
         schule = get_object_or_404(Schule, id=schule_id)
     except:
