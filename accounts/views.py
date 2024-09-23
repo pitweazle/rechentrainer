@@ -487,10 +487,10 @@ def gruppe_uebersicht(req, gruppe_id):
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
         protokoll = Protokoll.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
-        zaehler_gruppe = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
+        #zaehler_gruppe = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
     else:
         protokoll = Protokoll.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
-        zaehler_gruppe = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
+        #zaehler_gruppe = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
         #protokoll = protokoll.exclude(user__user__groups__name = 'Lehrer')
         #protokoll = protokoll.exclude(user__klasse = "Lehrer")
     if req.method == 'POST':
@@ -508,14 +508,9 @@ def gruppe_uebersicht(req, gruppe_id):
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
-    temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
-    richtig_gesamt = temp if temp else  0
-    try:
-        bonus_gesamt = zaehler_gruppe.aggregate(Sum('bonus'))['bonus__sum']
-        richtig_gesamt += bonus_gesamt
-    except:
-        pass
-    falsch_gesamt = 0
+    #temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
+    #richtig_gesamt = temp if temp else  0
+    richtig_gesamt = falsch_gesamt = 0
     katmax_max = protokoll.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
     if not katmax_max:
@@ -579,7 +574,12 @@ def gruppe_uebersicht(req, gruppe_id):
                         fehler.text += str(kat_name)+ ", "
                 else:
                     zaehler = zaehler.first()
+                    print(user.user, kat_name, richtig_kat)
+                    print("Bonus: ",zaehler.bonus)
                     richtig_kat += zaehler.bonus
+                    print(richtig_kat)
+                    richtig_gesamt += richtig_kat
+                    print("Gesamt: ",richtig_gesamt)
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
@@ -614,9 +614,14 @@ def gruppe_uebersicht(req, gruppe_id):
             )  
         for k in gesamtsummen: 
             index = int(k['kategorie__zeile'])
-            richtig_sum = k['richtig_sum']
+            #richtig_sum = k['richtig_sum']
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
+    # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
+    # if bonus_summe != None:
+    #     richtig_gesamt = bonus_summe 
+    # else:
+    #     richtig_gesamt = 0 
     quote_sum = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_sum, int(richtig_gesamt))
     context={'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'wahl': wahl,
