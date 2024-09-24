@@ -528,7 +528,6 @@ def gruppe_uebersicht(req, gruppe_id):
         aufgaben_der_schueler = []
         #richtig_sum = falsch_sum = 0            # Die Summen aller SuS in den Kategorien
         for user in schueler_liste:
-            print(user, user.id)
             richtig_user = falsch_user = 0
             hj_stimmt = user.sj == sj and user.hj == hj
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
@@ -879,6 +878,8 @@ def zaehler_ergaenzen(req):
     for n in range(1,27):
         kategorie = Kategorie.objects.get(zeile = n)
         zaehler, create = Zaehler.objects.get_or_create(user = profil, kategorie = kategorie)    
+        zaehler.sj = profil.sj
+        zaehler.hj = profil.hj
         zaehler.bonus = bonus_liste[n]
         zaehler.save()
         print(zaehler, zaehler.bonus)
