@@ -42,6 +42,7 @@ urlpatterns = [
 
     path("karteileichen/", views.karteileichen),
     path("reparatur/<id>", views.reparatur),
+    path("zaehler_ergaenzen/", views.zaehler_ergaenzen),
 
     path("suchen/", views.suchen, name="suchen"),
     

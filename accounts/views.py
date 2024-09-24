@@ -487,12 +487,8 @@ def gruppe_uebersicht(req, gruppe_id):
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
         protokoll = Protokoll.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
-        #zaehler_gruppe = Zaehler.objects.filter(user__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
     else:
         protokoll = Protokoll.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
-        #zaehler_gruppe = Zaehler.objects.filter(user__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
-        #protokoll = protokoll.exclude(user__user__groups__name = 'Lehrer')
-        #protokoll = protokoll.exclude(user__klasse = "Lehrer")
     if req.method == 'POST':
         auswahl = form_filter(req.POST)
         filter = auswahl.fields['auswahl'].choices
@@ -532,6 +528,7 @@ def gruppe_uebersicht(req, gruppe_id):
         aufgaben_der_schueler = []
         #richtig_sum = falsch_sum = 0            # Die Summen aller SuS in den Kategorien
         for user in schueler_liste:
+            print(user, user.id)
             richtig_user = falsch_user = 0
             hj_stimmt = user.sj == sj and user.hj == hj
             protokoll_user = protokoll.filter(user = user)                  # die Gesamtsummen der einzelnen User
@@ -574,12 +571,8 @@ def gruppe_uebersicht(req, gruppe_id):
                         fehler.text += str(kat_name)+ ", "
                 else:
                     zaehler = zaehler.first()
-                    print(user.user, kat_name, richtig_kat)
-                    print("Bonus: ",zaehler.bonus)
                     richtig_kat += zaehler.bonus
-                    print(richtig_kat)
                     richtig_gesamt += richtig_kat
-                    print("Gesamt: ",richtig_gesamt)
                     falsch_kat = zaehler.fehler_zaehler
                     lsg_kat = zaehler.lsg_zaehler
                     abbr_kat = zaehler.abbr_zaehler
@@ -607,7 +600,6 @@ def gruppe_uebersicht(req, gruppe_id):
             mm = int(seconds/60)
             hh, mm = divmod(mm, 60)
             gesamtzeit_text = f"{hh}:{mm:02d}" 
-            #falsch_gesamt += falsch_sum
         gesamtsummen = (
             protokoll                                                           # hier werden die Gesamtsummen der einzelnen Kategorien bestimmt
             .values("kategorie__zeile")
@@ -620,10 +612,6 @@ def gruppe_uebersicht(req, gruppe_id):
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
     # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
-    # if bonus_summe != None:
-    #     richtig_gesamt = bonus_summe 
-    # else:
-    #     richtig_gesamt = 0 
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
     context={'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'wahl': wahl,
@@ -882,6 +870,19 @@ def suchen(req, gruppe_id=None):
         return render(req, 'admin/suchen.html', context)
     else:
         return HttpResponse("Zugriff verweigert")
+
+def zaehler_ergaenzen(req):
+    if not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    profil = Profil.objects.get(user_id = 915) #915 = Lucas van Rege
+    bonus_liste = [0, 61, 10, 40, 70, 30, 50, 10, 10, 10, 10, 10, 0, 29, 0, 10, 71, 10, 10, 28, 11, 56, 10, 20, 20, 21, 16]
+    for n in range(1,27):
+        kategorie = Kategorie.objects.get(zeile = n)
+        zaehler, create = Zaehler.objects.get_or_create(user = profil, kategorie = kategorie)    
+        zaehler.bonus = bonus_liste[n]
+        zaehler.save()
+        print(zaehler, zaehler.bonus)
+    return HttpResponse(profil)
 
 def reparatur(req, id):
     if not req.user.is_superuser:
