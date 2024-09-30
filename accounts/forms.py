@@ -129,5 +129,8 @@ class Zusammen_Form(forms.Form):
 class Loeschen_Form(forms.Form):
     loeschen = forms.IntegerField(label="Accounts löschen", required=False, help_text="Bitte ID eingeben")
 
+class Abmelden_Form(forms.Form):
+    abmelden = forms.IntegerField(label="Mitglied entfernen", required=False, help_text="Bitte ID eingeben")
+
 
 

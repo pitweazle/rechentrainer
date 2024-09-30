@@ -59,6 +59,14 @@
         <input type="submit" value="Accounts zusammenführen">
     </form>
 
+    <h3>Mitglied entfernen:</h3>
+    Wenn eine Schülerin/ein Schüler von der Schule abgegangen ist oder aus anderen Gründen nicht mehr Mitglied der Gruppe ist, kann sie/er hier abgemedet werden.
+    <form action="{% url 'suchen' gruppe_id %}" method="post">
+        {% csrf_token %}
+        {{ abmelden_form }}
+        <input type="submit" value="Schüler/in abmelden">
+    </form>
+
     <h3>Profil löschen:</h3>
     Das geht nur, wenn keine Aufgaben mit diesem Account gerechnet wurden - ansonsten müssen diese unter 'Aufgaben zusammenfassen' zunächst übertragen werden.
     <form action="{% url 'suchen' gruppe_id %}" method="post">
