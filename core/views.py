@@ -6455,10 +6455,19 @@ def uebersicht(req, schueler_id=0):
         if lehrer:
             profil.gruppe = None
             profil.save()    
-        if (profil.id) != (req.user.profil.id):
+        if (profil.id) == (req.user.profil.id):
+            pass
+        else:
             if req.user.is_superuser:
                 pass
-            elif lehrer and (profil.gruppe.lehrer.id) != (req.user.id):
+            elif lehrer:
+                if profil.gruppe != None:
+                    if (profil.gruppe.lehrer.id) != (req.user.id):
+                        return HttpResponse("Zugriff verweigert")
+                else:
+                    meldung = profil, " ist nicht in deiner Lerngruppe angemeldet"
+                    return HttpResponse(meldung)
+            else:
                 return HttpResponse("Zugriff verweigert")
         protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)
         if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
