@@ -9,7 +9,7 @@ from django.http import HttpResponse, FileResponse, Http404
 
 from django.db.models import Max, Sum, Count, F, Q
 
-from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form
+from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
 
 from .models import Schule, Lerngruppe,  Geloescht
@@ -755,9 +755,9 @@ def account_pruefen(id):
 
 def suchen(req, gruppe_id=None):
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists() or req.user.is_superuser:
-        #suchen_form = Suchen_Form
         loeschen_form = Loeschen_Form
         zusammen_form = Zusammen_Form
+        abmelden_form = Abmelden_Form
         vorname = nachname = nachricht = ""
         if not gruppe_id: 
             profile = Profil.objects.filter(gruppe = None).order_by('vorname','nachname')
@@ -842,6 +842,19 @@ def suchen(req, gruppe_id=None):
                                             nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
                                             verschoben.text += nachricht
                                             verschoben.save()                            
+            abmelden_form = Abmelden_Form(req.POST)
+            if abmelden_form.is_valid():
+                abmelden = abmelden_form.cleaned_data['abmelden']
+                if abmelden:
+                    user, nachricht = account_pruefen(abmelden)
+                    if len(nachricht) < 5:
+                        gruppe = user.profil.gruppe
+                        if gruppe == None or gruppe.id != gruppe_id:
+                            nachricht = " Der user mit der ID {} ist nicht Ihrer Lerngruppe zugeordnet".format(abmelden) 
+                        else:
+                            nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde aus der Lerngruppe {} entfernt'.format(user.profil.vorname+" "+user.profil.nachname, user.username, gruppe)
+                            user.profil.gruppe = None
+                            user.profil.save()
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
                 loeschen = loeschen_form.cleaned_data['loeschen']
@@ -861,11 +874,11 @@ def suchen(req, gruppe_id=None):
                                 user.groups.clear()
                                 group = Group.objects.get(name='Gelöscht')
                                 user.groups.add(group)
-                                profil.delete()
+                                user.profil.delete()
                                 geloescht, created = Geloescht.objects.get_or_create(user = user)
                                 geloescht.text += nachricht
                                 geloescht.save()
-        context = {"loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
+        context = {"abmelden_form": abmelden_form, "loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
         return HttpResponse("Zugriff verweigert")
