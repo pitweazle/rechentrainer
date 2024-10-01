@@ -4792,25 +4792,28 @@ def term_bereinigen(term, typ):
     if typ == 6:
         if "(" not in term:
             return 0, "Wo ist die Klammer?"
-        teile = term.split("(")
-        klammer = teile[1]                                          # selektiert die klammer
-        klammer = klammer.replace("+", " +").replace("-"," -").replace(")","")
-        klammer = klammer.strip()
-        teile = klammer.split(' ')                                  # teilt den Klammerinhalt
-        for e in erlaubt[:9]:
-            if e in teile[0] and e in teile[1]:
-                return 0,  '"{}" musst du auch noch ausklammern!'.format(e)
-            else:
+        try:
+            teile = term.split("(")
+            klammer = teile[1]                                          # selektiert die klammer
+            klammer = klammer.replace("+", " +").replace("-"," -").replace(")","")
+            klammer = klammer.strip()
+            teile = klammer.split(' ')                                  # teilt den Klammerinhalt
+            for e in erlaubt[:9]:
+                if e in teile[0] and e in teile[1]:
+                    return 0,  '"{}" musst du auch noch ausklammern!'.format(e)
+                else:
+                    teile[0] = teile[0].replace(e,"")
+                    teile[1] = teile[1].replace(e,"")
+            for e in erlaubt[19:]:
                 teile[0] = teile[0].replace(e,"")
                 teile[1] = teile[1].replace(e,"")
-        for e in erlaubt[19:]:
-            teile[0] = teile[0].replace(e,"")
-            teile[1] = teile[1].replace(e,"")
-        try:
-            zahl1 = (int(teile[0]))
-            zahl2 = (int(teile[1])) 
-            if gcd(zahl1,zahl2) > 1:
-                    return 0,  'Du musst noch den ggT aus {} und {} ausklammern!'.format(zahl1,zahl2)
+            try:
+                zahl1 = (int(teile[0]))
+                zahl2 = (int(teile[1])) 
+                if gcd(zahl1,zahl2) > 1:
+                        return 0,  'Du musst noch den ggT aus {} und {} ausklammern!'.format(zahl1,zahl2)
+            except:
+                pass
         except:
             pass
     term = term.replace(" ","")
@@ -4946,13 +4949,14 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         buchstaben_liste = ["a","b","c","","x","y", "z", "", "u", "v","w",""]
         lsg_koeff = [0,0,0,0,0,0,0,0,0,0,0,0]
         parameter = {'name':'normal'}
-        if typ == 1:                                                                            # Wertetabelle'
+        typ=6
+        if typ == 1:                        # Wertetabelle                                                                          # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
             parameter = {'name': 'tab_term',}
             parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
-        elif typ == 2:                                                                          # Terme zusammenfassen
+        elif typ == 2:                      # nach Alphabet sortieren                                                      # Terme zusammenfassen
             items = stufe%2+4
             startbuchstabe = typ2 = random.randint(0,2)*4
             for n in range (items):
@@ -4985,7 +4989,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             hilfe_text="Du musst alle Zahlen ohne Buchstaben zusammenfassen und dann jeweils alle {}'s und alle {}'s usw.! <br>"\
                 "(Wenn vor einem Buchstaben keine Zahl steht, musst du dir eine 1 dazudenken.)<br> Achte auf die Vorzeichen!)<br>"\
                 "Am Ende musst du alle Ausdrücke nach dem Alphabet sortieren.".format(*variable)
-        elif typ == 3:                                              
+        elif typ == 3:                      # Multiplizieren                        
             startbuchstabe = typ2 = random.randint(0,2)*4
             frage, koeffizient1, buchstabe1, leer = termteil(startbuchstabe, 2, stufe)
             frage2, koeffizient2, buchstabe2, leer = termteil(startbuchstabe, 2, stufe)
@@ -5011,7 +5015,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                 '(Achte auf die Vorzeichen! Und beachte: "{0}·{0}" = "{0}²")'.format(startbuchstabe)
             pro_text = frage+"="
             text = "Multipliziere:<br>" + frage
-        elif typ in [4,6]:                                                                      # 4 = Klammer auflösen, 6= ausklammern
+        elif typ in [4,6]:                  # Klammern                                                    # 4 = Klammer auflösen, 6= ausklammern
             stufe=2
             startbuchstabe = typ2 = random.randint(0,2)*4
             if typ == 4:
