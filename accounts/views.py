@@ -775,6 +775,7 @@ def suchen(req, gruppe_id=None):
             gesamt = Protokoll.objects.filter(user_id = profil.id)
             neu = gesamt.filter(sj = sj, hj = hj)
             zeilen.append((profil, gesamt.count, neu.count))
+        profil = None
         if req.method == "POST":
             zusammen_form = Zusammen_Form(req.POST)
             if zusammen_form.is_valid():
