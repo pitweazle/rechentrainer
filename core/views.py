@@ -4949,7 +4949,6 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         buchstaben_liste = ["a","b","c","","x","y", "z", "", "u", "v","w",""]
         lsg_koeff = [0,0,0,0,0,0,0,0,0,0,0,0]
         parameter = {'name':'normal'}
-        typ=6
         if typ == 1:                        # Wertetabelle                                                                          # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
             parameter = {'name': 'tab_term',}
