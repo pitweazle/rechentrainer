@@ -2297,6 +2297,8 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         if typ == 9:                                                                #Benennung von Ecken und Seiten
             if eingabe.upper() == lsg[0].upper():
                 return -1, "Achtung: Die Ecken werden mit Großbuchstaben beschriftet, die Seiten mit kleinen Buchstaben." 
+            else:
+                return 0, ""
         else:
             return 0, ""
     else:                                                                           #hier wird die Aufgabe erstellt:
@@ -7012,6 +7014,7 @@ def main(req, slug):
             protokoll.versuche += 1
             zaehler = Zaehler.objects.get(pk = req.session.get('zaehler_id'))
             zaehler.hinweis = ""
+            hilfe_id = 0
             #wenn in den Aufgaben in "erg" eine Zahl steht
             if "tab" in protokoll.parameter["name"]:
                 if "term" in protokoll.parameter["name"]:
