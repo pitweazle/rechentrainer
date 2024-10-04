@@ -6457,21 +6457,22 @@ def uebersicht(req, schueler_id=0):
                 loeschen = True            
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
-        if lehrer:
-            profil.gruppe = None
-            profil.save()    
         if (profil.id) == (req.user.profil.id):
             pass
         else:
             if req.user.is_superuser:
                 pass
             elif lehrer:
-                if profil.gruppe != None:
-                    if (profil.gruppe.lehrer.id) != (req.user.id):
-                        return HttpResponse("Zugriff verweigert")
-                else:
-                    meldung = profil, " ist nicht in deiner Lerngruppe angemeldet"
-                    return HttpResponse(meldung)
+                print("Lehrer")
+                try:
+                    print(profil)
+                    if (profil.gruppe.lehrer.id) == (req.user.id):
+                        pass
+                    else:
+                        meldung = profil, " ist nicht in dieser Lerngruppe angemeldet"
+                        return HttpResponse(meldung)
+                except:
+                    return HttpResponse("Daten nicht vorhanden")
             else:
                 return HttpResponse("Zugriff verweigert")
         protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)

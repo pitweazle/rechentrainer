@@ -670,8 +670,11 @@ def gruppe_loeschen(req, gruppe_id):
 def mein_schueler(req, schueler_id, hj_stimmt):
     mein_schueler = get_object_or_404(Profil, id=schueler_id)
     if not req.user.is_superuser:
-        if mein_schueler.gruppe.lehrer != req.user: 
-            return HttpResponse("Zugriff verweigert")
+        try:
+            if mein_schueler.gruppe.lehrer != req.user: 
+                return HttpResponse("Zugriff verweigert")
+        except:
+            return HttpResponse("keine Daten vorhanden")
     try:
         gruppe = mein_schueler.gruppe
         titel = str(gruppe.name) + ": " + str(mein_schueler)
