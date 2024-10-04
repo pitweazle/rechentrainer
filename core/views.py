@@ -6080,7 +6080,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     return -1, "" 
             except:
                 return -1, "" 
-        
         elif typ == 3:
             if typ2 == 1:
                 if eingabe not in ["l", "s", "g"] :
@@ -6216,7 +6215,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter = sub_koordinatensystem(x_null, y_null)
             if typ == 4:                                                                # Funktionswert auf Graph?
                 titel = "Funktionswerte" 
-                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechnen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
                 frage = "ja/nein"
                 typ2 = 1
@@ -6233,6 +6232,17 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 typ2 = 1
                 hilfe_id = 60
                 hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
+            elif typ == 7:
+                typ2 = 1
+                typ3 = random.randint(1,3)
+                if typ3 == 1:
+                    titel = "Steigung" 
+                    text = "Welche Steigung hat dieser Funktionsgraph?"
+                    frage = "m="
+                else:
+                    titel = "y-Achsenabschnitt" 
+                    text = "Bestimme den y-Achsenabschnitt"
+                    frage = "n="
             else:                                                                       # Funktionsgleichung
                 titel = "Funktionsgleichung"
                 text = "Wie lautet die Funktionsgleichung dieses Graphen?"
@@ -6290,6 +6300,12 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(ablesen)
                 erg = x
                 lsg = [str(erg)]
+            elif typ == 7:
+                if typ3 == 1:
+                    erg = steigung
+                else:
+                    erg = absolut
+                lsg = [str(erg)]
             else:
                 lsg = [gleichung]
                 zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
@@ -6299,6 +6315,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
+            print(loesung)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -6937,6 +6954,7 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
+    print (eingabe, wert, lsg,)
     if wert != None:  
         if  decimal.Decimal(eingabe) == wert:
             return 1, ""
