@@ -5455,6 +5455,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
+        typ=13
         if typ == -1:                                   # Laplace
             text = "Handelt es sich bei Experiment:<br>"
             frage = "ja/nein"
@@ -5915,7 +5916,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 pro_text = "P: 3*gleicher Münzwurf"                 
             nenner = 2**anzahl 
             lsg=["1/"+str(nenner)]   
-            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit zweimal '{2}' zu werfen?"
+            text="Eine Münze wird {1} geworfen. Wie groß ist die Wahrscheinlichkeit {1} '{2}' zu werfen?"
             pro_text = "Münzwurf" + str(anzahl) + " Würfe" 
             hilfe_id = 130
             hilfe="Das ist ein zweistufiges Experiment. Du musst die Wahrscheinlichkeiten vom ersten und zweiten ... Ereignis multiplizieren<br>(Gib das Ergebnis am Besten als Bruch an)."
@@ -6463,9 +6464,7 @@ def uebersicht(req, schueler_id=0):
             if req.user.is_superuser:
                 pass
             elif lehrer:
-                print("Lehrer")
                 try:
-                    print(profil)
                     if (profil.gruppe.lehrer.id) == (req.user.id):
                         pass
                     else:
