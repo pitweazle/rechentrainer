@@ -6049,7 +6049,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
             else:
                 return -1, ""
-        elif typ > 6:
+        elif typ > 7:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
             if "1x" in eingabe:
@@ -6105,162 +6105,123 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1:                                                                    # Wertetabelle
-            text = "Berechne die Funktionswerte"
-            parameter = {'name': 'tab_term',}
-            tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
-            parameter.update(tabellenwerte)
-            parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
-            pro_text = "Termbelegung: " + term
-        elif typ == 2:                                                                  # Funktionswert berechnen
-            gleichung, steigung, absolut, basis = funktionsgleichung(1)
-            x = random.randint(-3,6)
-            variable = [gleichung, x]
-            text = "Berechne für die Funktion f(x)= {} den Funktionswert für x= {}" 
-            frage = pro_text = "f({1})="
-            erg = steigung*x+absolut
-            lsg = [str(erg)]
-            hilfe_id = 20
-            hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
-        elif typ == 3:                                                                  # Schaubild
-            titel = "Werte aus Schaubildern ablesen"
-            box_hoehe = 360
-            box_breite = 300
-            grid = 20
-            y_null = box_hoehe-40          # y_Null  Lage der x-Achse
-            x_null = 40                    # x_Null  Lage der y-Achse
-            parameter = {'name': 'svg/koosys.svg', 'object': "fahrtstrecke",
-                    'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
-                    'grid' : grid,
-                    'einteilung': 60,
-                    'y_null': y_null,'x_null': x_null,
-                    }
-            beschriftung = {
-                'xvalues': [
-                    (x_null + n*40, str((n*10+420)//60)+":"+str((n*10+420)%60)) for n in range(1 ,9)
-                ],
-                'yvalues': [
-                    (y_null - n*40, n*0.5) for n in range(1, 8)
-                ],
-                } 
-            parameter.update(beschriftung)
-            text = "Markus fährt mit dem Fahrrad in die Schule. Auf dem Weg holt er Maria ab.<br>"
-            v1 = v2 = 0
-            while v1 > 4 or v1 < 2:
-                t1 = random.randint(2,8)
-                s1 = random.randint(2,7)
-                v1 = s1/t1
-            while v2 > 4 or v2 < 2:
-                t2 = random.randint(2,6)
-                s2 = random.randint(2,7)
-                v2 = s2/t2
-            pause = random.randint(1,2)
-            fahrtstrecke = {'zeit_1': x_null+t1*grid, 'strecke_1': y_null-s1*grid, 'pause': x_null+(t1+pause)*grid, 'zeit_2': x_null+(t1+pause+t2)*grid, 'strecke_2': y_null-(s1+s2)*grid,}
-            parameter.update(fahrtstrecke)
-            typ2 = random.randint(1,6)
-            if typ2 == 1:
-                text += "Ist Markus auf der ersten Wegstrecke schneller(s), langsamer(l) oder gleich schnell(g)?"
-                pro_text = "Geschwindigkeit in Schaubild vergleichen"
-                if v1 == v2:
-                    lsg = ["gleich schnell", "g", "G"]
-                elif v1 > v2:
-                    lsg = ["schneller", "s", "S"]
-                else:
-                    lsg = ["langsamerl", "l", "L"]
-                frage = "l/s/g?"
-                lsg +=["indiv_0"]
-            elif typ2 == 2:
-                text += "Wann kommen sie in der Schule an?"
-                pro_text = "Ankunftszeit aus Schaubild ablesen"
-                frage = "um"  
-                einheit = "Uhr"  
-                anmerkung = "Gib die Uhrzeit z.B. so ein: 9:15"
-                zeit = (t1+t2+pause)*5
-                lsg = ["7:"+str(zeit)]
-                lsg +=["indiv_0"]
-            elif typ2 == 3:
-                text += "Wie lange ist Markus insgesamt unterwegs?"
-                pro_text = "Gesamtzeit aus Schaubild ablesen"
-                frage = "Es sind"  
-                einheit = "Minuten"  
-                erg = (t1+t2+pause)*5
+        if typ > 3:                    # Koordinatensystem
+
+                box_hoehe = 360
+                box_breite = 400
+                grid = 20
+                y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+                x_null = 140                    # x_Null  Lage der y-Achse
+                parameter = sub_koordinatensystem(x_null, y_null)
+                typ2 = 1
+                gleichung, steigung, absolut, basis = funktionsgleichung(typ2)            
+        if typ == 1:                        # Wertetabelle
+                text = "Berechne die Funktionswerte"
+                parameter = {'name': 'tab_term',}
+                tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+                parameter.update(tabellenwerte)
+                parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
+                pro_text = "Termbelegung: " + term
+        elif typ == 2:                      # Funktionswert berechnen
+                gleichung, steigung, absolut, basis = funktionsgleichung(1)
+                x = random.randint(-3,6)
+                variable = [gleichung, x]
+                text = "Berechne für die Funktion f(x)= {} den Funktionswert für x= {}" 
+                frage = pro_text = "f({1})="
+                erg = steigung*x+absolut
                 lsg = [str(erg)]
-            elif typ2 == 4:
-                text += "Wie lange ist Markus bis zu Maria unterwegs?"
-                pro_text = "Teil- Fahrtzeit aus Schaubild ablesen"
-                frage = "Es sind"  
-                einheit = "Minuten"  
-                erg = (t1)*5
-                lsg = [str(erg)]
-            elif typ2 == 5:
-                text += "Wie lange ist Maria unterwegs?"
-                pro_text = "Teil- Fahrtzeit aus Schaubild ablesen"
-                frage = "Es sind"  
-                einheit = "Minuten"  
-                erg = (t2)*5
-                lsg = [str(erg)]
-            elif typ2 == 6:
-                text += "Wie lange muss Markus bei Maria warten?"
-                pro_text = "Wartezeit aus Schaubild ablesen"
-                frage = "Es sind"  
-                einheit = "Minuten"  
-                erg = (pause)*5
-                lsg = [str(erg)]
-        else:                                                                           # Koordinatensystem
-            box_hoehe = 360
-            box_breite = 400
-            grid = 20
-            y_null = box_hoehe-140          # y_Null  Lage der x-Achse
-            x_null = 140                    # x_Null  Lage der y-Achse
-            parameter = sub_koordinatensystem(x_null, y_null)
-            if typ == 4:                                                                # Funktionswert auf Graph?
+                hilfe_id = 20
+                hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
+        elif typ == 3:                      # Schaubild
+                titel = "Werte aus Schaubildern ablesen"
+                box_hoehe = 360
+                box_breite = 300
+                grid = 20
+                y_null = box_hoehe-40          # y_Null  Lage der x-Achse
+                x_null = 40                    # x_Null  Lage der y-Achse
+                parameter = {'name': 'svg/koosys.svg', 'object': "fahrtstrecke",
+                        'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+                        'grid' : grid,
+                        'einteilung': 60,
+                        'y_null': y_null,'x_null': x_null,
+                        }
+                beschriftung = {
+                    'xvalues': [
+                        (x_null + n*40, str((n*10+420)//60)+":"+str((n*10+420)%60)) for n in range(1 ,9)
+                    ],
+                    'yvalues': [
+                        (y_null - n*40, n*0.5) for n in range(1, 8)
+                    ],
+                    } 
+                parameter.update(beschriftung)
+                text = "Markus fährt mit dem Fahrrad in die Schule. Auf dem Weg holt er Maria ab.<br>"
+                v1 = v2 = 0
+                while v1 > 4 or v1 < 2:
+                    t1 = random.randint(2,8)
+                    s1 = random.randint(2,7)
+                    v1 = s1/t1
+                while v2 > 4 or v2 < 2:
+                    t2 = random.randint(2,6)
+                    s2 = random.randint(2,7)
+                    v2 = s2/t2
+                pause = random.randint(1,2)
+                fahrtstrecke = {'zeit_1': x_null+t1*grid, 'strecke_1': y_null-s1*grid, 'pause': x_null+(t1+pause)*grid, 'zeit_2': x_null+(t1+pause+t2)*grid, 'strecke_2': y_null-(s1+s2)*grid,}
+                parameter.update(fahrtstrecke)
+                typ2 = random.randint(1,6)
+                if typ2 == 1:
+                    text += "Ist Markus auf der ersten Wegstrecke schneller(s), langsamer(l) oder gleich schnell(g)?"
+                    pro_text = "Geschwindigkeit in Schaubild vergleichen"
+                    if v1 == v2:
+                        lsg = ["gleich schnell", "g", "G"]
+                    elif v1 > v2:
+                        lsg = ["schneller", "s", "S"]
+                    else:
+                        lsg = ["langsamerl", "l", "L"]
+                    frage = "l/s/g?"
+                    lsg +=["indiv_0"]
+                elif typ2 == 2:
+                    text += "Wann kommen sie in der Schule an?"
+                    pro_text = "Ankunftszeit aus Schaubild ablesen"
+                    frage = "um"  
+                    einheit = "Uhr"  
+                    anmerkung = "Gib die Uhrzeit z.B. so ein: 9:15"
+                    zeit = (t1+t2+pause)*5
+                    lsg = ["7:"+str(zeit)]
+                    lsg +=["indiv_0"]
+                elif typ2 == 3:
+                    text += "Wie lange ist Markus insgesamt unterwegs?"
+                    pro_text = "Gesamtzeit aus Schaubild ablesen"
+                    frage = "Es sind"  
+                    einheit = "Minuten"  
+                    erg = (t1+t2+pause)*5
+                    lsg = [str(erg)]
+                elif typ2 == 4:
+                    text += "Wie lange ist Markus bis zu Maria unterwegs?"
+                    pro_text = "Teil- Fahrtzeit aus Schaubild ablesen"
+                    frage = "Es sind"  
+                    einheit = "Minuten"  
+                    erg = (t1)*5
+                    lsg = [str(erg)]
+                elif typ2 == 5:
+                    text += "Wie lange ist Maria unterwegs?"
+                    pro_text = "Teil- Fahrtzeit aus Schaubild ablesen"
+                    frage = "Es sind"  
+                    einheit = "Minuten"  
+                    erg = (t2)*5
+                    lsg = [str(erg)]
+                elif typ2 == 6:
+                    text += "Wie lange muss Markus bei Maria warten?"
+                    pro_text = "Wartezeit aus Schaubild ablesen"
+                    frage = "Es sind"  
+                    einheit = "Minuten"  
+                    erg = (pause)*5
+                    lsg = [str(erg)]
+        elif typ == 4:                      # Funktionswert auf Graph?
                 titel = "Funktionswerte" 
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechnen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
                 frage = "ja/nein"
-                typ2 = 1
                 x = random.choice([-10, -5, 6, 7, 10])
-            elif typ == 5:                                                              # Funktionswert ablesen                                                            
-                titel = "Funktionswerte" 
-                text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
-                typ2 = 1
-                hilfe_id = 50
-                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen, von da aus weiter zur y-Achse und liest dort den gesuchten Funktionswert ab."
-            elif typ == 6:                                                              # x für Funktionswert ablesen                                                            
-                titel = "Funktionswerte" 
-                text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
-                typ2 = 1
-                hilfe_id = 60
-                hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
-            elif typ == 7:
-                typ2 = 1
-                typ3 = random.randint(1,3)
-                if typ3 == 1:
-                    titel = "Steigung" 
-                    text = "Welche Steigung hat dieser Funktionsgraph?"
-                    frage = "m="
-                else:
-                    titel = "y-Achsenabschnitt" 
-                    text = "Bestimme den y-Achsenabschnitt"
-                    frage = "n="
-            else:                                                                       # Funktionsgleichung
-                titel = "Funktionsgleichung"
-                text = "Wie lautet die Funktionsgleichung dieses Graphen?"
-                pro_text = "Funktionsgleichung ablesen"
-                frage = "y="
-                if stufe%2 == 0:
-                    typ2 = 5
-                else:
-                    typ2 = random.randint(2,5)
-                if typ2 == 2:
-                    anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                    hilfe_id = 91
-                    hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
-                else:
-                    hilfe_id = 90
-                    hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
-            gleichung, steigung, absolut, basis = funktionsgleichung(typ2)
-            if typ == 4:
                 if absolut%2 == 0:
                     y = int(steigung*x+absolut)
                 else:
@@ -6278,41 +6239,74 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     hilfe_id = 31
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
                 variable = [gleichung, x, str(y).replace(".",",")]
-            elif typ == 5: 
-                erg = 99
-                while erg <-3 or erg > 4.5 or x <-3 or x > 4.5:
-                    x = random.randint(-6,10)/2
-                    erg = steigung*x+absolut
-                frage = pro_text = "f({1})="
-                variable = [gleichung, str(x).replace(".",",")]
-                ablesen = {'x':x_null+x*40, 'y':y_null-erg*40}
-                parameter.update(ablesen)
-                lsg = [str(erg)]
-            elif typ == 6: 
-                x = y = 99
-                while x <-3 or x > 4.5 or y <-3 or y > 4.5:
-                    x = random.randint(-6,10)/2
-                    y = steigung*x+absolut
-                frage = "x="
-                pro_text = "f(x)={1}, x=?"
-                variable = [gleichung, str(y).replace(".",",")]
-                ablesen = {'x':x_null+x*40, 'y':y_null-y*40}
-                parameter.update(ablesen)
-                erg = x
-                lsg = [str(erg)]
-            elif typ == 7:
-                if typ3 == 1:
-                    erg = steigung
-                else:
-                    erg = absolut
-                lsg = [str(erg)]
+        elif typ == 5:                      # Funktionswert ablesen                                                            
+            titel = "Funktionswerte" 
+            text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
+            hilfe_id = 50
+            hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen, von da aus weiter zur y-Achse und liest dort den gesuchten Funktionswert ab."
+            erg = 99
+            while erg <-3 or erg > 4.5 or x <-3 or x > 4.5:
+                x = random.randint(-6,10)/2
+                erg = steigung*x+absolut
+            frage = pro_text = "f({1})="
+            variable = [gleichung, str(x).replace(".",",")]
+            ablesen = {'x':x_null+x*40, 'y':y_null-erg*40}
+            parameter.update(ablesen)
+            lsg = [str(erg)]
+        elif typ == 6:                      # x für Funktionswert ablesen                                                            
+            titel = "Funktionswerte" 
+            text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
+            hilfe_id = 60
+            hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
+            x = y = 99
+            while x <-3 or x > 4.5 or y <-3 or y > 4.5:
+                x = random.randint(-6,10)/2
+                y = steigung*x+absolut
+            frage = "x="
+            pro_text = "f(x)={1}, x=?"
+            variable = [gleichung, str(y).replace(".",",")]
+            ablesen = {'x':x_null+x*40, 'y':y_null-y*40}
+            parameter.update(ablesen)
+            erg = x
+            lsg = [str(erg)]
+        elif typ == 7:                      # Steigung und Achsenabscnitt
+            typ3 = random.randint(1,3)
+            if typ3 == 1:
+                titel = "Steigung" 
+                text = "Welche Steigung hat dieser Funktionsgraph?"
+                frage = "m="
             else:
-                lsg = [gleichung]
-                zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
-                lsg.append(zahl)
-                lsg.append("indiv_0")
-                steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
-                parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
+                titel = "y-Achsenabschnitt" 
+                text = "Bestimme den y-Achsenabschnitt"
+                frage = "n="
+            if typ3 == 1:
+                erg = steigung
+            else:
+                erg = absolut
+            lsg = [str(erg)]
+        else:                               # Funktionsgleichung
+            titel = "Funktionsgleichung"
+            text = "Wie lautet die Funktionsgleichung dieses Graphen?"
+            pro_text = "Funktionsgleichung ablesen"
+            frage = "y="
+            if stufe%2 == 0:
+                typ2 = 5
+            else:
+                typ2 = random.randint(2,5)
+            if typ2 == 2:
+                anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
+                hilfe_id = 91
+                hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
+            else:
+                hilfe_id = 90
+                hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
+            lsg = [gleichung]
+            zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
+            lsg.append(zahl)
+            lsg.append("indiv_0")
+            steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
+            parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
+        if typ > 3:                    # Graph einfügen
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
             print(loesung)
@@ -6954,7 +6948,6 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
-    print (eingabe, wert, lsg,)
     if wert != None:  
         if  decimal.Decimal(eingabe) == wert:
             return 1, ""
