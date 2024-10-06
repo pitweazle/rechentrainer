@@ -1483,6 +1483,23 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
     parameter.update(beschriftung)
     return parameter
 
+def sub_punkt_pruefen(eingabe, loesung):
+    if "(" not in eingabe or not ")" in eingabe:
+            return 0, "Du musst die Koordinaten in Klammern eingeben!"
+    elif not (";" in eingabe or "|" in eingabe) :
+        return 0, "Du musst die Koordinaten mit ';' trennen!"        
+    else:
+        eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
+        if ";" in eingabe:
+            eingabe=eingabe.split(";")
+        elif "|" in eingabe:
+            eingabe=eingabe.split("|")
+        zahl=(float(eingabe[0])*10+20)*1000
+        zahl = zahl + float(eingabe[1])*10
+        if zahl == float(loesung):
+            return 1, ""
+    return 0, "" 
+
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
         typ_anf = 1
@@ -6041,15 +6058,18 @@ def funktionsgleichung(typ2):
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 8
+        typ_end = 10
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if typ == 4:
+        if typ == 3 and typ2 == 2:
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[1])
+            return richtig, meldung
+        elif typ == 5:
             if eingabe not in ["ja", "nein"] :
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
             else:
                 return -1, ""
-        elif typ > 7:
+        elif typ > 8:
             if "-1x" in eingabe :
                 return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
             if "1x" in eingabe:
@@ -6080,7 +6100,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     return -1, "" 
             except:
                 return -1, "" 
-        elif typ == 3:
+        elif typ == 4:
             if typ2 == 1:
                 if eingabe not in ["l", "s", "g"] :
                     return 0, "Du musst dich zwischen 's' 'l' und 'g' entscheiden"
@@ -6098,6 +6118,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         else:
             typ = random.randint(2, typ_end) 
         typ2 = 0
+        print(stufe)
         titel = "Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -6105,7 +6126,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         hilfe_id = 0
         erg = None
         parameter = {'name':'normal'}
-        if typ > 3:                    # Koordinatensystem
+        if typ > 4:                    # Koordinatensystem
 
                 box_hoehe = 360
                 box_breite = 400
@@ -6122,17 +6143,43 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update(tabellenwerte)
                 parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
                 pro_text = "Termbelegung: " + term
-        elif typ == 2:                      # Funktionswert berechnen
-                gleichung, steigung, absolut, basis = funktionsgleichung(1)
-                x = random.randint(-3,6)
-                variable = [gleichung, x]
+        elif typ in (2,3):                  # Funktionswert / Nullstelle berechnen
+            gleichung, steigung, absolut, basis = funktionsgleichung(1)
+            x = random.randint(-3,6)
+            variable = [gleichung, x]
+            if typ == 2:
                 text = "Berechne für die Funktion f(x)= {} den Funktionswert für x= {}" 
                 frage = pro_text = "f({1})="
                 erg = steigung*x+absolut
                 lsg = [str(erg)]
                 hilfe_id = 20
                 hilfe_text = "Du musst {1} in die Funktionsgleichung einsetzen und diese ausrechnen."
-        elif typ == 3:                      # Schaubild
+            else:
+                titel = "Nullstelle"
+                if stufe%1 == 0:
+                    typ2 = 1
+                else:                       # nur A-Kurs und Gymnasium
+                    typ2 = random.randint(1,3)
+                if typ2 == 2:
+                    text = "Berechne für die Funktion f(x) = {} den Schnittpunkt mit der x-Achse" 
+                    frage = pro_text = "Nullstelle:"
+                    nullstelle = -absolut/steigung
+                    wert=(nullstelle*10+20)*1000                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = ["("+str(wert).replace(".",",")+";0)", wert, "indiv_0"]
+                    hilfe_id = 33
+                    hilfe_text = "Für die x-Koordinate musst du zunächst 0 für y einsetzen und dann die Gleichung nach x auflösen"
+                else:
+                    text = "Berechne für die Funktion mit der Funktionsgleichung y = {} die Nullstelle" 
+                    frage = pro_text = "x="
+                    erg = -absolut/steigung
+                    lsg = [str(erg).replace(".",",")]
+                    if stufe%2 == 0:
+                        hilfe_id = 32
+                        hilfe_text = "Du musst zunächst 0 für y einsetzen und dann die Gleichung nach x auflösen:<br>0={0}<br>(zunächst 0-({2}) und dann das Ergebnis durch {1} teilen)"
+                    else:
+                        hilfe_id = 31
+                        hilfe_text = "Du musst zunächst 0 für y einsetzen und dann die Gleichung nach x auflösen:<br>0={0}"
+        elif typ == 4:                      # Schaubild
                 titel = "Werte aus Schaubildern ablesen"
                 box_hoehe = 360
                 box_breite = 300
@@ -6216,7 +6263,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     einheit = "Minuten"  
                     erg = (pause)*5
                     lsg = [str(erg)]
-        elif typ == 4:                      # Funktionswert auf Graph?
+        elif typ == 5:                      # Funktionswert auf Graph?
                 titel = "Funktionswerte" 
                 text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechnen.<br>Liegt er auf dem Graphen (ja/nein)?"
                 pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
@@ -6239,7 +6286,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     hilfe_id = 31
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
                 variable = [gleichung, x, str(y).replace(".",",")]
-        elif typ == 5:                      # Funktionswert ablesen                                                            
+        elif typ == 6:                      # Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
             hilfe_id = 50
@@ -6253,7 +6300,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             ablesen = {'x':x_null+x*40, 'y':y_null-erg*40}
             parameter.update(ablesen)
             lsg = [str(erg)]
-        elif typ == 6:                      # x für Funktionswert ablesen                                                            
+        elif typ == 7:                      # x für Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
             hilfe_id = 60
@@ -6269,7 +6316,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter.update(ablesen)
             erg = x
             lsg = [str(erg)]
-        elif typ == 7:                      # Steigung und Achsenabscnitt
+        elif typ == 8:                      # Steigung und Achsenabscnitt
             typ3 = random.randint(1,3)
             if typ3 == 1:
                 titel = "Steigung" 
@@ -6306,10 +6353,11 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             lsg.append("indiv_0")
             steigungsdreieck = {'Ax_steigung':x_null, 'Ay_steigung':y_null-absolut*grid*2,'Bx_steigung':x_null+basis*grid*2,'By_steigung':y_null-absolut*grid*2,'Cx_steigung':x_null+basis*grid*2,'Cy_steigung':y_null-(absolut+steigung*basis)*grid*2 }
             parameter.update(steigungsdreieck)                      # Das Steigungsdreieck wird nur angezeigt, wenn auf Hilfe geklickt wurde
-        if typ > 3:                    # Graph einfügen
+        if typ > 4:                    # Graph einfügen
             graph = {'object': 'graph', 'von_x': 0, 'von_y': (y_null+steigung*x_null)-(absolut*grid*2), 'bis_x':box_breite, 'bis_y': (y_null-steigung*(box_breite-x_null))-(absolut*grid*2)}
             parameter.update(graph)
-            print(loesung)
+        hilfe = hilfe_text.format(*variable)    
+        print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -7231,7 +7279,7 @@ def main(req, slug):
                 typ_anf = zaehler.typ_anf            
             stufe = user.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
-            if kategorie.name in ("Prozentrechnung","Bruchteile"):
+            if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if user.kurs == "A" or user.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
