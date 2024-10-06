@@ -837,15 +837,15 @@ def suchen(req, gruppe_id=None):
                                                 nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
                                                 verschoben.text += nachricht
                                                 verschoben.save()                            
-                                            n = 0
-                                            for protokoll in protokolle:
-                                                n +=1
-                                                protokoll.user = user_ziel.profil
-                                                protokoll.anmerkung = "übertragen von user ID: ", quelle
-                                                protokoll.save()
-                                            nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
-                                            verschoben.text += nachricht
-                                            verschoben.save()                            
+                                    n = 0
+                                    for protokoll in protokolle:
+                                        n +=1
+                                        protokoll.user = user_ziel.profil
+                                        protokoll.anmerkung = "übertragen von user ID: ", quelle
+                                        protokoll.save()
+                                    nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
+                                    verschoben.text += nachricht
+                                    verschoben.save()                            
             abmelden_form = Abmelden_Form(req.POST)
             if abmelden_form.is_valid():
                 abmelden = abmelden_form.cleaned_data['abmelden']
