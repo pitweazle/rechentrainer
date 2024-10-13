@@ -615,5 +615,8 @@ def duell_protokoll(req, gruppe_id):
         context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
         return render(req, 'duell_protokoll.html', context)
 
-def temp_loeschen(req, temp_id):
-    return HttpResponse(id)
+def temp_loeschen(req, gruppe_id, id):
+    temp = Duellant.objects.get(pk = id)
+    if temp.gruppe.lehrer != req.user:
+        return HttpResponse("Zugriff verweigert")
+    return HttpResponse(temp)

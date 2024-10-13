@@ -10,7 +10,7 @@
             <tr>
                 <td>{{duellant.name}}</td>
                 <td>{{duellant.id}}</td>
-                <td><a href="{% url 'temp_loeschen' duellant.id %}">löschen</a></td>
+                <td><a href="{% url 'temp_loeschen' gruppe_id duellant.id %}">löschen</a></td>
             </tr>
         {%endfor%}
     </table>
