@@ -30,7 +30,9 @@ urlpatterns = [
 
     path("meine_gruppen/", views.meine_gruppen, name="meine_gruppen"),
     path("neue_gruppe/", views.neue_gruppe, name="neue_gruppe"),
-    
+    path("gruppe_temp/", views.gruppe_temp, name="gruppe_temp"),
+    path('duell_temp/<int:gruppe_id>/', views.duell_temp, name='duell_temp'),
+
     path("gruppe_uebersicht/<int:gruppe_id>/", views.gruppe_uebersicht, name="gruppe_uebersicht"),
     path("gruppe_aendern/<int:gruppe_id>/", views.gruppe_aendern, name="gruppe_aendern"),
     path("gruppe_loeschen/<int:gruppe_id>/", views.gruppe_loeschen, name="gruppe_loeschen"),
