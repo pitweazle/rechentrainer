@@ -8,7 +8,8 @@ class Duellant(models.Model):
         ("B", "B"),
         ("C", "C")
     )
-    profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE)
+    profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE, null=True)
+    gruppe = models.ForeignKey(Lerngruppe, verbose_name='Lerngruppe', related_name='duellant', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100)
     liga = models.CharField(max_length=1, choices=LIGAWAHL, default="A")
     platz = models.SmallIntegerField(null=True, blank=True)
@@ -22,7 +23,7 @@ class Duellant(models.Model):
     
     def __str__(self):
         return f"{self.name}"
-
+    
 class Duell(models.Model):
     protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
     gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)

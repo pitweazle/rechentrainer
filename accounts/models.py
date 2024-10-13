@@ -30,7 +30,8 @@ class Lerngruppe(models.Model):
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     aufgaben_pro_woche = models.SmallIntegerField(default=0)
     note_anzeigen = models.BooleanField(default = True)
-    
+    temp = models.BooleanField(default=False)
+        
     class Meta:
         verbose_name_plural = 'Lerngruppen'
         unique_together = ['lehrer', 'name']
@@ -82,7 +83,7 @@ class Profil(models.Model):
         verbose_name_plural = 'Profile'
 
 class Geloescht(models.Model):
-    user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE )
+    user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE, )
     text = models.CharField(max_length=200)
     class Meta:
         verbose_name = 'Gelöscht'

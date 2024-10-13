@@ -11,13 +11,13 @@ from django.http import HttpResponse
 from django.db.models import Count, Sum 
 
 from accounts.models import Profil, Lerngruppe
-from accounts.views import stufe_aus_jg
+#from accounts.views import stufe_aus_jg
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from core.forms import AufgabeFormZahl, AufgabeFormStr
 from core.views import format_zahl, aufgaben, kontrolle
 
-from .models import  Duellant, Duell, Duell_Protokoll
+from .models import Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter
 
 def duell_rang(gruppe_id):
@@ -614,3 +614,6 @@ def duell_protokoll(req, gruppe_id):
             # )
         context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
         return render(req, 'duell_protokoll.html', context)
+
+def temp_loeschen(req, temp_id):
+    return HttpResponse(id)
