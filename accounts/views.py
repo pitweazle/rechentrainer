@@ -10,13 +10,13 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Temp_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
 
 from .models import Schule, Lerngruppe,  Geloescht
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
-from duell.models import Duellant
+#from duell.views import temp_uebersicht
  
 def name_hj():
     heute = datetime.today()
@@ -476,11 +476,13 @@ def protokoll_zeit_filter(protokoll, auswahl):
     return protokoll
 
 def gruppe_uebersicht(req, gruppe_id):
-    from core.views import soll_berechnung, bewertung_kat, bewertung_hj
-    sj, hj = name_hj()
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
-        return temp_uebersicht(req, gruppe_id)
+        return redirect('temp_uebersicht', gruppe.id)
+        context={'gruppe_id': gruppe_id}
+        return render(req, 'temp_uebersicht.html', context)
+    from core.views import soll_berechnung, bewertung_kat, bewertung_hj
+    sj, hj = name_hj()
     jg = gruppe.jg
     aufgaben_pro_woche = gruppe.aufgaben_pro_woche
     if aufgaben_pro_woche < 1:
@@ -708,61 +710,6 @@ def schueler_aendern(req, schueler_id):
     profil_form = Schueler_Aendern_Form(instance=schueler,)
     context = {'profil_form': profil_form, 'schueler': schueler, 'titel': "Schülerdaten ändern"}
     return render(req, 'lehrer/schueler_aendern.html', context)
-
-# nur für temporäre Duellgruppen
-def gruppe_temp(req):
-    if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
-        gruppe_temp = Gruppe_Temp_Form() 
-        if req.method == 'POST':
-            gruppe_temp = Gruppe_Temp_Form(req.POST) 
-            if  gruppe_temp.is_valid():
-                gruppen = Lerngruppe.objects.filter(lehrer=req.user).order_by('name')
-                neu = gruppe_temp.cleaned_data['name']
-                jg = gruppe_temp.cleaned_data['jg']
-                gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
-                if not created:
-                    return render(req, 'lehrer/gruppe_temp.html', context={'gruppe': gruppe_temp, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
-                return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "neue Lerngruppe wurde angelegt"}) 
-        return render(req, 'lehrer/gruppe_temp.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
-    else:
-        return HttpResponse("Zugriff verweigert")
-
-def temp_uebersicht(req, gruppe_id):
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    duellanten = Duellant.objects.filter(gruppe=gruppe)
-    print(duellanten)
-    if duellanten.count() == 0:                         # löscht die gespeicherten Aufgabennummern der einzelnen Kategorien der Lehrkraft
-        pass
-    #duell_rang(gruppe.id)
-    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
-    dubletten_liste = []
-    if not dubletten:
-        pass
-    else:
-        for dublette in dubletten:
-            dubletten_liste.append(dublette["name"])
-    leerstellen_liste = []
-    for duellant in duellanten:
-        if " " in duellant.name:
-            leerstellen_liste.append(duellant.name)
-    duellanten = duellanten.order_by("liga", "platz", "name", )
-    #duell_rang(gruppe.id)
-    req.session['gruppe_id'] = gruppe_id  
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
-    return render(req, 'temp_uebersicht.html', context)
-
-# def duell_temp(req, gruppe_id):
-#     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-#     if gruppe.lehrer != req.user and not req.user.is_superuser:
-#         return HttpResponse("Zugriff verweigert")
-#     duellanten = Duellant.objects.filter(gruppe=gruppe)
-#     if req.method == 'POST':
-#         name = req.POST.get('neu') 
-#         neu = Duellant.objects.create(name = name, gruppe = gruppe)
-#         neu.save()
-#     return render(req, 'duell_temp.html', context={'titel': "Namen eingeben", 'gruppe_id': gruppe_id, 'duellanten': duellanten}) 
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):

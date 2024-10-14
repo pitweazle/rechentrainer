@@ -1,7 +1,8 @@
 from django import forms
 from django.db import models
 from .models import Duellant
-from core.models import Kategorie
+from core.models import Kategorie, Lerngruppe
+
 from django.forms import ModelChoiceField
 
 class Duellant_Aendern_Form(forms.ModelForm):
@@ -35,5 +36,14 @@ class AufgabeFormTab(forms.Form):
 class DuellProtokollFilter(forms.Form):
     auswahl = forms.ModelChoiceField(queryset=Duellant.objects.filter(profil__gruppe=1), empty_label="(alle)", 
     )    
+
+class Gruppe_Temp_Form(forms.ModelForm):
+    class Meta:
+        model = Lerngruppe
+        fields = ['name', 'jg']
+        labels = {'name': "Gruppenname",
+        }
+        help_texts = {'name': 'Dieser Gruppe können keine Schülerinnen und Schüler beitreten. Diese Gruppe ist nur für eine vorübergehende Verwendung, wie z.B. für eine Vertretungsstunde gedacht.',
+                      }
 
 
