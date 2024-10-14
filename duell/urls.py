@@ -14,6 +14,9 @@ urlpatterns = [
     path('duell_loeschen/', views.duell_loeschen, name='duell_loeschen'),
     path('duell_how_to/', views.duell_how_to, name='duell_how_to'),
     path("duell_protokoll/<int:gruppe_id>/", views.duell_protokoll, name="duell_protokoll"),
+    
+    path("gruppe_temp/", views.gruppe_temp, name="gruppe_temp"),
+    path('temp_uebersicht/<int:gruppe_id>/', views.temp_uebersicht, name='temp_uebersicht'),
     path('temp_loeschen/<int:gruppe_id>/<int:id>/', views.temp_loeschen, name='temp_loeschen'),
 
 ]

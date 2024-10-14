@@ -8,17 +8,19 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse 
 
+from django.contrib.auth.models import User
+
 from django.db.models import Count, Sum 
 
 from accounts.models import Profil, Lerngruppe
-#from accounts.views import stufe_aus_jg
+from accounts.views import stufe_aus_jg
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from core.forms import AufgabeFormZahl, AufgabeFormStr
 from core.views import format_zahl, aufgaben, kontrolle
 
 from .models import Duellant, Duell, Duell_Protokoll
-from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter
+from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter, Gruppe_Temp_Form
 
 def duell_rang(gruppe_id):
     duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
@@ -632,6 +634,33 @@ def gruppe_temp(req):
         return render(req, 'lehrer/gruppe_temp.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
     else:
         return HttpResponse("Zugriff verweigert")
+
+def temp_uebersicht(req, gruppe_id):
+    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    duellanten = Duellant.objects.filter(gruppe=gruppe)
+    if req.method == 'POST':
+       name = req.POST.get('neu') 
+       neu = Duellant.objects.create(name = name, gruppe = gruppe)
+       neu.save() 
+    duell_rang(gruppe.id)
+    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
+    dubletten_liste = []
+    if not dubletten:
+        pass
+    else:
+        for dublette in dubletten:
+            dubletten_liste.append(dublette["name"])
+    leerstellen_liste = []
+    for duellant in duellanten:
+        if " " in duellant.name:
+            leerstellen_liste.append(duellant.name)
+    duellanten = duellanten.order_by("liga", "platz", "name", )
+    duell_rang(gruppe.id)
+    req.session['gruppe_id'] = gruppe_id 
+    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
+    return render(req, 'temp_uebersicht.html', context)
 
 def temp_loeschen(req, gruppe_id, id):
     temp = Duellant.objects.get(pk = id)
