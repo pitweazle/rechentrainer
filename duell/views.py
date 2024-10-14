@@ -615,6 +615,24 @@ def duell_protokoll(req, gruppe_id):
         context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
         return render(req, 'duell_protokoll.html', context)
 
+# nur für temporäre Duellgruppen
+def gruppe_temp(req):
+    if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
+        gruppe_temp = Gruppe_Temp_Form() 
+        if req.method == 'POST':
+            gruppe_temp = Gruppe_Temp_Form(req.POST) 
+            if  gruppe_temp.is_valid():
+                gruppen = Lerngruppe.objects.filter(lehrer=req.user).order_by('name')
+                neu = gruppe_temp.cleaned_data['name']
+                jg = gruppe_temp.cleaned_data['jg']
+                gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
+                if not created:
+                    return render(req, 'lehrer/gruppe_temp.html', context={'gruppe': gruppe_temp, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
+                return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "neue Lerngruppe wurde angelegt"}) 
+        return render(req, 'lehrer/gruppe_temp.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
+    else:
+        return HttpResponse("Zugriff verweigert")
+
 def temp_loeschen(req, gruppe_id, id):
     temp = Duellant.objects.get(pk = id)
     if temp.gruppe.lehrer != req.user:

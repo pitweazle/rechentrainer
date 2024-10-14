@@ -480,7 +480,7 @@ def gruppe_uebersicht(req, gruppe_id):
     sj, hj = name_hj()
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
-        return duell_temp(req, gruppe_id)
+        return temp_uebersicht(req, gruppe_id)
     jg = gruppe.jg
     aufgaben_pro_woche = gruppe.aufgaben_pro_woche
     if aufgaben_pro_woche < 1:
@@ -727,16 +727,42 @@ def gruppe_temp(req):
     else:
         return HttpResponse("Zugriff verweigert")
 
-def duell_temp(req, gruppe_id):
+def temp_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     duellanten = Duellant.objects.filter(gruppe=gruppe)
-    if req.method == 'POST':
-        name = req.POST.get('neu') 
-        neu = Duellant.objects.create(name = name, gruppe = gruppe)
-        neu.save()
-    return render(req, 'duell_temp.html', context={'titel': "Namen eingeben", 'gruppe_id': gruppe_id, 'duellanten': duellanten}) 
+    print(duellanten)
+    if duellanten.count() == 0:                         # löscht die gespeicherten Aufgabennummern der einzelnen Kategorien der Lehrkraft
+        pass
+    #duell_rang(gruppe.id)
+    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
+    dubletten_liste = []
+    if not dubletten:
+        pass
+    else:
+        for dublette in dubletten:
+            dubletten_liste.append(dublette["name"])
+    leerstellen_liste = []
+    for duellant in duellanten:
+        if " " in duellant.name:
+            leerstellen_liste.append(duellant.name)
+    duellanten = duellanten.order_by("liga", "platz", "name", )
+    #duell_rang(gruppe.id)
+    req.session['gruppe_id'] = gruppe_id  
+    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
+    return render(req, 'temp_uebersicht.html', context)
+
+# def duell_temp(req, gruppe_id):
+#     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+#     if gruppe.lehrer != req.user and not req.user.is_superuser:
+#         return HttpResponse("Zugriff verweigert")
+#     duellanten = Duellant.objects.filter(gruppe=gruppe)
+#     if req.method == 'POST':
+#         name = req.POST.get('neu') 
+#         neu = Duellant.objects.create(name = name, gruppe = gruppe)
+#         neu.save()
+#     return render(req, 'duell_temp.html', context={'titel': "Namen eingeben", 'gruppe_id': gruppe_id, 'duellanten': duellanten}) 
 
 # Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
 def karteileichen(req):
