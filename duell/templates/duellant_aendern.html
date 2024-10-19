@@ -22,7 +22,7 @@
     <body>
         <container>
             {% block content %}
-            <form action="/duellant_aendern/{{gruppe_id}}/{{duellant.id}}/" method="POST">
+            <form action="/duellant_aendern/{{duellant.id}}/" method="POST">
             <table>
                 {% csrf_token %}
                 {{form.as_table}}
