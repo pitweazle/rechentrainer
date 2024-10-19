@@ -478,9 +478,8 @@ def protokoll_zeit_filter(protokoll, auswahl):
 def gruppe_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
-        return redirect('temp_uebersicht', gruppe.id)
-        context={'gruppe_id': gruppe_id}
-        return render(req, 'temp_uebersicht.html', context)
+        req.session['gruppe_id'] = gruppe_id 
+        return redirect('temp_uebersicht')
     from core.views import soll_berechnung, bewertung_kat, bewertung_hj
     sj, hj = name_hj()
     jg = gruppe.jg

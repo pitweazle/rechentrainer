@@ -4,7 +4,9 @@
     <body>
         <p>Ich frage sicherheitshalber nochmal:</p>
         <p>Sollen die Daten für das Rechenduell der Gruppe "{{gruppe.name}}" gelöscht werden?</p>
-        <p>(Durch Klick auf 'Rechenduell' in der Übersicht der Lerngruppe kann später ein neues Duell gestartet werden.)</p>
+        {% if not gruppe.temp %}
+            <p>(Durch Klick auf 'Rechenduell' in der Übersicht der Lerngruppe kann später ein neues Duell gestartet werden.)</p>
+        {% endif %}
         <form action="/duell_loeschen/" method="POST">
             {% csrf_token %}
             <input  id="nur_punkte" name="nur_punkte" type="Checkbox">

@@ -99,7 +99,7 @@ def duell_uebersicht(req, gruppe_id):
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
     duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil__vorname", )
-    #duell_rang(gruppe.id)
+    duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
         for duellant in duellanten:
@@ -109,7 +109,33 @@ def duell_uebersicht(req, gruppe_id):
     context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
     return render(req, 'duell_uebersicht.html', context)
 
-def duell_start(req, gruppe_id):
+def temp_uebersicht(req):
+    gruppe_id = req.session['gruppe_id'] 
+    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    duellanten = Duellant.objects.filter(gruppe=gruppe)
+    if req.method == 'POST':
+        name = req.POST.get('neu') 
+        neu = Duellant.objects.create(name = name, gruppe = gruppe)
+        neu.save() 
+    duell_rang(gruppe.id)
+    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
+    dubletten_liste = []
+    if dubletten:
+        for dublette in dubletten:
+            dubletten_liste.append(dublette["name"])
+    leerstellen_liste = []
+    for duellant in duellanten:
+        if " " in duellant.name:
+            leerstellen_liste.append(duellant.name)
+    duellanten = duellanten.order_by("liga", "platz", "name", )
+    duell_rang(gruppe.id)
+    req.session['gruppe_id'] = gruppe_id 
+    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
+    return render(req, 'duell_uebersicht.html', context)
+
+def duell_start(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert") 
@@ -121,14 +147,18 @@ def duell_start(req, gruppe_id):
     context={'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'duell_start.html', context)
 
-def duellant_aendern(req, gruppe_id, duellant_id):
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+def duellant_aendern(req, duellant_id):
+    gruppe_id = req.session.get('gruppe_id')
+    gruppe = Lerngruppe.objects.get(pk = gruppe_id)
+    if gruppe.lehrer != req.user and not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert") 
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
-    duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
+    if gruppe.temp:
+        duellanten = Duellant.objects.filter(gruppe_id = gruppe_id).order_by("liga", "platz")
+    else:
+        duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
     duellant = Duellant.objects.get(pk = duellant_id)
-    if duellant.profil.gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert") 
     if req.method == 'POST':
         form = Duellant_Aendern_Form(req.POST, instance=duellant)
         if  form.is_valid():
@@ -136,7 +166,11 @@ def duellant_aendern(req, gruppe_id, duellant_id):
             if duellant.spiele != 0:
                 duellant.pps = duellant.punkte/duellant.spiele
                 duellant.save()             
-        return duell_uebersicht(req, gruppe_id)
+        if gruppe.temp:
+            req.method = 'GET'
+            return temp_uebersicht(req, gruppe_id)
+        else:
+            return duell_uebersicht(req, gruppe_id)
     form = Duellant_Aendern_Form(instance=duellant)
     return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form, 'edit':True})
 
@@ -600,12 +634,12 @@ def duell_loeschen(req):
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
-    return render(req, 'duell_loeschen.html' , context={'titel': "Duellgruppe löschen", 'gruppe' : gruppe}) 
+    return render(req, 'duell_loeschen.html' , context={'titel': "Daten löschen", 'gruppe' : gruppe}) 
 
 def duell_how_to(req):
     return render(req, 'duell_how_to.html')    
 
-def duell_protokoll(req, gruppe_id):
+def duell_protokoll(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
@@ -629,41 +663,21 @@ def gruppe_temp(req):
                 jg = gruppe_temp.cleaned_data['jg']
                 gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
                 if not created:
-                    return render(req, 'lehrer/gruppe_temp.html', context={'gruppe': gruppe_temp, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
+                    return render(req, 'gruppe_temp.html', context={'gruppe': gruppe_temp, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
                 return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "neue Lerngruppe wurde angelegt"}) 
-        return render(req, 'lehrer/gruppe_temp.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
+        return render(req, 'gruppe_temp.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
     else:
         return HttpResponse("Zugriff verweigert")
 
-def temp_uebersicht(req, gruppe_id):
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    duellanten = Duellant.objects.filter(gruppe=gruppe)
-    if req.method == 'POST':
-       name = req.POST.get('neu') 
-       neu = Duellant.objects.create(name = name, gruppe = gruppe)
-       neu.save() 
-    duell_rang(gruppe.id)
-    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
-    dubletten_liste = []
-    if not dubletten:
-        pass
-    else:
-        for dublette in dubletten:
-            dubletten_liste.append(dublette["name"])
-    leerstellen_liste = []
-    for duellant in duellanten:
-        if " " in duellant.name:
-            leerstellen_liste.append(duellant.name)
-    duellanten = duellanten.order_by("liga", "platz", "name", )
-    duell_rang(gruppe.id)
-    req.session['gruppe_id'] = gruppe_id 
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
-    return render(req, 'temp_uebersicht.html', context)
-
-def temp_loeschen(req, gruppe_id, id):
+def temp_loeschen(req, id):
     temp = Duellant.objects.get(pk = id)
     if temp.gruppe.lehrer != req.user:
         return HttpResponse("Zugriff verweigert")
-    return HttpResponse(temp)
+    else:
+        gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
+        duellanten = Duellant.objects.filter(gruppe=gruppe)
+        if temp.gruppe != gruppe:
+            return HttpResponse("Zugriff verweigert")
+        else:
+            temp.delete()
+    return render(req, 'duell_uebersicht.html', context={'gruppe': gruppe, 'duellanten': duellanten, 'titel': gruppe,})
