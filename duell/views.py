@@ -23,7 +23,12 @@ from .models import Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter, Gruppe_Temp_Form
 
 def duell_rang(gruppe_id):
-    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    if gruppe.temp:
+        duellanten = Duellant.objects.filter(gruppe_id = gruppe_id).order_by("liga", "platz")
+    else:
+        duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
+
     duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe_id)
     for duellant in duellanten:
         duell_protokoll_1 = duell_protokoll.filter(duell__duellant_1 = duellant, duellant_nr__lte=2)
@@ -69,6 +74,9 @@ def duell_rang(gruppe_id):
 
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
+    if gruppe.temp:
+        req.session['gruppe_id'] = gruppe_id 
+        return redirect('temp_uebersicht')
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     profil = get_object_or_404(Profil, user=req.user)
@@ -235,7 +243,6 @@ def duell_aufgabe(req, slug):
         #wenn in den Aufgaben erg=None:
         else:
             form = AufgabeFormStr(req.POST)
-
     if duellant_1.liga != duellant_2.liga:
         meldung = "Aufstiegsduell:"
     elif duellant_1.aufsteiger != duellant_2.aufsteiger:
@@ -286,7 +293,11 @@ def duell_optionen(req, slug):
     return redirect('duell_aufgabe', slug)
 
 def sub_auslosen(gruppe_id):
-    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    gruppe = Lerngruppe.objects.get(pk = gruppe_id)
+    if gruppe.temp:
+        duellanten = Duellant.objects.filter(gruppe=gruppe)
+    else:    
+        duellanten = Duellant.objects.filter(profil__gruppe=gruppe)
     duellanten = duellanten.exclude(abwesend=True).order_by("-spiele")
     duellanten_liste = []
     for duellant in duellanten:
