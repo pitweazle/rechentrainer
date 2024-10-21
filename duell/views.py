@@ -28,7 +28,6 @@ def duell_rang(gruppe_id):
         duellanten = Duellant.objects.filter(gruppe_id = gruppe_id).order_by("liga", "platz")
     else:
         duellanten = Duellant.objects.filter(profil__gruppe = gruppe_id).order_by("liga", "platz", "profil")
-
     duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe_id)
     for duellant in duellanten:
         duell_protokoll_1 = duell_protokoll.filter(duell__duellant_1 = duellant, duellant_nr__lte=2)
@@ -123,6 +122,12 @@ def temp_uebersicht(req):
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     duellanten = Duellant.objects.filter(gruppe=gruppe)
+    liga_B = duellanten.filter(liga="B").count()
+    liga_C = duellanten.filter(liga="C").count()
+    if liga_B + liga_C == 0:                                        # es gibt nur eine Liga
+        gruppe.liga = False
+    else:
+        gruppe.liga = True
     if req.method == 'POST':
         name = req.POST.get('neu') 
         neu = Duellant.objects.create(name = name, gruppe = gruppe)
@@ -613,8 +618,11 @@ def duell_loeschen(req):
     gruppen = Lerngruppe.objects.filter(lehrer=req.user)
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    try:    
-        duellanten = Duellant.objects.filter(profil__gruppe = gruppe)
+    try:
+        if gruppe.temp:
+            duellanten = Duellant.objects.filter(gruppe = gruppe)
+        else:    
+            duellanten = Duellant.objects.filter(profil__gruppe = gruppe)
     except:
         messages.error(req, "Diese Duellgruppe existiert nicht")        
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})        
@@ -642,6 +650,8 @@ def duell_loeschen(req):
                     duellant.save()
             else:
                 duellanten.all().delete()
+                if gruppe.temp:
+                    gruppe.delete()
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})

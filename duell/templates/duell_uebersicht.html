@@ -49,8 +49,10 @@
                 <table>
                     <thead>
                         <tr>
-                            <th >Liga</th>
-                            <th >↑</th>
+                            {% if gruppe.liga %}
+                                <th >Liga</th>
+                                <th >↑</th>
+                            {% endif %}
                             <th >Platz</th>
                             <th width= "200px">Name</th>
                             <th >Spiele</th>
@@ -66,8 +68,10 @@
                     </tr>
                     {% for duellant in duellanten %}
                         <tr class = {{duellant.liga}}>
-                            <td>{{duellant.liga}}</td>
-                            <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
+                            {% if gruppe.liga %}
+                                <td>{{duellant.liga}}</td>
+                                <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
+                            {% endif %}
                             <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
                             <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern'  duellant.id %}">{{duellant.name}}</a></td>
                             <td>{{duellant.spiele}}</td>
@@ -87,24 +91,47 @@
                     {% empty %}
                         <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
                     {% endfor %}
-
                 {%if gruppe.temp%}
-                    <tr>
-                        <td colspan="5">
-                        <form>
-                            <label> Mitglied </label> 
-                            <input id="neu" name="neu" type="text">
-                            <input type="submit" value="hinzufügen">
-                        </form>
-                        </td>
-                        <td colspan="2"><label >Abwesende speichern</label></td> 
-                        <td><input type="submit" name="abwesend" value="übernehmen" ></td>
-                    </tr>
-                        <td colspan="5"></td>
-                        <td colspan="3"><button>
-                            <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
-                        </button></td>
-                    </tr>
+                    {% if gruppe.liga %}
+                        <tr>
+                            <td colspan="5">
+                            <form>
+                                <label> Mitglied </label> 
+                                <input id="neu" name="neu" type="text">
+                                <input type="submit" value="hinzufügen">
+                            </form>
+                            </td>
+                            <td colspan="2"><label >Abwesende speichern</label></td> 
+                            <td><input type="submit" name="abwesend" value="übernehmen" ></td>
+                        </tr>
+                            <td colspan="5"></td>
+                            <td colspan="3"><button>
+                                <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
+                            </button></td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <form>
+                                    <label> Mitglied </label> 
+                                    <input id="neu" name="neu" type="text">
+                                    <input type="submit" value="hinzufügen">
+                                </form>
+                            </td>
+                            <td colspan="2">
+                                (Name ohne Leerzeichen)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <label >Abwesende speichern</label> 
+                                <input type="submit" name="abwesend" value="übernehmen" >
+                            </td>
+                            <td colspan="2"><button>
+                                <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
+                            </button></td>
+                        </tr>
+                    {% endif %}
                 {%else%}
                     <tr>
                         <td colspan="4"><button><a href="{% url 'duell_loeschen' %}">Duell löschen</a></button></td>
@@ -114,9 +141,7 @@
                 {%endif%}
                 </tbody>
                 </table>
-
             </form>
-
         </div>
     </body>
 </html>
