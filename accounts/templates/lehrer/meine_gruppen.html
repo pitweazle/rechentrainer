@@ -39,6 +39,9 @@
                             {% if super %}
                                 <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
                             {% endif %}
+                            {% if gruppe.temp %}
+                                <td>temp</td>
+                            {% endif %}
                         </tr>
                     {% empty %}
                         <strong>Es sind noch keine Lerngruppen vorhanden.</strong>

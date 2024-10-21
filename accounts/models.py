@@ -31,6 +31,7 @@ class Lerngruppe(models.Model):
     aufgaben_pro_woche = models.SmallIntegerField(default=0)
     note_anzeigen = models.BooleanField(default = True)
     temp = models.BooleanField(default=False)
+    liga = models.BooleanField(default=True)
         
     class Meta:
         verbose_name_plural = 'Lerngruppen'
