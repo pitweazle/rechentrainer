@@ -21,24 +21,15 @@
 <br>
     <body>
         <div class="container">
-            {% comment %} <div class="message">
-                {% for message in messages %}
-                    {% if 'leider falsch' in message.message %}
-                        <p class = "rot">{{ message }}</p>
-                    {% elif 'halb' in message.message %}
-                        <p class = "gelb">{{ message }}</p>
-                    {% elif 'war richtig!' in message.message %}
-                        <p class = "gruen">{{ message }}</p>
-                    {% else %}
-                        <p class ="gelb">{{ message }}</p>
-                    {% endif%}
-                {% endfor %}
-            </div> {% endcomment %}
             <button type="button">
                 {% if dubletten_liste %}
-                    Diese(n) Namen gibt es mehrfach: {{dubletten_liste}}<br>Bitte jeweils durch Klick auf den Namen umbenennen.
+                    Diese(n) Namen gibt es mehrfach: {{dubletten_liste}}<br>Bitte jeweils nach Klick auf den Namen umbenennen.
                 {% elif leerstellen_liste %}
                     Diese(n) Namen enthalten Leerstellen: {{leerstellen_liste}}<br>Bitte Leerstelle entfernen oder z.B. durch einen Unterstrich ersetzen.
+                {% elif messages %}
+                    {% for message in messages %}
+                        {{message}}
+                    {% endfor %}
                 {% else %}
                     <a href="{% url 'duell_start'  %}">Duell Start</a>
                 {% endif %}
@@ -64,82 +55,82 @@
                             {% endif %}   
                         </tr>
                     </thead>
-                    <tbody>
-                    </tr>
-                    {% for duellant in duellanten %}
-                        <tr class = {{duellant.liga}}>
+                        <tbody>
+                            </tr>
+                            {% for duellant in duellanten %}
+                                <tr class = {{duellant.liga}}>
+                                    {% if gruppe.liga %}
+                                        <td>{{duellant.liga}}</td>
+                                        <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
+                                    {% endif %}
+                                    <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
+                                    <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern'  duellant.id %}">{{duellant.name}}</a></td>
+                                    <td>{{duellant.spiele}}</td>
+                                    <td>{{duellant.punkte}}</td>
+                                    <td>{{duellant.pps}}</td>
+                                    <td>
+                                    {% if duellant.abwesend%}
+                                        <input class="form-check-input" type="checkbox" value={{duellant.id}} name="ID" checked>
+                                    {%else%}
+                                        <input class="form-check-input" type="checkbox" value={{duellant.id}} name="ID" >
+                                    {%endif%}
+                                    </td>
+                                    {% if gruppe.temp %}
+                                        <td><a href="{% url 'temp_loeschen'  duellant.id%}">löschen</a></td>
+                                    {% endif %}    
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
+                            {% endfor %}
+                        {%if gruppe.temp%}
                             {% if gruppe.liga %}
-                                <td>{{duellant.liga}}</td>
-                                <td>{% if duellant.aufsteiger %}↑{%else%}{%endif%}</td>
+                                <tr>
+                                    <td colspan="5">
+                                        <label> Mitglied </label> 
+                                        <input id="neu" name="neu" type="text">
+                                        <input type="submit" value="hinzufügen">
+                                    </td>
+                                    <td colspan="2"><label >Abwesende speichern</label></td> 
+                                    <td><input type="submit" name="abwesend" value="übernehmen" ></td>
+                                </tr>
+                                    <td colspan="5"></td>
+                                    <td colspan="3"><button>
+                                        <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
+                                    </button></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5">
+                                            <label> Mitglied </label> 
+                                            <input id="neu" name="neu" type="text">
+                                            <input type="submit" value="hinzufügen">
+                                    </td>
+                                    <td colspan="2">
+                                        (Name ohne Leerzeichen)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5">
+                                        <label >Abwesende speichern</label> 
+                                        <input type="submit" name="abwesend" value="übernehmen" >
+                                    </td>
+                                    <td colspan="2"><button>
+                                        <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
+                                    </button></td>
+                                </tr>
                             {% endif %}
-                            <td>{% if duellant.platz %}{{duellant.platz}}{%else%}{%endif%}</td>
-                            <td style="text-align: left"; ><a  class="button" href="{% url 'duellant_aendern'  duellant.id %}">{{duellant.name}}</a></td>
-                            <td>{{duellant.spiele}}</td>
-                            <td>{{duellant.punkte}}</td>
-                            <td>{{duellant.pps}}</td>
-                            <td>
-                                {% if duellant.abwesend%}
-                                    <input class="form-check-input" type="checkbox" value={{duellant.id}} name="ID" checked>
-                                {%else%}
-                                    <input class="form-check-input" type="checkbox" value={{duellant.id}} name="ID" >
-                                {%endif%}
-                            </td>
-                            {% if gruppe.temp %}
-                                <td><a href="{% url 'temp_loeschen'  duellant.id%}">löschen</a></td>
-                            {% endif %}    
-                        </tr>
-                    {% empty %}
-                        <tr><td colspan="999"><strong>Es sind noch keine Schüler angemeldet.</strong></td></tr>
-                    {% endfor %}
-                {%if gruppe.temp%}
-                    {% if gruppe.liga %}
-                        <tr>
-                            <td colspan="5">
-                            <form>
-                                <label> Mitglied </label> 
-                                <input id="neu" name="neu" type="text">
-                                <input type="submit" value="hinzufügen">
-                            </form>
-                            </td>
-                            <td colspan="2"><label >Abwesende speichern</label></td> 
+                        {%else%}
+                            <tr>
+                            {% if gruppe.liga %}
+                                <td colspan="4"></td>
+                            {% else %}
+                                <td colspan="2"></td>
+                            {% endif %}
+                            <td colspan="3"><label >Abwesende speichern</label></td> 
                             <td><input type="submit" name="abwesend" value="übernehmen" ></td>
-                        </tr>
-                            <td colspan="5"></td>
-                            <td colspan="3"><button>
-                                <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
-                            </button></td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="5">
-                                <form>
-                                    <label> Mitglied </label> 
-                                    <input id="neu" name="neu" type="text">
-                                    <input type="submit" value="hinzufügen">
-                                </form>
-                            </td>
-                            <td colspan="2">
-                                (Name ohne Leerzeichen)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="5">
-                                <label >Abwesende speichern</label> 
-                                <input type="submit" name="abwesend" value="übernehmen" >
-                            </td>
-                            <td colspan="2"><button>
-                                <a href="{% url 'duell_loeschen' %}">Duell löschen</a>
-                            </button></td>
-                        </tr>
-                    {% endif %}
-                {%else%}
-                    <tr>
-                        <td colspan="4"><button><a href="{% url 'duell_loeschen' %}">Duell löschen</a></button></td>
-                        <td colspan="3"><label >Abwesende speichern</label></td> 
-                        <td><input type="submit" name="abwesend" value="übernehmen" ></td>
-                    </tr>
-                {%endif%}
-                </tbody>
+                            </tr>
+                        {%endif%}
+                    </tbody>
                 </table>
             </form>
         </div>

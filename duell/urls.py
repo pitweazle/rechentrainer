@@ -16,7 +16,6 @@ urlpatterns = [
     path("duell_protokoll/", views.duell_protokoll, name="duell_protokoll"),
     
     path("gruppe_temp/", views.gruppe_temp, name="gruppe_temp"),
-    path('temp_uebersicht/', views.temp_uebersicht, name='temp_uebersicht'),
     path('temp_loeschen/<int:id>/', views.temp_loeschen, name='temp_loeschen'),
 
 ]

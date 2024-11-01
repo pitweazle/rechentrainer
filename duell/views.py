@@ -73,27 +73,35 @@ def duell_rang(gruppe_id):
 
 def duell_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.temp:
-        req.session['gruppe_id'] = gruppe_id 
-        return redirect('temp_uebersicht')
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    profil = get_object_or_404(Profil, user=req.user)
-    profil.duell_gruppe = gruppe_id
-    profil.save() 
-    duellanten = Duellant.objects.filter(profil__gruppe=gruppe_id)
+    duellanten = Duellant.objects.filter(gruppe=gruppe)
     if duellanten.count() == 0:                         # löscht die gespeicherten Aufgabennummern der einzelnen Kategorien der Lehrkraft
         zaehler = Zaehler.objects.filter(user = req.user.profil)
         for kategorie in zaehler:
             kategorie.aufgnr = 0
             kategorie.save()
-    duell_rang(gruppe.id)
-    schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
-    for schueler in schueler_liste:
-        duellant, created = Duellant.objects.get_or_create(profil = schueler)
-        if created:
-            duellant.name = schueler.vorname
-            duellant.save()
+    if gruppe.temp:
+        if req.method == 'POST': 
+            name = req.POST.get('neu')
+            if name != "":
+                neu = Duellant.objects.create(name = name, gruppe = gruppe)
+                neu.save()         
+    else:
+        schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
+        for schueler in schueler_liste:
+            duellant, created = Duellant.objects.get_or_create(profil = schueler)
+            if created:
+                duellant.name = schueler.vorname
+                duellant.gruppe = gruppe
+                duellant.save()
+    duellanten = Duellant.objects.filter(gruppe=gruppe)
+    liga_B = duellanten.filter(liga="B").count()
+    liga_C = duellanten.filter(liga="C").count()
+    if liga_B + liga_C == 0:                                        # es gibt nur eine Liga
+        gruppe.liga = False
+    else:
+        gruppe.liga = True            
     dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
     dubletten_liste = []
     if not dubletten:
@@ -105,7 +113,7 @@ def duell_uebersicht(req, gruppe_id):
     for duellant in duellanten:
         if " " in duellant.name:
             leerstellen_liste.append(duellant.name)
-    duellanten = duellanten.filter(profil__gruppe = gruppe).order_by("liga", "platz", "profil__vorname", )
+    duellanten = duellanten.filter(gruppe = gruppe).order_by("liga", "platz", "name", )
     duell_rang(gruppe.id)
     if req.method == 'POST': 
         IDs = list(req.POST.getlist('ID'))
@@ -116,42 +124,10 @@ def duell_uebersicht(req, gruppe_id):
     context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
     return render(req, 'duell_uebersicht.html', context)
 
-def temp_uebersicht(req):
-    gruppe_id = req.session['gruppe_id'] 
-    gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
-    if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    duellanten = Duellant.objects.filter(gruppe=gruppe)
-    liga_B = duellanten.filter(liga="B").count()
-    liga_C = duellanten.filter(liga="C").count()
-    if liga_B + liga_C == 0:                                        # es gibt nur eine Liga
-        gruppe.liga = False
-    else:
-        gruppe.liga = True
-    if req.method == 'POST':
-        name = req.POST.get('neu') 
-        neu = Duellant.objects.create(name = name, gruppe = gruppe)
-        neu.save() 
-    duell_rang(gruppe.id)
-    dubletten = duellanten.values('name').annotate(dubletten=Count('name')).filter(dubletten__gt=1)
-    dubletten_liste = []
-    if dubletten:
-        for dublette in dubletten:
-            dubletten_liste.append(dublette["name"])
-    leerstellen_liste = []
-    for duellant in duellanten:
-        if " " in duellant.name:
-            leerstellen_liste.append(duellant.name)
-    duellanten = duellanten.order_by("liga", "platz", "name", )
-    duell_rang(gruppe.id)
-    req.session['gruppe_id'] = gruppe_id 
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
-    return render(req, 'duell_uebersicht.html', context)
-
 def duell_start(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     if gruppe.lehrer != req.user and not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert") 
+        return HttpResponse("Zugriff verweigert")
     kategorien = Kategorie.objects.all().order_by('zeile')
     zaehler = Zaehler.objects.filter(user = req.user.profil)
     for item in zaehler:
@@ -181,9 +157,7 @@ def duellant_aendern(req, duellant_id):
                 duellant.save()             
         if gruppe.temp:
             req.method = 'GET'
-            return temp_uebersicht(req, gruppe_id)
-        else:
-            return duell_uebersicht(req, gruppe_id)
+        return duell_uebersicht(req, gruppe_id)
     form = Duellant_Aendern_Form(instance=duellant)
     return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form, 'edit':True})
 
@@ -228,7 +202,12 @@ def duell_aufgabe(req, slug):
     if pro_text != "" :
         pro_text = pro_text.format(*variable)
     frage = frage.format(*variable)
-    duellant_1, duellant_2 = sub_auslosen(gruppe.id)
+    try:
+        duellant_1, duellant_2 = sub_auslosen(gruppe.id)
+    except:
+        messages.info(req, "für ein Duell benötigt man schon mindestens 2 Duellanten :)") 
+        return redirect('duell_uebersicht', gruppe.id)
+        #return HttpResponse("für ein Duell benötigt man schon mindestens 2 Duellanten :)")
     protokoll = Protokoll.objects.create(
         user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
         anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
@@ -299,10 +278,10 @@ def duell_optionen(req, slug):
 
 def sub_auslosen(gruppe_id):
     gruppe = Lerngruppe.objects.get(pk = gruppe_id)
-    if gruppe.temp:
-        duellanten = Duellant.objects.filter(gruppe=gruppe)
-    else:    
-        duellanten = Duellant.objects.filter(profil__gruppe=gruppe)
+    #if gruppe.temp:
+    duellanten = Duellant.objects.filter(gruppe=gruppe)
+    #else:    
+    #    duellanten = Duellant.objects.filter(profil__gruppe=gruppe)
     duellanten = duellanten.exclude(abwesend=True).order_by("-spiele")
     duellanten_liste = []
     for duellant in duellanten:
