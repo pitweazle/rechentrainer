@@ -5472,7 +5472,6 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
-        typ=13
         if typ == -1:                                   # Laplace
             text = "Handelt es sich bei Experiment:<br>"
             frage = "ja/nein"
