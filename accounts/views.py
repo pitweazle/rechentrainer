@@ -479,7 +479,7 @@ def gruppe_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
         req.session['gruppe_id'] = gruppe_id 
-        return redirect('temp_uebersicht')
+        return redirect('duell_uebersicht', gruppe_id)
     from core.views import soll_berechnung, bewertung_kat, bewertung_hj
     sj, hj = name_hj()
     jg = gruppe.jg
