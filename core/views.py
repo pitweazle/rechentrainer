@@ -6117,7 +6117,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         else:
             typ = random.randint(2, typ_end) 
         typ2 = 0
-        print(stufe)
         titel = "Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -6126,7 +6125,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         erg = None
         parameter = {'name':'normal'}
         if typ > 4:                    # Koordinatensystem
-
                 box_hoehe = 360
                 box_breite = 400
                 grid = 20
@@ -6134,6 +6132,11 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 x_null = 140                    # x_Null  Lage der y-Achse
                 parameter = sub_koordinatensystem(x_null, y_null)
                 typ2 = 1
+                if typ > 8:                     # typ2 = 2 erzeugt Steigungen wie z.B. 2/3
+                    if stufe%2 == 0:
+                        typ2 = 5
+                    else:
+                        typ2 = random.randint(2,5)
                 gleichung, steigung, absolut, basis = funktionsgleichung(typ2)            
         if typ == 1:                        # Wertetabelle
                 text = "Berechne die Funktionswerte"
@@ -6161,7 +6164,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     typ2 = random.randint(1,3)
                 if typ2 == 2:
                     text = "Berechne für die Funktion f(x) = {} den Schnittpunkt mit der x-Achse" 
-                    frage = pro_text = "Nullstelle:"
+                    frage = pro_text = "Schnittpunkt:"
                     nullstelle = -absolut/steigung
                     wert=(nullstelle*10+20)*1000                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                     lsg = ["("+str(wert).replace(".",",")+";0)", wert, "indiv_0"]
@@ -6335,11 +6338,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             text = "Wie lautet die Funktionsgleichung dieses Graphen?"
             pro_text = "Funktionsgleichung ablesen"
             frage = "y="
-            if stufe%2 == 0:
-                typ2 = 5
-            else:
-                typ2 = random.randint(2,5)
-            if typ2 == 2:
+            if round(steigung,3) == 0.667:
                 anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
                 hilfe_id = 91
                 hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
