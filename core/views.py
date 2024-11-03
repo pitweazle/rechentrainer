@@ -2568,10 +2568,7 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         typ2 = 0
         titel = "Rechnen mit Dezimalzahlen" 
         text = "default{}"
-        pro_text = ""
-        frage = ""
-        einheit = ""
-        anmerkung = ""
+        pro_text = frage = einheit = anmerkung = ""
         hilfe_id = 0
         erg = None 
         if typ == 1 or typ == 2:                                     # Addition - 1.Zahl bis 100,0, 2.Zahl bis 10,0           
@@ -3152,12 +3149,17 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             typ_end = 6
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
-        if typ == 1:
-            parser = Parser()
-            if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
-                return 0, "Das ist fast richtig, du sollst hier aber nicht kürzen"
-            return -1, ""
-        else:
+        try:
+            if typ == 1:
+                if not "/" in eingabe:
+                    return 0, "Du musst einen Bruch in der Form 'Zähler/Nenner' eingeben"
+                parser = Parser()
+                if (parser.evaluate(lsg[0],{})) == (parser.evaluate(eingabe,{})):
+                    return 0, "Das ist fast richtig, du sollst hier aber nicht kürzen"
+                return -1, ""
+            else:
+                return -1, ""
+        except:
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
@@ -4467,6 +4469,12 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             text = "{}% sind {}{} - Berechne den Grundwert!" 
             pro_text = "{}% sind {}{} - G=?" 
             frage = "G=" 
+            zahl1 = zahl2 = 10
+            while zahl1 >= zahl2 or zahl1%5==0 or zahl2%10==0: 
+                zahl1 = random.randint(2,100)
+                zahl2 = random.randint(2,100)
+            variable = [zahl1, zahl2, einheit]
+            lsg = [str(zahl1)+"/"+str(zahl2)+"*100",]  
             lsg = [str(zahl2)+"/"+str(zahl1)+"*100",]
             if stufe%2==0:
                 hilfe_id = 101
@@ -4624,8 +4632,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             zahl=round(parser.parse(lsg[0].replace(",",".")).evaluate({}),3)
             lsg.append((zahl))
             lsg.append("indiv_2")                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird 
-        variable.extend(hilfe_text)
-        #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def vorzeichen_zahl(wert, stellen=2, trailing_zeros=True):
