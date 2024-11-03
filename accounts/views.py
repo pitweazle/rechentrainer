@@ -435,7 +435,7 @@ def aufgaben_loeschen(req, lehrer_id):
 def meine_gruppen(req):
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
         if req.user.is_superuser:
-            gruppen = Lerngruppe.objects.all().order_by("lehrer")
+            gruppen = Lerngruppe.objects.all().order_by("lehrer__profil__nachname")
             super = True
         else:
             gruppen = Lerngruppe.objects.filter(lehrer=req.user)
