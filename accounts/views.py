@@ -829,13 +829,14 @@ def suchen(req, gruppe_id=None):
                             else:
                                 heute = date.today()
                                 nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.username, heute, req.user.profil.vorname, req.user.profil.nachname)
-                                user.groups.clear()
-                                group = Group.objects.get(name='Gelöscht')
-                                user.groups.add(group)
-                                user.profil.delete()
                                 geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
                                 geloescht.save()
+                                user.groups.clear()
+                                #group = Group.objects.get(name='Gelöscht')
+                                #user.groups.add(group)
+                                user.delete()
+
         context = {"abmelden_form": abmelden_form, "loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
@@ -906,8 +907,7 @@ def account_ohne_profil(req):
             heute = date.today()
             nachricht = 'Das Userprofil id {} mit dem Account "{}" wurde am {} von {} {} gelöscht, da kein Profil zugeordnet war.'.format(einer.id, einer, heute, req.user.profil.vorname, req.user.profil.nachname)
             geloescht, created = Geloescht.objects.get_or_create(benutzername = str(einer))
-            geloescht.text = nachricht
-            print(nachricht)
+            geloescht.text += nachricht
             geloescht.save()
             einer.groups.clear()
             einer.delete()
