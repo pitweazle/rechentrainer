@@ -1494,6 +1494,8 @@ def sub_punkt_pruefen(eingabe, loesung):
             eingabe=eingabe.split(";")
         elif "|" in eingabe:
             eingabe=eingabe.split("|")
+        elif ":" in eingabe:
+            eingabe=eingabe.split(":")
         zahl=(float(eingabe[0])*10+20)*1000
         zahl = zahl + float(eingabe[1])*10
         if zahl == float(loesung):
@@ -1513,21 +1515,12 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "iniv" in den Lösungen steht
         if typ == 7 or typ == 9:                                                    #Koordinaten
-            if "(" not in eingabe or not ")" in eingabe:
-                return 0, "Du musst die Koordinaten in Klammern eingeben!"
-            elif not (";" in eingabe or "|" in eingabe) :
-                return 0, "Du musst die Koordinaten mit ';' trennen!"        
-            else:
-                eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
-                if ";" in eingabe:
-                    eingabe=eingabe.split(";")
-                elif "|" in eingabe:
-                    eingabe=eingabe.split("|")
-                zahl=(float(eingabe[0])*10+20)*1000
-                zahl = zahl + float(eingabe[1])*10
-                if zahl == float(lsg[2]):
-                    return 1, ""
-            return 0, "" 
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+            return richtig, meldung
+        elif typ == 8:
+            print("eingabe: ", eingabe)
+            if not eingabe.isdigit():
+                return 0, "Du sollst nicht Buchstaben angeben, sondern eine Zahl."
         elif typ == 10:
             if eingabe.upper() == lsg[0].upper():
                 return 1, "" 
@@ -1973,7 +1966,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             pro_text = "Achsenspiegelung"
             anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
             lsg = ["({0};{1})".format(x_bild, y_bild)]
-            lsg = lsg + ["({0}|{1})".format(x_bild, y_bild)]
+            lsg = lsg + ["({0}:{1})".format(x_bild, y_bild)]
             parameter = sub_koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
             achse = {
                 'object': 'spiegel', 'spiegelachse': spiegelachse,
@@ -1997,7 +1990,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             lsg = lsg + ["indiv_0"] 
         else:                                                                       #10 Name Dreiecke - 11 Namen und Seiten Ecken
             titel = "Benennungen am Dreieck"
-            typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ)     
+            typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ) 
+            lsg = lsg + ["indiv_0"]    
         return typ, typ2, titel, text, pro_text, frage, [], einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -3008,6 +3002,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 frage = "Er hat"
                 einheit = "°"
                 erg = alfa
+                lsg = ["360/"+str(ecken)+"="+str(erg)]  
                 parameter.update({'object': 'n-eck', 'n_eck': ecken, 'rotate': rotate,}) 
                 koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, bogen_radius, alfa, startwinkel, "red", "", 100)  
                 parameter.update(koordinaten_dreieck)
@@ -3015,7 +3010,9 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     koordinaten_aussen = winkel_koordinaten(2, koordinaten_dreieck['schenkel_1_x'], koordinaten_dreieck['schenkel_1_y'], bogen_radius, beta, 270, "red", "", 100)  
                     parameter.update(koordinaten_aussen)
                     parameter.update({'color1': "red", 'color': color})
-                    erg = beta    
+                    erg = beta
+                    zwischenergebnis = int(360/ecken)  
+                lsg = ["360/"+str(ecken)+"="+str(zwischenergebnis)+"   (180-"+str(zwischenergebnis)+")/2="+str(int(erg))]  
         elif typ == 6:                                                  # Stufen- und Wechselwinkel
             winkel = random.randint(60,120)
             if random.random() < 0.5:                       # Winkel rechts
@@ -4660,6 +4657,7 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         else:
             while zahl2 == 0:
                 zahl2 = random.randint(-20, 20)
+        #zahl1=zahl2=-4
         variable = [vorzeichen_zahl(zahl1,0), vorzeichen_zahl(zahl2,0)]
         if typ in [1, 3, 5, 7, 9, 11, 13]:
             zahl1 = zahl1/10
@@ -5875,7 +5873,8 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 frage = "P({})=".format(zufall)
                 lsg=["3/6","1/2"]
             elif typ2 ==3:
-                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?" 
+                zufall = random.randint(1, 7)
+                text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?".format(zufall)  
                 frage= "P({})=" 
                 lsg=["1/6"]
             else:
@@ -6998,17 +6997,22 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
-    if wert != None:  
-        if  decimal.Decimal(eingabe) == wert:
-            return 1, ""
-        #return abs(given - wert) < decimal.Decimal('0.001') <- das würde man benötigen um Rundungsfehler von Python auszugleichen, ich nutze aber eigentlich nur Ganzahlen
-        else:
-            if "indiv_0" in lsg:
-                protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
-                return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist                         
+    if wert != None: 
+        try:
+            if  decimal.Decimal(eingabe) == wert:
+                return 1, ""
             else:
-                return -1, ""    
+                if "indiv_0" in lsg:
+                    protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
+                    punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
+                    return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist                         
+                else:
+                    return -1, ""   
+        except:                                     # damit wird ein Fehler abgefangen, falls 0,0 eingegeben wurde
+            if  round(float(eingabe.replace(",",".")),3) == wert:
+                return 1, ""  
+            else:
+                return -1, ""  
     else:
         if isinstance(eingabe, list):                           # für Wertetabellen
             lsg = lsg[0]
@@ -7240,7 +7244,10 @@ def main(req, slug):
                 frage = protokoll.frage
                 einheit = protokoll.einheit
                 hilfe_id = protokoll.hilfe_id
-                messages.info(req, 'Da stimmt eine Eingabe nicht! <br>In eine Wertetabelle gehören z.B. keine Buchstaben rein.')
+                if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
+                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht! <br>In eine Wertetabelle gehören z.B. keine Buchstaben rein.')
+                else:
+                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht! <br>Möglicherweise ist deine Eingabe zu lang.')
                 context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
                     form = form, zaehler_id = zaehler.id, hilfe = 0, protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = "",  bis_loeschen = bis_loeschen)
                 return render(req, 'core/aufgabe.html', context)                

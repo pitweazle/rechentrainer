@@ -710,59 +710,6 @@ def schueler_aendern(req, schueler_id):
     context = {'profil_form': profil_form, 'schueler': schueler, 'titel': "Schülerdaten ändern"}
     return render(req, 'lehrer/schueler_aendern.html', context)
 
-# Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
-def karteileichen(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    auswahl = Profil.objects.filter(user__date_joined__lt=date(2023,8,1))
-    print("Teil: ",auswahl.count())    
-    for a in auswahl:
-        if a.jg < 13:
-            if str(a.jg) in a.klasse:
-                print(a.klasse)
-                a.klasse = a.klasse.replace(str(a.jg), str(a.jg+1),1)
-            a.jg +=1
-            try:
-                neue_stufe = stufe_aus_jg(a.jg, a.kurs)
-                if neue_stufe > a.stufe:
-                    a.stufe = neue_stufe
-                print(a, "neuer_Jg: ", a.jg, ", Stufe: ", a.stufe, "neue Stufe: ",  neue_stufe,)
-            except:
-                print(a)
-    return HttpResponse("fertig!")
-
-def loeschen_alt(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
-    auswahl = User.objects.filter(date_joined__lt=date(2023,8,1))
-    print("Anzahl: ",auswahl.count())
-    n=0   
-    for a in auswahl:
-        if (a.date_joined.date() ) == ((a.last_login.date() )):
-            try:
-                user = Profil.objects.get(pk = a.id)
-                aufgaben = Protokoll.objects.filter(user_id = a.id).count()
-                print(user, " Augaben: ", aufgaben)
-                if aufgaben == 0:
-                    print("keine Aufgaben - Account gelöscht: ", a)
-                    #a.delete()
-            except:
-                print("kein Profil - Account gelöscht: ",a)
-                #a.delete()
-    return HttpResponse("fertig!")
-
-def account_pruefen(id):
-    nachricht = ""
-    user = User.objects.filter(id = id).first()
-    if user == None:
-        nachricht = "Ein Account mit der ID {} existiert nicht".format(id)
-    else:
-        profil = Profil.objects.filter(user = user).first()
-        if profil == None:
-            nachricht = "Ein Profil mit der ID {} existiert nicht".format(id)
-    return user, nachricht
-
 def suchen(req, gruppe_id=None):
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists() or req.user.is_superuser:
         loeschen_form = Loeschen_Form
@@ -886,13 +833,86 @@ def suchen(req, gruppe_id=None):
                                 group = Group.objects.get(name='Gelöscht')
                                 user.groups.add(group)
                                 user.profil.delete()
-                                geloescht, created = Geloescht.objects.get_or_create(user = user)
+                                geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
                                 geloescht.save()
         context = {"abmelden_form": abmelden_form, "loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
         return HttpResponse("Zugriff verweigert")
+
+# Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
+def karteileichen(req):
+    if not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    auswahl = Profil.objects.filter(user__date_joined__lt=date(2023,8,1))
+    print("Teil: ",auswahl.count())    
+    for a in auswahl:
+        if a.jg < 13:
+            if str(a.jg) in a.klasse:
+                print(a.klasse)
+                a.klasse = a.klasse.replace(str(a.jg), str(a.jg+1),1)
+            a.jg +=1
+            try:
+                neue_stufe = stufe_aus_jg(a.jg, a.kurs)
+                if neue_stufe > a.stufe:
+                    a.stufe = neue_stufe
+                print(a, "neuer_Jg: ", a.jg, ", Stufe: ", a.stufe, "neue Stufe: ",  neue_stufe,)
+            except:
+                print(a)
+    return HttpResponse("fertig!")
+
+def loeschen_alt(req):
+    if not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
+    auswahl = User.objects.filter(date_joined__lt=date(2023,8,1))
+    print("Anzahl: ",auswahl.count())
+    n=0   
+    for a in auswahl:
+        if (a.date_joined.date() ) == ((a.last_login.date() )):
+            try:
+                user = Profil.objects.get(pk = a.id)
+                aufgaben = Protokoll.objects.filter(user_id = a.id).count()
+                print(user, " Augaben: ", aufgaben)
+                if aufgaben == 0:
+                    print("keine Aufgaben - Account gelöscht: ", a)
+                    #a.delete()
+            except:
+                print("kein Profil - Account gelöscht: ",a)
+                #a.delete()
+    return HttpResponse("fertig!")
+
+def account_pruefen(id):
+    nachricht = ""
+    user = User.objects.filter(id = id).first()
+    if user == None:
+        nachricht = "Ein Account mit der ID {} existiert nicht".format(id)
+    else:
+        profil = Profil.objects.filter(user = user).first()
+        if profil == None:
+            nachricht = "Ein Profil mit der ID {} existiert nicht".format(id)
+    return user, nachricht
+
+def account_ohne_profil(req):
+    if not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+    alle = User.objects.all().order_by("username")
+    n=0
+    for einer in alle:
+        profil = Profil.objects.filter(user=einer)
+        if profil.count() == 0 and einer.id != 29:
+            n +=1
+            heute = date.today()
+            nachricht = 'Das Userprofil id {} mit dem Account "{}" wurde am {} von {} {} gelöscht, da kein Profil zugeordnet war.'.format(einer.id, einer, heute, req.user.profil.vorname, req.user.profil.nachname)
+            geloescht, created = Geloescht.objects.get_or_create(benutzername = str(einer))
+            geloescht.text = nachricht
+            print(nachricht)
+            geloescht.save()
+            einer.groups.clear()
+            einer.delete()
+    text = str(n) + " Accounts gelöscht"
+    return HttpResponse(text)
 
 def zaehler_ergaenzen(req):
     if not req.user.is_superuser:
@@ -909,13 +929,14 @@ def zaehler_ergaenzen(req):
         print(zaehler, zaehler.bonus)
     return HttpResponse(profil)
 
-def reparatur(req, id):
+def reparatur(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    protokoll = Protokoll.objects.filter(user__id = id,start__gt=date(2024,2,1))
-    print(protokoll.first().user)
-    print("Anzahl: ",protokoll.count())    
-    for a in protokoll:
-        a.hj = 2 
-        a.save()      
+    geloescht = Geloescht.objects.all()
+    geloescht = geloescht.exclude(user = None)
+    for eintrag in geloescht:
+        if eintrag.user != None:
+            eintrag.benutzername = str(eintrag.user)
+        eintrag.user = None
+        eintrag.save()
     return HttpResponse("fertig!")    
