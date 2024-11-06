@@ -41,7 +41,9 @@ urlpatterns = [
     path("stufen/", views.stufen, name="stufen"),
 
     path("karteileichen/", views.karteileichen),
-    path("reparatur/<id>", views.reparatur),
+    path("account_ohne_profil/", views.account_ohne_profil),
+
+    path("reparatur/", views.reparatur),
     path("zaehler_ergaenzen/", views.zaehler_ergaenzen),
 
     path("suchen/", views.suchen, name="suchen"),

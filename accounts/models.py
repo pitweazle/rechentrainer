@@ -84,14 +84,15 @@ class Profil(models.Model):
         verbose_name_plural = 'Profile'
 
 class Geloescht(models.Model):
-    user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE, )
+    user = models.OneToOneField(User, related_name='geloescht', on_delete = models.DO_NOTHING, null=True)
+    benutzername = models.CharField(max_length=25, blank=True)
     text = models.CharField(max_length=200)
     class Meta:
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
  
     def __str__(self):
-        return f"{self.user}: {self.text}"
+        return f"{self.benutzername}: {self.text}"
    
 
 
