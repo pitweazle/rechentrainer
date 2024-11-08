@@ -864,25 +864,58 @@ def karteileichen(req):
     return HttpResponse("fertig!")
 
 def loeschen_alt(req):
+    auswahl = User.objects.filter(date_joined__lt=date(2023,8,1))
+    n=0 
+    m=0
+    nachricht = ""  
+    for a in auswahl:
+        if (a.date_joined.date() ) == ((a.last_login.date() )):
+            user = Profil.objects.filter(user = a).first()
+            aufgaben = Protokoll.objects.filter(user_id = a.id).count()
+            n +=1
+            m += aufgaben
+            nachricht = str(a)
+            if user == None:
+                print(a, a.pk)
+                nachricht += " hat kein Profil und"
+            else:
+                nachricht += ": " +user.vorname + " " + user.nachname+ " hat"
+            nachricht += " sich nur einmal angemeldet, letzter Login: "+ str(a.last_login.date())+ " - Account wurde gelöscht"
+            a.groups.clear()
+            #print(nachricht)
+            a.delete()
+    nachricht = str(n) + " Accounts mit " + str(m) + " Aufgaben gelöscht"
+    return HttpResponse(nachricht)
+
+def loeschen_sik(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
     auswahl = User.objects.filter(date_joined__lt=date(2023,8,1))
-    print("Anzahl: ",auswahl.count())
-    n=0   
+    n=0 
+    m=0
+    nachricht = ""  
     for a in auswahl:
         if (a.date_joined.date() ) == ((a.last_login.date() )):
-            try:
-                user = Profil.objects.get(pk = a.id)
-                aufgaben = Protokoll.objects.filter(user_id = a.id).count()
-                print(user, " Augaben: ", aufgaben)
-                if aufgaben == 0:
-                    print("keine Aufgaben - Account gelöscht: ", a)
-                    #a.delete()
-            except:
-                print("kein Profil - Account gelöscht: ",a)
-                #a.delete()
-    return HttpResponse("fertig!")
+            user = Profil.objects.filter(user = a).first()
+            geloescht, created = Geloescht.objects.get_or_create(benutzername = str(a))
+            aufgaben = Protokoll.objects.filter(user_id = a.id).count()
+            n +=1
+            m += aufgaben
+            nachricht = str(a)
+            if user == None:
+                nachricht += " hat kein Profil und"
+            else:
+                nachricht += ": " +user.vorname + " " + user.nachname+ " hat"
+            nachricht += " sich nur einmal angemeldet, letzter Login: "+ str(a.last_login.date())+ " - Account wurde gelöscht"
+            geloescht.text += nachricht
+            geloescht.user = None
+            geloescht.save()
+            a.groups.clear()
+            print(nachricht)
+            #a.delete()
+    nachricht = str(n) + " Accounts mit " + str(m) + " Aufgaben gelöscht"
+    return HttpResponse(nachricht)
 
 def account_pruefen(id):
     nachricht = ""
@@ -934,9 +967,12 @@ def reparatur(req):
         return HttpResponse("Zugriff verweigert")
     geloescht = Geloescht.objects.all()
     geloescht = geloescht.exclude(user = None)
+    n=0
     for eintrag in geloescht:
         if eintrag.user != None:
             eintrag.benutzername = str(eintrag.user)
         eintrag.user = None
         eintrag.save()
-    return HttpResponse("fertig!")    
+        n +=1
+    nachricht = str(n) + " Einträge geändert"
+    return HttpResponse(nachricht)    
