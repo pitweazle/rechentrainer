@@ -2987,7 +2987,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 if typ2 == 4:                                               # auch Winkel außen
                     ecken = int(random.choice(ecken_liste[:4]))
                     hilfe_id = 64
-                    hilfe_text = "Zunächst musst du die Größe des blauenWinkels bestimmen (der gelbe Kreis hat 360°).<br>Die Winkelsumme im Dreieckbeträgt 180°."
+                    hilfe_text = "Zunächst musst du die Größe des blauen Winkels bestimmen (der gelbe Kreis hat 360°).<br>Die Winkelsumme im Dreieckbeträgt 180°."
                 else:
                     ecken = int(random.choice(ecken_liste))
                     hilfe_id = 63
@@ -3012,7 +3012,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     parameter.update({'color1': "red", 'color': color})
                     erg = beta
                     zwischenergebnis = int(360/ecken)  
-                lsg = ["360/"+str(ecken)+"="+str(zwischenergebnis)+"   (180-"+str(zwischenergebnis)+")/2="+str(int(erg))]  
+                    lsg = ["360/"+str(ecken)+"="+str(zwischenergebnis)+" ->  (180-"+str(zwischenergebnis)+")/2="+str(int(erg))]  
         elif typ == 6:                                                  # Stufen- und Wechselwinkel
             winkel = random.randint(60,120)
             if random.random() < 0.5:                       # Winkel rechts

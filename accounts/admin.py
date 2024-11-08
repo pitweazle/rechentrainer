@@ -38,10 +38,13 @@ class BenutzerAdmin(UserAdmin):
         return obj.profil.gruppe
     profil_nachname.short_description = "Lerngruppe"
 
+class GeloeschtAdmin(admin.ModelAdmin):
+    search_fields = ['benutzername']
+
 admin.site.unregister(User)
 admin.site.register(User,  BenutzerAdmin)  
 admin.site.register(Ort, OrtAdmin)
 admin.site.register(Schule, SchuleAdmin)
 admin.site.register(Profil, ProfilAdmin)
 admin.site.register(Lerngruppe, LerngruppeAdmin)
-admin.site.register(Geloescht)
+admin.site.register(Geloescht, GeloeschtAdmin)
