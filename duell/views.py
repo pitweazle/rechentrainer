@@ -89,12 +89,17 @@ def duell_uebersicht(req, gruppe_id):
                 neu.save()         
     else:
         schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
+        print(schueler_liste)
         for schueler in schueler_liste:
             duellant, created = Duellant.objects.get_or_create(profil = schueler)
             if created:
                 duellant.name = schueler.vorname
                 duellant.gruppe = gruppe
                 duellant.save()
+            else:
+                if duellant.gruppe == None:
+                    duellant.gruppe = gruppe
+                    duellant.save()
     duellanten = Duellant.objects.filter(gruppe=gruppe)
     liga_B = duellanten.filter(liga="B").count()
     liga_C = duellanten.filter(liga="C").count()
