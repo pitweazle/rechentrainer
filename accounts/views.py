@@ -24,7 +24,6 @@ def name_hj():
     sj = jahr%100*100+jahr%100+1
     if heute.month in range(1,8):
         sj -= 101
-    if heute.month in range(2,8):    
         hj = 2
     else:
         hj = 1
@@ -832,11 +831,7 @@ def suchen(req, gruppe_id=None):
                                 geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
                                 geloescht.save()
-                                user.groups.clear()
-                                #group = Group.objects.get(name='Gelöscht')
-                                #user.groups.add(group)
-                                user.delete()
-
+                                user.profil.delete()
         context = {"abmelden_form": abmelden_form, "loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
