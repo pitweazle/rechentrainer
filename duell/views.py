@@ -89,7 +89,6 @@ def duell_uebersicht(req, gruppe_id):
                 neu.save()         
     else:
         schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("user__profil__vorname")
-        print(schueler_liste)
         for schueler in schueler_liste:
             duellant, created = Duellant.objects.get_or_create(profil = schueler)
             if created:

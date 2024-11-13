@@ -42,7 +42,7 @@ urlpatterns = [
 
     path("karteileichen/", views.karteileichen),
     path("account_ohne_profil/", views.account_ohne_profil),
-    path("loeschen_alt/", views.loeschen_alt),
+    path("altes_loeschen/", views.altes_loeschen),
 
     path("reparatur/", views.reparatur),
     path("zaehler_ergaenzen/", views.zaehler_ergaenzen),
