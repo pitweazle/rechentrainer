@@ -69,7 +69,7 @@ class Hilfe(models.Model):
         verbose_name_plural = 'Hilfen'
 
 class Protokoll(models.Model):
-    user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='protokolle', on_delete=models.CASCADE)
+    profil = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='protokolle', on_delete=models.CASCADE)
     #gewertet werden nur die Aufgaben des jeweiligen Schuljabjahres, im Januar, Juni und August, kann der user aber auch schon festlegen, dass die Aufgaben für das nächste Schulhalbjahr gelten:
     sj = models.SmallIntegerField(default=0)
     hj = models.SmallIntegerField(default=0)
@@ -134,14 +134,14 @@ class Protokoll(models.Model):
     #     return farbe
         
     def name(self):        
-        return f"{self.user.nachname}, {self.user.vorname}, {self.user.klasse}, {self.user.gruppe}"
+        return f"{self.profil.nachname}, {self.profil.vorname}, {self.profil.klasse}, {self.profil.gruppe}"
 
     class Meta:
         verbose_name = 'Protokoll'
         verbose_name_plural = 'Protokolle'
 
 class Zaehler(models.Model):
-    user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 
+    profil = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 
     kategorie = models.ForeignKey(Kategorie, on_delete=models.CASCADE, related_name="zaehler")
     letzte = models.DateTimeField('Letzte Bearbeitung', auto_now_add=True)
     
@@ -161,10 +161,10 @@ class Zaehler(models.Model):
     bonus = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return f"({self.id}, {self.user}, {self.user.user}, {self.kategorie}, {self.sj})/{self.hj})"
+        return f"({self.id}, {self.profil}, {self.profil.user}, {self.kategorie}, {self.sj})/{self.hj})"
     
     class Meta:
-        unique_together = ['kategorie', 'user']
+        unique_together = ['kategorie', 'profil']
         verbose_name = 'Zähler'
         verbose_name_plural = 'Zähler'   
 

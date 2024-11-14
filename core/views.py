@@ -6405,7 +6405,7 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
-def get_user(user):
+def get_profil(user):
     return Profil.objects.get(user = user)
     #return Profil.objects.all().first()
 
@@ -6418,9 +6418,9 @@ def kategorien(req):
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
 
-def durchschnitt_aufgaben(user):
-    protokoll = Protokoll.objects.filter(user=user, sj=user.sj, hj=user.hj)
-    zaehler = Zaehler.objects.filter(user=user)
+def durchschnitt_aufgaben(profil):
+    protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+    zaehler = Zaehler.objects.filter(profil=profil)
     queryset = zaehler.order_by("letzte").last()
     letzte = queryset.letzte.strftime("%d.%m.%y %H:%M")
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
@@ -6431,7 +6431,7 @@ def durchschnitt_aufgaben(user):
     abbr_gesamt = zaehler.aggregate(sum=Sum('abbr_zaehler'))['sum']
     lsg_gesamt = zaehler.aggregate(sum=Sum('lsg_zaehler'))['sum']
     hilfe_gesamt = zaehler.aggregate(sum=Sum('hilfe_zaehler'))['sum']
-    anzahl = zaehler.filter(sj = user.sj, hj = user.hj).count()                             # Anzahl der, in diesem Hj bearbeiteten Kategorien                                                       
+    anzahl = zaehler.filter(sj = profil.sj, hj = profil.hj).count()                             # Anzahl der, in diesem Hj bearbeiteten Kategorien                                                       
     if anzahl == 0:
         durchschnitt = 0
     else:
@@ -6509,6 +6509,7 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            
 
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
+    print("Profil: ", req.user.profil)
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
@@ -6534,7 +6535,7 @@ def uebersicht(req, schueler_id=0):
                     return HttpResponse("Daten nicht vorhanden")
             else:
                 return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(user=profil, sj=profil.sj, hj=profil.hj)
+        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
         if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
             richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
             #letzte = k['letzte']
@@ -6599,7 +6600,7 @@ def uebersicht(req, schueler_id=0):
             index =  kategorie.zeile
             protokoll_kategorie = protokoll.filter(kategorie = kategorie)
             if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
-                zaehler_kategorie = Zaehler.objects.get(user=profil, kategorie = kategorie)
+                zaehler_kategorie = Zaehler.objects.get(profil=profil, kategorie = kategorie)
                 kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
                     protokoll_kategorie
                     .values("kategorie__zeile")
@@ -6711,7 +6712,7 @@ def uebersicht(req, schueler_id=0):
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
                 try:
-                    zaehler_kat = Zaehler.objects.filter(user = profil, kategorie = kategorie).last()
+                    zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
                     bonus_kat = zaehler_kat.bonus
                 except:
                     bonus_kat = 0
@@ -6757,8 +6758,8 @@ def uebersicht(req, schueler_id=0):
                 note = "-"
                 prozent_summe_farbe = None
         else:
-            zaehler_user = Zaehler.objects.filter(user = profil)
-            bonus_summe = zaehler_user.aggregate(sum=Sum('bonus'))['sum']
+            zaehler_profil = Zaehler.objects.filter(profil = profil)
+            bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
             if bonus_summe != None:
                 richtig_gesamt = bonus_summe 
             else:
@@ -6804,27 +6805,27 @@ def protokoll(req, schueler_id=0):
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
         if schueler_id == 0:
-            user_profil = get_object_or_404(Profil, user_id = req.user.id)          # der Lehrer
+            profil = get_object_or_404(Profil, user_id = req.user.id)          # der Lehrer
             if lehrer:
                 loeschen = True            
         else:
-            user_profil = get_object_or_404(Profil, id = schueler_id)               # Schülerin oder Schüler
+            profil = get_object_or_404(Profil, id = schueler_id)               # Schülerin oder Schüler
         if req.user.is_superuser:
             pass
         else:
-            if(user_profil.id) != (req.user.profil.id) and (user_profil.gruppe.lehrer.id) != (req.user.id):
+            if(profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
                 return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(user=user_profil).exclude(wertung = "Duell").order_by('id').reverse()  # Protokoll des Users
+        protokoll = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()  # Protokoll des Users
         next_sj, next_hj = name_next_hj()
         auswahl = "heute"
         wahl = "heute"
         protokoll = protokoll.filter(start__date = date.today())
-        if next_hj == user_profil.hj and next_sj == user_profil.sj:
+        if next_hj == profil.hj and next_sj == profil.sj:
             form = ProtokollFilter_neu
         else:
             form = ProtokollFilter
         if req.method == 'POST':
-            protokoll = Protokoll.objects.filter(user=user_profil).order_by('id').reverse()
+            protokoll = Protokoll.objects.filter(profil=profil).order_by('id').reverse()
             auswahl = form(req.POST)
             choices = auswahl.fields['auswahl'].choices
             auswahl_liste = dict(choices)
@@ -6834,8 +6835,8 @@ def protokoll(req, schueler_id=0):
                 wahl = auswahl_liste[auswahl]
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else  0
-        zaehler_user = Zaehler.objects.filter(user = user_profil)
-        bonus_summe = zaehler_user.aggregate(sum=Sum('bonus'))['sum']
+        zaehler_profil = Zaehler.objects.filter(profil = profil)
+        bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
         if bonus_summe != None:
             if auswahl in ("Halbjahr", "Schuljahr", "all"):
                 richtig += bonus_summe 
@@ -6854,7 +6855,7 @@ def protokoll(req, schueler_id=0):
         #protokoll = protokoll.exclude(end__isnull=True, abbr__isnull=True, eingabe__exact="")
         exclude = ["", " Hilfe "]
         protokoll = protokoll.exclude(eingabe__in = exclude)
-        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = user_profil, protokoll= protokoll, form= form, wahl= wahl, 
+        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, protokoll= protokoll, form= form, wahl= wahl, 
             richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, abbr=abbr, lsg=lsg, hilfe = hilfe)
         return render(req, 'core/protokoll.html', context)
     else:
@@ -6863,23 +6864,22 @@ def protokoll(req, schueler_id=0):
 #Hier können die einzelnen Aufgaben genauer analysiert werden . Wird von der Protokollseite aus aufgerufen
 def details(req, zeile_id, schueler_id=0):
     protokoll = Protokoll.objects.get(pk = zeile_id)
-    if (protokoll.user.id) != (req.user.profil.id) and (protokoll.user.gruppe.lehrer.id) != (req.user.id) and not req.user.is_superuser:
-    #if(protokoll.user.id) != (req.user.profil.id):
+    if (protokoll.profil.id) != (req.user.profil.id) and (protokoll.profil.gruppe.lehrer.id) != (req.user.id) and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     try:
         hilfe = Hilfe.objects.get(kategorie = protokoll.kategorie, hilfe_id = protokoll.hilfe_id)
     except:
         hilfe = ""
-    zaehler = Zaehler.objects.get(user = protokoll.user, kategorie = protokoll.kategorie)
+    zaehler = Zaehler.objects.get(profil = protokoll.profil, kategorie = protokoll.kategorie)
     return render(req, 'core/details.html', {'protokoll': protokoll, 'zaehler': zaehler, 'hilfe': hilfe, 'titel': ""})
 
 #Hier können u.U. Optionen gewählt werden - z:B. ob mit oder ohen Kommazahlen gerechnet wird
 def optionen(req, slug):
     kategorie = get_object_or_404(Kategorie, slug = slug)
     form = AuswahlForm(kategorie = kategorie)
-    user = get_user(req.user)  
+    profil = get_profil(req.user)  
     if req.method == 'POST':
-        form = AuswahlForm(req.POST, kategorie = kategorie, user=user)
+        form = AuswahlForm(req.POST, kategorie = kategorie, profil=profil)
         if form.is_valid():
             optionen_text = ';'.join(map(str, form.cleaned_data['optionen']))
             if optionen_text == "":
@@ -6887,19 +6887,19 @@ def optionen(req, slug):
         else:
             optionen_text = "keine"  
     else:
-        form = AuswahlForm(kategorie=kategorie, user=user)
+        form = AuswahlForm(kategorie=kategorie, profil=profil)
         anzahl = kategorie.auswahl_set.all().count()
         if anzahl>0:
-            anzahl = Auswahl.objects.filter(bis_jg__gte = user.jg, bis_stufe__gte = user.stufe, kategorie = kategorie).count()
+            anzahl = Auswahl.objects.filter(bis_jg__gte = profil.jg, bis_stufe__gte = profil.stufe, kategorie = kategorie).count()
             if anzahl>0:
                 return render(req, 'core/optionen.html', {'kategorie': kategorie, 'auswahl_form':form})
             else:
                 optionen_text = "keine"    
         else:
             optionen_text = "keine"
-    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, user = user)
+    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
     zaehler.optionen_text = optionen_text       
-    typ_anf, typ_end = aufgaben(kategorie.zeile, jg = user.jg, stufe = user.stufe, optionen = zaehler.optionen_text)
+    typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
     zaehler.save()
@@ -6908,7 +6908,6 @@ def optionen(req, slug):
 #Die 10 Aufgaben weden abgebrochen. Dies wird gezählt. Eigentlich wird bei der Erstellung jeweils dieser Zähler hochrechnet und nur wenn eine richtige oder falsche Eingabe erfolgt oder "Lösung anzeigen" 
 #angeklickt wird, wird dieser Zähler wieder um Eins zurückgesetzt. Dadurch wird auch als Abbrechen gezählt, wenn z.B. mit F5 eine neue Aufgabe erzeugt wird.
 def abbrechen(req, zaehler_id):
-    #gruppe = req.user.profil.gruppe
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     #zaehler.abbr_zaehler += 1
     zaehler.aufgnr = 0
@@ -6916,7 +6915,7 @@ def abbrechen(req, zaehler_id):
     zaehler.richtig_of = 0 
     zaehler.hinweis = ""
     zaehler.save() 
-    protokoll = Protokoll.objects.filter(user = zaehler.user).order_by('-id').first()
+    protokoll = Protokoll.objects.filter(profil = zaehler.profil).order_by('-id').first()
     if protokoll.wertung != "a":
         protokoll.wertung = protokoll.wertung + "a"
     if protokoll.eingabe != "":
@@ -7069,9 +7068,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
 def main(req, slug):
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
-        user = get_user(req.user)
-        # profil = get_object_or_404(Profil, user=req.user)
-        # duell = True if profil.gruppe else False
+        profil = get_profil(req.user)
         bis_loeschen = "-"
         titel = text = frage = ""
         if req.method == 'POST':
@@ -7164,15 +7161,15 @@ def main(req, slug):
                     if kategorie.name == "Funktionen":
                         mehr=5
                     if zaehler.aufgnr > 10+mehr:
-                        if  zaehler.optionen_text not in ["", "keine",] and user.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
+                        if  zaehler.optionen_text not in ["", "keine",] and profil.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
                             max_stufe = 3
                             for auswahl in Auswahl.objects.filter(
                                 kategorie=kategorie,
                                 text__in=zaehler.optionen_text.split(";"),
                                 ).all():
-                                if(auswahl.bis_stufe) >= int(user.stufe) and auswahl.update:
-                                    user.stufe = auswahl.bis_stufe+1+int(user.stufe)%2
-                                    user.save()
+                                if(auswahl.bis_stufe) >= int(profil.stufe) and auswahl.update:
+                                    profil.stufe = auswahl.bis_stufe+1+int(profil.stufe)%2
+                                    profil.save()
                         zaehler.optionen_text = ""
                         zaehler.hinweis = ""
                         zaehler.aufgnr = 0
@@ -7253,24 +7250,24 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
-            gerechnet = Protokoll.objects.filter(richtig__gte = 1, user=user, kategorie = kategorie, sj = user.sj, hj = user.hj).count()
-            zaehler = Zaehler.objects.get(user=user, kategorie = kategorie)
-            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt,  = durchschnitt_aufgaben(user)
-            zaehler.sj = user.sj
-            zaehler.hj = user.hj
+            zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
+            gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
+            zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
+            zaehler.sj = profil.sj
+            zaehler.hj = profil.hj
             if created:
                 #zaehler.fehler_ab = timezone.now()
-                if user.katmax <= kategorie.zeile:
-                    user.katmax=kategorie.zeile
-                    user.save()             # speichert die höchste gewählte Aufgabenkategorie
+                if profil.katmax <= kategorie.zeile:
+                    profil.katmax=kategorie.zeile
+                    profil.save()             # speichert die höchste gewählte Aufgabenkategorie
             zaehler.save()
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
                 # messages.info(req, "Los geht's")
                 zaehler.zeit_summe = 0
+                durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt,  = durchschnitt_aufgaben(profil)
                 if richtig_gesamt > 100:
-                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not user.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
+                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
                         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
@@ -7279,22 +7276,22 @@ def main(req, slug):
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
             if kategorie.slug == "sachaufgaben":
                 try:  
-                    user.voreinst["sachaufg"] = user.voreinst["sachaufg"] + 1
+                    profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
                 except:                                       
-                    user.voreinst.update({"sachaufg" : random.randint(1,20)})
-                user.save()
-                typ_anf = user.voreinst["sachaufg"]
+                    profil.voreinst.update({"sachaufg" : random.randint(1,20)})
+                profil.save()
+                typ_anf = profil.voreinst["sachaufg"]
             else:
                 typ_anf = zaehler.typ_anf            
-            stufe = user.stufe
+            stufe = profil.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
-                if user.kurs == "A" or user.kurs == "Y":
+                if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
-            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = user.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
+            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
             if kategorie.slug == "sachaufgaben":
-                user.voreinst["sachaufg"] = typ
-                user.save()
+                profil.voreinst["sachaufg"] = typ
+                profil.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
                 titel = kategorie.name
@@ -7315,7 +7312,7 @@ def main(req, slug):
             bis_loeschen = kategorie.eof - zaehler.richtig_of
             #Alle Angaben der Aufgaben wird in einem Eintrag in "Protokoll" gespeichert:
             protokoll = Protokoll.objects.create(
-                user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
+                profil = profil, titel = titel, sj = profil.sj, hj = profil.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
                 anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "a", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
             )                                                                   #Protokoll wird erstellt
             req.session['protokoll_id'] = protokoll.id    
