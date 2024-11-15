@@ -34,12 +34,12 @@ class AuswahlForm(forms.Form):
         required=False,
     )
 
-    def __init__(self, *args, kategorie=None, user=None, **kwargs):
+    def __init__(self, *args, kategorie=None, profil=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if kategorie is not None and user is not None:
+        if kategorie is not None and profil is not None:
             self.fields['optionen'].queryset = kategorie.auswahl_set.filter(
-                bis_jg__gte=user.jg,
-                bis_stufe__gte=user.stufe
+                bis_jg__gte=profil.jg,
+                bis_stufe__gte=profil.stufe
             )
 
 class ProtokollFilter(forms.Form):
