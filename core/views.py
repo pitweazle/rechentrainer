@@ -5573,7 +5573,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 hilfe = "Die Menge aller möglichen Ergebnisse heißt Ergebnisraum.<br>Man bezeichnet ihn mit 'Ω' und setzt die einzelnen Ergebnisse in geschweifte Klammern."
             else:
                 frage = "E={{"
-                text = "Gib den Ereignisraum für folgenden Zufallsversuch an:<br>"
+                text = "Gib den Ereignisraum (Ergebnismenge) für folgenden Zufallsversuch an:<br>"
                 pro_text = "Ereignisraum: "
                 hilfe_id = 3
                 hilfe = "Ein Ereignisraum ist die Menge der Ergebnisse eines Zufallsexperimentes, die die gewünschte Aussage erfüllen.<br>Man bezeichnet sie mit 'E' und setzt die einzelnen Ergebnisse in geschweifte Klammern.<br>"
@@ -5876,7 +5876,10 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 zufall = random.randint(1, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?".format(zufall)  
                 frage= "P({})=" 
-                lsg=["1/6"]
+                if zufall == 7:
+                    lsg = ["0", "Null", "null", "unmöglich"]
+                else: 
+                    lsg=["1/6"]
             else:
                 parameter['object'] = 'grafik/muenzwurf.jpg'
                 parameter['breite'] = 200
