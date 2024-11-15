@@ -613,7 +613,7 @@ def duell_loeschen(req):
         nur_punkte = req.POST.get('nur_punkte', 'off') 
         bestaetigt = req.POST.get('bestaetigt', 'off')
         if bestaetigt == "on":
-            zaehler = Zaehler.objects.filter(user = req.user.profil)
+            zaehler = Zaehler.objects.filter(profil = req.user.profil)
             duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe = gruppe)
             duell_protokoll.all().delete() 
             duell = Duell.objects.filter(gruppe = gruppe)
