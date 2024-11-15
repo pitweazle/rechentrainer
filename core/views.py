@@ -5861,23 +5861,26 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
         elif typ == 11:                                 # Würfeln und Münze
             parameter = {'name': 'core/grafik.html', 'object': 'grafik/wuerfel.jpg', 'breite': 300}
             typ2 = random.randint(1,4)
-            if typ2 == 1:
+            if typ2 == 1:                                   # kleiner als
                 zufall = random.randint(2, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine kleinere Zahl als {} zu würfeln?".format(zufall)  
                 frage = "P(<{})=".format(zufall)
                 zaehler = zufall-1
                 lsg=[str(zaehler)+"/6"]	
-            elif typ2 == 2:
+            elif typ2 == 2:                                 # gerade/ungerade
                 zufall = random.choice(["gerade","ungerade"])
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine {} Zahl zu würfeln?".format(zufall) 
                 frage = "P({})=".format(zufall)
                 lsg=["3/6","1/2"]
-            elif typ2 ==3:
+            elif typ2 == 3:                                  # Eind bis Sechs
                 zufall = random.randint(1, 7)
                 text="Wie groß ist die Wahrscheinlichkeit beim Würfeln mit einem Würfel eine '{}' zu würfeln?".format(zufall)  
-                frage= "P({})=" 
-                lsg=["1/6"]
-            else:
+                frage= "P({})="
+                if zufall == 7:
+                    lsg = ["0", "Null", "null", "unmöglich"]
+                else: 
+                    lsg=["1/6"]
+            else:                                           # Zahl/Kopf
                 parameter['object'] = 'grafik/muenzwurf.jpg'
                 parameter['breite'] = 200
                 variable = [random.choice(["Zahl", "Kopf"])] 
