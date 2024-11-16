@@ -182,5 +182,3 @@ class Sachaufgabe(models.Model):
         return f"{self.lfd_nr}: {self.text}, {self.ab_jg}"
     class Meta:
         verbose_name_plural = 'Sachaufgaben'
-
-
