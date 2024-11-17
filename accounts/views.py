@@ -210,7 +210,7 @@ def naechstes_halbjahr(req):
     if req.method == 'POST':
         neues_halbjahr = req.POST.get('neu', 'nein')
         keinefragen = req.POST.get('keinefrage') 
-        profil = get_object_or_404(Profil, profil_id = req.profil.id)
+        profil = get_object_or_404(Profil, user = req.user)
         if neues_halbjahr.lower() == 'ja':
             for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
                 zaehler.fehler_zaehler = 0  
@@ -255,7 +255,7 @@ def naechstes_halbjahr(req):
     return redirect('index')
 
 def doch_neues_halbjahr(req):
-    profil = get_object_or_404(Profil, user_id = req.user.id)
+    profil = get_object_or_404(Profil, user = req.user)
     sj, hj = name_next_hj()
     profil.hj = hj
     profil.sj = sj
@@ -269,7 +269,7 @@ def doch_neues_halbjahr(req):
 def neues_halbjahr(req):
     sj, hj = name_hj()
     #print(sj,"/",hj)
-    profil = get_object_or_404(Profil, user_id = req.user.id)
+    profil = get_object_or_404(Profil, user = req.user)
     profil.voreinst["no_hj"] = False
     profil.voreinst["frage_hj"] = 0
     profil.hj = hj
