@@ -77,7 +77,7 @@ def duell_uebersicht(req, gruppe_id):
         return HttpResponse("Zugriff verweigert")
     duellanten = Duellant.objects.filter(gruppe=gruppe)
     if duellanten.count() == 0:                         # löscht die gespeicherten Aufgabennummern der einzelnen Kategorien der Lehrkraft
-        zaehler = Zaehler.objects.filter(user = req.user.profil)
+        zaehler = Zaehler.objects.filter(profil = req.user.profil)
         for kategorie in zaehler:
             kategorie.aufgnr = 0
             kategorie.save()
@@ -133,7 +133,7 @@ def duell_start(req):
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     kategorien = Kategorie.objects.all().order_by('zeile')
-    zaehler = Zaehler.objects.filter(user = req.user.profil)
+    zaehler = Zaehler.objects.filter(profil = req.user.profil)
     for item in zaehler:
         item.optionen_text = ""
         item.save()
@@ -171,8 +171,8 @@ def duell_aufgabe(req, slug):
         return HttpResponse("Zugriff verweigert")
     #duell_rang(gruppe.id)
     kategorie = get_object_or_404(Kategorie, slug = slug)
-    user = req.user.profil
-    zaehler, created = Zaehler.objects.get_or_create(user = user, kategorie = kategorie)
+    profil = req.user.profil
+    zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
     if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
         zaehler.aufgnr = 1
     #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
@@ -213,7 +213,7 @@ def duell_aufgabe(req, slug):
         return redirect('duell_uebersicht', gruppe.id)
         #return HttpResponse("für ein Duell benötigt man schon mindestens 2 Duellanten :)")
     protokoll = Protokoll.objects.create(
-        user = user, titel = titel, sj = user.sj, hj = user.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
+        profil = profil, titel = titel, sj = profil.sj, hj = profil.hj, kategorie = kategorie, text = text, pro_text = pro_text, variable = variable, frage = frage, einheit = einheit, 
         anmerkung = anmerkung, wert = ergebnis, loesung = lsg, hilfe_id = hilfe_id, parameter = parameter, wertung = "Duell", typ = typ, typ2 = typ2, aufgnr = zaehler.aufgnr,        
     )                                                                   #Protokoll wird erstellt
     duell = Duell.objects.create(
@@ -272,7 +272,7 @@ def duell_optionen(req, slug):
                 optionen_text = "keine"    
         else:
             optionen_text = "keine"
-    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, user = user.profil)
+    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = user.profil)
     zaehler.optionen_text = optionen_text       
     typ_anf, typ_end = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
@@ -400,7 +400,7 @@ def duell_kontrolle(req):
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     protokoll.versuche += 1
     duell = Duell.objects.get(pk = req.session.get('duell_id'))
-    zaehler = Zaehler.objects.get(user = req.user.profil, kategorie = protokoll.kategorie)
+    zaehler = Zaehler.objects.get(profil = req.user.profil, kategorie = protokoll.kategorie)
     context = dict()
     #wenn in den Aufgaben in "erg" eine Zahl steht
     if "tab" in protokoll.parameter["name"]:
@@ -613,7 +613,7 @@ def duell_loeschen(req):
         nur_punkte = req.POST.get('nur_punkte', 'off') 
         bestaetigt = req.POST.get('bestaetigt', 'off')
         if bestaetigt == "on":
-            zaehler = Zaehler.objects.filter(user = req.user.profil)
+            zaehler = Zaehler.objects.filter(profil = req.user.profil)
             duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe = gruppe)
             duell_protokoll.all().delete() 
             duell = Duell.objects.filter(gruppe = gruppe)

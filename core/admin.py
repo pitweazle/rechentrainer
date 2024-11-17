@@ -14,13 +14,13 @@ class KategorieAdmin(admin.ModelAdmin):
     inlines = [AuswahlInline]
     
 class ZaehlerAdmin(admin.ModelAdmin):
-    search_fields = ['user__vorname', 'user__nachname']
-    list_filter=("user","kategorie",)
-    ordering = ["-id", "user__vorname", "kategorie__zeile"]
+    search_fields = ['profil__vorname', 'profil__nachname']
+    list_filter=("profil","kategorie",)
+    ordering = ["-id", "profil__vorname", "kategorie__zeile"]
 
 class ProtokollAdmin(admin.ModelAdmin):
-    search_fields = ['user__vorname', 'user__nachname']
-    list_filter=( "start","kategorie", "user",)
+    search_fields = ['profil__vorname', 'profil__nachname']
+    list_filter=( "start","kategorie", "profil",)
     
     list_display = ('id', 'start', 'kategorie', 'name') 
     # ordering = ["user__vorname", "kategorie__zeile"]
