@@ -96,7 +96,11 @@
             {% endif %}          
         </tbody>
     </table>
-    <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% if soll_hj <= 0 %}
+        <p>Du arbeitest schon an den Aufgaben für das nächste Halbjahr.<br> Du solltest {{pro_woche}} Aufgaben pro Woche rechnen - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% else %}
+        <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% endif %}
     <p>
     {% if details %}
         Wenn du mit einem Smartphone arbeitest, kannst du unter "mein Profil" "Details anzeigen" wegklicken, dann wird diese Anzeige schmaler und passt auf das Display.
