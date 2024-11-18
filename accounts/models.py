@@ -38,7 +38,7 @@ class Lerngruppe(models.Model):
         unique_together = ['lehrer', 'name']
     
     def __str__(self):
-        return f"{self.lehrer.profil.nachname}, {self.name}"
+        return f"{self.id} {self.lehrer.profil.nachname}, {self.name}"
 
 class wahl_kurs(models.TextChoices):
     GYMNASIUM = 'Y', 'Gymnasium'

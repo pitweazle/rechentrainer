@@ -4270,7 +4270,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
         typ2 = 0
         titel = "Prozentrechnung" 
         parameter = {'name': 'normal',} 
-        pro_text = einheit = anmerkung = ""
+        text = pro_text = einheit = anmerkung = ""
         hilfe_id = 0
         hilfe_text = []
         erg = None 
@@ -6512,7 +6512,9 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            
 
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
-    print("Profil: ", req.user.profil)
+    gibtes = Profil.objects.filter(user_id = req.user.id).count()
+    if gibtes == 0:
+        return redirect('anmelden')
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 

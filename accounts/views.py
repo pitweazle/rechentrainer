@@ -707,9 +707,12 @@ def suchen(req, gruppe_id=None):
         zusammen_form = Zusammen_Form
         abmelden_form = Abmelden_Form
         vorname = nachname = nachricht = ""
+        print("ID: ", gruppe_id)
         if not gruppe_id: 
             profile = Profil.objects.filter(gruppe = None).order_by('vorname','nachname')
+            print("Profile1: ", profile)
             profile = profile.filter(~Q(user__groups__name = 'Lehrer'))
+            print("Profile2: ", profile)
         else:
             gruppe = Lerngruppe.objects.get(id = gruppe_id)
             if gruppe.name == "keine Gruppe" or gruppe_id == None:
@@ -816,10 +819,10 @@ def suchen(req, gruppe_id=None):
                         else:
                             protokolle = Protokoll.objects.filter(profil = user.profil.id) 
                             if protokolle.count() > 0:
-                                nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, user.profil.vorname+" "+user.profil.nachname, protokolle.count())
+                                nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, profil.vorname+" "+profil.nachname, protokolle.count())
                             else:
                                 heute = date.today()
-                                nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.benutzername, heute, req.user.profil.vorname, req.user.profil.nachname)
+                                nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.username, heute, req.user.profil.vorname, req.user.profil.nachname)
                                 geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
                                 geloescht.save()
