@@ -6880,6 +6880,8 @@ def details(req, zeile_id, schueler_id=0):
 
 #Hier können u.U. Optionen gewählt werden - z:B. ob mit oder ohen Kommazahlen gerechnet wird
 def optionen(req, slug):
+    if not req.user.is_authenticated:
+        return redirect('anmelden')  
     kategorie = get_object_or_404(Kategorie, slug = slug)
     form = AuswahlForm(kategorie = kategorie)
     profil = get_profil(req.user)  
