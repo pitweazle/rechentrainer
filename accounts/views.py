@@ -260,7 +260,7 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)    
+    halbjahr = sub_daten_loeschen(req, profil)    
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def wiederanmeldung(req):
@@ -269,7 +269,7 @@ def wiederanmeldung(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)    
+    halbjahr = sub_daten_loeschen(req, profil)    
     return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def sub_daten_loeschen(req):
@@ -507,7 +507,8 @@ def gruppe_uebersicht(req, gruppe_id):
             wahl = auswahl_liste[auswahl]
     else:
         wahl = "aktuelles Halbjahr"
-        protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
+        protokoll = protokoll.filter(sj=sj, hj=hj)
+    #startdatum = gruppe.erstellt_am
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False

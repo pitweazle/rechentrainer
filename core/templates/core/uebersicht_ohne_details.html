@@ -24,6 +24,7 @@
 {% endif %}
 
 <ul class={{breite}}>
+    {% if not bewertung or lehrer %}
         <form action="/uebersicht/{{schueler.id}}/" method="POST">
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
@@ -35,6 +36,7 @@
                 </button type="button">
             </h2>
         </form>
+    {% endif %}
     <table>
         <thead>
             <tr>
