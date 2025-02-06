@@ -1,16 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-{% comment %} {% extends 'tduell_layout.html' %}   {% endcomment %}
-=======
-{% comment %} {% extends 'duell_light_layout.html' %}   {% endcomment %}
->>>>>>> Verbesserungen
-=======
-{% comment %} {% extends 'duell_light_layout.html' %}   {% endcomment %}
->>>>>>> Fehler-bei-Schulwoche
-=======
-{% comment %} {% extends 'duell_light_layout.html' %}   {% endcomment %}
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+
 {% extends 'lehrer/gruppe.html' %}  
 {% block content %}
 {{tempduell}}
@@ -20,24 +8,13 @@
         <table>
             <tr>
                 <td>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                     <button>
                         <a href="{% url 'tduell' %}">zurück</a>
                     </button>
                 </td>
                 <td>
-                    <form action="/tduell_loeschen/{{gruppe.id}}/" method="POST">
-=======
                     <form action="/duell_loeschen/{{gruppe.id}}/" method="POST">
->>>>>>> Verbesserungen
-=======
                     <form action="/duell_loeschen/{{gruppe.id}}/" method="POST">
->>>>>>> Fehler-bei-Schulwoche
-=======
-                    <form action="/duell_loeschen/{{gruppe.id}}/" method="POST">
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
                         {% csrf_token %}
                         <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
                         <label >ja, ich bin sicher</label> 

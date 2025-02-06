@@ -222,14 +222,9 @@ def naechstes_halbjahr(req):
             sj, hj = name_next_hj()
             profil.hj = hj
             profil.sj = sj
-<<<<<<< HEAD
             profil.halbjahr_ab = timezone.now()
             profil.save()
             halbjahr = sub_daten_loeschen(req)
-=======
-            profil.save()
-            profil, halbjahr = sub_daten_loeschen(req)
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
             return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
         if keinefragen == "on":
             profil.voreinst["no_hj"] = True
@@ -261,19 +256,11 @@ def doch_neues_halbjahr(req):
 
 def neues_halbjahr(req):
     profil = get_object_or_404(Profil, user = req.user)
-<<<<<<< HEAD
-    profil = get_object_or_404(Profil, user = req.user)
-=======
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     sj, hj = name_hj()
     profil.hj = hj
     profil.sj = sj
     profil.save()
-<<<<<<< HEAD
-    halbjahr = sub_daten_loeschen(req)    
-=======
     halbjahr = sub_daten_loeschen(req, profil)    
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def wiederanmeldung(req):
@@ -285,24 +272,10 @@ def wiederanmeldung(req):
     halbjahr = sub_daten_loeschen(req, profil)    
     return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
-def sub_daten_loeschen(req, profil):
-    #profil = get_object_or_404(Profil, user = req.user)
-    profil.voreinst["no_hj"] = False
-    profil.voreinst["frage_hj"] = 0
-    # sj, hj = name_next_hj()
-    # profil.hj = hj
-    # profil.sj = sj
-    # profil.save()
-<<<<<<< HEAD
-    halbjahr = sub_daten_loeschen(req)    
-    return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
-
 def sub_daten_loeschen(req):
     profil = get_object_or_404(Profil, user = req.user)
     profil.voreinst["no_hj"] = False
     profil.voreinst["frage_hj"] = 0
-=======
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
         zaehler.fehler_zaehler = 0  
         zaehler.lsg_zaehler = 0  
@@ -539,7 +512,6 @@ def gruppe_uebersicht(req, gruppe_id):
 =======
         protokoll = protokoll.filter(sj=sj, hj=hj)
     #startdatum = gruppe.erstellt_am
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
