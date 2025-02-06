@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+version=1.1"
+viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
+<defs>
+    <g id="dreieck">
+        <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  style="stroke:black;stroke-width:1;fill: #E0FFFF"/>
+        <path d="
+        M{{parameter.x3}} {{parameter.y3|add:40}}
+        A40 40 0 0 0  {{parameter.x3|add:40}} {{parameter.y3}}
+        "    
+        fill="none"
+        stroke="black"/>
+        <circle cx="{{parameter.x3|add:15}}" cy="{{parameter.y3|add:15}}" r="2" />  
+     </g>
+
+     <g id="masz_breite" style="stroke: black; stroke-width: 1">
+        <line x1=0    y1=0   x2={{parameter.breite_u}}  y2=0 />
+        <line x1=0    y1=0   x2=5   y2=-5 /> 
+        <line x1=0    y1=0   x2=5  y2=5 />
+        <line x1={{parameter.breite}}    y1=0   x2={{parameter.breite|add:-5}}  y2=-5 />
+        <line x1={{parameter.breite}}    y1=0   x2={{parameter.breite|add:-5}}  y2=5 />
+    </g>
+    <!--die Maßlinien für die die Höhe(n):-->
+    <g id="masz_hoehe" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx}}        y2={{parameter.cy}} />
+
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx|add:5}}  y2={{parameter.ay|add:-5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx|add:-5}} y2={{parameter.ay|add:-5}} />
+        
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:5}}  y2={{parameter.cy|add:5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:-5}} y2={{parameter.cy|add:5}} />
+    </g>
+
+    <g id="masz_hoehe_f" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx}}        y2={{parameter.dy}} />
+
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:5}}  y2={{parameter.cy|add:5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:-5}} y2={{parameter.cy|add:5}} />
+        
+        <line x1={{parameter.cx}}   y1={{parameter.dy}}  x2={{parameter.cx|add:5}}  y2={{parameter.dy|add:-5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.dy}}  x2={{parameter.cx|add:-5}} y2={{parameter.dy|add:-5}} />
+    </g>
+
+    <g id="masz_hoehe_t" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx}}        y2={{parameter.dy}} />
+
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx|add:5}}  y2={{parameter.ay|add:5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.ay}}  x2={{parameter.cx|add:-5}} y2={{parameter.ay|add:5}} />
+        
+        <line x1={{parameter.cx}}   y1={{parameter.dy}}  x2={{parameter.cx|add:5}}  y2={{parameter.dy|add:-5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.dy}}  x2={{parameter.cx|add:-5}} y2={{parameter.dy|add:-5}} />
+    </g>
+
+    <g id="breite_u" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.ax}}   y1={{parameter.dy}}  x2={{parameter.axs}}        y2={{parameter.dy}} />
+
+        <line x1={{parameter.ax}}   y1={{parameter.dy}}  x2={{parameter.ax|add:5}}  y2={{parameter.dy|add:5}} /> 
+        <line x1={{parameter.ax}}   y1={{parameter.dy}}  x2={{parameter.ax|add:5}} y2={{parameter.dy|add:-5}} />
+        
+        <line x1={{parameter.axs}}   y1={{parameter.dy}}  x2={{parameter.axs|add:-5}}  y2={{parameter.dy|add:5}} /> 
+        <line x1={{parameter.axs}}   y1={{parameter.dy}}  x2={{parameter.axs|add:-5}} y2={{parameter.dy|add:-5}} />
+    </g>
+
+    <g id="breite_o" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.dx}}        y2={{parameter.cy}} />
+
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:-5}}  y2={{parameter.cy|add:5}} /> 
+        <line x1={{parameter.cx}}   y1={{parameter.cy}}  x2={{parameter.cx|add:-5}} y2={{parameter.cy|add:-5}} />
+        
+        <line x1={{parameter.dx}}   y1={{parameter.cy}}  x2={{parameter.dx|add:5}}  y2={{parameter.cy|add:5}} /> 
+        <line x1={{parameter.dx}}   y1={{parameter.cy}}  x2={{parameter.dx|add:5}} y2={{parameter.cy|add:-5}} />
+    </g>
+
+    <g id="schraeg" style="stroke: black; stroke-width: 0.5">
+        <line x1={{parameter.ax}}   y1={{parameter.ay}}  x2={{parameter.ex}}        y2={{parameter.ay}} />
+
+        <line x1={{parameter.ax}}   y1={{parameter.ay}}  x2={{parameter.ax|add:5}}  y2={{parameter.ay|add:5}} /> 
+        <line x1={{parameter.ax}}   y1={{parameter.ay}}  x2={{parameter.ax|add:5}} y2={{parameter.ay|add:-5}} />
+        
+        <line x1={{parameter.ex}}   y1={{parameter.ay}}  x2={{parameter.ex|add:-5}}  y2={{parameter.ay|add:5}} /> 
+        <line x1={{parameter.ex}}   y1={{parameter.ay}}  x2={{parameter.ex|add:-5}} y2={{parameter.ay|add:-5}} />
+    </g>
+</defs>
+
+<style>
+    .blau {stroke:black; stroke-width:1; fill: #E0FFFF}
+    .text {font: bold 20px sans-serif;}
+    .masze {font: italic 16px sans-serif;}
+</style> 
+
+{% if parameter.object == "pythagoras" %}
+<!--falls Hilfe angeklickt wird:-->
+    {% if parameter.hilfe == 40 %}
+        <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.bx}},{{parameter.cy}} {{parameter.ax}},{{parameter.cy}}"  style="stroke:black;stroke-width:0.5;fill:yellow"/>
+    {% endif %}
+    {% if parameter.hilfe == 50 %}
+        <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.dx}},{{parameter.dy}}"  style="stroke:black; stroke-width:0.5;fill:yellow"/>
+    {% endif %}
+
+    {% if parameter.dx == parameter.bx %}
+    <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.bx}},{{parameter.cy}} {{parameter.ax}},{{parameter.cy}}"  style="stroke:black; stroke-width:0.5; fill: #C0FFFF"/>
+    {% endif %}
+
+    <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.cx}},{{parameter.cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF"/>
+
+    <!--hier wird die Benennung der Ecken geändert:-->
+    {% if parameter.A %}
+        <text x="{{parameter.ax|add:-15}}" y="{{parameter.ay|add:10}}" >{{parameter.A}}</text>
+        <text x="{{parameter.bx|add:5}}" y="{{parameter.by|add:10}}" >{{parameter.B}}</text>
+        <text x="{{parameter.cx|add:-5}}" y="{{parameter.cy|add:-5}}" >{{parameter.C}}</text>
+    {% else %}
+        <text x="{{parameter.ax|add:-15}}" y="{{parameter.ay|add:10}}" >A</text>
+        <text x="{{parameter.bx|add:5}}" y="{{parameter.by|add:10}}" >B</text>
+        <text x="{{parameter.cx|add:-5}}" y="{{parameter.cy|add:-5}}" >C</text>
+    {% endif %}
+
+    <!--hier die Seiten des Dreiecks mit der Hypotenuse unten-->
+    {% if parameter.a %}
+        <text x="{{parameter.amx|add:15}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.a}}</text>
+    {% endif %}
+    {% if parameter.b %}
+        <text x="{{parameter.bmx|add:-25}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.b}}</text>
+    {% endif %}
+    {% if parameter.c or parameter.h%}
+        <text x="{{parameter.mx|add:0}}" y="{{parameter.ay|add:15}}" class = "masze">{{parameter.c}}</text>
+    {% endif %}
+
+    <!--die Hypotenusenabschnitte-->
+    {% if parameter.p %}
+        <text x="{{parameter.amx|add:0}}" y="{{parameter.ay|add:-5}}" class = "masze">{{parameter.p}}</text>
+    {% endif %}
+    {% if parameter.q %}
+        <text x="{{parameter.bmx|add:0}}" y="{{parameter.ay|add:-5}}" class = "masze">{{parameter.q}}</text>
+    {% endif %}
+
+    <!--hier wird eine Höhe mit Maßlinie und die Länge der Seite c angezeigt (für Flächenberechnung:)-->
+    {% if parameter.h %}
+        <text x="{{parameter.cx|add:3}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.h}}</text>
+        <use href="#masz_hoehe" "/>
+    {% endif %}
+
+    <!--hier die Seiten des Dreiecks mit der Hypotenuse oben-->
+    {% if parameter.m %}
+        <text x="{{parameter.mx|add:5}}" y="{{parameter.ay|add:15}}" class = "masze">{{parameter.m}}</text>
+    {% endif %}
+    {% if parameter.n %}
+        <text x="{{parameter.nx|add:5}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.n}}</text>
+    {% endif %}
+    {% if parameter.o or parameter.h%}
+        <text x="{{parameter.ox|add:-15}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.o}}</text>
+    {% endif %}
+
+    <!--erzeugt einen Winkelbogen bei C-->
+    {% if not parameter.kein_winkel%}
+        <circle cx="{{parameter.punkt_x}}" cy="{{parameter.punkt_y}}" r="1"  fill="black" stroke = "black"/>
+        <path d="
+        M {{parameter.cx}}, {{parameter.cy}}
+        L {{parameter.c_sx}} {{parameter.c_sy}}        
+        A 30 30 0 0 0 {{parameter.c_ex}} {{parameter.c_ey}}
+        Z />
+        "
+        stroke="black" 
+        stroke-width="0.5"
+        fill="none"
+    {% endif %}
+
+<!--Häuschen-->
+{% elif parameter.object == "haus" %}
+    <!--hiermit wird das Dreieck gespiegelt, dabei verdoppelt und ein Häuschen gezeichnet:-->
+        <polygon points="{{parameter.axs}},{{parameter.ay}} {{parameter.ax}},{{parameter.by}} {{parameter.cx}},{{parameter.cy}}"  style="stroke:black;stroke-width:1;fill:rgb(239, 98, 10)"/>
+        <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.axs}},{{parameter.ay}} {{parameter.axs}},{{parameter.dy}} {{parameter.ax}},{{parameter.dy}}"  style="stroke:black;stroke-width:0.5;fill:yellow"/>
+    {% if parameter.hilfe == 131 or parameter.hilfe == 132 %}
+        <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.cx}},{{parameter.cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF"/>
+    {% endif %}
+
+    <text x="{{parameter.axs|add:15}}" y="{{parameter.my|add:15}}" class = "masze">f</text>
+    <use href="#masz_hoehe_f" transform="translate({{parameter.h_schieb|add:10}}, 0)"/>
+
+    <text x="{{parameter.cx|add:-10}}" y="{{parameter.dy|add:25}}" class = "masze">b</text>
+    <use href="#breite_u" transform="translate(0,10)"/>
+    <text x="{{parameter.mx|add:-10}}" y="{{parameter.my|add:-20}}" class = "masze">l</text>
+    <use href="#schraeg" transform="rotate({{parameter.winkel}} {{parameter.ax}} {{parameter.ay}}) translate(0,-15)"/>
+    {% if parameter.kurs == "G" %}
+        <text x="{{parameter.cx|add:3}}" y="{{parameter.my|add:5}}" class = "masze">h</text>
+        <use href="#masz_hoehe" "/>    
+    {% else %}
+        <text x="{{parameter.ax|add:-25}}" y="{{parameter.ay|add:15}}" class = "masze">t</text>
+        <use href="#masz_hoehe_t" transform="translate(-{{parameter.h_schieb|add:10}}, 0)"/>
+    {% endif %}
+
+<!--Rechteck mit Diagonale-->
+{% elif parameter.object == "diagonale" %}
+    <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.ay}} {{parameter.bx}},{{parameter.cy}} {{parameter.ax}},{{parameter.cy}}"  style="stroke:black;stroke-width:0.5;fill:yellow"/>
+    <line x1={{parameter.ax}}   y1={{parameter.ay}}   x2={{parameter.bx}}  y2={{parameter.cy}} style="stroke: black; stroke-width: 0.5" />
+
+    <!--hier die Seiten des Dreiecks mit der Hypotenuse oben-->
+    {% if parameter.m %}
+        <text x="{{parameter.mx|add:5}}" y="{{parameter.ay|add:15}}" class = "masze">{{parameter.m}}</text>
+    {% endif %}
+    {% if parameter.n %}
+        <text x="{{parameter.nx|add:10}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.n}}</text>
+    {% endif %}
+    {% if parameter.o or parameter.h%}
+        <text x="{{parameter.ox|add:-15}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.o}}</text>
+    {% endif %}
+
+<!--Trapez-->
+{% elif parameter.object == "trapez" %}
+    <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.ay}} {{parameter.cx}},{{parameter.cy}} {{parameter.dx}},{{parameter.cy}}"  style="stroke:black;stroke-width:0.5;fill:yellow"/>
+    <text x="{{parameter.dx|add:3}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.h}}</text>
+    <use href="#masz_hoehe" "/>
+    <text x="{{parameter.nx|add:-10}}" y="{{parameter.dy|add:25}}" class = "masze">g&#8321={{parameter.g1}};</text>
+    <use href="#breite_u" transform="translate(0,10)"/>
+    <text x="{{parameter.nx|add:-10}}" y="{{parameter.cy|add:-12}}" class = "masze">g&#8322={{parameter.g2}};</text>
+    <use href="#breite_o" transform="translate(0,-10)"/>
+    <text x="{{parameter.mx|add:-10}}" y="{{parameter.my|add:-20}}" class = "masze">l</text>
+    <use href="#schraeg" transform="rotate({{parameter.winkel}} {{parameter.ax}} {{parameter.ay}}) translate(0,-15)"/>
+    {% if parameter.hilfe == 133 %}
+        <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.dx}},{{parameter.by}} {{parameter.dx}},{{parameter.cy}}"  style="stroke:black;stroke-width:0.5;fill: #C0FFFF"/>
+    {% endif %}
+
+<!--für die Dreiecke aus den Kategorien der Geometrie-->
+{% else %} 
+    {% if parameter.winkel == "C" %} 
+        <use href="#dreieck" transform="rotate({{parameter.rotate}} 100 100)"/>    
+    {% else %}
+        <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  class="blau"/>
+        {% if parameter.winkel != "" %}        
+            {% if parameter.winkel == "A" %}
+                <path d="
+                M{{parameter.x1}} {{parameter.y1|add:-40}}
+                A40 40 0 0 1  {{parameter.x1|add:40}} {{parameter.y1}}
+                "    
+                fill="none"
+                stroke="black"/>
+                <circle cx="{{parameter.x1|add:15}}" cy="{{parameter.y1|add:-15}}" r="2" />
+            {% elif parameter.winkel == "B" %}
+                <path d="
+                M{{parameter.x2}} {{parameter.y1|add:-40}}
+                A40 40 0 0 0  {{parameter.x2|add:-40}} {{parameter.y1}}
+                "    
+                fill="none"
+                stroke="black"/>
+                <circle cx="{{parameter.x2|add:-15}}" cy="{{parameter.y1|add:-15}}" r="2" />
+            {% endif %}
+        {% endif %}         
+        {%for x, y, txt in parameter.ecken %}
+            <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text>
+        {%endfor%}
+        {%for x, y, txt in parameter.seiten %}
+            <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text> 
+        {%endfor%}
+    {% endif %}
+
+{% endif %}
+</svg>
