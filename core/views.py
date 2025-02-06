@@ -7137,10 +7137,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter['object'] = "diagonale"
                 werte = {'m': "l=" + str(a) + "cm", 'n': "d=?",  'o': "b=" + str(b) +"cm"}
                 parameter.update(werte)
-<<<<<<< HEAD
-=======
                 print(parameter)
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
             elif typ2 == 2:                                     # Sparrenlänge
                 frage = "l="
                 einheit = "m"
@@ -7176,10 +7173,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 ecken =  {'A': " ", 'B': " ", 'C': " ",}
                 parameter.update(ecken)
-<<<<<<< HEAD
-=======
                 print(parameter)
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
             else:                                               # Trapez
                 text = "Berechne die Seitenlänge (d) dieses gleichschenkligen Trapezes."
                 frage = "d="
@@ -7255,8 +7249,11 @@ def kategorien(req):
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
 
-def durchschnitt_aufgaben(profil, kategorie):
-    protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+def durchschnitt_aufgaben(profil, alle = False):
+    if alle:
+        protokoll = Protokoll.objects.filter(profil=profil)
+    else:
+        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
     zaehler = Zaehler.objects.filter(profil=profil)
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
@@ -7311,15 +7308,9 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
         woche_halbjahr = 0
         spaeter = 0
     if hj == 2:
-<<<<<<< HEAD
-        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter] + 1
-    else:
-        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter] + 1
-=======
         soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
     else:
         soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     if soll_hj > 1600:
         soll_hj = 1600
@@ -7400,9 +7391,10 @@ def uebersicht(req, schueler_id=0):
         else:
             aufgaben_pro_woche = 10 * profil.jg
             bewertung_anzeigen = False
-            profil.alle_zeigen = True
-            profil.save()
         alle_zeigen = profil.alle_zeigen
+        # form = UebersichtAlle()
+        # form.fields['auswahl'].choices = [('1', 'eins'), ('2', "Zwei")]
+        #form.as_p()
         protokoll = Protokoll.objects.filter(profil=profil)
         if alle_zeigen:
             form = UebersichtAlle
@@ -7421,7 +7413,11 @@ def uebersicht(req, schueler_id=0):
         else:
             form = UebersichtHalbjahr
             protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-        richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
+        if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
+            richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
+            #letzte = k['letzte']
+        else:
+            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
         alle = False
         if req.method == 'POST':
             alle = True
@@ -7439,10 +7435,9 @@ def uebersicht(req, schueler_id=0):
         bearbeitet = 0
         prozent_kat = 0
         breite = "breit"
-<<<<<<< HEAD
-=======
+        sj = profil.sj
+        hj = profil.hj
         gruppe = profil.gruppe
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
         prozent_summe = nicht_richtig_summe =  nicht_richtig_summe_quote = 0
         prozent_summe_farbe = nicht_richtig_summe_farbe = farbe_kat = None
         note = "-"
@@ -7452,11 +7447,13 @@ def uebersicht(req, schueler_id=0):
             details = profil.details
         except:
             details = True
-<<<<<<< HEAD
-=======
-
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(profil.sj, profil.hj, profil.jg, aufgaben_pro_woche, profil.user.date_joined)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+        # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
+        profil_gruppe = profil.gruppe
+        if profil_gruppe:
+            startdatum = profil.gruppe.erstellt_am
+        else:
+            startdatum = profil.user.date_joined
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
@@ -7486,55 +7483,41 @@ def uebersicht(req, schueler_id=0):
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
                         kat_farbe = "gelb"
-<<<<<<< HEAD
-=======
                     elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
                         kat_farbe = "gelb"
                     #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
-                    # falsch_kat = zaehler_kategorie.fehler_zaehler
-                    # abbr_kat = zaehler_kategorie.abbr_zaehler
-                    # lsg_kat = zaehler_kategorie.lsg_zaehler
-                    # hilfe_kat = zaehler_kategorie.hilfe_zaehler  
+                    falsch_kat = zaehler_kategorie.fehler_zaehler
+                    abbr_kat = zaehler_kategorie.abbr_zaehler
+                    lsg_kat = zaehler_kategorie.lsg_zaehler
+                    hilfe_kat = zaehler_kategorie.hilfe_zaehler  
                     # else:
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
-                    fehler_ab = zaehler_kategorie.fehler_ab
-                    protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
-                    protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
-                        protokoll_fehler
-                        .values("kategorie__zeile")
-                        .annotate(falsch_kat=Sum('falsch'))
-                        .annotate(abbr_kat=Sum('abbr'))
-                        .annotate(lsg_kat=Sum('lsg'))
-                        .annotate(hilfe_kat=Sum('hilfe'))
-                        ) 
-                    for f in protokoll_fehler:
-<<<<<<< HEAD
-                        falsch_kat = f['falsch_kat']
-                        falsch_gesamt += falsch_kat 
-                        abbr_kat = f['abbr_kat']
-                        abbr_gesamt += abbr_kat
-                        lsg_kat = f['lsg_kat'] 
-                        lsg_gesamt += lsg_kat
-                        hilfe_kat = f['hilfe_kat'] 
-                        hilfe_gesamt += hilfe_kat
-=======
-                        falsch_kat = f['falsch_kat'] 
-                        abbr_kat = f['abbr_kat']
-                        lsg_kat = f['lsg_kat'] 
-                        hilfe_kat = f['hilfe_kat'] 
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
-                        if abbr_kat == True:
-                            abbr_kat = 1
-                        elif abbr_kat == False:
-                            abbr_kat = 0 
-                        if lsg_kat == True:
-                            lsg_kat = 1
-                        elif lsg_kat == False:
-                            lsg_kat = 0 
-                        if hilfe_kat == True:
-                            hilfe_kat = 1
-                        elif hilfe_kat == False:
-                            hilfe_kat = 0 
+                    #     fehler_ab = zaehler_kategorie.fehler_ab
+                    #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
+                    #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+                    #         protokoll_fehler
+                    #         .values("kategorie__zeile")
+                    #         .annotate(falsch_kat=Sum('falsch'))
+                    #         .annotate(abbr_kat=Sum('abbr'))
+                    #         .annotate(lsg_kat=Sum('lsg'))
+                    #         .annotate(hilfe_kat=Sum('hilfe'))
+                    #         ) 
+                    #     for f in protokoll_fehler:
+                    #         falsch_kat = f['falsch_kat'] 
+                    #         abbr_kat = f['abbr_kat']
+                    #         lsg_kat = f['lsg_kat'] 
+                    #         hilfe_kat = f['hilfe_kat'] 
+                    #         if abbr_kat == True:
+                    #             abbr_kat = 1
+                    #         elif abbr_kat == False:
+                    #             abbr_kat = 0 
+                    #         if lsg_kat == True:
+                    #             lsg_kat = 1
+                    #         elif lsg_kat == False:
+                    #             lsg_kat = 0 
+                    #         if hilfe_kat == True:
+                    #             hilfe_kat = 1
+                    #         elif hilfe_kat == False:
+                    #             hilfe_kat = 0 
                     qfarbe = quote_farbe(richtig_kat, falsch_kat)
                     zeit_kat = k['zeit_sum']
                     try:
@@ -7656,9 +7639,12 @@ def uebersicht(req, schueler_id=0):
         context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, schueler_id = schueler_id, 
             zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle = alle,
-            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe="" if alle_zeigen else prozent_summe, note=note, 
-            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, 
-            bewertung = bewertung_anzeigen, form=form,)
+            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
+            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung = bewertung_anzeigen)
+        # try:
+        #     context["letzte"] = letzte.strftime("%d.%m.%y %H:%M")
+        # except:
+        #     pass
         if details:
             return render(req, 'core/uebersicht.html', context)
         else:
@@ -7713,6 +7699,7 @@ def protokoll(req, schueler_id=0):
             auswahl_liste = dict(choices)
             if auswahl.is_valid(): 
                 auswahl = auswahl.cleaned_data['auswahl']
+                print(auswahl)
                 protokoll = protokoll_zeit_filter(protokoll, auswahl)
                 wahl = auswahl_liste[auswahl]
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
@@ -7917,11 +7904,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
         else:
             eingabe=eingabe.replace("^2","²")
             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-<<<<<<< HEAD
-=======
-            print(lsg)
->>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
-            if lsg[-1] == 'indiv_2':                # hier wird der Wert eines Terms berechnet (für prozentrechnung, Quader, Satzgruppe des Pythagoras) 
+            if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
                 parser = Parser()
                 try:
                     zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
