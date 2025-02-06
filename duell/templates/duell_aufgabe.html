@@ -106,8 +106,29 @@
                     {% endfor %}
                 </div>
                 <h2> {{protokoll.titel }}</h2>
-                <h3>Aufg. Nr. {{protokoll.aufgnr}}/10 </h3> 
-                <h1>{{protokoll.text}} {{protokoll.aufgabe}}</h1>
+                <h3>Aufg. Nr. {{protokoll.aufgnr}}/10 </h3>
+                <h1>
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+                {% if "∛" in protokoll.frage %}
+                    Berechne &#8731;<span>&macr;&macr;&macr;&macr;</span><span style="margin-left: -2.3em; vertical-align: -0.1em;"> {{protokoll.text}}</span>
+=======
+                {% if protokoll.parameter.strich %}
+                    {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
+>>>>>>> Verbesserungen
+=======
+                {% if protokoll.parameter.strich %}
+                    {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
+>>>>>>> Fehler-bei-Schulwoche
+=======
+                {% if protokoll.parameter.strich %}
+                    {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+                {% else %}
+                    {{protokoll.text}}
+                {% endif %} 
+                </h1>             
             </div>
             <div class="mitte">
                 <p>
@@ -119,6 +140,7 @@
                 </p>
             </div>
             <div class="unten">
+                {{protokoll.anmerkung}}
                 <form action="{% url 'duell_kontrolle' %}" method="POST">
                     {% csrf_token %}
                     <fieldset>

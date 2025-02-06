@@ -1,7 +1,6 @@
-
 <svg xmlns="http://www.w3.org/2000/svg"
 version=1.1"
-<svg viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
+viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
 <defs>
     <g id="strecke">
         <line x1="{{parameter.x1}}" y1="{{parameter.y1}}" x2="{{parameter.x2}}" y2="{{parameter.y2}}" class="dick"/>
@@ -17,6 +16,14 @@ version=1.1"
         <rect x="65" y="20" width=15 height="15" style="stroke:black;stroke-width:0.5;fill:yellow"/>	
     </symbol>         
 
+    <symbol id="quadrat2" >
+        <rect x="65" y="20" width=30 height="30" style="stroke:black;stroke-width:0.5;fill:yellow"/>	
+    </symbol>  
+
+    <symbol id="quadrat3" >
+        <rect x="65" y="20" width=20 height="20" style="stroke:black;stroke-width:0.5;fill:lightskyblue"/>	
+    </symbol>  
+
     <g id="kreuz">
         <line x1="0" y1="-5" x2="10" y2="5"  class="dick" />
         <line x1="0" y1="5" x2="10" y2="-5"  class="dick"" />
@@ -26,6 +33,19 @@ version=1.1"
         <polygon points="0,26 20,26, 20,6, 0,6" style="fill: yellow;"/>
         <polygon points="0,6 20,6 26,0 6,0" style="fill: blue;"/>
         <polygon points="20,26 26,20 26,0 20,6" style="fill: red;"/>
+    </g>
+
+    <g id="wuerfelchen2" style="stroke: black; stroke-width: 1; fill: grey; fill-opacity: 0.7;">
+        <polygon points="0,26 20,26, 20,6, 0,6"/>
+        <polygon points="0,6 20,6 26,0 6,0"/>
+        <polygon points="20,26 26,20 26,0 20,6"/>
+    </g>
+
+
+    <g id="wuerfelchen3">
+        <polygon points="0,26 20,26, 20,6, 0,6" style="stroke: black; stroke-width: 1; fill:lightskyblue"/>
+        <polygon points="0,6 20,6 26,0 6,0"style="stroke: black; stroke-width: 1; fill: #C0FFFF"/>
+        <polygon points="20,26 26,20 26,0 20,6" style="stroke: black; stroke-width: 1; fill: #D0FFFF"/> 
     </g>
 
     <g id="wuerfel"">
@@ -105,38 +125,6 @@ version=1.1"
 
 {% elif parameter.object == "strecke" %}
     <use href="#strecke"/>
-
-{% elif parameter.object == "dreieck" %} 
-    {% if parameter.winkel == "C" %} 
-        <use href="#dreieck" transform="rotate({{parameter.rotate}} 100 100)"/>    
-    {% else %}
-        <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  class="blau"/>
-        {% if parameter.winkel != "" %}        
-            {% if parameter.winkel == "A" %}
-                <path d="
-                M{{parameter.x1}} {{parameter.y1|add:-40}}
-                A40 40 0 0 1  {{parameter.x1|add:40}} {{parameter.y1}}
-                "    
-                fill="none"
-                stroke="black"/>
-                <circle cx="{{parameter.x1|add:15}}" cy="{{parameter.y1|add:-15}}" r="2" />
-            {% elif parameter.winkel == "B" %}
-                <path d="
-                M{{parameter.x2}} {{parameter.y1|add:-40}}
-                A40 40 0 0 0  {{parameter.x2|add:-40}} {{parameter.y1}}
-                "    
-                fill="none"
-                stroke="black"/>
-                <circle cx="{{parameter.x2|add:-15}}" cy="{{parameter.y1|add:-15}}" r="2" />
-            {% endif %}
-        {% endif %}         
-        {%for x, y, txt in parameter.ecken %}
-            <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text>
-        {%endfor%}
-        {%for x, y, txt in parameter.seiten %}
-            <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text> 
-        {%endfor%}
-    {% endif %}
 
 {% elif parameter.object == "viereck" %}
         <polygon class="blau" points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}} {{parameter.x4}},{{parameter.y4}}" />
@@ -218,7 +206,6 @@ version=1.1"
 
     <line x1="{{parameter.x23}}" y1="{{parameter.y23}}" x2="{{parameter.x22|add:30}}" y2="{{parameter.y23}}"  stroke = "black" stroke-dasharray="10,2"/>
     <line x1="{{parameter.x22}}" y1="{{parameter.y22}}" x2="{{parameter.x22|add:30}}" y2="{{parameter.y22}}"  stroke = "black" stroke-dasharray="10,2"/>
-  
 
 {% elif parameter.object == "raum" %}
     {% for x, y in parameter.schieb %}
@@ -229,6 +216,31 @@ version=1.1"
     {% for x, y in parameter.schieb %}
         <use href="#wuerfel" transform="translate({{x}},{{y}})"/>
     {% endfor %}
-{% endif %}
 
+{% elif parameter.object == "kubik" %}
+    {% for x in parameter.schieb %}
+        <use href="#wuerfelchen2" transform="translate({{x|add:100}})"/>
+    {% endfor %}
+
+{% elif parameter.object == "quadrate" %}
+    {% for x in parameter.schieb %}
+        <use href="#quadrat2" transform="translate({{x|add:60}})"/>
+    {% endfor %}
+{% elif parameter.object == "umfang" %}
+<<<<<<< HEAD
+    <rect x="150" y="20" width=50 height="50" style="stroke:black; stroke-width:0.5; fill:lightskyblue"/>
+    	
+=======
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+    <rect x="150" y="20" width=50 height="50" style="stroke:black; stroke-width:0.5; fill:lightskyblue"/>	
+{% elif parameter.object == "netz" %}
+    <use href="#wuerfelchen3" transform="translate(70,14)"/>
+    <use href="#quadrat3" transform="translate(70)"/>
+    <use href="#quadrat3" transform="translate(90)"/>
+    <use href="#quadrat3" transform="translate(110)"/>
+    <use href="#quadrat3" transform="translate(130)"/>
+    <use href="#quadrat3" transform="translate(90, 20)"/>
+    <use href="#quadrat3" transform="translate(90, -20)"/>
+{% endif %}
+    
 </svg>

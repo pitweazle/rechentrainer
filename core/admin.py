@@ -14,6 +14,7 @@ class KategorieAdmin(admin.ModelAdmin):
     inlines = [AuswahlInline]
     
 class ZaehlerAdmin(admin.ModelAdmin):
+    readonly_fields = ["fehler_ab"]
     search_fields = ['profil__vorname', 'profil__nachname']
     list_filter=("profil","kategorie",)
     ordering = ["-id", "profil__vorname", "kategorie__zeile"]

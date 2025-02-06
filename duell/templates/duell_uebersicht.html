@@ -11,7 +11,19 @@
 
 <header>
     <div class="navbar">
-        <a href="{% url 'index' %}">&#8962 Home</a>
+        {% if tduell %}
+            <a href="{% url 'duell' %}">&#8962 Home</a>
+        {% else %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        {% endif %}
+<<<<<<< HEAD
+=======
+        {% if duell %}
+            <a href="{% url 'duell' %}">&#8962 Home</a>
+        {% else %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        {% endif %}
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
         <a>Rechenduell {{gruppe}}</a>
         <a href="{% url 'duell_how_to' %}">Wie funktioniert das Duell?</a>
         <a href="{% url 'duell_protokoll'  %}">Protokoll</a>

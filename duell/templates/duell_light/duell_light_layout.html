@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="de">
+<head> 
+    <head>       
+        <title>Rechenduell im Web</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'duell/duell_uebersicht.css' %}">
+
+        {% comment %} <link rel="stylesheet" href="{% static 'auswahl.css' %}"> {% endcomment %}
+    </head>
+</head>
+
+<header>
+    <div class="navbar">
+        <a href="{% url 'duell' %}">&#8962 Home</a>
+
+        <div class="dropdown">
+            <button class="dropbtn"> 
+                {% if user.is_authenticated %}
+                    Hallo {{ user.username }}
+                {% endif %}
+            </button>
+            {% if user.is_authenticated %}
+                <div class="dropdown-content">
+                    <a href="{% url 'password_reset' %}">Passwort ändern</a>
+                    <a href="{% url 'profil' %}">mein Profil</a>
+                    <form method="post" action="{% url 'duell_light_abmelden' %}">
+                        {% csrf_token %}
+                        <a><input type="submit"  value= "abmelden"></a>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="dropdown">
+            <button class="dropbtn" style = "right: 10px; position: absolute;"> 
+                Kontakt und Impressum
+            </button>
+            <div class="dropdown-content">
+                <p>Den Rechentrainer habe ich (fast) ganz alleine programmiert
+                <br>und auch für diese Seite bin ich zuständig:
+                <br><b>Peter Doll</b>
+                <br>64572 Büttelborn
+                <br>Gartenstr. 61
+                <br>Tel.: 06152 9774291
+                <br>info&#64rechentrainer.app</p>
+            </div>
+        </div>         
+    </div> 
+</header>
+
+{% block content %}
+
+{% endblock %}
+
+<footer>
+    <div class="footer">
+      <div class="navbar">
+          <a href="{% url 'datenschutz' %}">Datenschutz</a>
+          <a href="{% url 'zum_rechentrainer' %}">zum Rechentrainer</a>
+          <a href="{% url 'weitere_projekte' %}">weitere Projekte</a>
+      </div>
+    </div>
+</footer>
+
+</html>

@@ -54,7 +54,6 @@
                 </form>
             </tr>
         </table>
-
         {% if schueler.schule %}
             <h4>Hier kannst du deine Lerngruppe oder deine Schule und den Schulort wechseln:</h4>
         {%else%}
@@ -66,17 +65,6 @@
             {{ort}} 
             <button type="submit">auswählen</button>
         </form>
-
-        <!--
-        <h4>Hier kannst du dich in einer zweite Lerngruppe anmelden:</h4>
-        <p>Suche hier zunächst deinen Schulort:</p>
-        <form action="/profil/" method="POST">
-            {% csrf_token %} 
-            {{ort}} 
-            <button type="submit">auswählen</button>
-        </form>
-        -->
-
     </body>
 {% endblock %}
 
