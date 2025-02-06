@@ -507,9 +507,7 @@ def gruppe_uebersicht(req, gruppe_id):
             wahl = auswahl_liste[auswahl]
     else:
         wahl = "aktuelles Halbjahr"
-<<<<<<< HEAD
         protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
-=======
         protokoll = protokoll.filter(sj=sj, hj=hj)
     #startdatum = gruppe.erstellt_am
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
