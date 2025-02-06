@@ -15,13 +15,13 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
-from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu
+from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, UebersichtHalbjahr, UebersichtAlle
 
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
 from django.db.models import Sum, F,  Max
-from accounts.views import name_hj, name_next_hj,  quote_farbe
+from accounts.views import name_hj, name_next_hj, quote_farbe, hj_pruefen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def format_zahl(wert, stellen=2, trailing_zeros=True):
@@ -120,7 +120,7 @@ def subtrahieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
                     if random.random()<0.3:
                         if kleingeld%10 in (1, 4, 9):
                             kleingeld += 1
-                            anmerkung = "Achtung du hattest keine 1ct Münzen mehr!"
+                            anmerkung = "Achtung du hattest keine 1ct Münzen mehr."
                 if art == "Schein":
                     typ2 = 1
                     text = text + " und {}ct in Münzen".format(kleingeld) 
@@ -379,7 +379,7 @@ def sachaufgaben(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
         return typ_anf, typ_end
     elif eingabe != "":
         if typ == 21 and int(eingabe) == int(lsg[1]):
-            return -1, "Das ist ein Pfosten zu wenig! Zeichne doch mal eine Skizze!"
+            return -1, "Das ist ein Pfosten zu wenig. Zeichne doch mal eine Skizze."
         else:
             return -1, "" 
     else:
@@ -480,7 +480,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         return typ_anf, typ_end
     elif eingabe != "":
         if typ ==10 and not "/" in eingabe:
-            return 0, "Du sollst den angezeigten Wert als Bruch eingeben!"
+            return 0, "Du sollst den angezeigten Wert als Bruch eingeben."
         else:
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
@@ -728,8 +728,7 @@ def malget10(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         if typ == 1 or typ == 2 or typ == 4 or typ == 5 or typ == 6:    #Multiplikation: typ 1,2, 4, 5, 6
             text = "Multipliziere:<br> {} {} {}="
             variable = [str(zahl1).replace(".", ","), chr(8901), str(zahl2).replace(".", ","), exp]
-            erg = zahl1 * zahl2
-            lsg = str(int(erg))
+            erg = round(zahl1 * zahl2,6)
             if typ < 5:
                 titel = "Mal: 10, 100, 1000"
             else:
@@ -737,12 +736,14 @@ def malget10(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         else:                                           #Division: typ 3, 6, 7 , 8, 9
             text = "Dividiere:<br> {} {} {}="
             variable = [str(zahl1).replace(".", ","), ":", str(zahl2).replace(".", ","), exp]
-            erg = zahl1 / zahl2
-            lsg = str(round(erg,5)).replace(".", ",").rstrip(",")
+            erg = round(zahl1 / zahl2,6)
             if typ == 3 or typ == 7:
                 titel = "Geteilt durch: 10, 100, 1000"
             else:
-                titel = "Geteilt durch: 0,1; 0,01" 
+                titel = "Geteilt durch: 0,1; 0,01"
+        if erg%1 == 0:
+            erg = int(erg)
+        lsg = str(erg).replace(".", ",")#.rstrip(",") 
         return typ, typ2, titel, text, "", "{}{}{}", variable, "", "", [lsg], hilfe_id, erg, {'name':'normal'}
 
 def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -758,7 +759,7 @@ def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             erg = loe.replace(",",".")
             eing = eingabe.replace(",",".")
             if float(erg) == float(eing):
-                meldung = "Leider falsch! Richtig wäre: " + (erg) + "- Deine Eingabe: " + eing + "<br>Du darfst die Null am Ende nicht weglassen - <br>Die Zahl muss genau {0} Stellen hinter dem Komma haben".format(len(erg)-erg.find("."))
+                meldung = "Leider falsch. Richtig wäre: " + (erg) + "- Deine Eingabe: " + eing + "<br>Du darfst die Null am Ende nicht weglassen - <br>Die Zahl muss genau {0} Stellen hinter dem Komma haben".format(len(erg)-erg.find("."))
                 return -1, meldung.replace(".", ",")
         else:
             return 0, "" 
@@ -857,7 +858,7 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             frage = "Das Ergebnis heißt:"
             variable = [operation_liste[typ2], ", ".join(ergebnis_liste), operation_liste[typ2], name_liste[typ2]]
             erg = None
-            anmerkung = "Achte auf die korrekte Schreibweise!"
+            anmerkung = "Achte auf die korrekte Schreibweise."
             lsg = ergebnis_liste[typ2]
             random.shuffle(ergebnis_liste)
             hilfe_id = 2
@@ -1263,7 +1264,7 @@ def sub_dreiecke(typ):
             y1 = y2 = y0 + hoehe
             y3 = y0    
         text = "Wie nennt man so ein " + pro_text
-        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise!"
+        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
         hilfe_id = 100
         frage = "So ein Dreieck heißt:"
         einheit = "Dreieck"
@@ -1312,7 +1313,7 @@ def sub_dreiecke(typ):
     ykoo = [y1, y2, y3, y1]
     seiten_x = [-2,10,-20,0]                         #schieb Benennung in x
     seiten_y = [20,0,0,10]                           #schieb Benennung in y
-    parameter = {'name': 'svg/geometrie.svg', 'object': 'dreieck', 'winkel': winkel, 'rotate': rotate, 'box_hoehe': box_hoehe, 'box_breite': box_breite, 'breite': breite,
+    parameter = {'name': 'svg/dreiecke.svg', 'object': 'dreieck', 'winkel': winkel, 'rotate': rotate, 'box_hoehe': box_hoehe, 'box_breite': box_breite, 'breite': breite,
         'x1':x1, 'y1':y1,'x2':x2, 'y2':y2,'x3':x3, 'y3':y3,
         'ecken': [
             (xkoo[n]+ecken_x[n], ykoo[n]+ecken_y[n], ecken[n]) for n in (range(0,3))
@@ -1451,7 +1452,7 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
             x3 = x0 + rx_o  
         parameter_2 = {'name': 'svg/geometrie.svg', 'box_hoehe': box_hoehe, 'box_breite': box_breite,                 
             'rx_u': rx_u, 'ry_u': ry_u, 'x1': x1,'x2': x2, 'y1': y1, 'rx_o': rx_o, 'ry_o': ry_o, 'x3': x3,'x4': x4, 'y2': y2, 'x0': x0 }    
-        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise!"
+        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
     lsg = lsg + ["indiv_0"]                                                 #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
     parameter.update(parameter_2)
     return typ2,  hilfe_id, anmerkung, lsg, parameter    
@@ -1485,9 +1486,9 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
 
 def sub_punkt_pruefen(eingabe, loesung):
     if "(" not in eingabe or not ")" in eingabe:
-            return 0, "Du musst die Koordinaten in Klammern eingeben!"
+            return 0, "Du musst die Koordinaten in Klammern eingeben."
     elif not (";" in eingabe or "|" in eingabe) :
-        return 0, "Du musst die Koordinaten mit ';' trennen!"        
+        return 0, "Du musst die Koordinaten mit ';' trennen."        
     else:
         eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
         if ";" in eingabe:
@@ -1518,7 +1519,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
             return richtig, meldung
         elif typ == 8:
-            print("eingabe: ", eingabe)
             if not eingabe.isdigit():
                 return 0, "Du sollst nicht Buchstaben angeben, sondern eine Zahl."
         elif typ == 10:
@@ -1554,6 +1554,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
+        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -1680,7 +1681,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     x2 = 400-x 
                     anmerkung = "(Sie hat <u>keinen</u> Anfang und ein Ende)"                 
                 parameter = {'object': 'strecke',"ende" : ende, 'x1': x1, 'y1': 100, 'x2': x2, 'y2': 100} 
-            anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise!"
+            anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
             parameter_2 = {'name': 'svg/geometrie.svg', 'box_hoehe':box_hoehe, 'box_breite':box_breite}
             parameter.update(parameter_2)
             lsg = lsg + ["indiv_0"] 
@@ -1689,7 +1690,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             hilfe_id = 30
             titel = "Grundformen der Geometrie"
             text = "Wie heißt dieses Viereck?"
-            anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise!"
+            anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
             typ2, anmerkung, lsg, parameter = sub_figuren()
         elif typ == 4:                                                              #A und u zusammengestzte Figuren
             titel = "Umfang und Fläche"  
@@ -1774,7 +1775,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             soll = anzahl_breite * anzahl_tiefe * anzahl_hoehe
             erg = soll - len(schieb_positionen)
             lsg = [str(erg)]
-                
             parameter = {'name': 'svg/geometrie.svg', 'object': 'raum',
                 'box_hoehe' : anzahl_hoehe * 20 + anzahl_tiefe * 8,
                 'box_breite' : 300,             
@@ -2008,7 +2008,7 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
     elif eingabe != "":                                                              #hier werden die Eingaben überprüft wenn "iniv" in den Lösungen steht
         if typ == 0:  
             if ":" not in eingabe:
-                return 0, "Du musst die Stunden und Minuten mit einem Doppelpunkt trennen!"
+                return 0, "Du musst die Stunden und Minuten mit einem Doppelpunkt trennen."
             return 0, "" 
         if typ == 5:
             if eingabe.upper() == lsg[0].upper():
@@ -2039,7 +2039,7 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             kleiner = -2                                    #zwei Stelle größer 
         if abs(kleiner) > 1:
             zahl1 = random.randint(1,20)
-            if typ not in (3,4):                                    # Sprünge über eine Einheit nur bei Längen!
+            if typ not in (3,4):                                    # Sprünge über eine Einheit nur bei Längen
                kleiner = int(kleiner/2)
         else:
             zahl1 = random.randint(1,50)
@@ -2214,7 +2214,7 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                     gegeben = "m"
                     gegeben_name = "Meter"
             if abs(kleiner) > 1:
-                anmerkung = "Achtung: Zwischen {0} und {1} liegt noch die Einheit {2}!".format(gegeben, einheit,einheiten_liste[typ3-int(kleiner/2)])
+                anmerkung = "Achtung: Zwischen {0} und {1} liegt noch die Einheit {2}.".format(gegeben, einheit,einheiten_liste[typ3-int(kleiner/2)])
             if umwandlung < 10:                             #bei Zeit bleibt der Faktor
                 faktor = 10**(abs(umwandlung))              #ergänzt entsprechende Nullen
             else:
@@ -2284,7 +2284,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         loesung = (lsg[0])
         if typ == 1 or (typ >2 and typ < 8):
             if ("m") not in eingabe:
-                return 0, "Du hast die Einheit vergessen!"
+                return 0, "Du hast die Einheit vergessen."
             loesung_getrennt=loesung.split()
             x_liste = ["c","d","m"]
             for x in x_liste:
@@ -2294,7 +2294,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                     break
             try:
                 if float(eingabe_getrennt[0]) == float(loesung_getrennt[0]):
-                    return 0.5, "<br>Die Zahl stimmt, die Einheit aber nicht - das ergibt einen halben Punkt Abzug! Richtig wäre: " + loesung_getrennt[1]
+                    return 0.5, "<br>Die Zahl stimmt, die Einheit aber nicht - das ergibt einen halben Punkt Abzug. Richtig wäre: " + loesung_getrennt[1]
             except:
                 return -1, ""
         if typ == 2 :                                                               #Groß- Kleinschreibung
@@ -2858,7 +2858,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 anmerkung = "Diesen Winkel solltest du kennen und genau angeben."
                 lsg = [str(erg)]   
             else:
-                anmerkung = "Du sollst schätzen und nicht messen!<br>Gewertet wird eine Abweichung von ± 5°."
+                anmerkung = "Du sollst schätzen und nicht messen.<br>Gewertet wird eine Abweichung von ± 5°."
                 lsg = [str(erg),"indiv_0"] 
             hilfe_id = 11
         elif typ == 3:                                                  # Winkelarten
@@ -3307,21 +3307,21 @@ def kuerzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                     if int(eingabe == int(lsg[1])):
                         return 1, ""
                     else:
-                        return 0, "Das richtige Ergebnis ist eine ganze Zahl!"
+                        return 0, "Das richtige Ergebnis ist eine ganze Zahl."
                 else:
                     wert = parser.evaluate(lsg[1],{})
                     if wert > 1:
                         eingabe = eingabe.strip().replace("  "," ").replace(" ","+")
                     if round(wert,6) == round(parser.evaluate(eingabe,{}),6): 
                         if wert > 0 and lsg[1].split("/")[-1] == eingabe.split("/")[-1]:   
-                            return 0, "das ist ein unechter Bruch - den sollst du in eine gemischte Zahl umwandeln!"
+                            return 0, "das ist ein unechter Bruch - den sollst du in eine gemischte Zahl umwandeln."
                         else:
                             return 0, "hier kann man noch weiter kürzen"
             except:
                 return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
         elif typ > 1:
             if int(lsg[0])%eingabe == 0:
-                return 0, "Das ist zwar ein gemeinsamer Teiler aber nicht der größte!"
+                return 0, "Das ist zwar ein gemeinsamer Teiler aber nicht der größte."
         return -1, ""
     else:                                                                            
         titel = "Kürzen"
@@ -3379,8 +3379,8 @@ def kuerzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             while zaehler >= nenner:
                 nenner = random.choice(faktor)*teiler*10**exp
                 zaehler = random.choice(faktor)*teiler*10**exp
-            bruch = Fraction(zaehler/nenner).limit_denominator()                    # gekürzter Bruch!
-            text = "Kürze den Bruch {}/{} so weit wie möglich!"
+            bruch = Fraction(zaehler/nenner).limit_denominator()                    # gekürzter Bruch
+            text = "Kürze den Bruch {}/{} so weit wie möglich."
             pro_text = frage = "{}/{}≈"
             anmerkung = "Hier solltest du die Teilbarkeitsregeln anwenden"
             if teiler == 3 or teiler == 9:
@@ -3389,7 +3389,7 @@ def kuerzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             pro_text = frage = "{}/{}≈"
             lsg = [str(bruch),str(bruch),"indiv_0"]
         else:                                                                       # das habe ich größtenteils aus dem Rechentrainer.1 übernommen:
-            text = "Kürze den Bruch {}/{} so weit wie möglich und wandele unechte Brueche in gemischte Zahlen um!"
+            text = "Kürze den Bruch {}/{} so weit wie möglich und wandele unechte Brueche in gemischte Zahlen um."
             pro_text = frage = "{}/{}≈"
             erg = None
             term_a, term_b = gemischte_zahl(zaehler, nenner)
@@ -3421,7 +3421,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 if int(eingabe == int(lsg[1])):
                     return 1, ""
                 else:
-                    return 0, "Das richtige Ergebnis ist eine ganze Zahl!"
+                    return 0, "Das richtige Ergebnis ist eine ganze Zahl."
             else:
                 if "/" not in eingabe:
                     return 0, "Du musst einen Bruch mit dem '/' Zeichen eingeben" 
@@ -3432,7 +3432,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                         if wert > 1:
                             eingabe = eingabe.strip().replace("  "," ").replace(" ","+")
                             if wert > 0 and lsg[1].split("/")[-1] == eingabe.split("/")[-1]:   
-                                return 0, "das ist ein unechter Bruch - den sollst du in eine gemischte Zahl umwandeln!"
+                                return 0, "das ist ein unechter Bruch - den sollst du in eine gemischte Zahl umwandeln."
                         if round(wert,6) == round(parser.evaluate(eingabe,{}),6):
                             return 0, "hier kann man noch weiter kürzen"
                     except:
@@ -3442,7 +3442,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
             if round(eingabe,4) == round(Decimal(lsg[0]),4):
                 return 1, ""
             elif round(eingabe,3) == round(Decimal(lsg[0]),3):
-                return 0, "Du sollst auf 4 Stellen runden!"
+                return 0, "Du sollst auf 4 Stellen runden."
         elif typ >= 7:                                                                          # Komma in Bruch
             parser = Parser()
             try:
@@ -3518,7 +3518,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
             erg = wert
             lsg = [str(wert)] 
         elif typ <= 6:                                                                          # Bruch in Kommazahl
-            text = "Wandle den Bruch {}/{} in eine Dezimalzahl um!"
+            text = "Wandle den Bruch {}/{} in eine Dezimalzahl um."
             pro_text = frage = "{}/{}≙"
             if nenner == 3:
                 anmerkung = "(Runde bei periodischen Zahlen auf 4 Stellen nach dem Komma)"
@@ -3530,7 +3530,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
             else:
                 hilfe_id = 42
         else:                                                                                   # Kommazahl in Bruch
-            text = "Wandle die Dezimalzahl {} in einen gekürzten Bruch um!"
+            text = "Wandle die Dezimalzahl {} in einen gekürzten Bruch um."
             pro_text = frage = "{}≙"
             if Zaehler == 1:
                 hilfe_id = 41
@@ -3544,7 +3544,7 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
             else:
                 kommazahl = str(zaehler/nenner).replace(".",",")
             variable = [kommazahl]
-            bruch = Fraction(zaehler/nenner).limit_denominator()                    #gekürzter Bruch!
+            bruch = Fraction(zaehler/nenner).limit_denominator()                    #gekürzter Bruch
             lsg = [str(bruch),"indiv_0"]
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
 
@@ -3595,7 +3595,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     if "/" not in lsg[0]:
                         if eingabe == lsg[0]:
                             if typ2 <=6:
-                                return 1.5, "<br>Für die Umwandlung in eine ganze Zahl gibt es einen halben Extrapunkt!"
+                                return 1.5, "<br>Für die Umwandlung in eine ganze Zahl gibt es einen halben Extrapunkt."
                             else:
                                 return 1, ""
                         else:
@@ -3604,13 +3604,13 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                         if wert > 1:
                             if eingabe ==lsg[2] in eingabe:
                                 if typ2 <= 6: 
-                                    return 1.5, "<br>Für die Umwandlung in eine gemischte Zahl gibt es einen halben Extrapunkt!"
+                                    return 1.5, "<br>Für die Umwandlung in eine gemischte Zahl gibt es einen halben Extrapunkt."
                                 else:
                                     return 1, ""                            
                             else:
                                 return 1, "<br>Das ist ein unechter Bruch - den hättest du in eine gemischte Zahl umwandeln können: " + eingabe + "="  + lsg[0]
                         elif eingabe == lsg[0] and lsg[0] != lsg[1]:
-                                return 1.5, "<br>Fürs Kürzen gibt es einen halben Extrapunkt!"
+                                return 1.5, "<br>Fürs Kürzen gibt es einen halben Extrapunkt."
                         else:
                             if lsg[0] == eingabe: 
                                 return 1, ""
@@ -3633,7 +3633,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
         erg = None 
         parser = Parser()
         if typ <= 2:
-            anmerkung="Wenn du nicht weißt, wie man das rechnet, solltest du mal auf 'Hilfe' klicken!<br>" + anmerkung
+            anmerkung="Wenn du nicht weißt, wie man das rechnet, solltest du mal auf 'Hilfe' klicken.<br>" + anmerkung
             ganz = ""
             if stufe%2 == 1:
                 kgv_max = 30
@@ -3699,13 +3699,13 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                 else:
                     if nenner_1 == kgv:
                         hilfe_id = 34
-                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - also musst du den zweiten Bruch mit {6} erweitern.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust!"
+                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - also musst du den zweiten Bruch mit {6} erweitern.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust."
                     elif nenner_2 == kgv:
                         hilfe_id = 35
-                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - also musst du den ersten Bruch mit {5} erweitern.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust!"
+                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - also musst du den ersten Bruch mit {5} erweitern.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust."
                     else:    
                         hilfe_id = 36
-                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - den ersten Bruch musst du also mit {5} erweitern, den zweiten mit {6}.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust!"
+                        hilfe = "Wenn die Brüche nicht den gleichen Nenner haben, musst du sie zunächst gleichnamig machen.<br>Der gemeinsame Nenner heisst hier {4} - den ersten Bruch musst du also mit {5} erweitern, den zweiten mit {6}.<br>Vielleicht verstehst du das besser, wenn du dir das Bild nochmal anschaust."
                     koordinaten.update(sub_segment(center_x, center_y, radius, 360/kgv, 3))
                     parameter['winkel3'] = zaehler_faerben(kgv, 0, "LightSkyBlue")
             parameter.update(koordinaten)
@@ -3740,7 +3740,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     ganz = "1 "
                     bruch_lsg = Fraction((zaehler_1+nenner+zaehler_2)/nenner).limit_denominator()
                     ungekuerzt = str(zaehler_1+zaehler_2+nenner)+"/"+str(nenner)
-                    anmerkung="(Achtung beim ersten Term handelt es sich um eine gemischte Zahl!)"   
+                    anmerkung="(Achtung beim ersten Term handelt es sich um eine gemischte Zahl.)"   
                 else:
                     ganz = ""
                     bruch_lsg = Fraction(zaehler_1/nenner+zaehler_2/nenner).limit_denominator()
@@ -3751,7 +3751,7 @@ def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ =
                     ganz = "1 "
                     bruch_lsg = Fraction((zaehler_1+nenner-zaehler_2)/nenner).limit_denominator()
                     ungekuerzt = str(zaehler_1-zaehler_2+nenner)+"/"+str(nenner)
-                    anmerkung="(Achtung beim ersten Term handelt es sich um eine gemischte Zahl!)"   
+                    anmerkung="(Achtung beim ersten Term handelt es sich um eine gemischte Zahl.)"   
                 else:
                     ganz = ""
                     bruch_lsg = Fraction((zaehler_1-zaehler_2)/nenner).limit_denominator()
@@ -3863,7 +3863,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 else:
                     hilfe_id = 12
                 lsg = [str(erg)+einheit]
-            text = "Berechne {4} eines Quaders mit<br>a={0}{3}, b={1}{3} und c={2}{3}!"
+            text = "Berechne {4} eines Quaders mit<br>a={0}{3}, b={1}{3} und c={2}{3}."
             pro_text = "{5} Quader {0}·{1}·{2}"
             frage = "{5}="
             variable = [a, b, c, einheit_frage, gesucht, zeichen]
@@ -3896,7 +3896,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     hilfe_id = -11
                 else:
                     hilfe_id = -12
-            text = "Berechne {4} dieses Quaders!"
+            text = "Berechne {4} dieses Quaders."
             pro_text = "{} Quader {}·{}·{}"
             variable = [frage,a,b,c,gesucht]
             einheit = "mm³"
@@ -3925,7 +3925,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     einheit_lsg = einheit + "³"
                 else:
                     hilfe_id = 42
-            text = "Berechne {2} eines Würfels mit einer Kantenlänge von {0}{1}!"
+            text = "Berechne {2} eines Würfels mit einer Kantenlänge von {0}{1}."
             pro_text = "{3} Würfel a={0}{1}"
             frage = "{3}="
             variable = [a, einheit_frage, gesucht, zeichen]
@@ -3961,7 +3961,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             mantel = oberflaeche[zaehler]
             variable = [len(schieb_positionen)]
             if typ == 7:                                                            # Volumen
-                text = "Jedes dieser Würfelchen hat eine Kantenlänge von 1cm.<br>Berechne das Volumen dieses zusammengesetzten Körpers!"
+                text = "Jedes dieser Würfelchen hat eine Kantenlänge von 1cm.<br>Berechne das Volumen dieses zusammengesetzten Körpers."
                 pro_text = "V von {} Würfelchen"
                 frage = "V="
                 einheit = "cm³"
@@ -3969,7 +3969,7 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 erg = len(schieb_positionen)
                 lsg = [str(erg)]
             else:                                                                   # Oberfläche
-                text = "Jedes dieser Würfelchen hat eine Kantenlänge von 1cm.<br>Berechne <b>die Oberfläche</b> dieses zusammengesetzten Körpers!"
+                text = "Jedes dieser Würfelchen hat eine Kantenlänge von 1cm.<br>Berechne <b>die Oberfläche</b> dieses zusammengesetzten Körpers."
                 pro_text = "O von {} Würfelchen"
                 anmerkung = "Du kannst anstelle des Ergebnisses auch deine Rechnung (wie in einem Taschenrechner) eingeben."
                 einheit = "cm²"
@@ -4003,26 +4003,26 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 hoehe_text = round((hoehe/10),1)
                 typ2 = random.randint(1,2)
                 if typ2 == 1:                                                        # Oberfläche
-                    text = "Berechne die Oberfläche dieses Prismas - die Grundfläche ist ein <b>gleichseitiges</b> Dreieck!"
+                    text = "Berechne die Oberfläche dieses Prismas - die Grundfläche ist ein <b>gleichseitiges</b> Dreieck."
                     pro_text = "O Prisma "
                     frage = "O="
                     anmerkung = "Du sollst beim Rechentrainer keinen Taschenrechner benutzen.<br>Da du diese Rechnung nicht im Kopf ausrechnen kannst, kannst du hier einfach die Rechnung eintippen, wie du sie auch in einen Taschenrechner eintippen würdest."
                     wert = 3*breite_u_text*tiefe_text+breite_u_text*hoehe_text
                     term = "((3 * " + str(breite_u_text)+") * " + str(tiefe_text) + ") + (" + str(breite_u_text) + " * " + str(hoehe_text) + ")"
                 else:                                                               # Mantelfläche
-                    text = "Berechne die <b>Mantelfläche</b> dieses Prismas - die Grundfläche ist ein <b>gleichseitiges</b> Dreieck!"
+                    text = "Berechne die <b>Mantelfläche</b> dieses Prismas - die Grundfläche ist ein <b>gleichseitiges</b> Dreieck."
                     pro_text = "M Prisma "
                     frage = "M="
                     if stufe%2 == 1:
                         hilfe_id = 1
                     else:
                         hilfe_id = 2
-                        hilfe = "Mantelfläche = Umfang mal Körperhöhe (nicht Höhe des Dreiecks!)<br>M = u · k = (3 · 16)  · 20"                         
+                        hilfe = "Mantelfläche = Umfang mal Körperhöhe (nicht Höhe des Dreiecks.)<br>M = u · k = (3 · 16)  · 20"                         
                     wert = 3*breite_u_text*tiefe_text
                     term = "(3 * " + str(breite_u_text)+") * " + str(tiefe_text)
                 lsg = [term + "=" + str(round(wert,1)), round(wert,1), "indiv_2"]            
             else:
-                text = "Berechne das Volumen dieses Prismas!"
+                text = "Berechne das Volumen dieses Prismas."
                 frage = "V="
                 einheit = "cm³"
                 hoehe = random.randint(5,6)*20
@@ -4231,7 +4231,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             wert = int((lsg[1])*100)
             if abs(wert-int(eingabe)) < 5: 
                 if wert in (25,50,75):
-                    return -1, "Den Wert will ich genau wissen!"
+                    return -1, "Den Wert will ich genau wissen."
                 else:
                     return 1, " Genauer wäre " + str(int(lsg[1]*100)) + "%" 
             else:
@@ -4260,7 +4260,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             eing = eingabe.replace(",",".")
             try: 
                 if float(eing) == float(loe):
-                    return 1, "<br><b>Aber:</b> Du sollst das Ergebnis nicht ausrechnen, sondern den Lösungsweg eintippen!<br><b>Du sollst beim Rechentrainer auch keinen Taschenrechner benutzen!</b>"
+                    return 1, "<br><b>Aber:</b> Du sollst das Ergebnis nicht ausrechnen, sondern den Lösungsweg eintippen.<br><b>Du sollst beim Rechentrainer auch keinen Taschenrechner benutzen.</b>"
                 else:
                     return -1, "" 
             except:
@@ -4270,7 +4270,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
         typ2 = 0
         titel = "Prozentrechnung" 
         parameter = {'name': 'normal',} 
-        text = pro_text = einheit = anmerkung = ""
+        text = pro_text = einheit = anmerkung = frage = ""
         hilfe_id = 0
         hilfe_text = []
         erg = None 
@@ -4295,7 +4295,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             einh = ["Euro", "€", "m", "kg",""]
             einheit = random.choice(einh)
             if typ in (8,10,12): 
-                anmerkung="Du sollst nicht das Ergebnis ausrechnen, sondern den Term für die Rechnung angeben!" 
+                anmerkung="Du sollst nicht das Ergebnis ausrechnen, sondern den Term für die Rechnung angeben." 
                 frage = "Rechnung:"  
                 zahl1 = 5
                 while zahl1%5==0: 
@@ -4446,7 +4446,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             else:
                 hilfe_id = 82
         elif typ == 9:                              # Grundwert
-            text = "{}% sind {}{} - Berechne den Grundwert!" 
+            text = "{}% sind {}{} - Berechne den Grundwert." 
             pro_text = "{}% sind {}{} - G=?" 
             frage = "G=" 
             variable = [str_prozent, zahl1*bruch.numerator, einheit]
@@ -4463,7 +4463,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
                 hilfe_id = 93
                 hilfe_text = [str(bruch)]
         elif typ == 10:                             # Term für Grundwert
-            text = "{}% sind {}{} - Berechne den Grundwert!" 
+            text = "{}% sind {}{} - Berechne den Grundwert." 
             pro_text = "{}% sind {}{} - G=?" 
             frage = "G=" 
             zahl1 = zahl2 = 10
@@ -4601,10 +4601,10 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             else:
                 str_zinsen = str(round(zinsen,1))
             tage = random.randint(1,30)*10
-            text = "Für {} über {}€ muss man {}% Zinsen im Jahr bezahlen. <br>Gib den Term an mit dem man die Tageszinsen für {} Tage berechnen kann!"
+            text = "Für {} über {}€ muss man {}% Zinsen im Jahr bezahlen. <br>Gib den Term an mit dem man die Tageszinsen für {} Tage berechnen kann."
             pro_text = "{}, {}€, {}%, {} Tage"
             baustein = "einen Kredit"
-            anmerkung = ""
+            anmerkung = "Denke daran: Für die bank hat das Jahr 360 Tage."
             variable = [baustein, trenner(kapital), str(zinsen).replace(".",","), tage]
             frage = "Z="
             einheit = "€"
@@ -4615,7 +4615,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             titel = "Zinsrechnung"
             belastung = random.randint(6,15)*100
             zinsen = random.randint(6,9)
-            text = "Familie Mayer möchte bei ihrer Bank eine Hypothek für den Kauf einer Eigentumswohnung aufnehmen.<br> Für Zinsen und Tilgung müssen sie dafür mit {}% der Hypothekensumme im Jahr rechnen.<br>Im Monat können sie {}€ dafür aufbringen.<br>Wieviel Geld können sie sich dafür von der Bank leihen?<br>Gib einen Term an, mit dem man dieses berechnen kann!"
+            text = "Familie Mayer möchte bei ihrer Bank eine Hypothek für den Kauf einer Eigentumswohnung aufnehmen.<br> Für Zinsen und Tilgung müssen sie dafür mit {}% der Hypothekensumme im Jahr rechnen.<br>Im Monat können sie {}€ dafür aufbringen.<br>Wieviel Geld können sie sich dafür von der Bank leihen?<br>Gib einen Term an, mit dem man dieses berechnen kann."
             pro_text = "Hypothek zu {} für {}€/mtl - K=?"
             anmerkung = "(Mit einer 'Hypothek' finanziert man einen Haus- oder Wohnungskauf. Mit der Tilgung bezahlt man die Schulden ab.)"
             variable = [zinsen,belastung]
@@ -4793,19 +4793,19 @@ def term_bereinigen(term, typ):
             nicht_erlaubt.append("'"+t+"'")
     if len(nicht_erlaubt) == 1:
         falsch = ",".join(nicht_erlaubt)
-        rueckmeldung += 'Das Zeichen {} gehört nicht in den Term!'.format(falsch)
+        rueckmeldung += 'Das Zeichen {} gehört nicht in den Term.'.format(falsch)
     if len(nicht_erlaubt) > 1:
         falsch = " und ".join(nicht_erlaubt)
-        rueckmeldung += ' Die Zeichen {} gehören nicht in den Term!'.format(falsch)    
+        rueckmeldung += ' Die Zeichen {} gehören nicht in den Term.'.format(falsch)    
         return ("", rueckmeldung)
     # if "1^2" in term or "1²" in term:
-    #     return 0, "1² = 1!"
+    #     return 0, "1² = 1"
     term = term.replace("+", " +").replace("-"," -").replace("*","")
     teile = term.split(' ')
     n = 0
     for t in teile:
         if (re.search(r'[\d]²',t)):
-            return 0, "{} musst du ausrechnen!".format(t)
+            return 0, "{} musst du ausrechnen.".format(t)
         if not (re.search(r'1[\d]',t)) and (re.search(r'1[\D]',t)) and "1" in t:
             teile[n] = teile[n].replace("1","")
             t = t.replace("1","")
@@ -4823,7 +4823,7 @@ def term_bereinigen(term, typ):
             teile = klammer.split(' ')                                  # teilt den Klammerinhalt
             for e in erlaubt[:9]:
                 if e in teile[0] and e in teile[1]:
-                    return 0,  '"{}" musst du auch noch ausklammern!'.format(e)
+                    return 0,  '"{}" musst du auch noch ausklammern.'.format(e)
                 else:
                     teile[0] = teile[0].replace(e,"")
                     teile[1] = teile[1].replace(e,"")
@@ -4834,7 +4834,7 @@ def term_bereinigen(term, typ):
                 zahl1 = (int(teile[0]))
                 zahl2 = (int(teile[1])) 
                 if gcd(zahl1,zahl2) > 1:
-                        return 0,  'Du musst noch den ggT aus {} und {} ausklammern!'.format(zahl1,zahl2)
+                        return 0,  'Du musst noch den ggT aus {} und {} ausklammern.'.format(zahl1,zahl2)
             except:
                 pass
         except:
@@ -4942,13 +4942,13 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                         return 1, ' - aber besser als "{}" gefällt mir "{}"'.format(eingabe,lsg[0]) 
                 elif typ in [4,5,6]:
                     if typ == 5 and typ2 == 2 and len(eingabe.replace("^2","²"))<=len(loe)+1:
-                        return 2, "<br>Für das Zusammenfassen gibt es einen Extrapunkt!"
+                        return 2, "<br>Für das Zusammenfassen gibt es einen Extrapunkt."
                     else: 
                         return 1, ' - aber besser als "{}" gefällt mir "{}"'.format(eingabe,lsg[0]) 
                 else: 
                     if len(eingabe) <= len(loe)+1:
                         if rueckmeldung == "":
-                            return 0, "Die Reihenfolge stimmt nicht - achte auf die Anmerkung!"
+                            return 0, "Die Reihenfolge stimmt nicht - achte auf die Anmerkung."
                         else:
                             return 0, rueckmeldung        
                     else:
@@ -5008,8 +5008,8 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
             anmerkung = "Du musst die Buchstaben nach dem Alphabet sortieren, Konstanten stehen am Ende"
             hilfe_id = 20
             variable = [buchstaben_liste[startbuchstabe],buchstaben_liste[startbuchstabe+naechster_buchstabe]]
-            hilfe_text="Du musst alle Zahlen ohne Buchstaben zusammenfassen und dann jeweils alle {}'s und alle {}'s usw.! <br>"\
-                "(Wenn vor einem Buchstaben keine Zahl steht, musst du dir eine 1 dazudenken.)<br> Achte auf die Vorzeichen!)<br>"\
+            hilfe_text="Du musst alle Zahlen ohne Buchstaben zusammenfassen und dann jeweils alle {}'s und alle {}'s usw.. <br>"\
+                "(Wenn vor einem Buchstaben keine Zahl steht, musst du dir eine 1 dazudenken.)<br> Achte auf die Vorzeichen.)<br>"\
                 "Am Ende musst du alle Ausdrücke nach dem Alphabet sortieren.".format(*variable)
         elif typ == 3:                      # Multiplizieren                        
             startbuchstabe = typ2 = random.randint(0,2)*4
@@ -5033,8 +5033,8 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                 anmerkung = "Buchstaben nach dem Alphabet sortieren."
             hilfe_id = 30
             variable = [startbuchstabe]
-            hilfe_text = 'Du musst einfach nur die Zahlen multiplizieren und die Buchstaben nach dem Alphabet sortieren! <br>'\
-                '(Achte auf die Vorzeichen! Und beachte: "{0}·{0}" = "{0}²")'.format(startbuchstabe)
+            hilfe_text = 'Du musst einfach nur die Zahlen multiplizieren und die Buchstaben nach dem Alphabet sortieren. <br>'\
+                '(Achte auf die Vorzeichen. Und beachte: "{0}·{0}" = "{0}²")'.format(startbuchstabe)
             pro_text = frage+"="
             text = "Multipliziere:<br>" + frage
         elif typ in [4,6]:                  # Klammern                                                    # 4 = Klammer auflösen, 6= ausklammern
@@ -5095,19 +5095,19 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                 else:
                     hilfe_id = 40 
                     variable = [buchstaben_liste[startbuchstabe]]
-                    hilfe_text='Du musst den Ausdruck vor der Klammer zuerst mit dem ersten Ausdruck in der Klammer multiplizieren und dann mit dem zweiten! D.h.: Zahl mal Zahl und die Buchstaben nach dem Alphabet sortieren.'\
-                        '<br>(Achte auf die Vorzeichen! Und beachte: {0}·{0} = {0}²)'.format(buchstaben_liste[startbuchstabe])
+                    hilfe_text='Du musst den Ausdruck vor der Klammer zuerst mit dem ersten Ausdruck in der Klammer multiplizieren und dann mit dem zweiten. D.h.: Zahl mal Zahl und die Buchstaben nach dem Alphabet sortieren.'\
+                        '<br>(Achte auf die Vorzeichen. Und beachte: {0}·{0} = {0}²)'.format(buchstaben_liste[startbuchstabe])
             else:
                 if stufe%2 == 1:
                     hilfe_id = 61
-                    hilfe_text = "Du musst den ggT der Zahlen und/oder einen Buchstaben finden, die in beiden Ausdrücken drinnen ist und diese vor die Klammer schreiben!"
+                    hilfe_text = "Du musst den ggT der Zahlen und/oder einen Buchstaben finden, die in beiden Ausdrücken drinnen ist und diese vor die Klammer schreiben."
                 else:
                     if typ2 == 2:
                         hilfe_id = 62
-                        hilfe_text = "Du musst den ggT der Zahlen finden und diese vor die Klammer schreiben!"
+                        hilfe_text = "Du musst den ggT der Zahlen finden und diese vor die Klammer schreiben."
                     else:
                         hilfe_id = 63
-                        hilfe_text = "Du musst einen Buchstaben finden, die in beiden Ausdrücken drinnen ist und diese vor die Klammer schreiben!"
+                        hilfe_text = "Du musst einen Buchstaben finden, die in beiden Ausdrücken drinnen ist und diese vor die Klammer schreiben."
         elif typ == 5:                                                                          # Klammer mal Klammer
             startbuchstabe = typ2 = random.randint(0,2)*4
             teil1 = buchstaben_liste[startbuchstabe+random.randint(0,3)]
@@ -5260,17 +5260,17 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                 if zusammen[:1] == "+":
                     zusammen = zusammen[1:]
                 lsg = [zusammen] + lsg
-                anmerkung = "Wenn du den Term auch noch zusammenfasst, gibt es einen Extrapunkt!"
+                anmerkung = "Wenn du den Term auch noch zusammenfasst, gibt es einen Extrapunkt."
                 hilfe_id = 51
                 variable = [buchstaben_liste[startbuchstabe]]
                 hilfe_text='Du musst jeden Ausdruck in der ersten Klammer mit jedem Ausdruck in der zweiten Klammer multiplizieren (Das ergibt vier Ausdrücke)'\
-                    '<br>(Achte auf die Vorzeichen! Und beachte: {0}·{0} = {0}²)'\
+                    '<br>(Achte auf die Vorzeichen. Und beachte: {0}·{0} = {0}²)'\
                     '<br>Zuletzt sollst du noch die Teile, bei denen die Buchstaben übereinstimmen, zusammenfassen'.format(buchstaben_liste[startbuchstabe])
             else:
                 hilfe_id = 50 
                 variable = [buchstaben_liste[startbuchstabe]]
                 hilfe_text='Du musst jeden Ausdruck in der ersten Klammer mit jedem Ausdruck in der zweiten Klammer multiplizieren (Das ergibt vier Ausdrücke)'\
-                    '<br>(Achte auf die Vorzeichen! Und beachte: {0}·{0} = {0}²)'.format(buchstaben_liste[startbuchstabe])
+                    '<br>(Achte auf die Vorzeichen. Und beachte: {0}·{0} = {0}²)'.format(buchstaben_liste[startbuchstabe])
             text = "Löse die Klammern auf:<br>" + frage 
         elif typ in[7,8]:                                                                       # binomische Formeln
             typ2 = random.randint(1,6)
@@ -5455,9 +5455,9 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 return -1, ""
         elif typ == 0:
             if "{" in eingabe or "(" in eingabe:
-                return 0, "Die Klammern steht schon da!"
+                return 0, "Die Klammern steht schon da."
             elif (",") not in eingabe:
-                return 0, "Bitte die Werte mit Kommas trennen!"
+                return 0, "Bitte die Werte mit Kommas trennen."
             else:
                 return -1, ""
         elif typ == -1:
@@ -5602,7 +5602,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 temperatur = random.randint(15,23)
                 temperaturen.append(str(temperatur))  
             sortiert = temperaturen
-            text = "Die Höchsttemperaturen in der ersten {1} Tagen im August betrugen: {2}° und {3}°<br>Gib den Median dieser Temperaturen an!"
+            text = "Die Höchsttemperaturen in der ersten {1} Tagen im August betrugen: {2}° und {3}°<br>Gib den Median dieser Temperaturen an."
             frage = "Median:"
             pro_text = "Median: {4}"
             einheit = "°"
@@ -5626,7 +5626,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 summe +=zufall+1
             erg = summe/10
             lsg = [format_zahl(erg,1)]
-            text="Der letzte Vokabeltest ist gut ausgefallen:<br>Es gab {1} mal eine Eins, {2} mal eine Zwei und {3} mal eine Drei<br>Berechne die Durchschnittsnote!"
+            text="Der letzte Vokabeltest ist gut ausgefallen:<br>Es gab {1} mal eine Eins, {2} mal eine Zwei und {3} mal eine Drei<br>Berechne die Durchschnittsnote."
             frage = "Durchschnittsnote:"
             pro_text = "Durchschnittsnote: {1}*1,{2}*2,{3}*3"
             hilfe_id = 20
@@ -5648,7 +5648,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                     summe += temperatur 
                 erg = summe/10
                 lsg = [format_zahl(erg,1)+"°"]                             
-                text = "Die Tiefsttemperaturen an den ersten zehn Tagen im Januar betrugen:<br>{1}° und {2}°<br>Berechne die durchschnittliche Tiefsttemperatur!"
+                text = "Die Tiefsttemperaturen an den ersten zehn Tagen im Januar betrugen:<br>{1}° und {2}°<br>Berechne die durchschnittliche Tiefsttemperatur."
                 frage = "Durchschnittstemperatur:"
                 pro_text = " Durchschnittstemperatur: {3}"
                 einheit = "°"
@@ -5664,7 +5664,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 erg = summe/10
                 lsg = [format_zahl(erg,1)]                             
                 name = ["Tom", "Ali", "Lisa", "Marie"]
-                text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote!"
+                text = "{} hat im Zeugnis folgende Noten:<br>{} und eine {}<br>Berechne die Durchschnittsnote."
                 pro_text = "Durchschnittsnote: {3}"
                 frage = "Durchschnittsnote  "
                 variable = [name[random.randint(0,3)],", ".join(noten[:-1]),noten[-1],noten]
@@ -5746,7 +5746,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                     ereignisse.append(str(wurf))
                 gesucht = str(random.randint(1,6))
                 variable = [", ".join(ereignisse),art,gesucht,"Würfe","Zahl", name[zufall1],name[zufall2]]
-                text= "Um herauszubekommen, ob die Zahlen beim Würfeln gleich häufig kommen, legen {5} und {6} eine Strichliste an:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit für '{2}' an!" 
+                text= "Um herauszubekommen, ob die Zahlen beim Würfeln gleich häufig kommen, legen {5} und {6} eine Strichliste an:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit für '{2}' an." 
                 pro_text = "{1} Häufigkeit: Würfel"
             else:
                 farben = ["w","s","m","b","r","g","a"]
@@ -5758,7 +5758,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                     ereignisse.append(farbe)
                 gesucht = farben[zufall]
                 variable = [", ".join(ereignisse),art,farbname[zufall],"Autos","Farbe"]
-                text = "Um herauszubekommen, welche Autofarben am häufigsten sind, wurden fünf Minuten lang die Farben der vorbeifahrenden Autos notiert:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit der Autos mit der Farbe '{2}' an!"
+                text = "Um herauszubekommen, welche Autofarben am häufigsten sind, wurden fünf Minuten lang die Farben der vorbeifahrenden Autos notiert:<br>{0}<br>Gib die <b>{1}</b> Häufigkeit der Autos mit der Farbe '{2}' an."
                 pro_text = "{1} Häufigkeit: Autofarben"
                 anmerkung="(w) weiß, (s) schwarz, (m) silbermetallic, (b) blau, (r) rot, (g) gelb, (a) andere"
             frage = "Die {1} Häufigkeit für '{2}' beträgt"
@@ -5985,7 +5985,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             nenner = (weiss+schwarz)*((weiss+schwarz)-1)	 
             lsg = [str(zaehler)+"/"+str(nenner)]
             hilfe_id = 170
-            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Beim ersten Socken hat man {} Möglichkeiten, beim zweiten Socken nur noch {}.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch!"
+            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Beim ersten Socken hat man {} Möglichkeiten, beim zweiten Socken nur noch {}.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch."
         elif typ == 18:                                 # Urne 2 Kugeln
             farben = ['blue','red','white']
             color_dict = {'white':'weiß','red': 'rot', 'blue': 'blau'}
@@ -6017,7 +6017,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             anmerkung = "(Ohne Zurücklegen)"
             lsg = [str(zaehler)+"/90"] 
             hilfe_id = 180
-            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Bei der ersten Kugel hat man ? Möglichkeiten, bei der zweiten Kugel eine weniger.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch!"
+            hilfe ="Das ist ein zweistufiges Experiment ohne Zurücklegen.<br>Bei der ersten Kugel hat man ? Möglichkeiten, bei der zweiten Kugel eine weniger.<br>Du musst die beiden Wahrscheinlichkeiten multiplizieren. Am besten als Bruch."
         if typ > 7:
             parser = Parser()
             zahl = (parser.evaluate(lsg[0],{}))
@@ -6085,13 +6085,9 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 return 0, "In der Funktionsgleichung muss ein 'x' vorkommen"
             if  "*" in eingabe:
                 return 0, "'*' lässt man weg"
-            #else:
             wert_eingabe, rueckmeldung = termwert(eingabe)                  # akkzeptiert auch Brüche
-            #print ("Lösung: ", lsg[0])
             wert_loesung, rueckmeldung = termwert(lsg[0].replace(",","."))
-            #print("Wert: ",wert_loesung)
             if wert_eingabe == wert_loesung:
-                #print("richtig")
                 return 1, ""
             try:
                 eingabe=eingabe.replace(",",".")
@@ -6364,6 +6360,843 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter.update(graph)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 5
+        typ_end = 12
+        if jg > 8 or stufe > 27 or "Kubik" in optionen:
+            typ_anf = 1
+        if jg > 8 or stufe > 27 or "irrational" in optionen:
+            typ_anf = 1 
+            typ_end = 14
+        if jg > 8 or stufe > 29 or "teilweise" in optionen:
+            typ_anf = 1
+            typ_end = 16
+        return typ_anf, typ_end
+    elif eingabe != "":
+        try:
+            if (typ in (7, 8) and typ2 == 4) or typ > 14:
+                loe = lsg[-2] 
+                if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                    return -1,  "Du sollst nicht den Taschenrechner benutzen!"
+                else:
+                    return -1, "" 
+            if typ in (13, 14):
+                loe = lsg[-2] 
+                if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                    return -1,  "Du sollst nicht den Taschenrechner benutzen!"
+                else:
+                    if typ2 == 2:
+                        loe = lsg[-3]
+                        if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                            return -1,  "Du musst zuerst die Summe bilden und dann erst die Wurzel ziehen."                
+                        else:
+                            return -1, ""
+                    else:
+                        return -1, ""    
+        except:
+            return -1, ""    
+    else:
+        typ = random.randint(typ_anf, typ_end)
+        typ=13
+        text = "Berechne{}"
+        variable = ["",]
+        parameter = {'name':'normal'}
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        hilfe_id = 0
+        erg = None 
+        if typ == 1:                                    # Oberfläche aus Volumen berechnen
+            titel = "Kubikwurzel"                   
+            kante = random.randint(2,5)
+            anzahl = random.randint(2,4)
+            variable = [kante*kante*kante]
+            text = "Welchen Oberflächeninhalt hat ein Würfel mit einem Volumen von {}cm³?"
+            frage = "O="
+            einheit = "cm²"
+            erg = kante*kante*6
+            lsg = [str(kante)]
+            hilfe_id = 10
+            hilfe = "Du musst zunächst die dritte Wurzel ziehen um die Kante zu berechnen.<br>Dann kannst du zunächst die Fläche einer Seite berechnen und dann die Fläche aller sechs Seiten."
+        elif typ == 2:                                  # Kantenlänge eines Würfels
+            titel = "Kubikwurzel"
+            kante = random.randint(2,5)
+            anzahl = random.randint(2,4)
+            variable = [anzahl, kante*kante*kante*(anzahl)]
+            schieb_positionen = list(range(0,anzahl*20,20))
+            text = "Unten siehst du einen Quader. Er besteht aus mehreren Würfeln. Der Quader hat ein Volumen von {1}cm³. Welche Kantenlänge haben die Würfel jeweils?"
+            frage = "a="
+            einheit = "cm"
+            erg = kante
+            lsg = [str(kante)]
+            hilfe_id = 20
+            hilfe = "Das sind {} Würfel. Du musst zunächst das Volumen eines Würfels ausrechnen.<br>Anschließend musst du die dritte Wurzel ziehen." 
+            parameter = {'name': 'svg/geometrie.svg', 'object': 'kubik', 'schieb': schieb_positionen,}                 
+        elif typ == 3:                                  # Kubikzahlen
+            titel = "Kubikzahlen" 
+            zahl1 = random.randint(2,5)
+            variable = [zahl1]
+            frage = str(zahl1) + "<b>³</b>"
+            text = "Berechne " + frage
+            frage += "="
+            erg = zahl1*zahl1*zahl1
+            lsg = [str(erg)]
+            hilfe_id = 30
+            hilfe="'³' heisst {0} · {0} · {0})"
+        elif typ == 4:                                  # Kubikwurzel
+            titel = "Kubikwurzel"
+            zahl1 = random.randint(2,5)
+            variable = [str(zahl1*zahl1*zahl1)]
+            text = "Was ist die dritte Wurzel (Kubikwurzel) aus {}?"
+            frage = "∛{}="                    # im Template sorgt das ∛ für einen speziellen Text
+            erg = zahl1
+            lsg = [str(erg)]
+            hilfe_id = 40
+            hilfe = "Hier musst du die Kubikzahlen von 1³ bis 5³ auswendig wissen."
+        elif typ in (5,6):                              # Quadratzahlen
+            titel = "Quadratzahlen" 
+            frage = "{}²"
+            text = "Berechne " + frage
+            frage += "="
+            typ2 = random.randint(1,4)
+            if typ2 == 1: 
+                zahl1 = random.randint(1,15)
+                variable = [zahl1]
+                erg = zahl1*zahl1
+                lsg = [str(erg)]
+            elif typ2 == 2:
+                zahl1 = random.randint(1,15)*10
+                variable = [zahl1]
+                erg = zahl1*zahl1
+                lsg = [str(erg)]               
+            elif typ2 == 3:
+                zahl1 = random.randint(1,15)/10
+                variable = [format_zahl(zahl1,1)]
+                erg = zahl1*zahl1
+                lsg = [format_zahl(erg,2)]
+            else:
+                zahlen = [20,25,2.5,30,0.01]
+                quadrate= ["400","625","6,25","900","0,0001"]                
+                zufall = random.randint(0,4)
+                zahl1 = zahlen[zufall]
+                variable = [str(zahl1).replace(".",",")]
+                erg = zahl1*zahl1
+                lsg = [str(quadrate[zufall])]              
+        elif typ in (7,8):  	                        # Quadratwurzeln
+            typ2 = random.randint(1,4)
+            if typ2 == 1: 
+                zahl1 = random.randint(1,15)
+                variable = [str(zahl1*zahl1)]
+                erg = zahl1
+                lsg = [str(erg)]
+            elif typ2 == 2: 
+                zahl1 = random.randint(1,15)/10
+                variable = [format_zahl(zahl1*zahl1),2]
+                erg = round(zahl1,3)
+                lsg = [str(erg)]
+            elif typ2 == 3: 
+                zahl1 = random.randint(1,15)*10
+                variable = [zahl1*zahl1]
+                erg = round(zahl1)
+                lsg = [str(erg)]
+            elif typ2 == 4:
+                irrational=[ 2 , 3 , 5 , 6 , 7 , 8 , 10 , 40 , 160 , 250 , 1000 , 0.1 , 1.6 , 2.5 , 0.4 ]
+                zahl1 = random.choice(irrational)
+                variable = [str(zahl1).replace(".",",")]
+                lsg = ["irrational", math.sqrt(zahl1)*100, "indiv_0"]
+            else:
+                wurzeln = [20,25,2.5,30,0.01]
+                quadrate= ["400","625","6,25","900","0,0001"] 
+                zufall = random.randint(0,4)
+                variable = [quadrate[zufall]]
+                erg = wurzeln[zufall]
+                lsg = [str(erg).replace(".",",")]
+            titel = "Quadratwurzeln"
+            anmerkung = "(Wenn die Wurzel eine irrationale Zahl ist, must du 'irrational' schreiben)"			
+            text = "Was ist die Quadratwurzel aus {}?"
+            frage = "√{}="
+            hilfe_id = 75
+            hilfe = "Hier musst du die Quadratzahlen von 1² bis 15² auswendig wissen."
+        elif typ == 9:                          	    # Intervallschachtelung
+            titel = "Intervallschachtelung"
+            zahl1 = 1
+            while (math.sqrt(zahl1)) - (math.sqrt(zahl1)//1) == 0:
+                zahl1 = random.randint(2,99)
+            variable = [zahl1]
+            kleiner = int(math.sqrt(zahl1))
+            variable = [zahl1, kleiner*kleiner, (kleiner+1)*(kleiner+1)]
+            text="Zwischen welchen natürlichen Zahlen liegt die Wurzel aus {}?" 
+            frage="Sie liegt zwischen"
+            lsg = ["zwischen " + str(kleiner) + " und " + str(kleiner+1), str(kleiner) + "und" + str(kleiner+1)]
+            hilfe_id = 90
+            hilfe="Die Wurzel aus {} liegt zwischen der Wurzel aus {} und der Wurzel aus {}.<br>(Achtung, das ist noch nicht die Lösung.)"
+        elif typ == 10:                                 # Quadrat unter Wurzel
+            titel = "Rechnen mit Quadratwurzeln"
+            zahl1 = random.randint(2,20)
+            variable = [str(zahl1)]
+            text = "{}²" 
+            frage = "√" + text + "="                    # im Template sorgt das √ für einen speziellen Text
+            parameter["strich"] = "&macr;&macr;&macr;"
+            parameter["laenge"] = "margin-left: -1.6em; "
+            erg = zahl1
+            lsg = [str(zahl1)]
+            hilfe_id = 100
+            hilfe = "Quadrieren ist das Gegenteil von Wurzelziehen.<br>'²' und '√' heben sich gegenseitig auf."
+        elif typ == 11:                                 # Zahl mal Wurzel
+            titel = "Rechnen mit Quadratwurzeln"
+            zahl1 = random.randint(2,5)
+            zahl2 = random.randint(2,10)
+            variable = [str(zahl1), str(zahl2*zahl2)]
+            text = "{1}" 
+            frage = "{}√{}="                      # im Template sorgt das √ für einen speziellen Text
+            parameter["koeffizient"] = "Berechne: " + str(zahl1)
+            parameter["strich"] = "&macr;&macr;&macr;"
+            parameter["laenge"] = "margin-left: -1.6em; "
+            erg = zahl1*zahl2
+            lsg = [str(zahl1)] 
+            hilfe_id = 110
+            hilfe="Du musst die Wurzel aus {1} mit {0} multiplizieren."
+        elif typ == 12:                                 # Quadratseite aus Grafik
+            titel = "Quadratwurzel"
+            seite = random.randint(2,5)
+            frage = "a="
+            einheit = "cm"
+            erg = seite
+            typ2 = random.randint(1,5)
+            if typ2 == 1:                   # Quadratseite aus Netz
+                variable = [seite*seite]
+                text="Dieses Quadrat hat eine Fläche von {}cm².<br>Berechne seinen <b>Umfang</b>." 
+                frage = "u="     		
+                parameter = {'name': 'svg/geometrie.svg', 'object': 'umfang',}
+                erg = seite * 4
+                hilfe_id = 121
+                hilfe = "Du musst zunächst die Kantenlänge ausrechnenindem du die Wurzel ziehst."  
+            elif typ2 == 2:                 # Quadratseite aus Netz
+                variable = [seite*seite*6]
+                text="Unten siehst du einen Würfel und sein Netz.<br>Der Würfel hat eine Oberfläche von {}cm².<br>Welche Kantenlänge hat der Würfel?"      		
+                parameter = {'name': 'svg/geometrie.svg', 'object': 'netz',}
+                hilfe_id = 122
+                hilfe = "Der Würfel hat 6 quadratische Seiten. Du musst zunächst die Fläche eine Seite ausrechnen.<br>Anschließend musst du die Wurzel ziehen."  
+            else:                           # Quadratseite aus Rechteck 
+                anzahl = random.randint(2,5)
+                variable = [anzahl, seite*seite*(anzahl)]
+                schieb_positionen = list(range(0,anzahl*30,30))
+                text = "Unten siehst du ein Rechteck. Er besteht aus mehreren Quadraten. Das Rechteck hat eine Fläche von {1}cm³. Welche Seitenlänge haben die Quadrate jeweils?"
+                hilfe_id = 120
+                hilfe = "Das sind {} Quadrate. Du musst zunächst die Fläche eines Quadrates ausrechnen.<br>Anschließend musst du die Wurzel ziehen." 
+                parameter = {'name': 'svg/geometrie.svg', 'object': 'quadrate', 'schieb': schieb_positionen,} 
+            lsg = [str(erg)]
+        elif typ in (13,14):                            # Rechnen mit irrationalen Zahlen
+            titel = "Rechnen mit irrationalen Zahlen"
+            typ2 = random.randint(1,5)
+            typ2=5
+            if typ2 == 1:                       # Produkt aus 2 Wuzeln
+                zahl1 = random.randint(1,15)
+                for zahl2 in range (2,25):
+                    zahl3 = (zahl1*zahl1/zahl2)
+                    if (zahl1*zahl1)%zahl2 == 0 and zahl3 != 0:
+                        break
+                variable = [str(zahl2), format_zahl(zahl3,0)]
+                frage = "√{0}·√{1}="
+                text = "Berechne: " + frage
+                erg = zahl1
+                lsg = [str(zahl1)]
+            elif typ2 == 2:                     # Summe aus 2 Quadratzahlen
+                zahl1 = random.randint(1,12)
+                zahl2 = random.randint(1,12)
+                variable = [str(zahl1**2), str(zahl2**2)]
+                text = str(zahl1**2) + " + " + str(zahl2**2)
+                frage = "√(" + text + ")="
+                hilfe_id = 132
+                hilfe = "Man muss zunächst {0} und {1} addieren und aus der Summe die Wurzel ziehen."
+                wurzel = math.sqrt(zahl1+zahl2)
+                if wurzel%1 == 0:
+                    erg = wurzel
+                    lsg = [str(erg)]
+                else:
+                    lsg = [hilfe, "irrational", (zahl1+zahl2)*100, wurzel*100,"indiv_0"]
+                strich = "&macr;" * len(text)
+                parameter["strich"] = strich                    # im Template sorgt das √ für einen speziellen Text                
+                parameter["laenge"] = "margin-left: -" + str(len(text)/1.8) + "em; "
+            elif typ2 == 3:                     # zB: √3(√4+√12) 
+                if stufe%2 == 0:
+                    zahl1=random.randint(1,3)
+                    for zahl2 in range(1,12): 
+                        if (zahl2*zahl2)%zahl1 == 0 :
+                            break 
+                    for zahl3 in range(1,12): 
+                        if (zahl3*zahl3)%zahl1 == 0 and zahl3 != zahl2:
+                            break
+                else:	
+                    zahl1=random.randint(2,5)
+                    for zahl2 in range(2,12): 
+                        if (zahl2*zahl2)%zahl1 == 0 and zahl2 != zahl1:
+                            break 
+                    for zahl3 in range(2,12):
+                        if (zahl3*zahl3)%zahl1 == 0 and zahl3 != zahl2:
+                            break
+                variable = [zahl1, int(zahl2*zahl2/zahl1), int(zahl3*zahl3/zahl1)] 
+                frage="√{}(√{}+√{})"
+                text = "Berechne: " + frage
+                erg=zahl2 + zahl3
+                lsg=[str(erg)]
+                hilfe_id = 133
+                hilfe="Wenn man die Klammer ausmultipliziert, die Wurzeln zieht und diese addiert, kommt eine rationale Zahl raus"
+            elif typ2 == 4:                     # zB 3√16+2√16
+                zahl1=random.randint(2,5)
+                zahl2=random.randint(1,5)
+                zahl3=random.randint(2,5)
+                variable = [zahl1, zahl2, zahl3*zahl3]
+                if zahl2 > 1:
+                    frage="{0}√{2}+{1}√{2}"
+                else:
+                    frage="{0}√{2}+√{2}"
+                text = "Berechne: " + frage
+                erg=(zahl1 + zahl2)*zahl3
+                lsg=[str(erg)]
+            else:                               # zB 3√16-2√16
+                zahl1=random.randint(2,5)
+                zahl3=random.randint(2,5)
+                for zahl2 in range (1,5):
+                    zahl2 = random.randint(2,5)
+                    if zahl2 < zahl1:	
+                        break
+                variable = [zahl1, zahl2, zahl3*zahl3]
+                if zahl2 > 1:
+                    frage="{0}√{2}-{1}√{2}"
+                else:
+                    frage="{0}√{2}-√{2}"
+                text = "Berechne: " + frage     			
+                erg=(zahl1 - zahl2)*zahl3 
+                lsg = [str(erg)]
+        else:                                           # teilweises Wurzelziehen
+            titel="Teilweises Wurzelziehen"     		
+            anmerkung="Nimm für das Wurzelzeichen ein 'v': 2√3 => 2v3"
+            irrational = 1
+            while (math.sqrt(irrational))%1 == 0:
+                zahl1 = random.randint(2,5)
+                zahl2 = random.randint(2,5)
+                irrational = zahl1*zahl1*zahl2
+            variable = [irrational, zahl1*zahl1, zahl2]
+            frage = "√{}"
+            text = "{}"
+            parameter["strich"] = "&macr;&macr;&macr;"
+            parameter["laenge"] = "margin-left: -1.6em;"
+            parameter["koeffizient"] = "Ziehe die Wurzel teilweise: "
+            lsg=[str(zahl1) + "v" + str(zahl2), math.sqrt(irrational)*100, "indiv_0"]
+            if stufe%2 == 0:
+                hilfe_id = 151
+                hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
+                hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
+                hilfe += "<br> {0} = {1} · {2})"                        		      		
+            else:
+                hilfe_id = 152
+                hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
+                hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+    
+def sub_hypo_oben(g, h, typ2 = 0, scale = 22, x0 = 80, t = 0):
+    rand = 25
+    h = h * scale
+    g = g * scale
+    t = t * scale
+    spiegeln = 0
+    if typ2 >= 1:
+        spiegeln = g
+    parameter = {'ax': x0,  'ay': h + rand, 'bx': x0 + g, 'by': h + rand, 'cx': x0 + spiegeln, 'cy': rand, 'mx': x0 + (g/2), 'my': h/2 + rand, }
+    if typ2 == 0:                               # Hypotenuse rechts oben
+        parameter['nx'] = x0 + g/2
+        parameter['ox'] = x0
+    elif typ2 == 1:                             # Hypotenuse links oben
+        parameter['nx'] = x0 + g
+        parameter['ox'] = x0 + g/2
+    elif typ2 == 2:                             # Häuschen mit Dach
+        parameter['axs'] = x0 + g *2
+        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
+        parameter['winkel'] = -math.atan(h/g)*180/math.pi
+        parameter['dy'] = rand + h + t
+    elif typ2 == 3:                             # Trapez
+        parameter['bx'] = parameter['axs'] = x0 + g*2 + t
+        parameter['cx'] = x0 + g + t
+        parameter['dx'] = x0 + g
+        parameter['nx'] = x0 + g +t/2
+        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
+        parameter['winkel'] = -math.atan(h/g)*180/math.pi
+
+        parameter['dy'] = parameter['ay']
+
+    return parameter
+
+def sub_hypo_unten(x0, scale, q, p, h , a = 0, b = 0, c = 0, alpha = "", beta = "", gamma = ""):
+    rand = 20
+    radius = 25
+    p = p * scale
+    q = q * scale
+    h = h * scale
+    c = p+q
+    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
+    #if punkt:
+    phi = math.atan(h/q)
+    punktwinkel = (phi-math.pi/4)
+    c_sx = q - radius * math.cos(phi)
+    c_sy = radius * math.sin(phi)
+    c_ex = q + radius * math.sin(phi)
+    c_ey = radius * math.cos(phi)
+    punkt_x = q + radius/2 * math.sin(punktwinkel)
+    punkt_y = radius/2 * math.cos(punktwinkel) 
+    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
+    parameter.update(rechter_winkel)
+    return parameter
+
+def sub_dreiecksseiten(q, h):
+    p = (h*h/q)
+    c = round(p+q)
+    a = round(math.sqrt(h**2+p**2))
+    b = round(math.sqrt(h**2+q**2))
+    p=round(p)
+    return a, b, c, p
+
+def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 4
+        typ_end = 14
+        if stufe%2 > 0:
+            typ_end += 1
+        if jg > 9 or "Kathete" in optionen:
+            typ_anf = 1
+        return typ_anf, typ_end
+    elif eingabe != "":                                                                                                         
+        if typ == 1:
+            if "*" in eingabe:
+                return 0, "lass bitte das '*' weg"
+            elif "=" in eingabe:
+                return 0, lsg[0][:3] + " steht schon da"
+            else:
+                return -1, ""
+        elif typ == 8:
+            if eingabe.upper() == lsg[0].upper():
+                return 0, "Achte auf Groß- und Kleinschreibung!" 
+            elif (lsg[0] == "Hypotenuse" and ("Hypothenuse") in eingabe): 
+                return 0, "Hypotenuse schreibt man ohne 'th'"
+            elif (lsg[0] == "Kathete" and ("katete") in eingabe):
+                return 0, "Kathete schreibt man mit 'th'"
+            elif (lsg[0] == "Hypotenuse" and ("nuse") in eingabe) or (lsg[0] == "Kathete" and ("ete") in eingabe):
+                return 0, "Achte auf die richtige Schreibweise"
+            else:
+                return -1, ""       
+        elif typ == 10:
+            if eingabe.upper() == lsg[0].upper() or eingabe.upper() == lsg[1].upper():
+                return 1, "" 
+        else:
+            return -1, "" 
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end)
+        typ2 = 0
+        titel = "rechtwinklige Dreiecke" 
+        parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        hilfe_id = 0
+        erg = None 
+        x0 = 80
+        scale = 22
+        if typ <10:
+            q = random.randint(5,7)
+            h = random.randint(4,5)
+            a, b, c, p = sub_dreiecksseiten(q, h)
+        if typ >= 10:                                           # pythagoräische Zahlentripel
+            p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen "
+            if stufe%2 == 1:
+                typ2 = random.randint(0,5)
+            else:
+                typ2 = random.randint(0,2)
+            if typ == 13 and typ2 == 2:
+                typ2 = 5
+            a = p_zahlen[typ2][1]
+            b = p_zahlen[typ2][2]
+            c = p_zahlen[typ2][0]
+            scale = 200/c
+        if typ == 1:                                            # Kathetensatz und Höhensatz angeben
+            titel = "Kathetensatz"
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
+            parameter.update(koordinaten)
+            werte = {'h': "h", 'a': "a", 'b': "b", 'c': "c", 'p': "p", 'q': "q", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(werte)
+            typ2 = random.randint(1,4)
+            if typ2 == 1:
+                text="Ergänze den Kathetensatz für die Seite a:"
+                frage = "a²="
+                lsg = ["a²=pc","pc","cp","a²=cp","indiv_0"]
+            elif typ2 == 2:
+                text="Ergänze den Kathetensatz für die Seite b:"
+                frage = "b²="
+                lsg = ["b²=qc","qc","qq","b²=cq","indiv_0"]
+            else:
+                titel = "Höhensatz"
+                text = "Wie lautet der Höhensatz?"
+                frage = "h²="  
+                lsg = ["h²=pq","qp","pq","indiv_0"]
+        elif typ == 2:                                          # Kathetensatz anwenden
+            x0 = (350 - c*scale)/2
+            scale = 25
+            titel = "Kathetensatz"
+            anmerkung = "Wenn du das Ergebnis nicht im Kopf ausrechnen kannst, kannst du hier einfach die Rechnung wie in einen Tascherechner eingeben."
+            anmerkung += "<br>Für '²' kannst du auch '^2' schreiben"
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+            parameter.update(koordinaten)
+            werte = {'h': "h", 'a': "a", 'b': "b", 'c': "c", 'p': "p", 'q': "q", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(werte)
+            hilfe_id = 20
+            hilfe = "Hier musst du die Kathetensätze kennen: <br>a²=q·c und b²=p·c"
+            if stufe%2==1:
+                typ2 = random.randint(1,5)
+            else:
+                typ2 = random.randint(1,4)
+            if typ2 == 1:
+                text="Berechne den Hypothenusenabschnitt q"
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = b**2/c
+                parameter['c']= "c="+str(c)+"mm"
+                parameter['b']= "b="+str(b)+"mm"
+                frage = "q="
+                lsg = ["q="+str(b)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]
+            elif typ2 == 2:
+                text="Berechne den Hypothenusenabschnitt p"
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = a**2/c
+                parameter['c']= "c="+str(c)+"mm"
+                parameter['a']= "a="+str(a)+"mm"
+                parameter['b']= "b="+str(b)+"mm"
+                frage = "p="
+                lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]            
+            elif typ2 == 3:
+                text="Berechne die Länge der Hypotenuse c"
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = a**2/q
+                parameter['p']= "p="+str(p)+"mm"
+                parameter['a']= "a="+str(a)+"mm"
+                frage = "c="
+                lsg = ["c="+str(a)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
+            elif typ2 == 4:
+                text="Berechne die Länge der Hypotenuse c"
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = b**2/q
+                parameter['q']= "q="+str(q)+"mm"
+                parameter['b']= "b="+str(b)+"mm"
+                frage = "c="
+                lsg = ["c="+str(b)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
+            elif typ2 == 5:
+                text="Mithilfe des Kathetensatzes kannst du zunächst die Länge der Hypotenuse und anschließend die Länge von q."
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = a**2/p
+                wert = wert - p
+                parameter['a']= "a="+str(a)+"mm"
+                parameter['p']= "p="+str(p)+"mm"
+                frage = "q="
+                lsg = ["q="+str(a)+"²/"+str(p)+"-"+str(a)+"="+format_zahl(wert,1), wert,"indiv_2"]
+        elif typ == 3:                                          # Höhensatz anwenden
+            x0 = (350 - c*scale)/2
+            scale = 25
+            parameter['punkt']= "X"
+            titel = "Höhensatz"
+            anmerkung = "Wenn du das Ergebnis nicht im Kopf ausrechnen kannst, kannst du hier einfach die Rechnung wie in einen Tascherechner eingeben."
+            anmerkung += "<br>Für '²' kannst du auch '^2' schreiben"
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
+            parameter.update(koordinaten)
+            werte = {'h': "h", 'a': "a", 'b': "b", 'c': "c", 'p': "p", 'q': "q", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(werte)
+            hilfe_id = 30
+            hilfe = "Hier musst du den Höhensatz kennen: <br>h²=p·q"
+            typ2 = random.randint(1,2)
+            if typ2 == 1:                                       # q aus Höhensatz
+                text="Berechne den Hypothenusenabschnitt q"
+                a, b, c, p = sub_dreiecksseiten(q, h)
+                wert = h**2/p
+                parameter['h']= "h="+str(h)+"mm"
+                parameter['p']= "p="+str(p)+"mm"
+                frage = "q="
+                lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
+            elif typ2 == 2:                                       # p aus Höhensatz
+                text="Berechne den Hypothenusenabschnitt p"     
+                wert = 1/7
+                while wert*10%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(5,7)
+                    h = random.randint(4,5)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = h**2/q
+                parameter['h']= "h="+str(h)+"mm"
+                parameter['q']= "q="+str(q)+"mm"
+                frage = "p="
+                lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
+        elif typ == 4:                                          # Dreiecksfläche Hypo und Höhe
+            titel = "Fläche des Dreiecks"
+            text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            frage = "A="
+            einheit = "mm²"
+            erg = round((c*h/2),1)
+            if erg%1 == 0:
+                lsg = [format_zahl(erg,0) + "mm²"]
+            else:
+                lsg = [format_zahl(erg,1) + "mm²"]
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
+            parameter.update(koordinaten)
+            werte = {'c': "c=" + format_zahl(c,0) + "mm", 'h': "h=" + str(h) +"mm"}
+            parameter.update(werte)
+            hilfe_id = 40
+            hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
+        elif typ == 5:                                          # Dreiecksfläche 2 Katheten - Hypotenuse unten
+            titel = "Fläche des Dreiecks"
+            text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            frage = "A="
+            einheit = "mm²"
+            erg = round((a*b/2),1)
+            if erg%1 == 0:
+                lsg = [format_zahl(erg,0) + "mm²"]
+            else:
+                lsg = [format_zahl(erg,1) + "mm²"]
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h, a, b, c) 
+            parameter.update(koordinaten)
+            werte = {'a': str(a) + "mm", 'b': str(b) + "mm",'c': str(c) + "mm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
+                        'dx': x0 + p * scale}
+            parameter.update(werte) 
+            hilfe_id = 50
+            hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
+        elif typ == 6:                                          # Dreiecksfläche 2 Katheten - Hypotenuse oben
+            titel = "Fläche des Dreiecks"
+            text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            frage = "A="
+            einheit = "mm²"
+            typ2 = random.randint(0,1)
+            g = random.randint(5,7)
+            h = random.randint(4,5)
+            hypo = math.sqrt(g**2+h**2)
+            koordinaten = sub_hypo_oben(g, h, typ2)                 
+            parameter.update(koordinaten)
+            erg = (g*h/2)
+            lsg = ["A=g·h="+str(g)+"·"+str(h)+"/2="+format_zahl(erg,1)]
+            if typ2 == 0:
+                werte = {'m': "c=" + str(g) + "mm", 'n': "a=" + format_zahl(hypo,0) + "mm", 'o': "b=" + str(h) +"mm"}
+            else:
+                werte = {'m': "c=" + str(g) + "mm", 'n': "a=" + str(h) + "mm", 'o': "b=" + format_zahl(hypo,0) +"mm"}
+            parameter.update(werte)
+            hilfe_id = 40
+        elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
+            text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
+            schieb = random.randint(-1,2)
+            if schieb < 0:                          # c häufiger als Hpotenuse
+                schieb = 0
+            typ2 = random.randint(0,2)
+            bst = ["c","a","b","c","a","b","c"]
+            if typ2 == 0:                           # Hypotenuse oben rechts
+                g = random.randint(5,7)
+                h = random.randint(4,5)
+                koordinaten = sub_hypo_oben(g, h, 0)
+                benennungen =  {'A': bst[0+schieb].upper(), 'B': bst[1+schieb].upper(), 'C': bst[2+schieb].upper(),
+                                'm': bst[2+schieb], 'n': bst[3+schieb], 'o': bst[4+schieb],}  
+            elif typ2 == 1:                         # Hypotenuse oben links
+                g = random.randint(5,7)
+                h = random.randint(4,5)
+                koordinaten = sub_hypo_oben(g, h, 1)
+                benennungen =  {'A': bst[2+schieb].upper(), 'B': bst[3+schieb].upper(), 'C': bst[4+schieb].upper(),
+                                'm': bst[1+schieb], 'n': bst[2+schieb], 'o': bst[3+schieb],}              
+            else:                                   # Hypotenuse unten
+                koordinaten = sub_hypo_unten(x0, scale, q, p, h)             
+                benennungen =  {'A': bst[1+schieb].upper(), 'B': bst[2+schieb].upper(), 'C': bst[3+schieb].upper(),
+                                'a': bst[1+schieb], 'b': bst[2+schieb], 'c': bst[3+schieb],
+                                'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(koordinaten)
+            parameter.update(benennungen)
+            if typ == 7:                                          # Welche Seite ist die Hypotenuse
+                text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Welche Seite ist hier die 'Hypotenuse'?"
+                frage = "Hypotenuse"
+                lsg = [bst[schieb]]
+            elif typ == 8:                                          # Benennung von Hypotenuse und Kathete
+                text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Wie nennt man hier die Seite "
+                typ3 = random.choice(["c","a","b","c"])
+                text += typ3
+                frage = typ3 + ":"
+                if typ3 == bst[schieb]:
+                    lsg = "Hypotenuse"
+                else:
+                    lsg = "Kathete"
+                lsg = [lsg] + ["indiv_0"]
+                hilfe_id = 80
+                hilfe = "Es gibt Tangenten, Katheten, Parabeln, Hypotenusen, Hyperbeln ..."
+            else:
+                text = "Ergänze den Satz des Pythagoras für dieses Dreieck: "
+                anmerkung = "<br>Für '²' kannst du auch '^2' schreiben"
+                seiten = ["c","a","b","c","a","b"]
+                typ3 = random.randint(0,3)
+                gesucht = seiten[typ3]
+                text += gesucht + "²=?"
+                frage = gesucht + "²="
+                if gesucht == bst[schieb]:
+                    lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"]
+                else:
+                    seiten.remove(gesucht)
+                    seiten.remove(bst[schieb])
+                    lsg = [bst[schieb] + "²-" + seiten[0] + "²"]
+                lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
+                hilfe_id = 90
+                hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
+        elif typ == 10:                                         # rechtwinklig oder nicht?           
+            titel = "rechtwinklig oder nicht?"
+            frage = "j/n="
+            typ3 = random.randint(1,2)
+            if typ3 == 1:                                           # Hypotenuse unten
+                text = "Das Dreieck sieht rechtwinklig aus.<br>Überprüfe mithilfe des Satzes von Pythagoras, ob es auch wirklich rechtwinkig ist.<br>Ist es rechtwinklig (ja/nein)?"
+                q = b**2/c
+                p = c - q
+                h = math.sqrt(p*q)
+                koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+                parameter.update(koordinaten)
+                werte = {'a': str(a).replace(".",","), 'b': str(b).replace(".",","),'c': str(c).replace(".",","),
+                        'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            else:                                                   # Hypotenuse oben
+                text = "Um zu überprüfen, ob dieses Rechteck rechtwinklig ist, kann man den Satz des Pythagoras anwenden.<br>Ist es rechtwinklig (ja/nein)?"
+                scale = 180/a
+                koordinaten = sub_hypo_oben(a, b, 0, scale) 
+                parameter.update(koordinaten) 
+                werte = {'m': str(a).replace(".",","), 'n': str(c).replace(".",","),'o': str(b).replace(".",","),
+                        'dx': parameter['bx']} 
+                ecken =  {'A': " ", 'B': " ", 'C': " ",}
+                parameter.update(ecken)              
+            if random.random() > 0.5:
+                lsg = ["j", "ja", "indiv_0"]
+            else:
+                c +=p_zahlen[typ2][3]
+                lsg = ["n", "nein", "indiv_0"]
+            parameter.update(werte)
+            parameter['kein_winkel'] = True
+            hilfe_id = 100
+            hilfe = "Wenn das Quadrat der langen Seite genauso groß ist wie die Summe der Quadrate der kürzeren Seiten, so ist das Dreieck rechtwinklig - ansonsten nicht.<br>(Es genügt hier auch nur die jeweils letzten Stellen der Quadrate zu überprüfen.)"
+        elif typ < 13:                                          # Berechnung der Seiten
+            titel = "Satz des Pythagoras"
+            str_a = str(a).replace(".",",")+"cm"
+            str_b = str(b).replace(".",",")+"cm"
+            str_c = str(c).replace(".",",")+"cm"
+            typ3 = random.choice(["a", "b", "c", "c"])
+            variable = [typ3]
+            text = "wie lang ist die Seite {}?"
+            frage = typ3 +"="
+            einheit = "cm"
+            anmerkung = "Du brauchst keinen Taschenrechner. Benutze einen Zettel!<br>(Hier musst du die Quadratzahlen bis 15² auswendig wissen.)"
+            if c == 2.5:
+                anmerkung += "<br>(2,5² = 6,25)"
+            scale = 200/c
+            q = b**2/c
+            p = c - q
+            h = math.sqrt(p*q)
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+            parameter.update(koordinaten)
+            if typ3 == "a":                                         # Kathete a
+                erg = a
+                str_a = "a"
+            elif typ3 == "b":                                       # Kathete b
+                erg = b
+                str_b = "b"                
+            else:                                                   # Hypotenuse
+                erg = c
+                str_c = "c"
+            lsg = [str(erg).replace(".",",")]
+            werte = {'a': str_a, 'b': str_b, 'c': str_c, 
+                    'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}                    
+            parameter.update(werte)
+        else:                                                   # Anwendungsaufgaben
+            titel = "Satz des Pythagoras"
+            typ2 = random.randint(1,2)
+            if typ2 == 1:                                       # Diagonale im Rechteck
+                text = "Berechne die Diagonale (d) dieses Rechtecks."
+                frage = "d="
+                einheit = "cm"
+                anmerkung = "Du brauchst keinen Taschenrechner, nur den Satz des Pythagoras."
+                erg = c
+                lsg = [str(erg)]
+                koordinaten = sub_hypo_oben(a, b, 0, scale)                 
+                parameter.update(koordinaten)
+                parameter['object'] = "diagonale"
+                werte = {'m': "l=" + str(a) + "cm", 'n': "d=?",  'o': "b=" + str(b) +"cm"}
+                parameter.update(werte)
+<<<<<<< HEAD
+=======
+                print(parameter)
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+            elif typ2 == 2:                                     # Sparrenlänge
+                frage = "l="
+                einheit = "m"
+                erg = c
+                lsg = [str(erg).replace(".",",")]
+                t = b + round(random.randint(0,int(b/2)))
+                if b < 1:
+                    gebaeude = "Diese Hundehütte"                
+                elif b < 2:
+                    gebaeude = "Dieses kleine Haus"
+                elif b > 5:
+                    gebaeude = "Diese Halle"
+                else:
+                    gebaeude = "Dieses Haus"
+                if stufe%2 == 1:
+                    parameter['kurs'] = "E"
+                    text = "{} ist {}m breit (b), die Traufhöhe (t) beträgt {}m und die Firsthöhe (f) beträgt {}m.<br>Wie lang ist die Dachfläche l?"
+                    variable = [gebaeude, str(a*2).replace(".",","), str(t).replace(".",","), str(t+b).replace(".",",")]
+                    hilfe_id = 131
+                    hilfe = "Die waagerechte Kathete der Dreiecke entspricht der Hälfte der Gebäudebreite, die senkrechte Kathete entspricht der Höhe des Daches (f-t). Gesucht ist die Hypotenuse."
+                else:
+                    parameter['kurs'] = "G"
+                    text = "{} ist {}m breit (b), die Höhe des Daches (h) beträgt {}m und die Firsthöhe (f) beträgt {}m.<br>Wie lang ist die Dachfläche l?"
+                    variable = [gebaeude, str(a*2).replace(".",","), str(b).replace(".",","), str(t+b).replace(".",",")]
+                    hilfe_id = 132
+                    hilfe = "Die waagerechte Kathete der Dreiecke entspricht der Hälfte der Gebäudebreite, die senkrechte Kathete entspricht der Höhe des Daches. Gesucht ist die Hypotenuse."
+                anmerkung = "Du brauchst keinen Taschenrechner, nur den Satz des Pythagoras."
+                scale *= 0.5
+                koordinaten = sub_hypo_oben(a, b, 2, scale, 100, t)                 
+                parameter.update(koordinaten)
+                parameter['object'] = "haus"
+                werte = { 'h': b+t , 'h_schieb': a*scale}
+                parameter.update(werte)
+                ecken =  {'A': " ", 'B': " ", 'C': " ",}
+                parameter.update(ecken)
+<<<<<<< HEAD
+=======
+                print(parameter)
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+            else:                                               # Trapez
+                text = "Berechne die Seitenlänge (d) dieses gleichschenkligen Trapezes."
+                frage = "d="
+                einheit = "cm"
+                anmerkung = "Du brauchst keinen Taschenrechner, nur den Satz des Pythagoras."
+                erg = c
+                lsg = [str(erg)]
+                g2 = b + round(random.randint(0,int(b/2)))
+                koordinaten = sub_hypo_oben(a, b, 3, 200/(2*b+g2), 40, g2)                 
+                parameter.update(koordinaten)
+                parameter['object'] = "trapez"
+                werte = {'h': "h=" + str(b) + "cm", 'g2': str(g2) + "cm",  'g1': str(g2+2*a) + "cm"}
+                parameter.update(werte)
+                hilfe_id = 133
+                hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -6405,9 +7238,10 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         else:
             pass
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        hilfe = hilfe.format(*variable)
+        #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+#********************************************************************************************************************************************************
 def get_profil(user):
     return Profil.objects.get(user = user)
     #return Profil.objects.all().first()
@@ -6421,25 +7255,23 @@ def kategorien(req):
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
 
-def durchschnitt_aufgaben(profil):
+def durchschnitt_aufgaben(profil, kategorie):
     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
     zaehler = Zaehler.objects.filter(profil=profil)
-    queryset = zaehler.order_by("letzte").last()
-    letzte = queryset.letzte.strftime("%d.%m.%y %H:%M")
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
-    bonus_gesamt = zaehler.aggregate(Sum('bonus'))['bonus__sum']
-    richtig_gesamt += bonus_gesamt
-    falsch_gesamt = zaehler.aggregate(sum=Sum('fehler_zaehler'))['sum']
-    abbr_gesamt = zaehler.aggregate(sum=Sum('abbr_zaehler'))['sum']
-    lsg_gesamt = zaehler.aggregate(sum=Sum('lsg_zaehler'))['sum']
-    hilfe_gesamt = zaehler.aggregate(sum=Sum('hilfe_zaehler'))['sum']
     anzahl = zaehler.filter(sj = profil.sj, hj = profil.hj).count()                             # Anzahl der, in diesem Hj bearbeiteten Kategorien                                                       
+    zaehler = zaehler.filter(kategorie = kategorie).first()
+    fehler_ab = zaehler.fehler_ab
+    protokoll = protokoll.filter(kategorie = kategorie, start__gt=fehler_ab)
+    temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
+    fehler_kat = temp if temp else  0
+    richtig_gesamt = temp if temp else  0
     if anzahl == 0:
         durchschnitt = 0
     else:
         durchschnitt = int(richtig_gesamt/anzahl)
-    return durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt
+    return durchschnitt, richtig_gesamt, fehler_kat
 
 def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
     d0 = date(sj//100+2000,7,24)
@@ -6450,6 +7282,12 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
     schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
     if schulwoche < 0: 
         schulwoche = 0  
+    # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
+    # profil_gruppe = profil.gruppe
+    # if profil_gruppe:
+    #     startdatum = profil.gruppe.erstellt_am
+    # else:
+    #     startdatum = profil.user.date_joined
     if hj == 2:
         zweites_hj = (sj%100+2000)
         d2 = date(zweites_hj,1,24)
@@ -6461,19 +7299,27 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
             spaeter = ((startdatum-d2).days)//7
     else:
         woche_halbjahr = schulwoche
-        if woche_halbjahr <= 0:
-            woche_halbjahr = 0
-            spaeter = 0
-        else:
-            try:
-                spaeter = (startdatum.date() - d0).days//7 
-            except:       
-                spaeter = (startdatum - d0).days//7        
-    if woche_halbjahr < 0:
-        woche_halbjahr = 0
+        try:
+            spaeter = (startdatum.date() - d0).days//7 
+        except:       
+            spaeter = (startdatum - d0).days//7
+    if spaeter >= woche_halbjahr:
+        spaeter = 0
     if spaeter < 0:
         spaeter = 0
-    soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
+    if woche_halbjahr <= 0:
+        woche_halbjahr = 0
+        spaeter = 0
+    if hj == 2:
+<<<<<<< HEAD
+        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter] + 1
+    else:
+        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter] + 1
+=======
+        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
+    else:
+        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     if soll_hj > 1600:
         soll_hj = 1600
@@ -6489,11 +7335,10 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
 
 def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
     prozent_kat = 0 if soll_kat == 0 else richtig/soll_kat*100
+    if prozent_kat > 50:
+        prozent_kat = (prozent_kat+(richtig-falsch-lsg-abbr)/richtig*100)/2
     if prozent_kat > 110:
         prozent_kat = 110
-    if richtig > 0:
-        #prozent_kat *= ((richtig-falsch-lsg-abbr)/richtig)
-        prozent_kat = (prozent_kat+((richtig-falsch-lsg-abbr)/richtig*100))/2
     if prozent_kat < 0:
         prozent_kat = 0
     prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
@@ -6518,11 +7363,14 @@ def uebersicht(req, schueler_id=0):
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
+        print(schueler_id)
         if schueler_id == 0:
             profil = get_object_or_404(Profil, user_id = req.user.id)
             if lehrer:
                 loeschen = True            
         else:
+            if schueler_id == req.user.profil.id:
+                loeschen = True
             profil = get_object_or_404(Profil, id = schueler_id)
         if (profil.id) == (req.user.profil.id):
             pass
@@ -6540,12 +7388,40 @@ def uebersicht(req, schueler_id=0):
                     return HttpResponse("Daten nicht vorhanden")
             else:
                 return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-        if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
-            richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
-            #letzte = k['letzte']
+        gruppe = profil.gruppe
+        if gruppe:
+            aufgaben_pro_woche = gruppe.aufgaben_pro_woche
+            bewertung_anzeigen = gruppe.note_anzeigen
+            if bewertung_anzeigen:
+                profil.alle_zeigen = False
+                profil.save()
+            if aufgaben_pro_woche < 1:
+                aufgaben_pro_woche = 10 * profil.jg
         else:
-            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
+            aufgaben_pro_woche = 10 * profil.jg
+            bewertung_anzeigen = False
+            profil.alle_zeigen = True
+            profil.save()
+        alle_zeigen = profil.alle_zeigen
+        protokoll = Protokoll.objects.filter(profil=profil)
+        if alle_zeigen:
+            form = UebersichtAlle
+        else:
+            form = UebersichtHalbjahr
+        if req.method == 'POST':
+            auswahl = form(req.POST)
+            if auswahl.is_valid(): 
+                auswahl = auswahl.cleaned_data['auswahl']
+                profil.alle_zeigen = True if auswahl == "all" else False
+                profil.save()
+        alle_zeigen = profil.alle_zeigen
+        if alle_zeigen:
+            form = UebersichtAlle
+            bewertung_anzeigen = False
+        else:
+            form = UebersichtHalbjahr
+            protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+        richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
         alle = False
         if req.method == 'POST':
             alle = True
@@ -6563,35 +7439,24 @@ def uebersicht(req, schueler_id=0):
         bearbeitet = 0
         prozent_kat = 0
         breite = "breit"
-        sj = profil.sj
-        hj = profil.hj
+<<<<<<< HEAD
+=======
         gruppe = profil.gruppe
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
         prozent_summe = nicht_richtig_summe =  nicht_richtig_summe_quote = 0
         prozent_summe_farbe = nicht_richtig_summe_farbe = farbe_kat = None
         note = "-"
-        bewertung_anzeigen = True
-        aufgaben_pro_woche = 10
-        if gruppe:
-            aufgaben_pro_woche = gruppe.aufgaben_pro_woche
-            bewertung_anzeigen = gruppe.note_anzeigen
-            if aufgaben_pro_woche < 1:
-                aufgaben_pro_woche = 10 * profil.jg
-        else:
-            aufgaben_pro_woche = 10 * profil.jg
-            bewertung_anzeigen = False
         if profil.jg > 10:
             aufgaben_pro_woche = 100
         try:
             details = profil.details
         except:
             details = True
-        # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
-        profil_gruppe = profil.gruppe
-        if profil_gruppe:
-            startdatum = profil.gruppe.erstellt_am
-        else:
-            startdatum = profil.user.date_joined
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(profil.sj, profil.hj, profil.jg, aufgaben_pro_woche, profil.user.date_joined)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
@@ -6616,45 +7481,60 @@ def uebersicht(req, schueler_id=0):
                     zeile = [[],[]] 
                     richtig_kat = k['richtig_sum']
                     richtig_kat += zaehler_kategorie.bonus
+                    richtig_gesamt += richtig_kat
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
                         kat_farbe = "gelb"
+<<<<<<< HEAD
+=======
                     elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
                         kat_farbe = "gelb"
                     #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
-                    falsch_kat = zaehler_kategorie.fehler_zaehler
-                    abbr_kat = zaehler_kategorie.abbr_zaehler
-                    lsg_kat = zaehler_kategorie.lsg_zaehler
-                    hilfe_kat = zaehler_kategorie.hilfe_zaehler  
+                    # falsch_kat = zaehler_kategorie.fehler_zaehler
+                    # abbr_kat = zaehler_kategorie.abbr_zaehler
+                    # lsg_kat = zaehler_kategorie.lsg_zaehler
+                    # hilfe_kat = zaehler_kategorie.hilfe_zaehler  
                     # else:
-                    #     fehler_ab = zaehler_kategorie.fehler_ab
-                    #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
-                    #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
-                    #         protokoll_fehler
-                    #         .values("kategorie__zeile")
-                    #         .annotate(falsch_kat=Sum('falsch'))
-                    #         .annotate(abbr_kat=Sum('abbr'))
-                    #         .annotate(lsg_kat=Sum('lsg'))
-                    #         .annotate(hilfe_kat=Sum('hilfe'))
-                    #         ) 
-                    #     for f in protokoll_fehler:
-                    #         falsch_kat = f['falsch_kat'] 
-                    #         abbr_kat = f['abbr_kat']
-                    #         lsg_kat = f['lsg_kat'] 
-                    #         hilfe_kat = f['hilfe_kat'] 
-                    #         if abbr_kat == True:
-                    #             abbr_kat = 1
-                    #         elif abbr_kat == False:
-                    #             abbr_kat = 0 
-                    #         if lsg_kat == True:
-                    #             lsg_kat = 1
-                    #         elif lsg_kat == False:
-                    #             lsg_kat = 0 
-                    #         if hilfe_kat == True:
-                    #             hilfe_kat = 1
-                    #         elif hilfe_kat == False:
-                    #             hilfe_kat = 0 
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+                    fehler_ab = zaehler_kategorie.fehler_ab
+                    protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
+                    protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+                        protokoll_fehler
+                        .values("kategorie__zeile")
+                        .annotate(falsch_kat=Sum('falsch'))
+                        .annotate(abbr_kat=Sum('abbr'))
+                        .annotate(lsg_kat=Sum('lsg'))
+                        .annotate(hilfe_kat=Sum('hilfe'))
+                        ) 
+                    for f in protokoll_fehler:
+<<<<<<< HEAD
+                        falsch_kat = f['falsch_kat']
+                        falsch_gesamt += falsch_kat 
+                        abbr_kat = f['abbr_kat']
+                        abbr_gesamt += abbr_kat
+                        lsg_kat = f['lsg_kat'] 
+                        lsg_gesamt += lsg_kat
+                        hilfe_kat = f['hilfe_kat'] 
+                        hilfe_gesamt += hilfe_kat
+=======
+                        falsch_kat = f['falsch_kat'] 
+                        abbr_kat = f['abbr_kat']
+                        lsg_kat = f['lsg_kat'] 
+                        hilfe_kat = f['hilfe_kat'] 
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+                        if abbr_kat == True:
+                            abbr_kat = 1
+                        elif abbr_kat == False:
+                            abbr_kat = 0 
+                        if lsg_kat == True:
+                            lsg_kat = 1
+                        elif lsg_kat == False:
+                            lsg_kat = 0 
+                        if hilfe_kat == True:
+                            hilfe_kat = 1
+                        elif hilfe_kat == False:
+                            hilfe_kat = 0 
                     qfarbe = quote_farbe(richtig_kat, falsch_kat)
                     zeit_kat = k['zeit_sum']
                     try:
@@ -6708,11 +7588,13 @@ def uebersicht(req, schueler_id=0):
                             kat_farbe = None
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
+                    if alle_zeigen:
+                        kat_farbe = None if richtig_kat >= 10 else "rot"
                     if details == True:
                         zeile = (kategorie,((kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)), 
-                                (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat), (prozent_farbe,str(int(prozent_kat))+"%"), (None,letzte_kat)))
+                                (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat), (prozent_farbe,"" if alle_zeigen else str(int(prozent_kat))+"%"), (None,letzte_kat)))
                     else:
-                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe,str(nicht_richtig_quote)+"%"),  (prozent_farbe,str(int(prozent_kat))+"%")))   
+                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%"),  (prozent_farbe,"" if alle_zeigen else str(int(prozent_kat))+"%")))   
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
@@ -6723,12 +7605,9 @@ def uebersicht(req, schueler_id=0):
                     bonus_kat = 0
                 if bonus_kat > 0:
                     richtig_kat = bonus_kat
-                    #richtig_gesamt += bonus_kat
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
-                        kat_farbe = "gelb"
-                    elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
                         kat_farbe = "gelb"
                 else:
                     kat_farbe = 'rot' if pflicht else None
@@ -6774,14 +7653,12 @@ def uebersicht(req, schueler_id=0):
             qfarbe = "unset" 
             dauer = '-'
             pro_aufg = "-" 
-        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
+        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, schueler_id = schueler_id, 
+            zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle = alle,
-            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
-            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung = bewertung_anzeigen)
-        # try:
-        #     context["letzte"] = letzte.strftime("%d.%m.%y %H:%M")
-        # except:
-        #     pass
+            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe="" if alle_zeigen else prozent_summe, note=note, 
+            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, 
+            bewertung = bewertung_anzeigen, form=form,)
         if details:
             return render(req, 'core/uebersicht.html', context)
         else:
@@ -6993,9 +7870,11 @@ def hilfe(req, zaehler_id, protokoll_id):
 
 #Dict zum Zuordnen der kategorie.zeile zu den einzelnen Aufgaben:
 AUFGABEN = {
-    1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 8: zahlen, 9: malget10, 10: runden, 
-    11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 
-    21: quader, 22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen}
+    1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 
+    8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
+    15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
+    22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
+    29: wurzeln, 30: dreiecke,}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
@@ -7038,23 +7917,24 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
         else:
             eingabe=eingabe.replace("^2","²")
             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-            if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
+<<<<<<< HEAD
+=======
+            print(lsg)
+>>>>>>> 1af5d7cbbc8716eed71dedf201720ad058bc8558
+            if lsg[-1] == 'indiv_2':                # hier wird der Wert eines Terms berechnet (für prozentrechnung, Quader, Satzgruppe des Pythagoras) 
                 parser = Parser()
                 try:
                     zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
                     if round(zahl,3) == round((lsg[1]),3):
-                        if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2':                   
-                                punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
-                                return punkte, rueckmeldung
                         return 1, ""
                     else:
                         return -1, ""
                 except:
-                   return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
+                    return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
-                        if lsg[-1] == 'indiv_1' or lsg[-1] == 'indiv_2' :                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
+                        if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                             punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
                             return punkte, rueckmeldung
@@ -7073,6 +7953,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
 
 # hier läuft alles zusammen <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def main(req, slug):
+    duell = req.session.get('duell')                                                                   
     if req.user.is_authenticated: 
         kategorie = get_object_or_404(Kategorie, slug = slug)
         profil = get_profil(req.user)
@@ -7139,22 +8020,22 @@ def main(req, slug):
                 #wenn Eingabe richtig:
                 if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
                     if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
-                        rueckmeldung = "Alle Werte waren richtig richtig!"
+                        rueckmeldung = "Alle Werte waren richtig."
                         zaehler.richtig_of += tabelle
                         zaehler.aufgnr += tabelle
                         # entfernt eventuelle Einträge "r"
                         protokoll.wertung = protokoll.wertung.replace("r", "") + richtig*"r"
                     elif tabelle == 0 :
                         if "enauer" in rueckmeldung:
-                            rueckmeldung = "Die letzte Aufgabe war fast richtig!"+ rueckmeldung
+                            rueckmeldung = "Die letzte Aufgabe war fast richtig."+ rueckmeldung
                         else:
-                            rueckmeldung = "Die letzte Aufgabe war richtig!"+ rueckmeldung
+                            rueckmeldung = "Die letzte Aufgabe war richtig."+ rueckmeldung
                         zaehler.richtig_of += 1
                         zaehler.aufgnr += 1                                                                         
                         protokoll.wertung = protokoll.wertung + "r"
                     if zaehler.richtig_of >= kategorie.eof:                 # wenn die erforderliche Anzahl richtiger Antworten eingegeben wurde, wird der jeweilige Fehlerzähler zurückgesetzt
                         if zaehler.fehler_zaehler > 0:
-                            rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Dein Fehlerzähler wurde zurückgesetzt!</b>"
+                            rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Dein Fehlerzähler wurde zurückgesetzt.</b>"
                         zaehler.fehler_ab = timezone.now()
                         zaehler.fehler_zaehler = 0
                         zaehler.lsg_zaehler = 0
@@ -7218,7 +8099,7 @@ def main(req, slug):
                     if protokoll.versuche >= 3:
                         zaehler.aufgnr += tabelle
                         zaehler.save()                                           
-                        messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
+                        messages.info(req, "Leider war deine Eingabe dreimal falsch.<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt.".format(protokoll.loesung[0])) 
                         anmerkung = "dreimal"
                     else:
                         if wertung < 0:                             #wenn mithilfe des Eintrags "indiv_1" ein Teilpunkt vergeben wurde, wird dies hier angezeigt:
@@ -7233,10 +8114,10 @@ def main(req, slug):
                             zaehler.save()
                             #nach drei Falscheingaben wird die richtige Lösung angezigt und anschließend die Übersichtsseite aufgerufen:
                             if protokoll.versuche >= 3:                                           
-                                messages.info(req, "Leider war deine Eingabe dreimal falsch!<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt!".format(protokoll.loesung[0])) 
+                                messages.info(req, "Leider war deine Eingabe dreimal falsch.<br>Richtig wäre die Lösung: {0} <br>- Frage mal jemanden der dir das erklärt.".format(protokoll.loesung[0])) 
                                 anmerkung = "drei"
                             else:
-                                messages.info(req, f'Die letzte Aufgabe war leider falsch! Versuche: {protokoll.versuche}')#, {msg}') 
+                                messages.info(req, f'Die letzte Aufgabe war leider falsch. Versuche: {protokoll.versuche}')#, {msg}') 
                         else:
                             if not "tab" in protokoll.parameter["name"]:
                                 messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
@@ -7249,9 +8130,9 @@ def main(req, slug):
                 einheit = protokoll.einheit
                 hilfe_id = protokoll.hilfe_id
                 if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
-                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht! <br>In eine Wertetabelle gehören z.B. keine Buchstaben rein.')
+                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht. <br>In eine Wertetabelle gehören z.B. keine Buchstaben rein.')
                 else:
-                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht! <br>Möglicherweise ist deine Eingabe zu lang.')
+                    messages.info(req, 'Da stimmt was mit deiner Eingabe nicht. <br>Möglicherweise ist deine Eingabe zu lang.')
                 context = dict(kategorie = kategorie, typ = protokoll.typ, titel = titel, aufgnr = zaehler.aufgnr, text = text, frage = frage,
                     form = form, zaehler_id = zaehler.id, hilfe = 0, protokoll_id = protokoll.id, parameter = protokoll.parameter, message_unten = "",  bis_loeschen = bis_loeschen)
                 return render(req, 'core/aufgabe.html', context)                
@@ -7270,10 +8151,9 @@ def main(req, slug):
             zaehler.save()
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
-                # messages.info(req, "Los geht's")
                 zaehler.zeit_summe = 0
-                durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt,  = durchschnitt_aufgaben(profil)
-                if richtig_gesamt > 100:
+                durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
+                if richtig_gesamt > 100 and fehler_kat < 1:
                     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
                         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden

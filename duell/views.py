@@ -8,19 +8,21 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse 
 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from django.db.models import Count, Sum 
 
 from accounts.models import Profil, Lerngruppe
-from accounts.views import stufe_aus_jg
+from accounts.forms import Register_Form, Profil_Form, Login_Form 
+from accounts.views import stufe_aus_jg, name_hj
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from core.forms import AufgabeFormZahl, AufgabeFormStr
 from core.views import format_zahl, aufgaben, kontrolle
 
 from .models import Duellant, Duell, Duell_Protokoll
-from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter, Gruppe_Temp_Form
+from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter, Gruppe_Temp_Form, Duell_light_Form
 
 def duell_rang(gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
@@ -124,8 +126,11 @@ def duell_uebersicht(req, gruppe_id):
         for duellant in duellanten:
             duellant.abwesend = True if str(duellant.id) in IDs else False
             duellant.save()
-    req.session['gruppe_id'] = gruppe_id  
-    context={'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
+    req.session['gruppe_id'] = gruppe_id
+    duell = req.session.get('duell')
+    # if 'duell' in req.session:
+    #     del req.session['duell']
+    context={'duell': duell, 'gruppe_id': gruppe_id, 'gruppe': gruppe, 'duellanten': duellanten, 'dubletten_liste': ", ".join(dubletten_liste), 'leerstellen_liste': ", ".join(leerstellen_liste),'titel': "Schülerdaten ändern"} 
     return render(req, 'duell_uebersicht.html', context)
 
 def duell_start(req):
@@ -137,7 +142,8 @@ def duell_start(req):
     for item in zaehler:
         item.optionen_text = ""
         item.save()
-    context={'gruppe': gruppe, 'kategorien': kategorien} 
+    duell = req.session.get('duell')
+    context={'duell': duell, 'gruppe': gruppe, 'kategorien': kategorien} 
     return render(req, 'duell_start.html', context)
 
 def duellant_aendern(req, duellant_id):
@@ -163,7 +169,8 @@ def duellant_aendern(req, duellant_id):
             req.method = 'GET'
         return duell_uebersicht(req, gruppe_id)
     form = Duellant_Aendern_Form(instance=duellant)
-    return render(req, 'duellant_aendern.html', {'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form, 'edit':True})
+    duell = req.session.get('duell')
+    return render(req, 'duellant_aendern.html', {'duell': duell, 'gruppe_id': gruppe_id, 'duellanten': duellanten, 'duellant': duellant, 'form': form, 'edit':True})
 
 def duell_aufgabe(req, slug):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
@@ -182,11 +189,11 @@ def duell_aufgabe(req, slug):
     #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
     if kategorie.slug == "sachaufgaben":
         try:  
-            user.voreinst["sachaufg"] = user.voreinst["sachaufg"] + 1
+            profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
         except:                                       
-            user.voreinst.update({"sachaufg" : random.randint(1,20)})
-        user.save()
-        typ_anf = user.voreinst["sachaufg"]
+            profil.voreinst.update({"sachaufg" : random.randint(1,20)})
+        profil.save()
+        typ_anf = profil.voreinst["sachaufg"]
     else:
         typ_anf = zaehler.typ_anf  
     typ_end = zaehler.typ_end  
@@ -194,12 +201,12 @@ def duell_aufgabe(req, slug):
     stufe=(stufe_aus_jg(gruppe.jg))
     #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
     if kategorie.name in ("Prozentrechnung","Bruchteile"):
-        if user.kurs == "A" or user.kurs == "Y":
+        if profil.kurs == "A" or profil.kurs == "Y":
             stufe = stufe + 0.2
     typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = typ_end, optionen = "") 
     if kategorie.slug == "sachaufgaben":
-        user.voreinst["sachaufg"] = typ
-        user.save()
+        profil.voreinst["sachaufg"] = typ
+        profil.save()
     if not titel:
         titel = kategorie.name
     text = text.format(*variable)
@@ -252,7 +259,7 @@ def duell_optionen(req, slug):
     stufe=(stufe_aus_jg(gruppe.jg))
     kategorie = get_object_or_404(Kategorie, slug = slug)
     form = Duell_AuswahlForm(kategorie = kategorie)
-    user = req.user  
+    profil = req.user.profil  
     if req.method == 'POST':
         form = Duell_AuswahlForm(req.POST, kategorie = kategorie, jg=jg, stufe=stufe)
         if form.is_valid():
@@ -272,7 +279,7 @@ def duell_optionen(req, slug):
                 optionen_text = "keine"    
         else:
             optionen_text = "keine"
-    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = user.profil)
+    zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
     zaehler.optionen_text = optionen_text       
     typ_anf, typ_end = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
@@ -325,7 +332,6 @@ def sub_auslosen(gruppe_id):
 
 def duell_loesung(req):
     duell = Duell.objects.get(pk = req.session.get('duell_id'))
-    #gruppe = get_object_or_404(Lerngruppe, pk=duell.gruppe_id)
     protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
     if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
         protokoll.loesung = [protokoll.parameter['y5']]
@@ -599,6 +605,7 @@ def neu_auslosen(req, mit):
 def duell_loeschen(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
     gruppen = Lerngruppe.objects.filter(lehrer=req.user)
+    duell = req.session.get('duell')
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
     try:
@@ -637,11 +644,17 @@ def duell_loeschen(req):
                     gruppe.delete()
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
-        return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
-    return render(req, 'duell_loeschen.html' , context={'titel': "Daten löschen", 'gruppe' : gruppe}) 
+        if duell:
+            gruppen = gruppen.exclude(temp = False)
+            gruppe_form = Duell_light_Form() 
+            return render(req, 'duell_light/duell_light.html', context={'gruppen': gruppen, 'gruppe_neu': gruppe_form})
+        else:
+            return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen,})
+    return render(req, 'duell_loeschen.html' , context={'duell':duell, 'titel': "Daten löschen", 'gruppe' : gruppe}) 
 
 def duell_how_to(req):
-    return render(req, 'duell_how_to.html')    
+    duell = req.session.get('duell')
+    return render(req, 'duell_how_to.html', {'duell': duell})    
 
 def duell_protokoll(req):
     gruppe = Lerngruppe.objects.get(pk = req.session.get('gruppe_id'))
@@ -649,10 +662,9 @@ def duell_protokoll(req):
         return HttpResponse("Zugriff verweigert")
     else:
         duell_protokoll = Duell_Protokoll.objects.filter(duell__gruppe=gruppe).order_by('id').reverse()
-        form = DuellProtokollFilter#(
-            #     req.POST, req.FILES, gruppe
-            # )
-        context = dict(duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
+        form = DuellProtokollFilter
+        duell = req.session.get('duell')
+        context = dict(duell = duell, duell_protokoll = duell_protokoll, gruppe = gruppe, form = form)
         return render(req, 'duell_protokoll.html', context)
 
 # nur für temporäre Duellgruppen
@@ -684,4 +696,104 @@ def temp_loeschen(req, id):
             return HttpResponse("Zugriff verweigert")
         else:
             temp.delete()
-    return render(req, 'duell_uebersicht.html', context={'gruppe': gruppe, 'duellanten': duellanten, 'titel': gruppe,})
+    duell = req.session.get('duell')
+    return render(req, 'duell_uebersicht.html', context={'duell': duell, 'gruppe': gruppe, 'duellanten': duellanten, 'titel': gruppe,})
+    
+def duell_neue_gruppe(req):
+    if not req.user.is_authenticated:
+        return redirect('anmelden')  
+    gruppe_form = Gruppe_Temp_Form() 
+    if req.method == 'POST':
+        gruppe_form= Gruppe_Temp_Form(req.POST) 
+        if  gruppe_form.is_valid():
+            gruppen = Lerngruppe.objects.filter(lehrer=req.user).order_by('name')
+            neu = gruppe_form.cleaned_data['name']
+            jg = gruppe_form.cleaned_data['jg']
+            gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
+            if not created:
+                return render(req, 'duell_light/duell_light.html.html', context={'gruppe': gruppe, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
+            return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "neue Lerngruppe wurde angelegt"}) 
+    return render(req, 'duell_light/duell_light.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
+
+# hier kommt der Code für den Aufruf des Duells über rechenduell.app (Duell_light):
+def duell(req):
+    req.session['duell'] = "light"                                      # sorgt dafür, dass unter "home" auf die Seite rechentrainer.app/duell gesprungen wird 
+    titel = untertitel = oder = ""
+    login_form = Login_Form()
+    gruppe_form = Duell_light_Form()
+    if req.method == 'POST':
+        gruppe_form = Duell_light_Form(req.POST) 
+        if  gruppe_form.is_valid():
+            neu = gruppe_form.cleaned_data['name']
+            jg = gruppe_form.cleaned_data['jg']
+            gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
+            if not created:
+                untertitel = "Ein Gruppe mit diesem Name existiert schon!" 
+            else:
+                untertitel = "Die Gruppe {} wurde angelegt".format(gruppe.name)
+        else:
+            form = Login_Form(req.POST)
+            if  form.is_valid ():
+                username = form.cleaned_data['username']
+                password = form.cleaned_data['password']            
+                user = authenticate(req, username=username, password=password)
+                if user is not None:
+                    login(req, user)
+                else:
+                    titel = "Username und/oder Passwort stimmen nicht"                
+    try:
+        gruppen = Lerngruppe.objects.filter(lehrer=req.user, temp = True).order_by('name')
+        titel = "Gruppe auswählen:"
+        oder = "... oder "
+    except:
+        gruppen = None
+   #if req.user.is_authenticated:
+        #titel = "Gruppe anlegen:" if gruppen == None else "Bestehende Gruppe auswählen:"        
+    return render(req, 'duell_light/duell_light.html', context={'gruppen': gruppen, 'gruppe_neu': gruppe_form, 'login_form': login_form, 'titel': titel, 'untertitel': untertitel, 'oder': oder})
+
+def duell_light_registrieren(req):
+    reg_form = Register_Form()
+    profil_form = Profil_Form()  
+    datenschutz = ""
+    if req.method == 'POST':
+        datenschutz = req.POST.get('datenschutz', 'off')
+        reg_form = Register_Form(req.POST)
+        profil_form = Profil_Form(req.POST) 
+        if datenschutz == "on":
+            if  reg_form.is_valid() and profil_form.is_valid(): 
+                user = reg_form.save()
+                profil = profil_form.save(commit=False)
+                kurs = profil_form.cleaned_data['kurs']
+                jg = profil_form.cleaned_data['jg']
+                profil.stufe = stufe_aus_jg(jg, kurs)
+                sj, hj = name_hj()
+                profil.sj = sj
+                profil.hj = hj
+                profil.user = user
+                profil.save()
+                username = reg_form.cleaned_data['username']
+                password = reg_form.cleaned_data['password1']
+                user = authenticate(username=username, password=password)
+                login(req, user)
+                req.session['duell'] = "light"                                      # sorgt dafür, dass unter "home" auf die Seite rechentrainer.app/duell gesprungen wird 
+                return duell(req)
+    context = {'reg_form' : reg_form, 'profil_form' : profil_form, 'datenschutz': datenschutz,'titel': "Registrieren"} 
+    return render(req, 'duell_light/duell_light_registrieren.html', context)
+
+def duell_light_abmelden(req):
+    logout(req)
+    return duell(req)
+
+def zum_rechentrainer(req):
+    if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
+        if 'duell' in req.session:
+            del req.session['duell']
+        return redirect ('index')        
+    if req.method == 'POST':
+        # if 'duell' in req.session:
+        #     del req.session['duell']
+        return redirect ('index')        
+    return render(req, 'duell_light/zum_rechentrainer.html')
+
+    
+

@@ -35,10 +35,14 @@
 <body>
     <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
         {% csrf_token %}
-        <h1 style= "text-align: left;">Zeitraum:
-            {{form_filter}}
-            <input name="filter" type="submit" value="anwenden">
-        </h1>
+        <h2 style= "text-align: left;"> Zeitraum: 
+            <button type="button">
+                {{form_filter.auswahl}}
+            </button type="button">
+            <button type="button">
+                <input name="filter" type="submit" value="anwenden">
+            </button type="button">
+        </h2>
     </form>
     <br> 
     <table>

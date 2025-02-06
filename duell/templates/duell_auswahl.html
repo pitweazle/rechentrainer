@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="de">
+    <head>       
+        <title>Rechenduell im Web</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
+    </head>
+
+    {% block css_files %}
+    {% endblock %}
+
+    <header>
+        <div class="navbar">
+            <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+            {% comment %} <a href="{% url 'index' %}">&#8962 Home</a> {% endcomment %}
+            <a>{{titel}}</a>
+        </div> 
+    </header>
+
+    <container>
+        {% block content %}
+        {% endblock %}
+    </container>
+</html>

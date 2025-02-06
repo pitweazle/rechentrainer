@@ -55,6 +55,7 @@ coverage.xml
 #*.pot
 
 # Django stuff:
+db.sqlite3
 __pycache__/
 */__pycache__/
 *.log

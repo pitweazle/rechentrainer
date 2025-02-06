@@ -47,7 +47,13 @@ class ProtokollFilter(forms.Form):
  
 class ProtokollFilter_neu(forms.Form):
     auswahl = forms.ChoiceField(label='Filter', choices=[("next",'nächstes Halbjahr'), ("Halbjahr",'aktuelles Halbjahr'), ('heute','heute'), ('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),])
- 
+
+class UebersichtHalbjahr(forms.Form):
+    auswahl = forms.ChoiceField(choices=[("Halbjahr",'aktuelles Halbjahr'), ("all",'Alle Aufgaben'),])
+
+class UebersichtAlle(forms.Form):
+    auswahl = forms.ChoiceField(choices=[("all",'Alle Aufgaben'),("Halbjahr",'aktuelles Halbjahr'), ])
+
 class Sachaufgaben(forms.ModelForm):
     class Meta:
         model = Sachaufgabe

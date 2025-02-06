@@ -7,7 +7,6 @@ def installation_film(req):
     return render(req, 'medien/installation_film.html')  
 
 def weitere_aufgaben(req):
-    print("hier kommt der Link noch an")
     return render(req, 'medien/weitere_aufgaben.html')  
 
 def weitere_projekte(req):
