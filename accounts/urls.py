@@ -15,6 +15,7 @@ urlpatterns = [
     path("registrieren/", views.registrieren, name="registrieren"),
     path("profil/", views.profil, name="profil"), 
     path("account_loeschen/", views.account_loeschen, name="account_loeschen"),
+    path("wiederanmeldung/", views.wiederanmeldung, name="wiederanmeldung"),
 
     path("ort_wahl/", views.ort_wahl, name="ort_wahl"),
     path("schule_wahl/<schule_id>/", views.schule_wahl, name="schule_wahl"), 
@@ -27,6 +28,7 @@ urlpatterns = [
 
     path("profil_lehrer/", views.profil_lehrer, name="profil_lehrer"), 
     path("aufgaben_loeschen/<int:lehrer_id>/", views.aufgaben_loeschen, name="aufgaben_loeschen"),
+    path("stufen/", views.stufen, name="stufen"),
 
     path("meine_gruppen/", views.meine_gruppen, name="meine_gruppen"),
     path("neue_gruppe/", views.neue_gruppe, name="neue_gruppe"),
@@ -45,7 +47,7 @@ urlpatterns = [
     path("altes_loeschen/", views.altes_loeschen),
 
     path("reparatur/", views.reparatur),
-    path("zaehler_ergaenzen/", views.zaehler_ergaenzen),
+    path("datum_suchen/", views.datum_suchen),
 
     path("suchen/", views.suchen, name="suchen"),
     

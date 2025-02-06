@@ -13,8 +13,8 @@
 <button>        
     <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
 </button>
-
 {%endif%}
+
 <h2>{{schueler.vorname}} {{schueler.nachname}}
 {% if not loeschen or not lehrer %}
 {{schueler.klasse}}</h2>
@@ -24,6 +24,19 @@
 {% endif %}
 
 <ul class={{breite}}>
+    {% if not bewertung or lehrer %}
+        <form action="/uebersicht/{{schueler.id}}/" method="POST">
+            {% csrf_token %}
+            <h2 style= "text-align: left;"> Zeitraum: 
+                <button type="button">
+                    {{form.auswahl}}
+                </button type="button">
+                <button type="button">
+                    <input name="filter" type="submit" value="anwenden">
+                </button type="button">
+            </h2>
+        </form>
+    {% endif %}
     <table>
         <thead>
             <tr>
@@ -49,7 +62,7 @@
             </tr>
         </thead>
         <tbody>
-            <td style="text-align: center;">Aufgaben Halbjahr</td>
+            <td style="text-align: center;">Summe</td>
             <td class = "{{summe_farbe}}">{{richtig}}</td>
             {% if details == True %}
                 <td>{{falsch}}</td>
@@ -65,7 +78,7 @@
                 <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
             {% endif %}
             {% comment %} {% if prozent_summe %} {% endcomment %}
-                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+            <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
             {% comment %} {% else %}
                 <th></th> 
             {% endif %}               {% endcomment %}

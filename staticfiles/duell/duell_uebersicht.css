@@ -21,6 +21,11 @@
 td {
     text-align: center;
 }
+
+th {
+  text-align: left;
+}
+
 .container {
     max-width: 500px;
   }

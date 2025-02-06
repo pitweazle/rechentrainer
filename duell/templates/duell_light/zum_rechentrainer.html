@@ -1,0 +1,10 @@
+{% extends 'auswahl.html' %}  
+{% block content %}
+  <body>
+    <h2>Bitte beachten:</h2>
+    <p>Wer hier nicht als Lehrkraft freigeschaltet ist, kann in der rechentrainer.app seine Gruppen nicht aufrufen</p>
+    <p>Zur Freischaltung bitte einfach eine Email mit Schulort und Name der Schule an 'info@rechentrainer.app' schicken.</p>
+    <p>OK, das habe ich verstanden <button><a href="{% url 'index' %}">zur rechentrainer.app</a></button></p>
+    <p>Nein, bitte zurück <button><a href="javascript:history.go(-1)" class="btn btn-default">zur rechenduell.app</a></button></p>
+  </body>  
+{% endblock %}
