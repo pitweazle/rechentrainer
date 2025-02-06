@@ -1,0 +1,14 @@
+{% extends 'auswahl.html' %}  
+{% block content %}
+    <body>
+        <h2>Es scheint als hättest du dich hier länger nicht mehr angemeldet.</h2>
+        <h2>Schön, dass du wieder beim Rechentrainer mitmachen willst.</h2>
+        <p>Deine Aufgaben werden immer nur für ein Schulhalbjahr gewertet<br>Auf der Übersichtseite ('Aufgaben') wurden deine Aufgaben daher gelöscht.</p>
+        <p>Auf der Protokollseite kannst du dir aber immer noch alle Aufgaben anzeigen lassen.</p>
+        {%if Halbjahr == "Schuljahr" %}
+            <p>Ich gebe mal davon aus, dass du versetzt wurdest und habe als neues Schuljahr '{{jahrgang}}' eingetragen und den Namen deiner Klasse in '{{klasse}}' geändert</p>
+            <p>Falls der Klassennamen so nicht stimmt, kannst du ihn unter 'Profil' selbst ändern. Falls das Schuljahr nicht stimmt, kann das nur die Lehrkraft deiner Lerngruppe machen - oder du musst dem Rechentrainer eine Mail schicken.</p>
+        {% endif %}
+        <a href="{% url 'index' %}">weiter</a>
+    </body>
+{% endblock %}

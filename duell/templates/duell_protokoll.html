@@ -9,7 +9,11 @@
 {% block content %}
 <header>
     <div class="navbar">
-        <a href="{% url 'index' %}">&#8962 Home</a>
+        {% if duell %}
+            <a href="{% url 'duell' %}">&#8962 Home</a>
+        {% else %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        {% endif %}
         <a>Protokoll Rechenduell {{gruppe.name}} {{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}}</a>
         <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
     </div> 

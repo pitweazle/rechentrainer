@@ -14,11 +14,11 @@ body {
 }
 
 .footer {
-   position: fixed;
-   left: 0;
-   bottom: 0;
-   width: 100%;
-}
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+ }
 
 #wrapper {
 	width: 800px;
@@ -30,7 +30,7 @@ body {
 }
 
 #spalte_rechts {
-    background-color:#fc95ae;
+    background-color:#95cefc;
 	margin-left: 410px;
 
 }

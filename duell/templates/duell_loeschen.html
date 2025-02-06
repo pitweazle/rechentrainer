@@ -1,6 +1,5 @@
-{% extends 'auswahl.html' %}  
+{% extends 'duell_auswahl.html' %} 
 {% block content %}
-
     <body>
         <p>Ich frage sicherheitshalber nochmal:</p>
         <p>Sollen die Daten für das Rechenduell der Gruppe "{{gruppe.name}}" gelöscht werden?</p>
@@ -18,7 +17,7 @@
             <input type="submit" name="loeschen" value="loeschen"></button>
         </form>
         <button>
-            <a href="{% url 'meine_gruppen' %}">zurück</a>
+            <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
         </button>
     </body>
 {% endblock %}
