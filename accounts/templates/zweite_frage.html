@@ -3,7 +3,7 @@
   <body>
     <h2>Neues Halbjahr beginnen?</h2>
         <h2>Bist du sicher, dass du nicht lieber das neue Halbjahr beginnen willst?</h2>
-        <p>Am 1.{{monat}} werden die Aufgaben die du bis dahin gemacht hast auf der Übersichtseite gelöscht.<br>... jammere dann nicht rum!</p>
+        <p>Am 1.{{monat}} werden die Aufgaben die du bis dahin gemacht nicht für das neue Halbjahr gewertet<br>... jammere dann nicht rum!</p>
     <h2>Also noch mal die Frage:</h2>
     <form method="POST" action="{% url 'doch_neues_halbjahr' %}">
       {% csrf_token %}
@@ -14,7 +14,7 @@
       {% csrf_token %}
       <form>
           <br>
-          <input type="submit" value="nein, ich weiss aber Bescheid">
+          <input type="submit" value="nein, ich weiß aber Bescheid">
       </form> 
   </body>  
 {% endblock %}

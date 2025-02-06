@@ -55,8 +55,7 @@ class Lehrer_Aendern_Form(forms.ModelForm):
         fields = ['vorname', 'nachname', 'schule', 'zweite_schule', 'jg', 'kurs', 'stufe']
         labels = {
             'zweite_schule': 'zweite Schule',
-        }
-        help_texts = {'stufe': "Vor Änderung der Stufe bitte die Anleitung lesen!"}
+        }        
         widgets = {'jg': forms.TextInput(attrs={'size': 2}), 
                 'klasse': forms.TextInput(attrs={'size': 10}),
                 'stufe': forms.TextInput(attrs={'size': 2}),
@@ -96,7 +95,6 @@ class Gruppe_Neu_Form(forms.ModelForm):
         }
         help_texts = {'name': 'Das kann einfach der Name der Klasse sein oder die Kursbezeichnung aus dem Stundenplan - die Schülerinnen und Schüler sollten ihre Lerngruppe an diesem Namen erkennen können.',
                       'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
-
 
 class ProtokollFilter_Gruppe(forms.Form):
     auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ('8 Tage','8 Tage'), ('9 Tage','9 Tage'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("all",'Alle Aufgaben'),("next",'nächstes Halbjahr'), ])

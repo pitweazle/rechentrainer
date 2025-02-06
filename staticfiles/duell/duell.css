@@ -34,7 +34,7 @@ input[type=button], input[type=submit] {
 
 td {
   padding:0px;
-  text-align: center;
+  text-align: left;
 }
 
 .A{
@@ -78,3 +78,9 @@ margin: 5px;
   font-weight: bold; 
 }
 
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}

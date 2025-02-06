@@ -24,6 +24,17 @@
 {% endif %}
 
 <ul class={{breite}}>
+        <form action="/uebersicht/{{schueler.id}}/" method="POST">
+            {% csrf_token %}
+            <h2 style= "text-align: left;"> Zeitraum: 
+                <button type="button">
+                    {{form.auswahl}}
+                </button type="button">
+                <button type="button">
+                    <input name="filter" type="submit" value="anwenden">
+                </button type="button">
+            </h2>
+        </form>
     <table>
         <thead>
             <tr>

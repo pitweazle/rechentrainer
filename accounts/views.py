@@ -1,5 +1,7 @@
 from datetime import date, datetime, timedelta, time
 
+from django.utils import timezone
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
@@ -16,8 +18,6 @@ from .models import Schule, Lerngruppe,  Geloescht
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
-#from duell.views import temp_uebersicht
- 
 def name_hj():
     heute = datetime.today()
     jahr = heute.year
@@ -45,6 +45,8 @@ def name_next_hj():
 
 # Dies ist die Startseite:
 def index(req):
+    if 'duell' in req.session:
+        del req.session['duell']
     anz_angemeldet = Profil.objects.count()
     anz_lehrer = User.objects.filter(groups__name="Lehrer").count()
     anz_aufg = Protokoll.objects.count()
@@ -176,9 +178,14 @@ def hj_pruefen(req):
         heute = datetime.now()
         if heute.month == 1 or heute.month == 7:                            #Frage nach neuem Halbjahr
             next_sj, next_hj = name_next_hj()
-            if profil.hj == next_hj and profil.sj == next_sj:                   #user arbeitet schon am nächsten Hj
+            if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
                 return redirect('uebersicht') 
             else:
+                sj, hj = name_hj()
+                if profil.hj == hj and profil.sj == sj:
+                    pass
+                else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
+                    return redirect('wiederanmeldung')  
                 try:
                     if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
                         test = False
@@ -212,31 +219,12 @@ def naechstes_halbjahr(req):
         keinefragen = req.POST.get('keinefrage') 
         profil = get_object_or_404(Profil, user = req.user)
         if neues_halbjahr.lower() == 'ja':
-            for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
-                zaehler.fehler_zaehler = 0  
-                zaehler.lsg_zaehler = 0  
-                zaehler.hilfe_zaehler = 0  
-                zaehler.abbr_zaehler = 0  
-                #zaehler.richtig_of = 0
-                zaehler.save()
             sj, hj = name_next_hj()
             profil.hj = hj
             profil.sj = sj
-            profil.voreinst["no_hj"] = False
-            profil.voreinst["frage_hj"] = 0
+            profil.halbjahr_ab = timezone.now()
             profil.save()
-            if profil.hj == 2:
-                halbjahr = "Halbjahr"
-            else:
-                halbjahr = "Schuljahr" 
-                if profil.jg < 13:
-                    if str(profil.jg) in profil.klasse:
-                        profil.klasse = profil.klasse.replace(str(profil.jg), str(profil.jg+1),1)
-                    profil.jg +=1
-                    neue_stufe = stufe(profil.jg, profil.kurs)
-                    if neue_stufe > profil.stufe:
-                        profil.stufe = neue_stufe
-                    profil.save()
+            halbjahr = sub_daten_loeschen(req)
             return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
         if keinefragen == "on":
             profil.voreinst["no_hj"] = True
@@ -267,20 +255,33 @@ def doch_neues_halbjahr(req):
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})   
 
 def neues_halbjahr(req):
-    sj, hj = name_hj()
-    #print(sj,"/",hj)
     profil = get_object_or_404(Profil, user = req.user)
-    profil.voreinst["no_hj"] = False
-    profil.voreinst["frage_hj"] = 0
+    sj, hj = name_hj()
     profil.hj = hj
     profil.sj = sj
     profil.save()
+    halbjahr = sub_daten_loeschen(req)    
+    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+
+def wiederanmeldung(req):
+    profil = get_object_or_404(Profil, user = req.user)
+    sj, hj = name_hj()
+    profil.hj = hj
+    profil.sj = sj
+    profil.save()
+    halbjahr = sub_daten_loeschen(req)    
+    return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+
+def sub_daten_loeschen(req):
+    profil = get_object_or_404(Profil, user = req.user)
+    profil.voreinst["no_hj"] = False
+    profil.voreinst["frage_hj"] = 0
     for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
         zaehler.fehler_zaehler = 0  
         zaehler.lsg_zaehler = 0  
         zaehler.hilfe_zaehler = 0  
         zaehler.abbr_zaehler = 0 
-        #zaehler.bonus = 0 
+        zaehler.bonus = 0 
         zaehler.save()
     if profil.hj == 2:
         halbjahr = "Halbjahr"
@@ -293,10 +294,10 @@ def neues_halbjahr(req):
             neue_stufe = stufe_aus_jg(profil.jg, profil.kurs)
             if neue_stufe > profil.stufe:
                 profil.stufe = neue_stufe
-            profil.save() 
-    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+            profil.save()
+    return halbjahr 
 
-#für Schüler
+# für Schüler
 def profil(req):
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
         return redirect('profil_lehrer')
@@ -378,6 +379,8 @@ def lehrer_wahl(req, lehrer_id):
     return render(req, 'schueler/gruppe_wahl.html', context={ 'gruppen': gruppen, 'lehrer': lehrer, 'titel': "Lerngruppe wählen"})
 
 def gruppe_wahl(req, gruppe_id):
+    if not req.user.is_authenticated:
+        return redirect('anmelden')  
     schueler = get_object_or_404(Profil, user = req.user)
     try:
         gruppe = get_object_or_404(Lerngruppe, pk = gruppe_id)
@@ -490,26 +493,26 @@ def gruppe_uebersicht(req, gruppe_id):
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
-        protokoll = Protokoll.objects.filter(profil__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
+        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
     else:
-        protokoll = Protokoll.objects.filter(profil__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
+        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
     if req.method == 'POST':
         auswahl = form_filter(req.POST)
         filter = auswahl.fields['auswahl'].choices
         auswahl_liste = dict(filter)
         if auswahl.is_valid(): 
             auswahl = auswahl.cleaned_data['auswahl']
-            protokoll = protokoll_zeit_filter(protokoll, auswahl)
+            print("auswahl: ", auswahl)
+            protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
             wahl = auswahl_liste[auswahl]
     else:
         wahl = "aktuelles Halbjahr"
-        protokoll = protokoll.filter(sj=sj, hj=hj)
-    startdatum = gruppe.erstellt_am
-    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr
+        protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
+    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
     richtig_gesamt = falsch_gesamt = 0
-    katmax_max = protokoll.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
+    katmax_max = protokoll_zeitraum.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
     if not katmax_max:
         kategorien = []
@@ -528,11 +531,10 @@ def gruppe_uebersicht(req, gruppe_id):
         else:
             schueler_liste = Profil.objects.filter(gruppe=None).order_by("profil__vorname") 
         aufgaben_der_schueler = []
-        #richtig_sum = falsch_sum = 0            # Die Summen aller SuS in den Kategorien
         for profil in schueler_liste:
             richtig_profil = falsch_profil = 0
             hj_stimmt = profil.sj == sj and profil.hj == hj
-            protokoll_profil = protokoll.filter(profil = profil)                  # die Gesamtsummen der einzelnen User
+            protokoll_profil = protokoll_zeitraum.filter(profil = profil)                  # die Gesamtsummen der einzelnen User
             summen = (
             protokoll_profil
             .values("profil")
@@ -561,6 +563,9 @@ def gruppe_uebersicht(req, gruppe_id):
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(profil = profil, kategorie = kat_name)
+                protokoll_profil_fehler = protokoll_gruppe.filter(profil = profil)             # benötigt man um die Fehler seit Zurücksetzen des Fehlerzählers zu bestimmen
+
+                protokoll_profil_kategorie = protokoll_profil_fehler.filter(kategorie = kat_name)
                 if zaehler.count()== 0:
                     fehler, created = Geloescht.objects.get_or_create(benutzername = str(profil.user))
                     if created:
@@ -572,15 +577,41 @@ def gruppe_uebersicht(req, gruppe_id):
                     zaehler = zaehler.first()
                     richtig_kat += zaehler.bonus
                     richtig_gesamt += richtig_kat
-                    falsch_kat = zaehler.fehler_zaehler
-                    lsg_kat = zaehler.lsg_zaehler
-                    abbr_kat = zaehler.abbr_zaehler
-                    # if zaehler.first().fehler_zaehler < falsch_kat:
-                    #     falsch_kat = zaehler.first().fehler_zaehler
+                    if wahl == "aktuelles Halbjahr":
+                        falsch_kat = zaehler.fehler_zaehler
+                        lsg_kat = zaehler.lsg_zaehler
+                        abbr_kat = zaehler.abbr_zaehler
+                        hilfe_kat = zaehler.hilfe_zaehler  
+                    else:
+                        fehler_ab = zaehler.fehler_ab
+                        protokoll_fehler = protokoll_profil_kategorie.filter(start__gt=fehler_ab)
+                        protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+                            protokoll_fehler
+                            .values("kategorie__zeile")
+                            .annotate(falsch_kat=Sum('falsch'))
+                            .annotate(abbr_kat=Sum('abbr'))
+                            .annotate(lsg_kat=Sum('lsg'))
+                            .annotate(hilfe_kat=Sum('hilfe'))
+                            ) 
+                        for f in protokoll_fehler:
+                            falsch_kat = f['falsch_kat'] 
+                            abbr_kat = f['abbr_kat']
+                            lsg_kat = f['lsg_kat'] 
+                            hilfe_kat = f['hilfe_kat'] 
+                            if abbr_kat == True:
+                                abbr_kat = 1
+                            elif abbr_kat == False:
+                                abbr_kat = 0 
+                            if lsg_kat == True:
+                                lsg_kat = 1
+                            elif lsg_kat == False:
+                                lsg_kat = 0 
+                            if hilfe_kat == True:
+                                hilfe_kat = 1
+                            elif hilfe_kat == False:
+                                hilfe_kat = 0 
                 richtig_profil += richtig_kat
-                #richtig_sum += richtig_kat
                 falsch_profil += falsch_kat
-                #falsch_sum += falsch_kat
                 kategorie_fehler[index] += falsch_kat
                 quote = quote_farbe(richtig_kat, falsch_kat)
                 aufgaben[index] = (quote, richtig_kat)
@@ -600,7 +631,7 @@ def gruppe_uebersicht(req, gruppe_id):
             hh, mm = divmod(mm, 60)
             gesamtzeit_text = f"{hh}:{mm:02d}" 
         gesamtsummen = (
-            protokoll                                                           # hier werden die Gesamtsummen der einzelnen Kategorien bestimmt
+            protokoll_zeitraum                                                           # hier werden die Gesamtsummen der einzelnen Kategorien bestimmt
             .values("kategorie__zeile")
             .annotate(richtig_sum=Sum('richtig'))
             .annotate(zeit_sum=Sum(F('end') - F('start')))
@@ -613,7 +644,7 @@ def gruppe_uebersicht(req, gruppe_id):
     # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
-    context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'wahl': wahl,
+    context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 
         'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text, 'note_anzeigen': note_anzeigen}  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 
@@ -702,6 +733,8 @@ def schueler_aendern(req, schueler_id):
     return render(req, 'lehrer/schueler_aendern.html', context)
 
 def suchen(req, gruppe_id=None):
+    if not req.user.is_authenticated:
+        return redirect('anmelden')  
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists() or req.user.is_superuser:
         loeschen_form = Loeschen_Form
         zusammen_form = Zusammen_Form
@@ -837,34 +870,14 @@ def suchen(req, gruppe_id=None):
 def karteileichen(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    auswahl = Profil.objects.filter(user__date_joined__lt=date(2023,8,1))
-    print("Teil: ",auswahl.count())    
-    for a in auswahl:
-        if a.jg < 13:
-            if str(a.jg) in a.klasse:
-                print(a.klasse)
-                a.klasse = a.klasse.replace(str(a.jg), str(a.jg+1),1)
-            a.jg +=1
-            try:
-                neue_stufe = stufe_aus_jg(a.jg, a.kurs)
-                if neue_stufe > a.stufe:
-                    a.stufe = neue_stufe
-                print(a, "neuer_Jg: ", a.jg, ", Stufe: ", a.stufe, "neue Stufe: ",  neue_stufe,)
-            except:
-                print(a)
-    return HttpResponse("fertig!")
-
-def altes_loeschen(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
     #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
-    auswahl = User.objects.filter(date_joined__lt=date(2023,8,1))
+    auswahl = User.objects.filter(last_login__lt = date(2023,8,1))
     #auswahl = User.objects.all()
     n=0 
     m=0
     nachricht = ""  
     for a in auswahl:
-        if (a.date_joined.date() ) == ((a.last_login.date() )):
+        #if (a.date_joined.date() ) == ((a.last_login.date() )):
             profil = Profil.objects.filter(user = a).first()
             geloescht, created = Geloescht.objects.get_or_create(benutzername = str(a))
             n +=1
@@ -875,12 +888,13 @@ def altes_loeschen(req):
                 aufgaben = Protokoll.objects.filter(profil=profil).count()
                 m += aufgaben
                 nachricht += ": " +profil.vorname + " " + profil.nachname+ " hat"
-            nachricht += " sich nur einmal angemeldet, letzter Login: "+ str(a.last_login.date())+ " - Account wurde gelöscht"
+            nachricht += " sich zuletzt am "+ str(a.last_login.date())+ " angemeldet - Account wurde gelöscht"
             geloescht.text += nachricht
-            geloescht.user = None
-            geloescht.save()
-            a.groups.clear()
-            a.delete()
+            print(nachricht)
+            #geloescht.user = None
+            #geloescht.save()
+            #a.groups.clear()
+            #a.delete()
     nachricht = str(n) + " Accounts mit " + str(m) + " Aufgaben gelöscht"
     return HttpResponse(nachricht)
 
@@ -914,20 +928,25 @@ def account_ohne_profil(req):
     text = str(n) + " Accounts gelöscht"
     return HttpResponse(text)
 
-def zaehler_ergaenzen(req):
+def datum_suchen(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    profil = Profil.objects.get(user_id = 915) #915 = Lucas van Rege
-    bonus_liste = [0, 61, 10, 40, 70, 30, 50, 10, 10, 10, 10, 10, 0, 29, 0, 10, 71, 10, 10, 28, 11, 56, 10, 20, 20, 21, 16]
-    for n in range(1,27):
-        kategorie = Kategorie.objects.get(zeile = n)
-        zaehler, create = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)    
-        zaehler.sj = profil.sj
-        zaehler.hj = profil.hj
-        zaehler.bonus = bonus_liste[n]
-        zaehler.save()
-        print(zaehler, zaehler.bonus)
-    return HttpResponse(profil)
+    monat = (datetime.now().month)
+    jahr = (datetime.now().year)
+    print(datetime.now())
+    #liste = Profil.objects.filter(user__username = "franz")
+    liste = Profil.objects.all()
+    protokoll = Protokoll.objects.all()
+    for profil in liste:
+        protokoll = Protokoll.objects.filter(profil = profil, start__gt = datetime(2025,1,1) , sj = 2425, hj = 2 )
+        #print(profil, ": ", protokoll.count())
+        #for eintrag in protokoll:
+        if protokoll.count() > 0:
+            erstes = protokoll.first()
+            print(profil, ": ", erstes.start)
+            profil.halbjahr_ab = erstes.start
+            #profil.save()
+    return HttpResponse("fertig")
 
 def reparatur(req):
     if not req.user.is_superuser:

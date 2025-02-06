@@ -5,6 +5,7 @@
       <table>
         {% csrf_token %}
         {{profil_form.as_table}}
+        <tr><td></td><td>Vor Änderung der Stufe bitte die <a href="{% url 'stufen' %}">Anleitung</a> lesen!</td></tr>
         <tr><td style="font-weight: bold; text-align: center;"></td><td>Aufg. zählen für das {{lehrer.hj}}. Hj. {{lehrer.sj}}</td></tr>
       </table>
       <button type="submit">ändern</button>  

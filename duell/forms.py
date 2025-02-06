@@ -46,4 +46,12 @@ class Gruppe_Temp_Form(forms.ModelForm):
         help_texts = {'name': 'Dieser Gruppe können keine Schülerinnen und Schüler beitreten. Diese Gruppe ist nur für eine vorübergehende Verwendung, wie z.B. für eine Vertretungsstunde gedacht.',
                       }
 
+class Duell_light_Form(forms.ModelForm):
+    class Meta:
+        model = Lerngruppe
+        fields = ['name', 'jg']
+        labels = {'name': "Gruppenname",
+        }
+
+
 
