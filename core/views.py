@@ -7249,11 +7249,11 @@ def kategorien(req):
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
 
-def durchschnitt_aufgaben(profil, alle = False):
-    if alle:
-        protokoll = Protokoll.objects.filter(profil=profil)
-    else:
-        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+def durchschnitt_aufgaben(profil, kategorie):
+    #if alle:
+    protokoll = Protokoll.objects.filter(profil=profil)
+    # else:
+    #     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
     zaehler = Zaehler.objects.filter(profil=profil)
     temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
     richtig_gesamt = temp if temp else  0
@@ -7413,11 +7413,11 @@ def uebersicht(req, schueler_id=0):
         else:
             form = UebersichtHalbjahr
             protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-        if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
-            richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe=gesamt= 0
+        #if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
+        richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
             #letzte = k['letzte']
-        else:
-            durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
+        # else:
+        #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
         alle = False
         if req.method == 'POST':
             alle = True
@@ -7636,7 +7636,7 @@ def uebersicht(req, schueler_id=0):
             qfarbe = "unset" 
             dauer = '-'
             pro_aufg = "-" 
-        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, schueler_id = schueler_id, 
+        context = dict(lehrer= lehrer, loeschen= loeschen, form= form, schueler = profil, schueler_id = schueler_id, 
             zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle = alle,
             abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
