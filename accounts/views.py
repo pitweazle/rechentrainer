@@ -502,14 +502,12 @@ def gruppe_uebersicht(req, gruppe_id):
         auswahl_liste = dict(filter)
         if auswahl.is_valid(): 
             auswahl = auswahl.cleaned_data['auswahl']
-            print("auswahl: ", auswahl)
             protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
             wahl = auswahl_liste[auswahl]
     else:
         wahl = "aktuelles Halbjahr"
         protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
-        protokoll = protokoll.filter(sj=sj, hj=hj)
-    #startdatum = gruppe.erstellt_am
+        #protokoll = protokoll.filter(sj=sj, hj=hj)
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
