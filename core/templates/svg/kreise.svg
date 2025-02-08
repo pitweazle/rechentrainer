@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+version=1.1"center_y3
+viewbox="0 0 400 200">
+<defs>
+</defs> 
+
+<style>
+</style> 
+{% if parameter.object == "segment" %}
+  <line x1="{{parameter.x}}" y1="{{parameter.y}}" x2="{{parameter.sx}}" y2="{{parameter.sy}}" stroke="red"/>
+
+  <path d="
+  M {{parameter.x}}, {{parameter.y}}
+  L {{parameter.w_sx}} {{parameter.w_sy}}        
+  A 30 30 0 0 0 {{parameter.w_ex}} {{parameter.w_ey}}
+  Z />
+  "
+  stroke="black" 
+  stroke-width="0.5"
+  fill="none"
+{%endif%}
+ </svg>

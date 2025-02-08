@@ -6805,7 +6805,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             a, b, c, p = sub_dreiecksseiten(q, h)
         if typ >= 10:                                           # pythagoräische Zahlentripel
             p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen "
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen &#128521;"
+            parameter['popup_text'] = "popups/pythagoras.html"
             if stufe%2 == 1:
                 typ2 = random.randint(0,5)
             else:
@@ -7190,6 +7191,49 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+def sub_kreissegment(scale, x0, radius, winkel):
+    parameter = {'x': x0,  'y': 150, 'sx': radius*scale, 'sy': 150 }
+    return parameter
+
+def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 1
+        if stufe >= 6 or jg >= 7 or "mit" in optionen:
+            typ_end = 2
+        return typ_anf, typ_end
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end)  
+        typ2 = 0
+        titel = "Kreise" 
+        text = "default{}"
+        parameter = {'name':'svg/kreise.svg'}
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        hilfe_id = 0
+        erg = None 
+        typ=1
+        if typ == 1:
+            zahl1 = random.randint(0,2)
+            text = ""
+            variable = [str(zahl1)]
+            erg = None
+            lsg = str(erg)
+            parameter['object'] = 'segment'
+            radius = random.randint(4,8)
+            scale = 200/radius
+            x0 = (400-radius*scale)/2
+            segment = sub_kreissegment(scale, x0, radius, winkel)
+            parameter.update(segment)
+            parameter['popup'] = "Wie rechne ich mit Pi?"
+            parameter['popup_text'] = "popups/pi.html"
+        else:
+            pass
+        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+        #hilfe = hilfe.format(*variable)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
+
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7861,7 +7905,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke,}
+    29: wurzeln, 30: dreiecke, 31: kreise}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
