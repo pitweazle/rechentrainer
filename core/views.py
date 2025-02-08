@@ -7193,7 +7193,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, radius, winkel):
-    parameter = {'x': x0,  'y': 150, 'sx': radius*scale, 'sy': 150 }
+    rand = 30
+    winkel = winkel*math.pi/180
+    radius = radius * scale
+    parameter = {'radius':radius, 'x0': x0,  'y0': radius + rand,
+                  's_ax': x0 + radius,                   's_ay': radius + rand, 
+                  's_ex': x0 + radius *math.cos(winkel), 's_ey': radius + rand - radius*math.sin(winkel)}
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7215,14 +7220,13 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         erg = None 
         typ=1
         if typ == 1:
-            zahl1 = random.randint(0,2)
-            text = ""
-            variable = [str(zahl1)]
             erg = None
             lsg = str(erg)
             parameter['object'] = 'segment'
             radius = random.randint(4,8)
-            scale = 200/radius
+            winkel = random. randint(15,90)
+            text = str(winkel)
+            scale = 100/radius
             x0 = (400-radius*scale)/2
             segment = sub_kreissegment(scale, x0, radius, winkel)
             parameter.update(segment)
