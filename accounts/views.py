@@ -260,7 +260,7 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req, profil)    
+    halbjahr = sub_daten_loeschen(req)    
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def wiederanmeldung(req):
@@ -937,16 +937,19 @@ def datum_suchen(req):
     #liste = Profil.objects.filter(user__username = "franz")
     liste = Profil.objects.all()
     protokoll = Protokoll.objects.all()
+    n=0
     for profil in liste:
         protokoll = Protokoll.objects.filter(profil = profil, start__gt = datetime(2025,1,1) , sj = 2425, hj = 2 )
         #print(profil, ": ", protokoll.count())
         #for eintrag in protokoll:
         if protokoll.count() > 0:
+            n+=1
             erstes = protokoll.first()
             print(profil, ": ", erstes.start)
             profil.halbjahr_ab = erstes.start
-            #profil.save()
-    return HttpResponse("fertig")
+            profil.save()
+        nachricht = str(n) + " Daten eingetragen"
+    return HttpResponse(nachricht)
 
 def reparatur(req):
     if not req.user.is_superuser:
