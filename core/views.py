@@ -7192,13 +7192,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
-def sub_kreissegment(scale, x0, radius, winkel):
+def sub_kreissegment(scale, x0, Radius, winkel):
     rand = 30
-    winkel = winkel*math.pi/180
-    radius = radius * scale
-    parameter = {'radius':radius, 'x0': x0,  'y0': radius + rand,
-                  's_ax': x0 + radius,                   's_ay': radius + rand, 
-                  's_ex': x0 + radius *math.cos(winkel), 's_ey': radius + rand - radius*math.sin(winkel)}
+    Radius = Radius * scale
+    parameter = {'Radius':Radius, 'x0': x0,  'y0': Radius + rand,
+                  's_ax': x0 + Radius,                   's_ay': Radius + rand, 
+                  's_ex': x0 + Radius *math.cos(winkel), 's_ey': Radius + rand - Radius*math.sin(winkel),
+                  'w_ax': x0 + 30,                       'w_ay': Radius + rand, 
+                  'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel)}
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7225,19 +7226,24 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter['object'] = 'segment'
             radius = random.randint(4,8)
             winkel = random. randint(15,90)
-            text = str(winkel)
+            wert = radius**2*math.pi*winkel/360
+            lsg = ["A= π·r²· ϕ/360=pi·"+str(radius)+"²·"+str(winkel)+"/360="+str(round(erg,1))+"cm²",str(wert),"indiv_0"]
+            variable = [radius, winkel]
+            text = "Der Radius (rot) dieses Halbkreises beträgt {}cm, der blaue Winkel hat {}°. Wie berechnet man die Fläche des Kreissegments?"
+            pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
+            frage = "A="
             scale = 100/radius
             x0 = (400-radius*scale)/2
-            segment = sub_kreissegment(scale, x0, radius, winkel)
+            segment = sub_kreissegment(scale, x0, radius, winkel*math.pi/180)
             parameter.update(segment)
-            parameter['popup'] = "Wie rechne ich mit Pi?"
+            parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
             parameter['popup_text'] = "popups/pi.html"
+            hilfe_id = 10
+            hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen!"
         else:
             pass
-        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
         #hilfe = hilfe.format(*variable)
-        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
-
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):

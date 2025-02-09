@@ -10,10 +10,17 @@ viewbox="0 0 400 200">
   <path d="
   M {{parameter.x0}}, {{parameter.y0}}
   L {{parameter.s_ax}} {{parameter.s_ay}}        
-  A {{parameter.radius}} {{parameter.radius}} 0 0 0 {{parameter.s_ex}} {{parameter.s_ey}}
+  A {{parameter.Radius}} {{parameter.Radius}} 0 0 0 {{parameter.s_ex}} {{parameter.s_ey}}
   Z "
   stroke="black" 
   stroke-width="0.5"
+  fill="lightskyblue"
+  />
+
+  <path d="
+  M {{parameter.w_ax}}, {{parameter.w_ay}} A 30 30 0 0 0 {{parameter.w_ex}} {{parameter.w_ey}}"
+  stroke="blue" 
+  stroke="lightskyblue"
   fill="lightskyblue"
   />
 
