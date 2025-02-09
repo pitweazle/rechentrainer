@@ -7209,6 +7209,21 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
             typ_end = 2
         return typ_anf, typ_end
+    elif eingabe != "":
+        if typ == 1:
+            if eingabe  == str(round(lsg[2],1)).replace(".",","):
+                return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
+            elif "pi" in eingabe.lower():
+                eingabe = eingabe.replace(" ","") .replace("^2","²").replace("pi","PI").replace("Pi","PI")
+                parser = Parser()
+                try:
+                    wert = parser.parse(eingabe).evaluate({})
+                    if round(wert,1) == round(lsg[2],1):
+                        return 1, ""
+                except:
+                    return 0, "Den Term, den du eingegeben hast, kann ich nicht berechnen."
+            else:
+                return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)  
         typ2 = 0
@@ -7225,11 +7240,12 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             lsg = str(erg)
             parameter['object'] = 'segment'
             radius = random.randint(4,8)
-            winkel = random. randint(15,90)
+            winkel = random. randint(5,180)
             wert = radius**2*math.pi*winkel/360
-            lsg = ["A= π·r²· ϕ/360=pi·"+str(radius)+"²·"+str(winkel)+"/360="+str(round(erg,1))+"cm²",str(wert),"indiv_0"]
+            term = "pi*"+str(radius)+"²*"+str(winkel)+"/360"
+            lsg = ["A= π·r²· ϕ/360=pi·"+str(radius)+"²·"+str(winkel)+"/360="+str(round(wert,1))+"cm²", str(round(wert,1)).replace(".",",")+"cm²", wert,"indiv_0"]
             variable = [radius, winkel]
-            text = "Der Radius (rot) dieses Halbkreises beträgt {}cm, der blaue Winkel hat {}°. Wie berechnet man die Fläche des Kreissegments?"
+            text = "Der Radius (rot) dieses Kreissegmentes beträgt {}cm, der blaue Winkel hat {}°. Wie berechnet man die Fläche des Kreissegments?"
             pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
             frage = "A="
             scale = 100/radius
