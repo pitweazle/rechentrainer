@@ -7137,7 +7137,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter['object'] = "diagonale"
                 werte = {'m': "l=" + str(a) + "cm", 'n': "d=?",  'o': "b=" + str(b) +"cm"}
                 parameter.update(werte)
-                print(parameter)
             elif typ2 == 2:                                     # Sparrenlänge
                 frage = "l="
                 einheit = "m"
@@ -7173,7 +7172,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 ecken =  {'A': " ", 'B': " ", 'C': " ",}
                 parameter.update(ecken)
-                print(parameter)
             else:                                               # Trapez
                 text = "Berechne die Seitenlänge (d) dieses gleichschenkligen Trapezes."
                 frage = "d="
@@ -7307,10 +7305,13 @@ def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
     if woche_halbjahr <= 0:
         woche_halbjahr = 0
         spaeter = 0
-    if hj == 2:
-        soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
-    else:
-        soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
+    try:
+        if hj == 2:
+            soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
+        else:
+            soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
+    except:
+        soll_hj = 1
     soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
     if soll_hj > 1600:
         soll_hj = 1600
@@ -7354,7 +7355,6 @@ def uebersicht(req, schueler_id=0):
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
-        print(schueler_id)
         if schueler_id == 0:
             profil = get_object_or_404(Profil, user_id = req.user.id)
             if lehrer:
@@ -7699,7 +7699,6 @@ def protokoll(req, schueler_id=0):
             auswahl_liste = dict(choices)
             if auswahl.is_valid(): 
                 auswahl = auswahl.cleaned_data['auswahl']
-                print(auswahl)
                 protokoll = protokoll_zeit_filter(protokoll, auswahl)
                 wahl = auswahl_liste[auswahl]
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
