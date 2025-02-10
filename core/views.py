@@ -7195,11 +7195,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
 def sub_kreissegment(scale, x0, Radius, winkel):
     rand = 30
     Radius = Radius * scale
-    parameter = {'Radius':Radius, 'x0': x0,  'y0': Radius + rand,
+    parameter = {'Radius':Radius, 'winkel': winkel, 'x0': x0,  'y0': Radius + rand, 'mx': x0 +Radius/2, 
                   's_ax': x0 + Radius,                   's_ay': Radius + rand, 
                   's_ex': x0 + Radius *math.cos(winkel), 's_ey': Radius + rand - Radius*math.sin(winkel),
                   'w_ax': x0 + 30,                       'w_ay': Radius + rand, 
-                  'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel)}
+                  'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel),
+                  'w_mx': x0 + 30 *math.cos(winkel/2),   'w_my': Radius + rand - 30*math.sin(winkel/2)
+                  }
+
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7210,18 +7213,20 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             typ_end = 2
         return typ_anf, typ_end
     elif eingabe != "":
-        if typ in (1,2):
+        if typ < 10:
             if eingabe  == str(round(lsg[2],1)).replace(".",","):
                 return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
             elif "pi" in eingabe.lower():
                 eingabe = eingabe.replace(" ","") .replace("²","^2").replace("pi","PI").replace("Pi","PI")
                 parser = Parser()
-                #try:
-                wert = parser.parse(eingabe).evaluate({})
-                if round(wert,1) == round(lsg[2],1):
-                    return 1, ""
-                # except:
-                #     return 0, "Den Term, den du eingegeben hast, kann ich nicht berechnen."
+                try:
+                    wert = parser.parse(eingabe).evaluate({})
+                    if round(wert,1) == round(lsg[2],1):
+                        return 1, ""
+                    else:
+                        return -1, ""
+                except:
+                    return 0, "Den Term, den du eingegeben hast, kann ich nicht berechnen."
             else:
                 return -1, ""
     else:                                                                            
@@ -7234,17 +7239,24 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
-        typ=2
-        if typ < 3:
+        typ=4
+        if typ < 10:
             parameter['object'] = 'segment'
+            parameter['typ'] = typ
             radius = random.randint(4,8)
-            winkel = random. randint(5,180)
-            variable = [radius, winkel]
+            if typ == 3:
+                winkel = 180
+            elif typ == 4:
+                winkel = 90
+            else:
+                winkel = random. randint(5,180)
+                parameter['winkel_text'] = str(winkel)+"°"
             scale = 100/radius
             if winkel < 115:
                 x0 = (400-radius*scale)/2
             else:
                 x0 = (400-radius*scale/2)/2
+            variable = [radius, winkel]
             segment = sub_kreissegment(scale, x0, radius, winkel*math.pi/180)
             parameter.update(segment)
             if typ == 1:
@@ -7257,19 +7269,41 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
                 frage = "A="
                 hilfe_id = 10
-                hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen!"
+                hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
             elif typ == 2:
-                titel = "Länge eines "
+                titel = "Länge eines Kreisbogens"
                 wert = radius*2*math.pi*winkel/360
                 str_wert = str(round(wert,1)).replace(".",",")+"cm"
-                term = "pi*"+str(radius)+"²*"+str(winkel)+"/360"
+                term = "2·pi*"+str(radius)+"·"+str(winkel)+"/360"
                 lsg = ["b= 2·π·r· ϕ/360=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
                 text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechne die Länge des Kreisbogens (rot)."
                 pro_text = "Länge eines Kreisbogens, r={}, ϕ={}"
                 frage = "b="
-                parameter['bogen'] = True
                 hilfe_id = 20
-                hilfe="Du musst den Umfang des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen!"        
+                hilfe="Du musst den Umfang des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."   
+            elif typ == 3:
+                titel = "Umfang eines Halbkreises"
+                wert = radius*math.pi+2*radius
+                str_wert = str(round(wert,1)).replace(".",",")+"cm"
+                term = "pi*"+ str(2*radius)+"/2+" + str(2*radius)
+                lsg = ["u= π·d/2 + d=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne seinen Umfang."
+                pro_text = "Umfang Halbkreis, r={}"
+                frage = "u="
+                hilfe_id = 30
+                hilfe="Zunächst musst du den Umfang des ganzen Kreises berechnen und durch 2 teilen. Anschließend muss du noch den Durchmesser (grün) (=2·Radius)addieren."       
+            elif typ == 4:
+                titel = "Fläche und Kreissegment"
+                wert = radius**2-radius**2*math.pi/4
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = str(radius**2) + "-pi*"+ str(radius**2)+"/4"
+                lsg = ["A= r²-π·r²/4=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
+                pro_text = "Fläche Quadrat-Viertelkreis, r={}"
+                frage = "A="
+                hilfe_id = 40
+                hilfe="Zunächst musst du die Fläche des Quadrates berechnen und davon die Fläche des Viertelkreises subtrahieren."       
+        parameter['radius_text'] = radius
         parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
         parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
