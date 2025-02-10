@@ -17,15 +17,23 @@ viewbox="0 0 400 200">
   fill="lightskyblue"
   />
 
+  {% if parameter.bogen %}
+    <path d="
+      M {{parameter.s_ax}}, {{parameter.s_ay}} A {{parameter.Radius}} {{parameter.Radius}} 0 0 0 {{parameter.s_ex}} {{parameter.s_ey}}"
+      stroke="red" 
+      stroke-width="2"
+      fill="lightskyblue"
+      />  
+  {% endif %}
+
   <path d="
   M {{parameter.w_ax}}, {{parameter.w_ay}} A 30 30 0 0 0 {{parameter.w_ex}} {{parameter.w_ey}}"
   stroke="blue" 
-  stroke="lightskyblue"
   fill="lightskyblue"
   />
 
-  <line x1="{{parameter.x0}}" y1="{{parameter.y0}}" x2="{{parameter.s_ax}}" y2="{{parameter.s_ay}}" stroke="red"/>
+  <line x1="{{parameter.x0}}" y1="{{parameter.y0}}" x2="{{parameter.s_ax}}" y2="{{parameter.s_ay}}" stroke="green" stroke-width="2"/>
 
 
-{%endif%}
+{%endif %}
  </svg>
