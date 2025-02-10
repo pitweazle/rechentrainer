@@ -7202,7 +7202,15 @@ def sub_kreissegment(scale, x0, Radius, winkel):
                   'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel),
                   'w_mx': x0 + 30 *math.cos(winkel/2),   'w_my': Radius + rand - 30*math.sin(winkel/2)
                   }
+    return parameter
 
+def sub_kreise(scale, Radius, radius):
+    rand = 30
+    Radius = Radius * scale
+    radius = radius * scale
+    parameter = {'Radius': Radius, 'radius': radius, 'x': 200, 'y': 100,
+                 'xo': 200 + Radius*math.cos(0.5), 'yo': 100-Radius*math.sin(0.5),
+                 'xu': 200 + radius*math.cos(0.5), 'yu': 100+radius*math.sin(0.5)}
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7213,7 +7221,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             typ_end = 2
         return typ_anf, typ_end
     elif eingabe != "":
-        if typ < 10:
             if eingabe  == str(round(lsg[2],1)).replace(".",","):
                 return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
             elif "pi" in eingabe.lower():
@@ -7232,21 +7239,19 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)  
         typ2 = 0
-        titel = "Kreise" 
-        text = "default{}"
         parameter = {'name':'svg/kreise.svg'}
-        variable = ["",]
-        pro_text = frage = einheit = anmerkung = hilfe = ""
+        einheit = anmerkung = ""
         hilfe_id = 0
         erg = None 
-        typ=4
-        if typ < 10:
+        typ=7
+        if typ < 7:
             parameter['object'] = 'segment'
             parameter['typ'] = typ
             radius = random.randint(4,8)
-            if typ == 3:
+            parameter['radius_text'] = "r=" + str(radius) + "cm"
+            if typ in (3,6):
                 winkel = 180
-            elif typ == 4:
+            elif typ > 3:
                 winkel = 90
             else:
                 winkel = random. randint(5,180)
@@ -7302,8 +7307,56 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Fläche Quadrat-Viertelkreis, r={}"
                 frage = "A="
                 hilfe_id = 40
-                hilfe="Zunächst musst du die Fläche des Quadrates berechnen und davon die Fläche des Viertelkreises subtrahieren."       
-        parameter['radius_text'] = radius
+                hilfe="Zunächst musst du die Fläche des Quadrates berechnen und davon die Fläche des Viertelkreises subtrahieren."
+            elif typ == 5:
+                titel = "Fläche eines Viertelkreises"
+                wert = radius**2*math.pi/4
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = "pi*"+ str(radius**2)+"/4"
+                lsg = ["A=π·r²/4=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
+                pro_text = "Fläche Viertelkreis, r={}"
+                frage = "A="
+                hilfe_id = 50
+                hilfe="Du musst die Fläche des ganzen Kreises durch vier teilen."
+            elif typ == 6:
+                titel = "Fläche eines Halbkreises"
+                variable[0] = 2*radius
+                wert = radius**2*math.pi/2
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = "pi*"+ str(radius**2)+"/2"
+                lsg = ["A=π·r²/2=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                text = "Der Halbkreis hat einen <b>Durchmesser</b> von {}cm. Berechne seine Fläche."
+                pro_text = "Fläche Halbkreis, d={}"
+                frage = "A="
+                parameter['radius_text'] = "d=" + str(2*radius) + "cm"
+                hilfe_id = 60
+                hilfe="Du musst die Fläche des ganzen Kreises durch zwei teilen.(Achtung: Hier ist der Durchmesser angegeben und nicht der Radius!)"   
+        else:
+                titel = "Kreisring" 
+                parameter['object'] = 'kreisring'
+                parameter['typ'] = typ
+                Radius = random.randint(4,8)
+                parameter['Radius_text'] = "R=" + str(Radius) + "cm"
+                radius = Radius - random.randint(1,3)
+                parameter['radius_text'] = "r=" + str(radius) + "cm"
+                scale = 100/Radius
+                x0 = (400-radius*scale)/2
+                variable = [Radius, radius]
+                kreisring = sub_kreise(scale, Radius,radius)
+                parameter.update(kreisring)
+                print(parameter)
+                if typ == 7:
+                    titel = "Fläche eines Kreisrings"
+                    wert = (Radius**2-radius**2)*math.pi
+                    str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                    term = "pi*"+str(radius)+"²*"
+                    lsg = ["A= (R²-r²)·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                    text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
+                    pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
+                    frage = "A="
+                    hilfe_id = 10
+                    hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
         parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
         parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
