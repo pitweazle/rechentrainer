@@ -64,7 +64,8 @@ viewbox="0 0 400 200">
   <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.radius}}"  fill="white" stroke = "black"/>
   <line x1="{{parameter.x}}" y1="{{parameter.y}}" x2="{{parameter.xo}}" y2="{{parameter.yo}}" stroke="green" stroke-width="2"/>
   <line x1="{{parameter.x}}" y1="{{parameter.y}}" x2="{{parameter.xu}}" y2="{{parameter.yu}}" stroke="red" stroke-width="2"/>
-
-
+{% elif parameter.object == "restflaeche" %}
+  <rect x="{{parameter.x0}}"" y= "{{parameter.y0}}" width="{{parameter.seite}}" height="{{parameter.seite}}" fill="yellow" stroke = "black"/>
+  <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.radius}}"  fill="white" stroke = "black"/>
 {%endif %}
  </svg>

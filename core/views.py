@@ -7202,13 +7202,20 @@ def sub_kreissegment(scale, x0, Radius, winkel):
                   }
     return parameter
 
-def sub_kreise(scale, Radius, radius):
+def sub_kreisring(scale, Radius, radius,):
     rand = 30
     Radius = Radius * scale
     radius = radius * scale
     parameter = {'Radius': Radius, 'radius': radius, 'x': 200, 'y': 100,
                  'xo': 200 + Radius*math.cos(0.5), 'yo': 100-Radius*math.sin(0.5),
                  'xu': 200 + radius*math.cos(0.5), 'yu': 100+radius*math.sin(0.5)}
+    return parameter
+
+def sub_restflaeche(scale, x0, seite, radius,):
+    rand = 30
+    seite = seite * scale
+    radius = radius * scale
+    parameter = {'x0': x0, 'y0': rand, 'seite': seite, 'radius': radius, 'x': x0 + radius, 'y': rand + radius,}
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7241,7 +7248,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         einheit = anmerkung = ""
         hilfe_id = 0
         erg = None 
-        typ=7
+        typ=8
         if typ < 7:
             parameter['object'] = 'segment'
             parameter['typ'] = typ
@@ -7330,31 +7337,49 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 parameter['radius_text'] = "d=" + str(2*radius) + "cm"
                 hilfe_id = 60
                 hilfe="Du musst die Fläche des ganzen Kreises durch zwei teilen.(Achtung: Hier ist der Durchmesser angegeben und nicht der Radius!)"   
-        else:
-                titel = "Kreisring" 
-                parameter['object'] = 'kreisring'
-                parameter['typ'] = typ
-                Radius = random.randint(4,8)
-                parameter['Radius_text'] = "R=" + str(Radius) + "cm"
-                radius = Radius - random.randint(1,3)
-                parameter['radius_text'] = "r=" + str(radius) + "cm"
-                scale = 100/Radius
-                x0 = (400-radius*scale)/2
-                variable = [Radius, radius]
-                kreisring = sub_kreise(scale, Radius,radius)
-                parameter.update(kreisring)
-                print(parameter)
-                if typ == 7:
-                    titel = "Fläche eines Kreisrings"
-                    wert = (Radius**2-radius**2)*math.pi
-                    str_wert = str(round(wert,1)).replace(".",",")+"cm²"
-                    term = "pi*"+str(radius)+"²*"
-                    lsg = ["A= (R²-r²)·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
-                    text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, der innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
-                    pro_text = "Fläche Kreisring, R={}, r={}"
-                    frage = "A="
-                    hilfe_id = 70
-                    hilfe=""
+        elif typ == 7:
+            titel = "Kreisring"
+            frage = "A=" 
+            parameter['object'] = 'kreisring'
+            parameter['typ'] = typ
+            Radius = random.randint(4,8)
+            radius = Radius - random.randint(1,3)
+            parameter['radius_text'] = "r=" + str(radius) + "cm"
+            scale = 100/Radius
+            x0 = (400-radius*scale)/2
+            variable = [Radius, radius]
+            kreisring = sub_kreisring(scale, Radius,radius)
+            parameter.update(kreisring)
+            titel = "Fläche eines Kreisrings"
+            wert = (Radius**2-radius**2)*math.pi
+            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            term = "(" + str(Radius**2) + "-" + str(radius**2) + "·pi"
+            lsg = ["A= (R²-r²)·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+            text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, der innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
+            pro_text = "Fläche Kreisring, R={}, r={}"
+            hilfe_id = 70
+            hilfe="Zunächst das Quadrat des kleinen Radiuses vom Quadrat des großen Radiuses subtrahieren (am besten im Kopf) und das Ergebnis mit Pi multiplizieren."
+        elif typ == 8:
+            titel = "Fläche"
+            frage = "A=" 
+            parameter['object'] = 'restflaeche'
+            parameter['typ'] = typ
+            Radius = random.randint(4,8)
+            radius = Radius# - random.randint(1,3)
+            seite = 2*Radius
+            scale = 130/seite
+            x0 = (400-seite*scale)/2
+            variable = [seite, radius]
+            restflaeche = sub_restflaeche(scale, x0, seite, radius)
+            parameter.update(restflaeche)
+            wert = seite**2-(radius**2*math.pi)
+            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            term = str(seite**2) + "-" + str(radius**2) + "·pi"
+            lsg = ["A= s²-r²·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+            text = "Aus dem Quadrat mit der Seitenlänge s={}cm wurde ein Kreis ausgeschnitten. Berechnet die gelbe Restfläche."
+            pro_text = "Quadrat minus Kreis, d={}, r={}"
+            hilfe_id = 0
+            hilfe="Zunächst das Quadrat des kleinen Radiuses vom Quadrat des großen Radiuses subtrahieren (am besten im Kopf) und das Ergebnis mit Pi multiplizieren."
         parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
         parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
