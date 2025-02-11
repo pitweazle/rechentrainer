@@ -110,6 +110,7 @@
                 <h1>
                 {% if "∛" in protokoll.frage %}
                     Berechne &#8731;<span>&macr;&macr;&macr;&macr;</span><span style="margin-left: -2.3em; vertical-align: -0.1em;"> {{protokoll.text}}</span>
+                {% endif %} 
                 {% if protokoll.parameter.strich %}
                     {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
                 {% else %}
