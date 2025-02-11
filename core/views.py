@@ -7352,11 +7352,11 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     str_wert = str(round(wert,1)).replace(".",",")+"cm²"
                     term = "pi*"+str(radius)+"²*"
                     lsg = ["A= (R²-r²)·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
-                    text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
-                    pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
+                    text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, der innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
+                    pro_text = "Fläche Kreisring, R={}, r={}"
                     frage = "A="
-                    hilfe_id = 10
-                    hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
+                    hilfe_id = 70
+                    hilfe=""
         parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
         parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
