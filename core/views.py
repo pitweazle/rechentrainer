@@ -1554,7 +1554,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -6398,7 +6397,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             return -1, ""    
     else:
         typ = random.randint(typ_anf, typ_end)
-        typ=13
         text = "Berechne{}"
         variable = ["",]
         parameter = {'name':'normal'}
