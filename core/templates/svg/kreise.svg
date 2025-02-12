@@ -2,6 +2,9 @@
 version=1.1"center_y3
 viewbox="0 0 400 200">
 <defs>
+  <g id="speiche">
+    <line x1="130" y1="100" x2="270" y2="100" stroke="silver" stroke-width="2"/>
+  </g>
 </defs> 
 
 <style>
@@ -9,7 +12,6 @@ viewbox="0 0 400 200">
 </style> 
 
 {% if parameter.object == "segment" %}
-
   {% if parameter.typ == 4 %}
     <rect x="{{parameter.s_ex}}"" y= "{{parameter.s_ey}}" width="{{parameter.Radius}}" height="{{parameter.Radius}}"
     stroke="black" 
@@ -67,5 +69,14 @@ viewbox="0 0 400 200">
 {% elif parameter.object == "restflaeche" %}
   <rect x="{{parameter.x0}}"" y= "{{parameter.y0}}" width="{{parameter.seite}}" height="{{parameter.seite}}" fill="yellow" stroke = "black"/>
   <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.radius}}"  fill="white" stroke = "black"/>
-{%endif %}
+  <line x1="{{parameter.xd_a}}" y1="{{parameter.y}}" x2="{{parameter.xd_e}}" y2="{{parameter.y}}" stroke="green" stroke-width="2"/>
+  <text x="{{parameter.x|add:-15}}" y="{{parameter.y|add:15}}" class = "masze">{{parameter.durchmesser_text}}</text>
+  <text x="{{parameter.x|add:-15}}" y="{{parameter.ym|add:15}}" class = "masze">{{parameter.seite_text}}</text>
+{% elif parameter.object == "rad" %}
+  <circle cx="200" cy="100" r="70"  fill="white" stroke = "grey" stroke-width="10"/>
+  {% for n in parameter.winkel %}
+    <use href="#speiche" transform="rotate({{n}} 200 100)"/>
+  {% endfor%}
+  <circle cx="200" cy="100" r="10"  fill="silver" stroke = "grey" stroke-width="1"/>
+  {%endif %}
  </svg>

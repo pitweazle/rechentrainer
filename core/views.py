@@ -6398,7 +6398,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             return -1, ""    
     else:
         typ = random.randint(typ_anf, typ_end)
-        typ=13
         text = "Berechne{}"
         variable = ["",]
         parameter = {'name':'normal'}
@@ -6430,7 +6429,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             lsg = [str(kante)]
             hilfe_id = 20
             hilfe = "Das sind {} Würfel. Du musst zunächst das Volumen eines Würfels ausrechnen.<br>Anschließend musst du die dritte Wurzel ziehen." 
-            parameter = {'name': 'svg/geometrie.svg', 'object': 'kubik', 'schieb': schieb_positionen,}                 
+            parameter = {'name': 'svg/geometrie.svg', 'object': 'kubik', 'schieb': schieb_positionen,} 
         elif typ == 3:                                  # Kubikzahlen
             titel = "Kubikzahlen" 
             zahl1 = random.randint(2,5)
@@ -7215,7 +7214,10 @@ def sub_restflaeche(scale, x0, seite, radius,):
     rand = 30
     seite = seite * scale
     radius = radius * scale
-    parameter = {'x0': x0, 'y0': rand, 'seite': seite, 'radius': radius, 'x': x0 + radius, 'y': rand + radius,}
+    parameter = {'x0': x0, 'y0': rand, 'seite': seite, 'radius': radius, 
+                 'x': x0 + seite/2, 'y': rand + seite/2, 
+                 'xd_a': x0 +seite/2 - radius, 'xd_e': x0 +seite/2 + radius,
+                 'ym': rand + seite}
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7248,7 +7250,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         einheit = anmerkung = ""
         hilfe_id = 0
         erg = None 
-        typ=8
+        typ=9
         if typ < 7:
             parameter['object'] = 'segment'
             parameter['typ'] = typ
@@ -7341,7 +7343,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             titel = "Kreisring"
             frage = "A=" 
             parameter['object'] = 'kreisring'
-            parameter['typ'] = typ
             Radius = random.randint(4,8)
             radius = Radius - random.randint(1,3)
             parameter['radius_text'] = "r=" + str(radius) + "cm"
@@ -7363,23 +7364,44 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             titel = "Fläche"
             frage = "A=" 
             parameter['object'] = 'restflaeche'
-            parameter['typ'] = typ
             Radius = random.randint(4,8)
-            radius = Radius# - random.randint(1,3)
+            radius = Radius - random.randint(1,3)
             seite = 2*Radius
             scale = 130/seite
             x0 = (400-seite*scale)/2
-            variable = [seite, radius]
+            variable = [seite, 2*radius]
             restflaeche = sub_restflaeche(scale, x0, seite, radius)
             parameter.update(restflaeche)
             wert = seite**2-(radius**2*math.pi)
+            if Radius != radius:
+                parameter['durchmesser_text'] = "d=" + str(radius*2) + "cm"
+            parameter['seite_text'] = "s=" + str(seite) + "cm"
             str_wert = str(round(wert,1)).replace(".",",")+"cm²"
             term = str(seite**2) + "-" + str(radius**2) + "·pi"
             lsg = ["A= s²-r²·π=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
-            text = "Aus dem Quadrat mit der Seitenlänge s={}cm wurde ein Kreis ausgeschnitten. Berechnet die gelbe Restfläche."
+            text = "Aus dem Quadrat mit der Seitenlänge s={}cm wurde ein Kreis mit einem Durchmesser von {}cm ausgeschnitten. Berechnet die gelbe Restfläche."
             pro_text = "Quadrat minus Kreis, d={}, r={}"
-            hilfe_id = 0
-            hilfe="Zunächst das Quadrat des kleinen Radiuses vom Quadrat des großen Radiuses subtrahieren (am besten im Kopf) und das Ergebnis mit Pi multiplizieren."
+            hilfe_id = 80
+            hilfe="Du musst das Quadrat der seitenlänge ausrechnen und davon das Quadrat des Kreisraiuses multipliziert mit Pi davon subtrahieren.<br>Die Quadrate rechnest du am besten im Kopf aus)."
+        elif typ == 9:
+            titel = "zurückgelegter Weg"
+            frage = "l=" 
+            parameter['object'] = 'rad'
+            durchmesser = random.randint(4,8)
+            n = 5
+            scale = 130/durchmesser
+            x0 = (400-durchmesser*scale)/2
+            variable = [durchmesser, n]
+            parameter['winkel'] = [0,10,20]
+            wert = durchmesser*math.pi*n
+            parameter['durchmesser_text'] = "d=" + str(durchmesser) + "cm"
+            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            term = str(durchmesser) + "·pi·" + str(n) + "="
+            lsg = ["l= d·π·n=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+            text = "Das Rad hat einen Durchmesser von d={}cm. Welchen Weg legt es zurück, wenn es sich n={} mal dreht?"
+            pro_text = "Rad mit d={}, zurückgelgter Weg nach {} Drehungen"
+            hilfe_id = 00
+            hilfe=""
         parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
         parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
