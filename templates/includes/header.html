@@ -1,16 +1,14 @@
 {% load static %}
 <header>
     <div class="navbar">
-        <div class="left">
             <a href="{% url 'index' %}">&#8962 Home</a>
             <a href="{% url 'hj_pruefen' %}">Aufgaben</a>
             <a href="{% url 'protokoll' %}">Protokoll</a>
             {% if lehrer %}
             <a href="{% url 'meine_gruppen' %}">meine Lerngruppen</a>
             {% endif %}
-        </div>
 
-        <div class="dropdown right">
+        <div class="dropdown">
             <button class="dropbtn"> 
                 {% if user.is_authenticated %}
                     Hallo {{ user.username }}
