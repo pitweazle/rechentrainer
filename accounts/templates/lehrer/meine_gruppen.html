@@ -1,32 +1,68 @@
-{% extends 'auswahl.html' %}  
-{% block content %}
-    <head>
-        <style>body{min-width: 450px;}</style>    
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="de">
+    <head>       
+        <title>Rechentrainer von Peter Doll</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
+        {% block css_files %}
+        {% endblock %}
     </head>
 
+    <header>
+        <div class="navbar">
+            {% comment %} <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a> {% endcomment %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+            <a>{{titel}}</a>
+        </div> 
+    </header>
+
     <body>
-        <table>
-            {% for gruppe in gruppen %}
-                <tr>
-                    <td align="left">{{ gruppe.name }}</td>
-                    <td>
-                        <button>
-                            <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
-                        </button>
-                    </td>
-                    {% if super %}
-                        <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
-                    {% endif %}
-                </tr>
-            {% empty %}
-                <strong>Es sind noch keine Lerngruppen vorhanden.</strong>
-            {% endfor %}
-            <tr>
-                <td colspan="2", align="left">
-                    <button>
-                        <a href="{% url 'neue_gruppe' %}">neue Lerngruppe anlegen</a>
-                    </button>
-                </td>
-        </table>
+        <container>
+            <head>
+                <style>body{min-width: 450px;}</style>    
+            </head>
+        
+            <body>
+                <table>
+                    {% for gruppe in gruppen %}
+                        <tr>
+                            <td align="left">{{ gruppe.name }}</td>
+                            <td>
+                                <button>
+                                    <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
+                                </button>
+                            </td>
+                            {% if super %}
+                                <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
+                            {% endif %}
+                            {% if gruppe.temp %}
+                                <td>temp</td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <strong>Es sind noch keine Lerngruppen vorhanden.</strong>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="2", align="left">
+                            <button>
+                                <a href="{% url 'neue_gruppe' %}">neue Lerngruppe anlegen</a>
+                            </button>
+                        </td>
+                    <tr></tr>
+                    <tr>
+                        <td colspan="2", align="left">
+                            <button>
+                                <a href="{% url 'gruppe_temp' %}">temporäre Gruppe für Duell anlegen</a>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </container>
     </body>
-{% endblock %}
+</html>
+

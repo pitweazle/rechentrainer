@@ -13,8 +13,8 @@
 <button>        
     <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
 </button>
-
 {%endif%}
+
 <h2>{{schueler.vorname}} {{schueler.nachname}}
 {% if not loeschen or not lehrer %}
 {{schueler.klasse}}</h2>
@@ -24,6 +24,19 @@
 {% endif %}
 
 <ul class={{breite}}>
+    {% if not bewertung or lehrer %}
+        <form action="/uebersicht/{{schueler.id}}/" method="POST">
+            {% csrf_token %}
+            <h2 style= "text-align: left;"> Zeitraum: 
+                <button type="button">
+                    {{form.auswahl}}
+                </button type="button">
+                <button type="button">
+                    <input name="filter" type="submit" value="anwenden">
+                </button type="button">
+            </h2>
+        </form>
+    {% endif %}
     <table>
         <thead>
             <tr>
@@ -40,13 +53,16 @@
                     <th>Hilfe</th>
                 {% else %} 
                     <th width=40>nicht richtig</th>
+                    <th width=50> %</th>
                 {% endif %}
                 <th width=60>erledigt</th>
-                <th width=100>letzte Bearbeitung</th> 
+                {% if details == True %}
+                    <th width=100>letzte Bearbeitung</th>
+                {%endif%} 
             </tr>
         </thead>
         <tbody>
-            <td style="text-align: center;">Aufgaben Halbjahr</td>
+            <td style="text-align: center;">Summe</td>
             <td class = "{{summe_farbe}}">{{richtig}}</td>
             {% if details == True %}
                 <td>{{falsch}}</td>
@@ -57,24 +73,25 @@
                 <td>{{abbr}}</td>
                 <td>{{lsg}}</td>
                 <td>{{hilfe}}</td>
-            {% else %} 
+            {% else %}
+                <td>{{nicht_richtig_summe}}</td> 
                 <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
             {% endif %}
-            {% if prozent_summe %}
-                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>  
-            {% endif %}              
+            {% comment %} {% if prozent_summe %} {% endcomment %}
+            <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+            {% comment %} {% else %}
+                <th></th> 
+            {% endif %}               {% endcomment %}
             {% if bewertung == True %}
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-            {% else %}
-                <th></th>
-            {% endif %}               
+            {% endif %} 
             {% for kategorie, zeile in zeilen %}            
                 <tr>
                     {% if lehrer and not loeschen %}
                         <td style="text-align: center;">{{kategorie.name}}</td>
-                    {%else%}    
+                    {%else%}
                         <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
-                    {%endif%}  
+                    {%endif%}
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}
@@ -92,7 +109,11 @@
             {% endif %}          
         </tbody>
     </table>
-    <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% if soll_hj <= 0 %}
+        <p>Du arbeitest schon an den Aufgaben für das nächste Halbjahr.<br> Du solltest {{pro_woche}} Aufgaben pro Woche rechnen - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% else %}
+        <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
+    {% endif %}
     <p>
     {% if details %}
         Wenn du mit einem Smartphone arbeitest, kannst du unter "mein Profil" "Details anzeigen" wegklicken, dann wird diese Anzeige schmaler und passt auf das Display.

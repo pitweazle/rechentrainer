@@ -3,7 +3,6 @@ from django.db import models
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 from .models import Profil, Ort, Schule, Lerngruppe
 
@@ -56,8 +55,7 @@ class Lehrer_Aendern_Form(forms.ModelForm):
         fields = ['vorname', 'nachname', 'schule', 'zweite_schule', 'jg', 'kurs', 'stufe']
         labels = {
             'zweite_schule': 'zweite Schule',
-        }
-        help_texts = {'stufe': "Vor Änderung der Stufe bitte die Anleitung lesen!"}
+        }        
         widgets = {'jg': forms.TextInput(attrs={'size': 2}), 
                 'klasse': forms.TextInput(attrs={'size': 10}),
                 'stufe': forms.TextInput(attrs={'size': 2}),
@@ -79,6 +77,12 @@ class Gruppe_Aendern_Form(forms.ModelForm):
         fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
+        }
+        widgets = {
+            'aufgaben_pro_woche': forms.NumberInput(attrs={
+                'max': '120',    # For maximum number
+                'min': '0',    # For minimum number
+            }),
         }
         help_texts = {'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
 
@@ -123,3 +127,9 @@ class Zusammen_Form(forms.Form):
     
 class Loeschen_Form(forms.Form):
     loeschen = forms.IntegerField(label="Accounts löschen", required=False, help_text="Bitte ID eingeben")
+
+class Abmelden_Form(forms.Form):
+    abmelden = forms.IntegerField(label="Mitglied entfernen", required=False, help_text="Bitte ID eingeben")
+
+
+

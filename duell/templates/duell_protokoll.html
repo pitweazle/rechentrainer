@@ -1,0 +1,122 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/protokoll.css' %}">
+    <link rel="stylesheet" href="{% static 'duell/duell.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<header>
+    <div class="navbar">
+        {% if duell %}
+            <a href="{% url 'duell' %}">&#8962 Home</a>
+        {% else %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        {% endif %}
+        <a>Protokoll Rechenduell {{gruppe.name}} {{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}}</a>
+        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+    </div> 
+</header>
+<body>
+    {% comment %} <form action="{% url 'duell_protokoll' gruppe.id %}" method="POST">
+        {% csrf_token %}
+        {{form}}
+        <input type="submit" value="anwenden">
+    </form> {% endcomment %}
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Kategorie</th>
+                    <th>Aufgnr.</th>
+                    <th>Aufgabe</th>
+                    <th>Ergebnis</th>
+                    {% comment %} <th>r/f</th> {% endcomment %}
+                    <th>Duellant 1</th>
+                    <th>Liga</th>
+                    <th></th>
+                    <th>Eingabe</th>
+                    <th>Punkte</th>
+                    <th>Duellant 2</th>
+                    <th>Liga</th> 
+                    <th></th> 
+                    <th>Eingabe</th>
+                    <th>Punkte</th>
+                    <th></th>                      
+                </tr>
+            </thead>
+            <tbody>
+                {% autoescape off %}
+                {% for zeile in duell_protokoll %}
+                    <tr>
+                        <td>{{zeile.duell.protokoll.start|date:"d.m. H:i"}}</td>
+                        <td>{{zeile.duell.protokoll.kategorie.name }} <br>({{zeile.duell.protokoll.typ}})</td>
+                        <td>{{zeile.duell.protokoll.aufgnr}} </td>
+                        {% if zeile.anmerkung != "edit" %} 
+                            {% if zeile.duell.protokoll.pro_text != ""  %}
+                                <td>{{ zeile.duell.protokoll.pro_text}}</td>
+                            {% else %}
+                                <td>{{zeile.duell.protokoll.text}}</td>
+                            {% endif%}
+                            <td>{%if zeile.duell.protokoll.wert%}
+                                    {{zeile.duell.protokoll.wert.normalize}}
+                                {%else%}
+                                    {{zeile.duell.protokoll.loesung.0}}
+                                {%endif%}
+                            </td>
+                                {% comment %} <td class = "{{zeile.duell.protokoll.farbe}}">{{ zeile.duell.protokoll.richtig.normalize}}</td> {% endcomment %}
+                            {% else %}
+                                <td></td><td></td>
+                            {% endif %}                            
+                        <td class = {{zeile.duell.duellant_1.liga}}>{{ zeile.duell.duellant_1.name}}</td>                
+                        <td class = {{zeile.duell.duellant_1.liga}}>{{ zeile.duell.duellant_1.liga}}</td>
+                            {% if zeile.duell.duellant_1.aufsteiger %}
+                                <td class = {{zeile.duell.duellant_1.liga}}>↑</td>
+                            {% else %}
+                                <td></td> 
+                            {% endif %}
+                        </td>
+                        {% if zeile.duellant_nr < 3%} 
+                            {% if zeile.anmerkung != "edit" %} 
+                                <td class = "{{zeile.farbe}}">{{zeile.eingabe}}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                            <td class = "{{zeile.farbe}}">{{zeile.punkte}}</td>
+                        {% else %}
+                            <td></td> 
+                            <td></td> 
+                        {% endif %}
+                        <td class = {{zeile.duell.duellant_2.liga}}>{{zeile.duell.duellant_2.name}}</td>                
+                        <td class = {{zeile.duell.duellant_2.liga}}>{{zeile.duell.duellant_2.liga}}</td>
+                        {% if zeile.duell.duellant_2.aufsteiger %}
+                            <td class = {{zeile.duell.duellant_2.liga}}>↑</td>
+                        {% else %}
+                            <td></td>  
+                        {% endif %}
+                        {% if zeile.duellant_nr > 1%}
+                            {% if zeile.anmerkung != "edit" %} 
+                                <td class = "{{zeile.farbe}}">{{zeile.eingabe}}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                            <td class = "{{zeile.farbe}}">{{zeile.punkte}}</td>
+                        {% else %}
+                            <td></td> 
+                            <td></td> 
+                        {% endif %}
+                        <td>{{zeile.anmerkung}}</td>
+                    </tr>
+                {% empty %}
+                    <strong>Leider keine Kategorien vorhanden.</strong> 
+                {% endfor %}
+                {% endautoescape %}
+            </tbody>
+        </table>
+    </body>
+</div>
+{% endblock %}
+

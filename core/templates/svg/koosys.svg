@@ -2,30 +2,44 @@
     version="1.1"
     viewbox="0 0 {{parameter.box_breite}} {{ parameter.box_hoehe}}">
     <defs>
-        <pattern id="grid" patternUnits="userSpaceOnUse" width="10" height="10" x="0" y="0">
-            <path d="M0,0 v10 h10" stroke="#57c4ff" fill="none" />
+        <pattern id="grid" patternUnits="userSpaceOnUse" width="{{parameter.grid}}" height="{{parameter.grid}}" x="0" y="0">
+            <path d="M0,0 v{{parameter.grid}} h{{parameter.grid}}" stroke="#57c4ff" fill="none" />
         </pattern>
         
-        <pattern id="xduenn" x="10" y="0" width="{{parameter.einteilung}}" height="20" patternUnits="userSpaceOnUse">
+        <pattern id="xduenn" x="{{parameter.grid}}" y="0" width="{{parameter.grid}}" height="20" patternUnits="userSpaceOnUse">
             <rect width="1" height="20" />
         </pattern>
-        <pattern id="xmittel" x="30" y="0" width="50" height="20" patternUnits="userSpaceOnUse">
-            <rect width="1" height="25" />
+        <pattern id="xganze"  x="20" width="40" height="20" patternUnits="userSpaceOnUse">
+            <rect width="2" height="20" />
+        </pattern>
+        <pattern id="xmittel"  x="{{parameter.einteilung}}" width="50" height="25" patternUnits="userSpaceOnUse">
+            <rect width="2" height="25" />
         </pattern>        
-        <pattern id="xdick" x="30" y="0" width="100" height="20" patternUnits="userSpaceOnUse">
-            <rect width="1" height="30" />
+        <pattern id="xdick" x="40" width="100" height="20" patternUnits="userSpaceOnUse">
+            <rect width="2" height="30" />
+        </pattern>
+        <pattern id="xminuten"  x="0" width="40" height="20" patternUnits="userSpaceOnUse">
+            <rect width="1" height="20" />
         </pattern>
 
-        <pattern id="yduenn" x="20" y="20" width="20" height="{{parameter.einteilung}}" patternUnits="userSpaceOnUse">
+        <pattern id="yduenn" x="0" y="{{parameter.grid}}" width="20" height="{{parameter.grid}}" patternUnits="userSpaceOnUse">
             <rect width="20" height="1" />
         </pattern>
-        <pattern id="ymittel" x="20" y="{{parameter.y_null}}" width="20" height="50" patternUnits="userSpaceOnUse">
-            <rect width="20" height="1" />
+        <pattern id="yganze" x="0" y="60" width="20" height="40" patternUnits="userSpaceOnUse">
+            <rect width="20" height="2" />
+        </pattern>
+
+        <pattern id="ymittel" y="{{parameter.einteilung}}" width="20" height="50" patternUnits="userSpaceOnUse">
+            <rect width="20" height="2" />
         </pattern>        
-        <pattern id="ydick" x="20" y="{{parameter.y_null}}" width="30" height="100" patternUnits="userSpaceOnUse">
-            <rect width="30" height="1" />
+        <pattern id="ydick"  y="{{parameter.einteilung}}" width="30" height="100" patternUnits="userSpaceOnUse">
+            <rect width="30" height="2" />
         </pattern>
-        
+
+        <symbol id="steigungsdreieck" > 
+            <polygon points="{{parameter.Ax_steigung}},{{parameter.Ay_steigung}} {{parameter.Bx_steigung}},{{parameter.By_steigung}} {{parameter.Cx_steigung}},{{parameter.Cy_steigung}}"  style="stroke:black;stroke-width:1;fill: yellow; fill-opacity: 0.4;"/>
+        </symbol>
+
         <symbol id="text" style="font-size:10px;font-family:Sans Serif, Verdana; stroke:black;stroke-width:5;fill:black">
             <text x="20" y="10"/> 
         </symbol>
@@ -36,44 +50,75 @@
         </g>  
     </defs>	
 
-    <!-- Karo-Muster -->
+<!-- Karo-Muster -->
     <rect x="0" y="0" width="{{parameter.box_breite}}" height="{{parameter.box_hoehe}}" fill="url(#grid)"/>
 
-    <!--x-Achse-->
-    <line x1="{{parameter.x_start}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
-    <!--Pfeil-->
-    <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:-10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
-    <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
+<!--x-Achse-->
+    {% if parameter.x_null != 40 %}
+        <line x1="0" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        <rect x="0" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-20}}" height="10" fill="url(#xduenn)" />
+        {% if parameter.einteilung == 2 %}
+            <rect x="10" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-50}}" height="15" fill="url(#xganze)" />
+        {% endif %}
+    {% else %}
+        <line x1="{{parameter.x_null}}" y1="{{parameter.y_null}}" x2="{{parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        {% if parameter.einteilung == -10 %}
+            <!--5er Linien-->
+            <rect x="{{parameter.x_null|add:41}}" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-70}}" height="15" fill="url(#xmittel)" />
+            <!--dicke Linien-->
+            <rect x="{{parameter.x_null|add:41}}" y="{{parameter.y_null|add:-10}}" width="{{parameter.box_breite|add:-120}}" height="20" fill="url(#xdick)" />
+        {% elif parameter.einteilung == 60 %}
+            <!--Die Einteilung für Minuten im Schaubild-->
+            <rect x="{{parameter.x_null|add:21}}" y="{{parameter.y_null|add:-10}}" width="{{parameter.box_breite|add:-80}}" height="20" fill="url(#xminuten)" />
+        {% else %}
+            <rect x="{{parameter.x_null|add:1}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-70}}" height="10" fill="url(#xduenn)" />
+        {%endif%}
+    {% endif %}
 
-    <!-- dünne Linien-->
-    <rect x="{{parameter.x_start|add:10}}" y="{{parameter.y_null|add:-5}}" width="{{parameter.box_breite|add:-60}}" height="10" fill="url(#xduenn)" />
-    {% if parameter.einteilung == 10 %}
-        <!--5er Linien-->
-        <rect x="{{parameter.x_start|add:10}}" y="{{parameter.y_null|add:-7.5}}" width="{{parameter.box_breite|add:-60}}" height="15" fill="url(#xmittel)" />
-        <!--dicke Linien-->
-        <rect x="{{parameter.x_start|add:10}}" y="{{parameter.y_null|add:-10}}" width="{{parameter.box_breite|add:-60}}" height="20" fill="url(#xdick)" />
-    {%endif%}
+    {% if parameter.einteilung == 60 %}
+        <text x="{{parameter.box_breite|add:-60}}" y="{{parameter.y_null|add:-20}}" style="url(#text)">Uhrzeit</text>
+    {% else %}
+        <!--Pfeil-->
+        <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:-10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
+        <line x1="{{parameter.box_breite|add:-20}}" y1="{{parameter.y_null|add:10}}" x2="{{ parameter.box_breite|add:-10}}" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:2;" />	
+        start{{parameter.x_start}}
+    {% endif %}
 
     {%for x, txt in parameter.xvalues %}
-        {%if txt != 0%}
+        {% if parameter.einteilung == 60 %}
+            <!--Die Einteilung für Minuten im Schaubild-->
+            <text x="{{x|add:-15}}" y="{{parameter.y_null|add:25}}" style="url(#text)">{{txt}}</text>
+        {% elif txt != 0 %}
             <text x="{{x|add:-5}}" y="{{parameter.y_null|add:25}}" style="url(#text)">{{txt}}</text>
         {%endif%}
     {%endfor%}
 
-    <!--y-Achse-->
-    <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.y_start}}" style="stroke:black;stroke-width:1;" />
-    <!--Pfeil-->
-    <line x1="{{parameter.x_null|add:-10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
-    <line x1="{{parameter.x_null|add:10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
+<!--y-Achse-->
+    {% if parameter.x_null != 40 %}
+        <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.box_hoehe}}" style="stroke:black;stroke-width:1;" />
+        <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.box_hoehe}}" fill="url(#yduenn)" />
+        {% if parameter.einteilung == 2 %}
+            <rect x="{{ parameter.x_null|add:-7.5}}"  y="30" width="15" height="{{parameter.box_hoehe}}" fill="url(#yganze)" />
+        {%endif%}
+    {% else %}
+        <line x1="{{parameter.x_null}}" x2="{{parameter.x_null}}" y1="10" y2="{{parameter.y_null}}" style="stroke:black;stroke-width:1;" />
+        <rect x="{{parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.y_null|add:-30}}" fill="url(#yduenn)" />
+        {% if parameter.einteilung == -10 %}
+            <!--5er Linien-->
+            <rect x="{{ parameter.x_null|add:-7.5}}"  y="30" width="15" height="{{parameter.box_hoehe|add:-100}}" fill="url(#ymittel)" />
+            <!--dicke Linien-->
+            <rect x="{{ parameter.x_null|add:-10}}"  width="20" height="{{parameter.box_hoehe|add:-50}}" fill="url(#ydick)" />
+        {%endif%}
+    {% endif %}
 
-    <!--dünne Linien-->
-    <rect x="{{ parameter.x_null|add:-5}}"  y="30" width="10" height="{{parameter.y_start|add:-30}}" fill="url(#yduenn)" />
-    {% if parameter.einteilung == 10 %}
-        <!--5er Linien-->
-        <rect x="{{ parameter.x_null|add:-7.5}}"  y="30" width="15" height="{{parameter.y_start|add:-40}}" fill="url(#ymittel)" />
-        <!--dicke Linien-->
-        <rect x="{{ parameter.x_null|add:-10}}"  y="30" width="20" height="{{parameter.y_start|add:-40}}" fill="url(#ydick)" />
-    {%endif%}
+    {% if parameter.einteilung == 60 %}
+        <text x="{{parameter.x_null|add:20}}" y="30" style="url(#text)">Wegstrecke in km</text>
+    {% else %}
+    <!--Pfeil-->
+        <line x1="{{parameter.x_null|add:-10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
+        <line x1="{{parameter.x_null|add:10}}" y1="20" x2="{{parameter.x_null}}"  y2="10" style="stroke:black;stroke-width:2;" />	
+    {% endif %}
+
 
     {%for y, txt in parameter.yvalues %}
         {%if txt != 0%}
@@ -81,32 +126,47 @@
         {%endif%}
     {%endfor%}
 
+<!--Objekte-->
     {% if parameter.object == "koordinaten" %}
         <!--Kreuz-->	
         <line x1="{{parameter.x_koo|add:5}}" y1="{{parameter.y_koo|add:5}}" x2="{{parameter.x_koo|add:-5}}" y2="{{parameter.y_koo|add:-5}}" style="stroke:red;stroke-width:2;" />	
         <line x1="{{parameter.x_koo|add:-5}}" y1="{{parameter.y_koo|add:5}}" x2="{{parameter.x_koo|add:5}}" y2="{{parameter.y_koo|add:-5}}" style="stroke:red;stroke-width:2;" />
         <text x="{{parameter.x_koo|add:10}}" y="{{parameter.y_koo|add:5}}" style="stroke:red;stroke-width:1;">{{parameter.text_a}}</text>
     {% endif %}
+    
+    {% if parameter.object == "graph" %}
+        <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
+    {% endif %}
+
+    {% if parameter.hilfe == 90 or parameter.hilfe == 91%}
+        <use href="#steigungsdreieck"/>          
+    {%endif%}
+
+    {% if parameter.hilfe == 50 or parameter.hilfe == 60%}
+        <path d="M{{parameter.x_null}} {{parameter.y}}
+        L{{parameter.x}} {{parameter.y}}
+        L{{parameter.x}} {{parameter.y_null}}"
+        style = "fill:none; stroke:green; stroke-width: 3"/>
+    {%endif%} 
 
     {% if parameter.object == "spiegel" %}
-        <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
-        <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
+        <polygon points="{{parameter.Ax}},{{parameter.Ay}} {{parameter.Bx}},{{parameter.By}} {{parameter.Cx}},{{parameter.Cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
+        {% comment %} <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
         <use href="#kreuz" transform="translate({{parameter.x2}},{{parameter.y2}})"/>
-        <use href="#kreuz" transform="translate({{parameter.x3}},{{parameter.y3}})"/>
+        <use href="#kreuz" transform="translate({{parameter.x3}},{{parameter.y3}})"/> {% endcomment %}
         {%for x, y, txt in parameter.ecken %}
             <text x="{{x}}" y="{{y}}" class="text">{{txt}}</text>
         {%endfor%}
-
-        {% if parameter.typ == 1 %}
-            <line x1="0" y1="{{parameter.hoehe|add:-10}}" x2="{{parameter.breite}}" y2="-10" style="stroke:red;stroke-width:2;" />	
-            <text x="30" y="{{parameter.box_hoehe|add:-10}}" style="stroke:red;stroke-width:1;">S</text>  
-        {% elif parameter.typ == 2 %} 
-            <line x1="{{parameter.x0}}" y1="0" x2="{{parameter.x0}}" y2="{{parameter.hoehe}}" style="stroke:red;stroke-width:2;" />	
-            <text x="{{parameter.x0|add:10}}" y="20" style="stroke:red;stroke-width:1;">S</text>
-        {% elif parameter.typ == 3 %}
-            <line x1 = "0" y1="{{parameter.y0}}" x2 ="{{parameter.breite}}" y2="{{parameter.y0}}"  style="stroke:red;stroke-width:2;" />	
-            <text x="50" y="{{parameter.y0|add:20}}" style="stroke:red;stroke-width:1;">S</text>
-        {% endif %}           
+        <line x1="{{parameter.x_start}}" y1="{{parameter.y_start}}" x2="{{parameter.x_end}}" y2="{{parameter.y_end}}" style="stroke:red;stroke-width:2;" />	
+        <text x="{{parameter.x_end|add:-20}}" y="{{parameter.y_end|add:30}}" style="stroke:red;stroke-width:1;">S</text>  
     {% endif %}
 
+    {% if parameter.object == "fahrtstrecke" %}
+        <path d="M{{parameter.x_null}} {{parameter.y_null}}
+        L{{parameter.zeit_1}} {{parameter.strecke_1}}
+        L{{parameter.pause}} {{parameter.strecke_1}}
+        L{{parameter.zeit_2}} {{parameter.strecke_2}}
+        "
+        style = "fill:none; stroke:blue; stroke-width: 2"/>
+    {% endif %}
 </svg>

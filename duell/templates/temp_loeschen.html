@@ -1,0 +1,27 @@
+
+{% extends 'lehrer/gruppe.html' %}  
+{% block content %}
+{{tempduell}}
+    <body>
+        <p>Ich frage sicherheitshalber nochmal:</p>
+        <p>Soll die Lerngruppe <b>{{gruppe.name}}</b> von <b>{{gruppe.lehrer.profil.vorname}} {{gruppe.lehrer.profil.nachname}}</b> wirklich gelöscht werden?</p>
+        <table>
+            <tr>
+                <td>
+                    <button>
+                        <a href="{% url 'tduell' %}">zurück</a>
+                    </button>
+                </td>
+                <td>
+                    <form action="/duell_loeschen/{{gruppe.id}}/" method="POST">
+                    <form action="/duell_loeschen/{{gruppe.id}}/" method="POST">
+                        {% csrf_token %}
+                        <input  id="bestaetigt" name="bestaetigt" type="Checkbox">
+                        <label >ja, ich bin sicher</label> 
+                        <input type="submit" name="loeschen" value="loeschen"></button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </body>
+{% endblock %}

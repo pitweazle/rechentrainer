@@ -24,8 +24,14 @@
             </h2>
             <form action="{% url 'protokoll' schueler.id %}" method="POST">
                 {% csrf_token %}
-                {{form}}
-                <input type="submit" value="anwenden">
+                <h2 style= "text-align: left;"> Zeitraum: 
+                    <button type="button">
+                        {{form.auswahl}}
+                    </button type="button">
+                    <button type="button">
+                        <input name="filter" type="submit" value="anwenden">
+                    </button type="button">
+                </h2>
             </form> 
             <br> 
             <table>
@@ -72,7 +78,8 @@
                     {% for zeile in protokoll %}
                         <tr>
                             <td>
-                                <a class="button" href="{% url 'details' zeile.id %}">{{zeile.start|date:"d.m.y H:i"}}
+                                {{zeile.start|date:"d.m.y H:i"}}
+                                {% comment %} <a class="button" href="{% url 'details' zeile.id %}">{{zeile.start|date:"d.m.y H:i"}} {% endcomment %}
                                 {% if wahl == "Alle Aufgaben" %} 
                                     {{zeile.sj}}/{{zeile.hj}} 
                                 {% endif %}

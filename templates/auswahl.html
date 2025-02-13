@@ -10,12 +10,17 @@
         <link rel="stylesheet" href="{% static 'auswahl.css' %}">
         {% block css_files %}
         {% endblock %}
+        <style>
+            td { 
+              text-align: left;
+            }
+          </style>
     </head>
 
     <header>
         <div class="navbar">
-            {% comment %} <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a> {% endcomment %}
-            <a href="{% url 'index' %}">&#8962 Home</a>
+            <a href="{% url 'index' %}">&#8962 Home</a>            
+            <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
             <a>{{titel}}</a>
         </div> 
     </header>

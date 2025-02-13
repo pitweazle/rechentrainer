@@ -5,6 +5,26 @@ body{
     background-color: #f3eded;
 }
 
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: white;
+    margin: auto;
+    max-width: 1000px;
+    overflow: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+ }
+
 .rot {background-color:rgba(255, 0, 0,0.6);}
 .gruen {background-color:rgba(0, 255, 0,0.6);}
 .gelb {background-color:rgba(255, 255,0.6);}
@@ -54,22 +74,6 @@ a:hover {
     text-decoration: none;
 }
 
-.dropdown {
-    float: left;
-    overflow: hidden;
-}
-
-.dropdown .dropbtn {
-    font-size: 16px;  
-    border: none;
-    outline: none;
-    color: white;
-    padding: 14px 16px;
-    background-color: inherit;
-    font-family: inherit;
-    margin: 0;
-}
-
 .navbar a:hover, .dropdown:hover .dropbtn {
     background-color: red;
 }
@@ -100,6 +104,22 @@ a:hover {
     display: block;
 }
 
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;  
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+}
+
 details {
     padding: 5px 20px 5px 20px;    
 }
@@ -109,18 +129,6 @@ summary {
     font-weight: bold;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: white;
-    margin: auto;
-    max-width: 1000px;
-    overflow: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
-    border-radius: 12px;
-    padding: 2rem;
-}
   
 thead {
     background-color:lightgrey;
@@ -158,4 +166,8 @@ li a:hover,
 li a:active {
     color: #7e0154;
 }
+  
+input[type=button], input[type=submit], input[type=reset] {
+    font-weight: bold;
+  }
   

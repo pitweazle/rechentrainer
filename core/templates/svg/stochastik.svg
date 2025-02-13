@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg"
 version=1.1"center_y3
-<svg viewbox="0 0 400 220">
+viewbox="0 0 400 220">
 {% if parameter.object == "urne" %}
 <rect width="155" height="150" x="{{parameter.center_x}}" y="{{parameter.center_y|add:-150}}" 
         stroke="None" fill="LightSkyBlue"  />

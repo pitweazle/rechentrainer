@@ -18,6 +18,13 @@ body{
     padding: 2rem;
 }
 
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+ }
+
 .rot {background-color:rgba(255, 0, 0,0.6);}
 .gruen {background-color:rgba(0, 255, 0,0.6);}
 .gelb {background-color:rgba(255, 255,0.6);}
@@ -179,4 +186,8 @@ li a:hover,
 li a:active {
     color: #7e0154;
 }
+  
+input[type=button], input[type=submit], input[type=reset] {
+    font-weight: bold;
+  }
   

@@ -18,7 +18,7 @@ class Schule(models.Model):
     schulname = models.CharField(max_length=50)
     
     def __str__(self):
-        return f"{self.schulname}, {self.ort}"
+        return f"{self.pk} {self.schulname}, {self.ort}"
     
     class Meta:
         verbose_name_plural = 'Schulen'
@@ -30,13 +30,15 @@ class Lerngruppe(models.Model):
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     aufgaben_pro_woche = models.SmallIntegerField(default=0)
     note_anzeigen = models.BooleanField(default = True)
-    
+    temp = models.BooleanField(default=False)
+    liga = models.BooleanField(default=True)
+        
     class Meta:
         verbose_name_plural = 'Lerngruppen'
         unique_together = ['lehrer', 'name']
     
     def __str__(self):
-        return f"{self.lehrer.profil.nachname}, {self.name}"
+        return f"{self.id} {self.lehrer.profil.nachname}, {self.name}"
 
 class wahl_kurs(models.TextChoices):
     GYMNASIUM = 'Y', 'Gymnasium'
@@ -60,6 +62,9 @@ class Profil(models.Model):
     schule = models.ForeignKey(Schule, related_name='schule1', null= True, blank=True, on_delete = models.SET_NULL)
     zweite_schule = models.ForeignKey(Schule, related_name='schule2',null= True, blank=True, on_delete = models.SET_NULL)
     gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.SET_NULL, related_name='gruppe')
+
+    # dieses ist abhängig von der Einstellung der Lerngruppe - ohne Lerngruppe werden alle Aufgaben angezeigt:
+    alle_zeigen = models.BooleanField(default = False)
     
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     kurs= models.CharField(max_length=1, choices=wahl_kurs.choices, default=wahl_kurs.E_KURS,)
@@ -69,27 +74,30 @@ class Profil(models.Model):
     sj = models.SmallIntegerField(default=0)
     hj = models.SmallIntegerField(default=0)
 
+    halbjahr_ab = models.DateTimeField(null=True)
+
     katmax = models.IntegerField(default=0)                                 # die Zeilennummer die höchsten gewählten Aufgabenkategorie
-    #voreinst = models.IntegerField(default=1)                               # hier können Voreinstellungen gesetzt und abgefragt werden
     voreinst = models.JSONField(blank=True, null=True, default=dict)
+    
     details = models.BooleanField(default = True)
 
     def __str__(self):
-        return f"{self.pk}, {self.vorname} {self.nachname}, {self.klasse}"
+        return f"Username: {self.user}: {self.vorname} {self.nachname}, {self.klasse}"
 
     class Meta:
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
 
 class Geloescht(models.Model):
-    user = models.OneToOneField(User, related_name='geloescht', on_delete=models.CASCADE )
+    user = models.OneToOneField(User, related_name='geloescht', on_delete = models.DO_NOTHING, null=True)
+    benutzername = models.CharField(max_length=25, blank=True)
     text = models.CharField(max_length=200)
     class Meta:
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
  
     def __str__(self):
-        return f"{self.user}: {self.text}"
+        return f"{self.benutzername}: {self.text}"
    
 
 

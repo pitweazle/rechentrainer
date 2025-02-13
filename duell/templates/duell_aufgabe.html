@@ -1,0 +1,275 @@
+{% load static %}
+{% load l10n %}
+
+<html lang="de">
+<head>       
+    <title>Rechentrainer von Peter Doll</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+    <link rel="stylesheet" href="{% static 'duell/duell.css' %}">
+
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+
+    <script>
+        let einsStars = "";
+        let zweiStars = "";
+        let starCount = 0;
+        let sekunden = 0
+        let uhrInterval;
+
+        // Funktion, um die Uhr zu starten
+        function starteUhr() {
+            uhrInterval = setInterval(function() {
+                sekunden++;
+                localStorage.setItem('sekunden', sekunden); // Speichern der Zeit im Local Storage
+                document.getElementById('uhr').textContent = sekunden + " Sek.";
+            }, 1000); // Update jede Sekunde
+        }
+
+        // Funktion, um die Uhr zu stoppen
+        function stoppeUhr() {
+            clearInterval(uhrInterval); // Stoppe das Intervall
+        }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const falsch = "{{ falsch|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        const edit = "{{ edit|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+
+
+        const addStarsInterval = setInterval(function() {
+            starCount++;
+            einsStars += "*";
+            zweiStars += "*";
+            document.getElementById('Eins').value = einsStars;
+            document.getElementById('Zwei').value = zweiStars;
+
+            // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
+            if (starCount === 4 || falsch || edit || richtig) {
+                clearInterval(addStarsInterval);
+
+                // Sofortige Anzeige der Namen und Farben
+                document.getElementById('Eins').value = '{{duell.duellant_1.name}}';
+                document.getElementById('Zwei').value = '{{duell.duellant_2.name}}';
+                
+                // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                document.getElementById('Eins').className = '{{ duell.duellant_1.liga }}';
+                document.getElementById('Zwei').className = '{{ duell.duellant_2.liga }}';
+                document.getElementById('meldung').textContent = '{{meldung}}';
+            }
+            }, 500); // Update alle 500 Millisekunden
+        
+        if (neu) {
+            localStorage.clear('sekunden');
+            starteUhr();
+        }
+        else {
+            sekunden = localStorage.getItem('sekunden')
+            stoppeUhr()
+            document.getElementById('uhr').textContent = sekunden + " Sek.";
+        }
+    });
+    </script>
+</head>
+<body>
+    <div class="container">
+        {% block content %}
+            <div class= "oben">
+                <div class="navbar">
+                    <a>Duell {{duell.gruppe.name}}</a>
+                    <a href="{% url 'duell_protokoll' %}">Protokoll</a>
+                </div>
+                {% autoescape off %}
+                <div class="message">
+                    {% for message in messages %}
+                        {% if 'leider falsch' in message.message %}
+                            <p class = "rot">{{ message }}</p>
+                        {% elif 'halb' in message.message %}
+                            <p class = "gelb">{{ message }}</p>
+                        {% elif 'war richtig!' in message.message %}
+                            <p class = "gruen">{{ message }}</p>
+                        {% else %}
+                            <p class ="gelb">{{ message }}</p>
+                        {% endif%}
+                    {% endfor %}
+                </div>
+                <h2> {{protokoll.titel }}</h2>
+                <h3>Aufg. Nr. {{protokoll.aufgnr}}/10 </h3>
+                <h1>
+                {% if "∛" in protokoll.frage %}
+                    Berechne &#8731;<span>&macr;&macr;&macr;&macr;</span><span style="margin-left: -2.3em; vertical-align: -0.1em;"> {{protokoll.text}}</span>
+                {% endif %} 
+                {% if protokoll.parameter.strich %}
+                    {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
+                {% else %}
+                    {{protokoll.text}}
+                {% endif %} 
+                </h1>             
+            </div>
+            <div class="mitte">
+                <p>
+                {% localize off %}
+                    {% if parameter.name != "normal" and not "tab" in parameter.name %}
+                        {% include parameter.name %} 
+                    {% endif %}
+                {% endlocalize %}
+                </p>
+            </div>
+            <div class="unten">
+                {{protokoll.anmerkung}}
+                <form action="{% url 'duell_kontrolle' %}" method="POST">
+                    {% csrf_token %}
+                    <fieldset>
+                    {% if "tab" in parameter.name %}
+                        {% if lsg %}
+                            <table>
+                                <tr>
+                                    <th class = "linie_rechts">{{parameter.titel_x}}</th>
+                                    <th>{{parameter.titel_y}}</th>
+                                </tr>
+                                {% if parameter.name != "tab_term" %}
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x0}}</td>
+                                        <td>{{parameter.y0}}</td>                                                                       
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x1}}</td>
+                                        <td>{{parameter.y1}}</td>                                                                    
+                                    </tr>
+                                {% endif %}
+                                <tr>
+                                    <td class = "linie_rechts">{{parameter.x5}}</td>
+                                    <td>{{parameter.y5}}</td>                                                                    
+                                </tr>
+                            </table>
+                        {% else %}
+                            <table>
+                                <tr>
+                                    <th class = "linie_rechts">{{parameter.titel_x}}</th>
+                                    <th>{{parameter.titel_y}}</th>
+                                </tr>
+                                {% if 'term' in parameter.name or 'funktion' in parameter.name%}  
+
+                                {% else %}
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x0}}</td>
+                                        <td>{{parameter.y0}}</td>                                                                       
+                                    </tr>
+                                    <tr>
+                                        <td class = "linie_rechts">{{parameter.x1}}</td>
+                                        <td>{{parameter.y1}}</td>                                                                    
+                                    </tr>
+                                {% endif %}
+                                <tr>
+                                    <td class = "linie_rechts">{{parameter.x5}}</td>
+                                    {% if richtig %}
+                                        <td>{{eingabe}}</td>
+                                    {% else%}
+                                        <td class = "{{parameter.color2}}">{{form.y5}}</td>
+                                    {% endif %} 
+                                </tr>
+                            </table>
+                        {% endif %}
+                    {% else %}
+                        <div class = "fett">
+                            {% if richtig %}
+                                Eingabe:
+                                {{protokoll.frage}}
+                                {{eingabe}}
+                                {{protokoll.einheit}}
+                            {% else %}
+                                {{protokoll.frage}}
+                                {{form.eingabe}}
+                                {{protokoll.einheit}}
+                            {% endif %}
+                        </div>
+                    {%endif%}
+                    <script>
+                        document.getElementById('id_eingabe').addEventListener('keypress', function(event) {
+                            if (event.keyCode == 13) {
+                                event.preventDefault();
+                            }
+                        });
+                    </script>
+                    <h2 id="meldung" style="text-align: left";></h2>
+                        <table>
+                            <tr>
+                                {% if richtig %}
+                                    <td class = {{duell.duellant_1.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell.duellant_1.name}}</td>
+                                {% else %}
+                                    <td><input type="submit" id="Eins" name = "duellant" class="no-color" value=""  ></td>
+                                {% endif %} 
+                                <td>{{aufsteiger_1}}</td>
+                                <td class = "{{farbe_1}}">{{duellant_1_punkte}}</td>
+                                {% if not neu %}
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell.duellant_1.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell.duellant_1.id "plus" %}">+</a></td>
+                                {%endif%}
+                            </tr>
+                            <tr>
+                                {% if richtig %}
+                                    <td class = "null">gleich schnell</td>
+                                {% else %}
+                                    <td><input type="submit" name = "duellant" value="gleich schnell" style = "background-color: #FFDEAD;"></td></tr>                                    
+                                {% endif %}
+                            <tr>
+                                {% if richtig %}
+                                    <td class = {{duell.duellant_2.liga}} style = "height: 35px; width: 280px;font-weight: bold;" >{{duell.duellant_2.name}}</td>
+                                {% else %}
+                                    <td><input type="submit" id="Zwei" name = "duellant" class="no-color" value=""  ></td>
+                                {% endif %} 
+                                <td>{{aufsteiger_2}}</td>
+                                <td class = "{{farbe_2}}">{{duellant_2_punkte}}</td>
+                                {% if not neu %}
+                                    <td class = "minus"><a href="{% url 'duellant_edit' duell.duellant_2.id "minus" %}">-</a></td>
+                                    <td class = "plus"><a href="{% url 'duellant_edit' duell.duellant_2.id "plus" %}">+</a></td>
+                                {%endif%}
+                            </tr>
+                        </table>
+                    </fieldset>
+                </form>
+                <p></p>
+                <table>
+                    <tr><td>
+                        <button type="button">
+                            <a style= "font-weight: bold;" href="{% url 'duell_aufgabe' protokoll.kategorie.slug %}">nächste Aufgabe</a>
+                        </button>
+                    </td>
+                    <td  class="zeitfeld null" id="uhr">0</td>
+                    <td>
+                        <button type="button">
+                            <a href="{% url 'duell_uebersicht' duell.gruppe.id %}">Abbrechen</a>
+                        </button>
+                    </td></tr>
+                    {% if not richtig %}
+                        <tr><td>
+                            <button type="button" >
+                                <a href="{% url 'neu_auslosen' "mit" %}">neue Kandidaten mit Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'neu_auslosen' "ohne"  %}">neue Kandidaten ohne Punktabzug</a>
+                            </button>
+                        </td><td>
+                            <button type="button">
+                                <a href="{% url 'duell_loesung'  %}">Lösung</a>
+                            </button>
+                        </td></tr>
+                    {% endif %}
+                </table>
+            {% endautoescape %}
+        {% endblock %}
+    </div>
+</body>

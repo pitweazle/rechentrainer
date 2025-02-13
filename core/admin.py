@@ -14,13 +14,14 @@ class KategorieAdmin(admin.ModelAdmin):
     inlines = [AuswahlInline]
     
 class ZaehlerAdmin(admin.ModelAdmin):
-    search_fields = ['user__vorname', 'user__nachname']
-    list_filter=("user","kategorie",)
-    ordering = ["-id", "user__vorname", "kategorie__zeile"]
+    readonly_fields = ["fehler_ab"]
+    search_fields = ['profil__vorname', 'profil__nachname']
+    list_filter=("profil","kategorie",)
+    ordering = ["-id", "profil__vorname", "kategorie__zeile"]
 
 class ProtokollAdmin(admin.ModelAdmin):
-    search_fields = ['user__vorname', 'user__nachname']
-    list_filter=( "start","kategorie", "user",)
+    search_fields = ['profil__vorname', 'profil__nachname']
+    list_filter=( "start","kategorie", "profil",)
     
     list_display = ('id', 'start', 'kategorie', 'name') 
     # ordering = ["user__vorname", "kategorie__zeile"]
@@ -32,7 +33,10 @@ admin.site.register(Sachaufgabe)
 
 admin.site.register(Kategorie, KategorieAdmin)
 admin.site.register(Hilfe, HilfeAdmin)
-admin.site.register(Protokoll, ProtokollAdmin)
+
 admin.site.register(Zaehler, ZaehlerAdmin)
+admin.site.register(Protokoll, ProtokollAdmin)
+
+
 
 

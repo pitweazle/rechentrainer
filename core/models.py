@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
-from accounts.models import Profil
+from accounts.models import Profil, Lerngruppe
 
 class wahl_farbe(models.TextChoices):
     Gruppe_A = 'background-color: #B0E2FF',
@@ -69,7 +69,7 @@ class Hilfe(models.Model):
         verbose_name_plural = 'Hilfen'
 
 class Protokoll(models.Model):
-    user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='protokolle', on_delete=models.CASCADE)
+    profil = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='protokolle', on_delete=models.CASCADE)
     #gewertet werden nur die Aufgaben des jeweiligen Schuljabjahres, im Januar, Juni und August, kann der user aber auch schon festlegen, dass die Aufgaben für das nächste Schulhalbjahr gelten:
     sj = models.SmallIntegerField(default=0)
     hj = models.SmallIntegerField(default=0)
@@ -123,16 +123,25 @@ class Protokoll(models.Model):
 
     def zweigabe(self):
         return self.eingabe.replace(".",",")
-        2
+    
+    # def farbe(self):                        # wird im Duell_Protokoll benötigt
+    #     if self.richtig > 0:
+    #         farbe = "gruen"
+    #     elif self.richtig <0:
+    #         farbe = "rot"
+    #     else:
+    #         farbe = "null"
+    #     return farbe
+        
     def name(self):        
-        return f"{self.user.nachname}, {self.user.vorname}, {self.user.klasse}, {self.user.gruppe}"
+        return f"{self.profil.nachname}, {self.profil.vorname}, {self.profil.klasse}, {self.profil.gruppe}"
 
     class Meta:
         verbose_name = 'Protokoll'
-        verbose_name_plural = 'Protokoll'
+        verbose_name_plural = 'Protokolle'
 
 class Zaehler(models.Model):
-    user = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 
+    profil = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 
     kategorie = models.ForeignKey(Kategorie, on_delete=models.CASCADE, related_name="zaehler")
     letzte = models.DateTimeField('Letzte Bearbeitung', auto_now_add=True)
     
@@ -149,12 +158,13 @@ class Zaehler(models.Model):
     hilfe_zaehler = models.SmallIntegerField(default=0) 
     lsg_zaehler = models.SmallIntegerField(default=0) 
     hinweis = models.CharField(max_length=100, blank=True)
+    bonus = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return f"({self.id}, {self.user}, {self.user.user}, {self.kategorie}, {self.sj})/{self.hj})"
+        return f"({self.id}, {self.profil}, {self.profil.user}, {self.kategorie}, {self.sj})/{self.hj})"
     
     class Meta:
-        unique_together = ['kategorie', 'user']
+        unique_together = ['kategorie', 'profil']
         verbose_name = 'Zähler'
         verbose_name_plural = 'Zähler'   
 
@@ -172,5 +182,3 @@ class Sachaufgabe(models.Model):
         return f"{self.lfd_nr}: {self.text}, {self.ab_jg}"
     class Meta:
         verbose_name_plural = 'Sachaufgaben'
-
-

@@ -3,8 +3,8 @@
 <body>
   <h2>Neues Halbjahr beginnen?</h2>
     <h2>Wir haben jetzt {% now "F" %} - bald gibt es Zeugnisse. Sollen die Aufgaben, die du ab jetzt machst, schon für das nächste Schulhalbjahr zählen?</h2>
-    Dann siehst du deine bisher gemachten Aufgaben (und auch die Fehler) nicht mehr auf der Übersichtseite. <br>(Am 1.{{wechsel}} passiert das sowieso.)<br>
-    Diese Wahl kannst du nicht rückgängig machen. Bestätige sie also bitte, indem du hier "ja" eingibst - ansonsten kannst du unten einfach auf 'weiter' klicken:
+    Danach siehst du deine bisher gemachten Aufgaben (und auch die Fehler) nicht mehr auf der Übersichtseite. (Du kannst dir jederzeit aber jederzeit auch alle Aufgaben anzeigen lassen.) <br>(Am 1.{{wechsel}} passiert das sowieso.)<br>
+    Diese Wahl kannst du nicht rückgängig machen, bestätige sie also bitte, indem du hier "ja" eingibst - ansonsten kannst du unten einfach auf 'weiter' klicken:
     <br>
     <br>
     <form method="POST" action="{% url 'naechstes_halbjahr' %}">
@@ -12,6 +12,10 @@
       <form>
         <label> neues Schulhalbjahr? </label> 
         <input id="neu" name="neu" type="text">
+        <br>
+        <br>
+        <input type="Checkbox"  name="ohne_funktion"> 
+        <label> Nein, ich möchte das neue Halbjahr <b>noch nicht</b> anfangen</b> </label>
         <br>
         <br>
         <input type="Checkbox"  name="keinefrage"> 

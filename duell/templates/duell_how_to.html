@@ -1,0 +1,109 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>Wie funktioniert das Rechenduell?</title>
+</head>
+<header>
+    <div class="navbar">
+        {% if duell == "light" %}
+            <a href="{% url 'duell' %}">&#8962 Home</a>
+        {% else %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        {% endif %}
+        <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
+
+    </div>
+</header>
+<div class="container">
+    <ul>
+        <li><h1>Wie funktioniert das Rechenduell?</h1>
+            Nehmen wir Mathelehrer uns nicht immer mal wieder vor, mit den Schülerinnen und Schülern <b>Kopfrechnen zu üben</b>?<br> 
+            Mit dem RechenDuell macht das mehr Spaß! 
+            <h3>Vorbereitung:</h3>
+            {% if temp %}
+                Es wird ein Beamer benötigt und das Gerät der Lehrperson muss mit diesem verbunden werden.<br>
+                Zunächst muss eine Duellgruppe angelegt werden.<br>
+                Im nächsten sich öffnenen Fenster werden die Namen der 'Duellanten' eingegeben:
+                <br>
+                <h3>Die Übersichtseite:</h3>
+                <img src="{% static 'medien/tempduell.jpg' %}" width="350" height="250" style="float:left; margin: 10px;"/> 
+                Die Übersichtseite des Rechenduells sieht etwa so aus. 
+                <br>
+                Wenn es doppelte Namen gibt, muss man diese zunächst umbenennen. Dabei ist zu beachten, dass in den Namen keine Leerstellen vorkommen dürfen, 
+                anstelle dessen benutzt man z.B. den Unterstrich.
+                <br>
+                (Wenn man auf die jeweiligen Namen klickt, können die Schülerinnen und Schüler auch noch in verschiedene Ligen eingeteilt werden - siehe unten "Auf- und Abstieg")
+                <br>
+                Vor dem Start des Duells können Schülerinnen und Schüler markiert werden, die krank oder aus anderen Gründen abwesend sind. 
+                Dieses muss noch durch Klick auf "Abwesende speichern → übernehmen" abgespeichert werden.
+                <br>
+            {% else %}
+                Zunächst muss sichergestellt werden, dass alle Schülerinnen und Schüler bei der rechentrainer.app und bei der entsprechenden Lerngruppe angemeldet sind*.
+                Doppelte Accounts müssen zusammengelegt werden und überflüssige gelöscht.
+                <br>
+                Dann wird nur noch ein Beamer benötigt und das Gerät der Lehrperson muss mit diesem verbunden werden.
+                <h3>*Das Duell ohne Anmeldungen:</h3>
+                Es gibt die Möglichkeit, das Duell auch durchzuführen, ohne dass sich Schülerinnen und Schüler mit einem Account anmelden.
+                <br>
+                Dazu dient die Option "temporäre Gruppe für Duell anlegen" unter "meine Lerngruppen".
+                <br>
+                Nachdem auch hier ein Bezeichner für die Gruppe festgelegt wurde, kann man im nächsten Fenster beliebig Namen eingeben.
+                <br>
+                <a href="{% url 'gruppe_temp' %}">Für Lehrer/innen geht es hier direkt zum 'Duell ohne Anmeldung'</a>
+                <h3>Die Übersichtseite:</h3>
+                <img src="{% static 'medien/duell_uebersicht.jpg' %}" width="350" height="300" style="float:left; margin: 10px;"/> 
+                Die Übersichtseite des Rechenduells sieht etwa so aus. 
+                <br>
+                Beim ersten Start werden die Vornamen aller Schülerinnen und Schüler der Lerngruppe hier hineinkopiert.
+                <br> 
+                Wenn es doppelte Namen gibt, muss man diese zunächst umbenennen. Dabei ist zu beachten, dass in den Namen keine Leerstellen vorkommen dürfen, 
+                anstelle dessen benutzt man z.B. den Unterstrich.
+                <br>
+                Zunächst sind die Teilnehmer alle in Liga A - sie können aber in bis zu 3 Ligen (A, B, C) eingeteilt werden.
+                <br>
+                Vor dem Start des Duells müssen jetzt noch alle Schülerinnen und Schüler markiert werden, die krank oder aus anderen Gründen abwesend sind. 
+                Dieses muss noch durch Klick auf "Abwesende speichern → übernehmen" abgespeichert werden.
+           {% endif %}
+           <br>
+            Nach Klick auf "Duell Start" öffnet sich die Seite auf der die Aufgabenkategorie ausgesucht wird.
+            <br>
+            <h3>Durchführung:</h3>
+            <img src="{% static 'medien/duell_aufgabe.jpg' %}" width="300" height="350" style="float:left; margin: 10px;"/>
+            Jetzt werden aus der gewählten Aufgabenkategorie 10 Aufgaben aufgerufen.
+            <br> 
+            Die, nach einer kurzen Bedenkzeit, angezeigten Duellanten überlegen die richtige Antwort und rufen sie. Die Antwort wird eingetippt und auf den entsprechenden Namen geklickt. 
+            Stimmt das Ergebnis bekommt der/die Duellant/in einen Punkt, stimmt es nicht wird ein halber Punkt abgezogen und er/sie darf keine zweite Antwort geben.
+            Ist ein Fehler passiert, kann dies über die "+" und "-" Buttons geändert werden.
+            <br>
+            Mit "nächste Aufgabe" wird eine neue Aufgabe angezeigt und zwei neue Duellanten ausgelost. Dabei kommen zunächst die mit den wenigsten Spielen dran.        
+            <br>
+            Fällt den beiden Duellanten in angemessener Zeit keine Lösung ein, so werden mit "neue Kandidaten" zwei neue Duellanten ausgelost. 
+            "mit Punktabzug" zieht den bisherigen Kandidaten jeweils einen halben Punkt ab, "ohne Punktabzug" nicht.
+            Haben alle anwesenden Schülerinnen und Schüler mindestens je eine Aufgabe gerechnet, so wird eine Rangfolge ("Platz") auf der Übersichtseite angezeigt.
+            <br>
+            "PPS" berechnet die Punkte pro Spiel.
+            <br>
+            "Abbrechen" führt zurück auf die Übersichtseite.
+            <br>
+            <h3>Das Duell ausprobieren:</h3>
+            Das Duell kann man zunächst auch ohne Schülerinnen und Schüler und ohne Beamer ausprobieren: Man erstellt eine Liste mit wirklichen oder erfundenen Teilnehmern und klickt auf "Duell Start" und
+            wählt eine Aufgabenkategorie aus. Anschließend kann man richtige oder falsche Antworten eingeben und beliebigen Teilnehmern zuordnen. Wenn man weiß, wie das Duell funktioniert, kann man unter "Duell löschen"
+            entscheiden, ob man nur die Punktestände mit den Aufgaben löscht oder das ganze Duell inklusive der Teilnehmerliste.
+            <h3>Auf- und Abstieg:</h3>
+            Wenn die Schülerinnen und Schüler in verschiedene Ligen eingeteilt wurden, spielen sie normalerweise innerhalb einer Liga gegeneinander. Es kann aber vorkommen,
+            dass sie auch gegen Kandidaten/innen aus der höheren Liga ausgelost werden. Gewinnen sie das Duell, dann steigen sie auf und der/die Verliere/in ab.
+            Allerdings müssen sie den Ligaerhalt noch bestätigen. Sie werden zunächst als Aufsteiger markiert. Verlieren sie das nächste Duell, so steigen sie wieder ab.
+            <h3>Löschen:</h3>
+            Nach Klick auf "Duell löschen" auf der Übersichtseite kann gewählt werden, ob nur die Spielstände und Punkte gelöscht werden oder auch die geänderten Namen und die Einteilung in Ligen.
+            Nach dem kompletten Löschen, kann mit "Duell starten" auf der Übersichtseite der Lerngruppe jederzeit ein neues Duell erstellt werden.
+        </li>
+</div>
+{% endblock %}
+</html>
