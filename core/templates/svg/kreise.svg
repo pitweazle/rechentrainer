@@ -3,7 +3,7 @@ version=1.1"center_y3
 viewbox="0 0 400 200">
 <defs>
   <g id="speiche">
-    <line x1="130" y1="100" x2="270" y2="100" stroke="silver" stroke-width="2"/>
+    <line x1="135" y1="100" x2="265" y2="100" stroke="silver" stroke-width="1"/>
   </g>
 </defs> 
 
@@ -78,5 +78,23 @@ viewbox="0 0 400 200">
     <use href="#speiche" transform="rotate({{n}} 200 100)"/>
   {% endfor%}
   <circle cx="200" cy="100" r="10"  fill="silver" stroke = "grey" stroke-width="1"/>
-  {%endif %}
+{% elif parameter.object == "kreis" %}
+  {% if parameter.typ == 12 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "red" stroke-width="2"/>
+    <line x1="130" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="180" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 13 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "black"/>
+    <line x1="200" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="205" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 14 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "red" stroke-width="2"/>
+    <line x1="200" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="205" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 15 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "black"/>
+    <line x1="130" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="180" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% endif %}
+{%endif %}
  </svg>

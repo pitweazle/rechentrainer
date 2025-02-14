@@ -1554,7 +1554,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             return 0, ""
     else:                                                                           # hier wird die Aufgabe erstellt:
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         box_hoehe = 370
         box_breite = 400
         pro_text = ""
@@ -6765,8 +6764,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ == 1:
-            if "*" in eingabe:
-                return 0, "lass bitte das '*' weg"
+            if not "*" in eingabe:
+                return 0, "Du musst '*' für die Multiplikation ergänzen."
             elif "=" in eingabe:
                 return 0, lsg[0][:3] + " steht schon da"
             else:
@@ -6826,16 +6825,16 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             if typ2 == 1:
                 text="Ergänze den Kathetensatz für die Seite a:"
                 frage = "a²="
-                lsg = ["a²=pc","pc","cp","a²=cp","indiv_0"]
+                lsg = ["a²=p·c","p*c","c*p","a²=c*p","indiv_0"]
             elif typ2 == 2:
                 text="Ergänze den Kathetensatz für die Seite b:"
                 frage = "b²="
-                lsg = ["b²=qc","qc","qq","b²=cq","indiv_0"]
+                lsg = ["b²=q·c","q*c","q*q","b²=c*q","indiv_0"]
             else:
                 titel = "Höhensatz"
                 text = "Wie lautet der Höhensatz?"
                 frage = "h²="  
-                lsg = ["h²=pq","qp","pq","indiv_0"]
+                lsg = ["h²=p·q","q*p","p*q","indiv_0"]
         elif typ == 2:                                          # Kathetensatz anwenden
             x0 = (350 - c*scale)/2
             scale = 25
@@ -7223,15 +7222,24 @@ def sub_restflaeche(scale, x0, seite, radius,):
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 1
+        typ_end = 9
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
             typ_end = 2
         return typ_anf, typ_end
     elif eingabe != "":
+        if typ in (10,11):
+            eingabe = eingabe.replace("*","").replace("^2","²").replace("Pi","pi").replace("PI","pi")
+            for loe in lsg:
+                if eingabe == loe:
+                    return 1, ""
+            return -1, ""
+        else:
             if eingabe  == str(round(lsg[2],1)).replace(".",","):
                 return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
+            elif "=" in eingabe:
+                return 0, "Das Gleichheitszeichen ist unnötig. Du sollst entweder den Term zum Berechnen des Ergebnisses eingeben oder das Ergebnis mit Einheit."
             elif "pi" in eingabe.lower():
-                eingabe = eingabe.replace(" ","") .replace("²","^2").replace("pi","PI").replace("Pi","PI")
+                eingabe = eingabe.replace(" ","").replace("²","^2").replace(",",".").replace("pi","PI").replace("Pi","PI")
                 parser = Parser()
                 try:
                     wert = parser.parse(eingabe).evaluate({})
@@ -7244,13 +7252,14 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             else:
                 return -1, ""
     else:                                                                            
-        typ = random.randint(typ_anf, typ_end)  
+        typ = random.randint(typ_anf, typ_end) 
+        typ=15 
         typ2 = 0
         parameter = {'name':'svg/kreise.svg'}
         einheit = anmerkung = ""
+        variable = []
         hilfe_id = 0
         erg = None 
-        typ=9
         if typ < 7:
             parameter['object'] = 'segment'
             parameter['typ'] = typ
@@ -7276,7 +7285,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 wert = radius**2*math.pi*winkel/360
                 str_wert = str(round(wert,1)).replace(".",",")+"cm²"
                 term = "pi*"+str(radius)+"²*"+str(winkel)+"/360"
-                lsg = ["A= π·r²· ϕ/360=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
+                lsg = ["A= π·r²· ϕ/360=" + term + "=" + str_wert, str_wert, wert, "indiv_0"]
                 text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechnet die Fläche des Kreissegments."
                 pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
                 frage = "A="
@@ -7387,23 +7396,83 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             titel = "zurückgelegter Weg"
             frage = "l=" 
             parameter['object'] = 'rad'
-            durchmesser = random.randint(4,8)
-            n = 5
+            zoll = random.randint(10,14)*2
+            durchmesser = int(zoll*2.54)
+            n = random.randint(2,10)
             scale = 130/durchmesser
             x0 = (400-durchmesser*scale)/2
-            variable = [durchmesser, n]
-            parameter['winkel'] = [0,10,20]
+            variable = [zoll, durchmesser, n]
+            parameter['winkel'] = list(range(0,360,10))                        
             wert = durchmesser*math.pi*n
             parameter['durchmesser_text'] = "d=" + str(durchmesser) + "cm"
-            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            str_wert = str(round(wert,1)).replace(".",",")+"cm"
             term = str(durchmesser) + "·pi·" + str(n) + "="
             lsg = ["l= d·π·n=" + term + "=" + str_wert, str_wert, wert,"indiv_0"]
-            text = "Das Rad hat einen Durchmesser von d={}cm. Welchen Weg legt es zurück, wenn es sich n={} mal dreht?"
-            pro_text = "Rad mit d={}, zurückgelgter Weg nach {} Drehungen"
-            hilfe_id = 00
-            hilfe=""
-        parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
-        parameter['popup_text'] = "popups/pi.html"
+            text = "Ein Fahrradreifen mit einer Felgengröße von {} Zoll hat einen Durchmesser von etwa d={}cm. Welchen Weg legt er zurück, wenn es sich n={} mal dreht?"
+            pro_text = "Rad mit d={1}, zurückgelgter Weg nach {2} Drehungen"
+            hilfe_id = 90
+            hilfe="Du musst nur den Durchmesser (in cm) mit Pi und der Anzahl der Umderhungen multiplizieren."
+        elif typ == 10:
+            titel = "Formel für Kreisumfang"
+            frage = "u="
+            text = "Wie heißt die Formel zur Berechnung des Kreisumfangs?"
+            pro_text = "Formel Kreisumfang"
+            lsg = ["pi·d", "pi*d", "pid", "2pir", "pi2r", "indiv_0"]
+        elif typ == 11:
+            titel = "Formel für Kreisfläche"
+            frage = "A="
+            text = "Wie heißt die Formel zur Berechnung der Kreisfläche?"
+            pro_text = "Formel Kreisfläche"
+            lsg = ["pi·r²", "pir²", "pi*d²/4", "indiv_0"]
+        elif typ > 11:
+            gegeben = random.randint(10,23)*2/10
+            str_gegeben = str(gegeben).replace(".",",")
+            text = "Der {} dieses Kreises beträgt {}cm. Berechne {}."
+            parameter['object'] = 'kreis'
+            parameter['typ'] = typ
+            if typ in (12,14):
+                if typ == 12:
+                    variable = ["Durchmesser", str_gegeben, "seinen Umfang", "d"]
+                    parameter['gegeben_text'] = "d=" + str_gegeben +"cm"
+                    hilfe_id = 120
+                    hilfe = "Die Formel heißt u=pi·d"
+                else:
+                    variable = ["Radius", str_gegeben, "seinen Umfang", "r"]
+                    parameter['gegeben_text'] = "r=" + str_gegeben +"cm"
+                    gegeben = 2*gegeben
+                    hilfe_id = 140
+                    hilfe = "Die Formel heißt u=pi·d<br>Entweder du rechnset also zuerst d aus oder du rechnest mit u=2·pi·r"
+                titel = "Kreisumfang"
+                frage = "u="
+                pro_text = titel + "? {3}={1}"
+                term = "pi·" + str(gegeben)
+                wert = gegeben*math.pi
+                str_wert =  format_zahl(wert,1) + "cm"
+                lsg = ["u=pi·d=" + term + "=" + str_wert, str_wert , wert, "pi" + str_gegeben, str_gegeben + "pi", "indiv_0"]
+            elif typ in (13,15):
+                if typ == 13:
+                    variable = ["Radius", str_gegeben, "seine Fläche", "r"]
+                    parameter['gegeben_text'] = "r=" + str_gegeben  +"cm"
+                    hilfe_id = 130
+                    hilfe = "Die Formel heißt A=pi·r²"
+                else:
+                    variable = ["Durchmesser", str_gegeben, "seine Fläche", "d"]
+                    parameter['gegeben_text'] = "d=" + str_gegeben  +"cm" 
+                    gegeben = gegeben/2 
+                    hilfe_id = 150
+                    hilfe = "Die Formel heißt A=pi·r²<br>Am besten ist es, du rechnest zunächst den Radius aus ... wenn du willst, kannst du aber auch die Formel A=pi·d²/4 benutzen"                  
+                titel = "Kreisfläche"
+                frage = "A="
+                pro_text = titel + ", {3}={1}"
+                wert = math.pi*gegeben**2
+                str_wert =  format_zahl(wert,1) + "cm²"
+                term = "pi·" + str(gegeben) + "²"
+                lsg = ["A=pi·r²=" + term + "=" + str_wert, str_wert , wert, "pi" + str_gegeben + "2", "indiv_0"]
+        if typ in (10,11):
+            anmerkung = "Anstelle von ² kannst du ^2 schreiben."
+        else:
+            parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
+            parameter['popup_text'] = "popups/pi.html"
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
