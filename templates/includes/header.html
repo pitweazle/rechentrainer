@@ -1,12 +1,12 @@
 {% load static %}
 <header>
     <div class="navbar">
-        <a href="{% url 'index' %}">&#8962 Home</a>
-        <a href="{% url 'hj_pruefen' %}">Aufgaben</a>
-        <a href="{% url 'protokoll' %}">Protokoll</a>
-        {% if lehrer %}
+            <a href="{% url 'index' %}">&#8962 Home</a>
+            <a href="{% url 'hj_pruefen' %}">Aufgaben</a>
+            <a href="{% url 'protokoll' %}">Protokoll</a>
+            {% if lehrer %}
             <a href="{% url 'meine_gruppen' %}">meine Lerngruppen</a>
-        {% endif %}
+            {% endif %}
 
         <div class="dropdown">
             <button class="dropbtn"> 
@@ -31,22 +31,7 @@
                     {% endif %}        {% endcomment %}
                 </div>
             {% endif %}
-        </div>
-
-        <div class="dropdown">
-            <button class="dropbtn" style = "right: 10px; position: absolute;"> 
-                Kontakt und Impressum
-            </button>
-            <div class="dropdown-content">
-                <p>Den Rechentrainer habe ich (fast) ganz alleine programmiert
-                <br>und auch für diese Seite bin ich zuständig:
-                <br><b>Peter Doll</b>
-                <br>64572 Büttelborn
-                <br>Gartenstr. 61
-                <br>Tel.: 06152 9774291
-                <br>info&#64rechentrainer.app</p>
-            </div>
-        </div>         
+        </div>  
     </div> 
 </header>
 
