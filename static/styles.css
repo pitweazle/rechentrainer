@@ -109,6 +109,19 @@ footer .dropdown-content{
         text-decoration: none;
     }
 
+    span {
+        font-size: 20px;
+        color: white;
+        text-align: center;
+        align-content: center;
+        display: inline-block;
+        padding-left: 16px;
+        padding-right: 16px;
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+        text-decoration: none;
+    }
+
     button {
         font-size: 20px;
         color: white;
