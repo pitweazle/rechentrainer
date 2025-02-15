@@ -69,9 +69,21 @@ a:hover {
     text-decoration: underline;
 }
 
-.navbar {
-    overflow: hidden;
+header, footer {
+    text-align: -webkit-center;
+}
+
+header, footer, .navbar {
     background-color: #333;
+}
+
+footer .dropdown-content{
+    top: -230%;
+}
+
+.navbar {
+    max-width: 1000px;
+    overflow: hidden;
     display: grid;
     grid-template-columns: auto;
     grid-auto-flow: column;
@@ -119,10 +131,9 @@ a:hover {
         justify-items: center;
         display: none;
         position: absolute;
-        top: -230%;
         background-color: #f9f9f9;
         height: fit-content;
-        width: 26.349%;
+        width: fit-content;
         box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
         z-index: 1;
         padding: 10px;
