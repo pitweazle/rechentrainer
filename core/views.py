@@ -7218,6 +7218,18 @@ def sub_restflaeche(scale, x0, seite, radius,):
                  'xd_a': x0 +seite/2 - radius, 'xd_e': x0 +seite/2 + radius,
                  'ym': rand + seite}
     return parameter
+ 
+def sub_zylinder(radius, hoehe, masz):
+    radius *= 10
+    hoehe *= 10
+    rand = radius/2 + 100 - hoehe
+    parameter = {'ox': 200, 'oy': rand, 'ux': 200, 'uy': rand + hoehe,                                  # Kreimittelpunkt oben / unten
+                'lox': 200 - radius, 'loy': rand,  'rox': 200 + radius, 'roy': rand,                    # Bogen oben links / rechts
+                'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
+                'roa': radius, 'rob': radius/3,                                                         # Durchmesser oben x / y
+                'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
+                'my': rand + hoehe/2, 'hoehe': int(hoehe/10), 'masz': masz + str(int(radius/10)),}    # mittlere Hoehe und Beschriftung
+    return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -7253,7 +7265,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end) 
-        typ=15 
+        typ=16 
         typ2 = 0
         parameter = {'name':'svg/kreise.svg'}
         einheit = anmerkung = ""
@@ -7468,6 +7480,17 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 str_wert =  format_zahl(wert,1) + "cm²"
                 term = "pi·" + str(gegeben) + "²"
                 lsg = ["A=pi·r²=" + term + "=" + str_wert, str_wert , wert, "pi" + str_gegeben + "2", "indiv_0"]
+            elif typ == 16:
+                titel = "Zylinder"
+                text = "Berechne das Volumen dieses Zylinders"
+                pro_text = "V Zylinder"
+                frage = "V="
+                radius = random.randint(4,10)
+                hoehe = random.randint(4,10)
+                parameter['object'] = 'zylinder'
+                koordinaten = sub_zylinder(radius, hoehe, "r=")
+                parameter.update(koordinaten)
+
         if typ in (10,11):
             anmerkung = "Anstelle von ² kannst du ^2 schreiben."
         else:

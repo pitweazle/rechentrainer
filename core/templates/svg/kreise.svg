@@ -5,9 +5,16 @@ viewbox="0 0 400 200">
   <g id="speiche">
     <line x1="135" y1="100" x2="265" y2="100" stroke="silver" stroke-width="1"/>
   </g>
+
+  <linearGradient id="Gradient1" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#E0FFFF"/>
+    <stop offset="50%" stop-color="#E0FFFF" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#90FFFF"/>
+  </linearGradient>
 </defs> 
 
 <style>
+  .blau {stroke:black; stroke-width:1; fill: #E0FFFF}
   .masze {font: italic 16px sans-serif;}
 </style> 
 
@@ -95,6 +102,28 @@ viewbox="0 0 400 200">
     <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "black"/>
     <line x1="130" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
     <text x="180" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% endif %}
+
+{% elif parameter.object == "zylinder" %}
+  <path d="M {{parameter.lox}} {{parameter.loy}} 
+    L {{parameter.lux}} {{parameter.luy}} 
+    A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rux}} {{parameter.ruy}} 
+    L {{parameter.rox}} {{parameter.roy}} "
+    stroke="black" fill="url(#Gradient1)"
+    />
+  <path d="M {{parameter.lux}} {{parameter.luy}} 
+    A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
+    stroke-dasharray="10,2" stroke="black" fill="none"
+    />
+  <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" class="blau"/>
+  <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+  <text x="{{parameter.rox|add:8}}" y="{{parameter.my|add:5}}" class = "masze">h={{parameter.hoehe}}cm</text>
+  {% if "r" in parameter.masz %}
+    <line x1="{{parameter.ox}}" y1="{{parameter.oy}}" x2="{{parameter.rox}}" y2="{{parameter.roy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ox|add:10}}" y="{{parameter.oy|add:-5}}" class = "masze">{{parameter.masz}}cm</text>
+  {% else %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.lox}}" y2="{{parameter.loy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ox|add:-10}}" y="{{parameter.oy|add:-5}}" class = "masze">{{parameter.masz}}cm</text>
   {% endif %}
 {%endif %}
  </svg>
