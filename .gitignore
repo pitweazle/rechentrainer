@@ -68,7 +68,7 @@ settings.py
 *.sik
 *.bak
 *.json
-*/staticfiles
+/staticfiles
 
 
 # Flask stuff:
