@@ -110,10 +110,7 @@ viewbox="0 0 400 200">
     L {{parameter.rox}} {{parameter.roy}} "
     stroke="black" fill="url(#Gradient1)"
     />
-  <path d="M {{parameter.lux}} {{parameter.luy}} 
-    A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
-    stroke-dasharray="10,2" stroke="black" fill="none"
-    />
+
   <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" class="blau"/>
   <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
   <text x="{{parameter.rox|add:8}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.masz2}}cm</text>
@@ -124,5 +121,9 @@ viewbox="0 0 400 200">
     <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.lox}}" y2="{{parameter.loy}}" stroke="blue" stroke-width="2"/>
     <text x="{{parameter.ox|add:-10}}" y="{{parameter.oy|add:-5}}" class = "masze">{{parameter.masz1}}cm</text>
   {% endif %}
+  <path d="M {{parameter.lux}} {{parameter.luy}} 
+    A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
+    stroke-dasharray="10,2" stroke="black" fill="none"
+    />
 {%endif %}
  </svg>

@@ -138,11 +138,11 @@
         <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
     {% endif %}
 
-    {% if parameter.hilfe == 90 or parameter.hilfe == 91%}
+    {% if parameter.hilfe == 90 or parameter.hilfe == 91 %}
         <use href="#steigungsdreieck"/>          
     {%endif%}
 
-    {% if parameter.hilfe == 50 or parameter.hilfe == 60%}
+    {% if parameter.hilfe == 50 or parameter.hilfe == 60 %}
         <path d="M{{parameter.x_null}} {{parameter.y}}
         L{{parameter.x}} {{parameter.y}}
         L{{parameter.x}} {{parameter.y_null}}"

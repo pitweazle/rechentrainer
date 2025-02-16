@@ -7228,8 +7228,12 @@ def sub_zylinder(radius, hoehe, masz1):
                 'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
                 'roa': radius, 'rob': radius/3,                                                         # Durchmesser oben x / y
                 'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
-                'my': rand + hoehe/2, 
-                'masz2': "k=" + str(int(hoehe/10)), 'masz1': masz1 + str(int(radius/10)),}    # mittlere Hoehe und Beschriftung
+                'my': rand + hoehe/2, 'mx': 200 + radius, 'masz2': "k=" + str(int(hoehe/10))}           # mittlere Hoehe und Beschriftung
+    if masz1 == "r=":
+        parameter['masz1'] = masz1 + str(int(radius/10))
+    else:
+        parameter['masz1'] = masz1 + str(int(radius/5))
+
     return parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7237,7 +7241,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         typ_anf = 1
         typ_end = 15
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
-            typ_end = 16
+            typ_end = 18
         return typ_anf, typ_end
     elif eingabe != "":
         if typ in (10,11):
@@ -7252,7 +7256,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             elif "=" in eingabe:
                 return 0, "Das Gleichheitszeichen ist unnötig. Du sollst entweder den Term zum Berechnen des Ergebnisses eingeben oder das Ergebnis mit Einheit."
             elif "pi" in eingabe.lower():
-                eingabe = eingabe.replace(" ","").replace("²","^2").replace(",",".").replace("pi","PI").replace("Pi","PI")
+                eingabe = eingabe.replace(" ","").replace("^2","²").replace(",",".").replace("pi","PI").replace("Pi","PI")
                 parser = Parser()
                 try:
                     wert = parser.parse(eingabe).evaluate({})
@@ -7266,7 +7270,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        print(typ_end) 
         typ2 = 0
         parameter = {'name':'svg/kreise.svg'}
         einheit = anmerkung = ""
@@ -7293,7 +7296,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             variable = [radius, winkel]
             segment = sub_kreissegment(scale, x0, radius, winkel*math.pi/180)
             parameter.update(segment)
-            if typ == 1:
+            if typ == 1:                                                    # Fläche Kreisegment
                 titel = "Fläche eines Kreissegments"
                 frage = "A="
                 formel = "A= π·r²· ϕ/360"
@@ -7304,7 +7307,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
                 hilfe_id = 10
                 hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
-            elif typ == 2:
+            elif typ == 2:                                                  # Länge Kreisbogen
                 titel = "Länge eines Kreisbogens"
                 frage = "b="
                 formel = "b= 2·π·r· ϕ/360"
@@ -7315,7 +7318,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Länge eines Kreisbogens, r={}, ϕ={}"
                 hilfe_id = 20
                 hilfe="Du musst den Umfang des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."   
-            elif typ == 3:
+            elif typ == 3:                                                  # Umfang Halbkreis
                 titel = "Umfang eines Halbkreises"
                 frage = "u="
                 formel = "u= π·d/2 + d"
@@ -7326,7 +7329,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Umfang Halbkreis, r={}"
                 hilfe_id = 30
                 hilfe="Zunächst musst du den Umfang des ganzen Kreises berechnen und durch 2 teilen. Anschließend muss du noch den Durchmesser (grün) (=2·Radius)addieren."       
-            elif typ == 4:
+            elif typ == 4:                                                  # Fläche Halbkreis
                 titel = "Fläche und Kreissegment"
                 frage = "A="
                 formel = "A=r²-π·r²/4"
@@ -7337,7 +7340,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Fläche Quadrat-Viertelkreis, r={}"
                 hilfe_id = 40
                 hilfe="Zunächst musst du die Fläche des Quadrates berechnen und davon die Fläche des Viertelkreises subtrahieren."
-            elif typ == 5:
+            elif typ == 5:                                                  # Fläche Viertelkreis
                 titel = "Fläche eines Viertelkreises"
                 frage = "A="
                 formel = "A=π·r²/4"
@@ -7348,7 +7351,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Fläche Viertelkreis, r={}"
                 hilfe_id = 50
                 hilfe="Du musst die Fläche des ganzen Kreises durch vier teilen."
-            elif typ == 6:
+            elif typ == 6:                                                  # Fläche Halbkreis aus d
                 titel = "Fläche eines Halbkreises"
                 frage = "A="
                 formel = "A=π·r²/2"
@@ -7361,7 +7364,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 parameter['radius_text'] = "d=" + str(2*radius) + "cm"
                 hilfe_id = 60
                 hilfe="Du musst die Fläche des ganzen Kreises durch zwei teilen.(Achtung: Hier ist der Durchmesser angegeben und nicht der Radius!)"   
-        elif typ == 7:
+        elif typ == 7:                                                      # Fläche Kreisring
             titel = "Kreisring"
             frage = "A=" 
             parameter['object'] = 'kreisring'
@@ -7381,7 +7384,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             pro_text = "Fläche Kreisring, R={}, r={}"
             hilfe_id = 70
             hilfe="Zunächst das Quadrat des kleinen Radiuses vom Quadrat des großen Radiuses subtrahieren (am besten im Kopf) und das Ergebnis mit Pi multiplizieren."
-        elif typ == 8:
+        elif typ == 8:                                                      # Fläche Quadrat minus Kreis
             titel = "Fläche"
             frage = "A=" 
             parameter['object'] = 'restflaeche'
@@ -7404,7 +7407,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             pro_text = "Quadrat minus Kreis, d={}, r={}"
             hilfe_id = 80
             hilfe="Du musst das Quadrat der seitenlänge ausrechnen und davon das Quadrat des Kreisraiuses multipliziert mit Pi davon subtrahieren.<br>Die Quadrate rechnest du am besten im Kopf aus)."
-        elif typ == 9:
+        elif typ == 9:                                                      # zurückgelegter Weg
             titel = "zurückgelegter Weg"
             frage = "l=" 
             parameter['object'] = 'rad'
@@ -7424,31 +7427,31 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             pro_text = "Rad mit d={1}, zurückgelgter Weg nach {2} Drehungen"
             hilfe_id = 90
             hilfe="Du musst nur den Durchmesser (in cm) mit Pi und der Anzahl der Umderhungen multiplizieren."
-        elif typ == 10:
+        elif typ == 10:                                                     # Formel für Kreisumfang
             titel = "Formel für Kreisumfang"
             frage = "u="
             text = "Wie heißt die Formel zur Berechnung des Kreisumfangs?"
             pro_text = "Formel Kreisumfang"
             lsg = ["pi·d", "pi*d", "pid", "2pir", "pi2r", "indiv_0"]
-        elif typ == 11:
+        elif typ == 11:                                                     # Formel für Kreisfläche
             titel = "Formel für Kreisfläche"
             frage = "A="
             text = "Wie heißt die Formel zur Berechnung der Kreisfläche?"
             pro_text = "Formel Kreisfläche"
             lsg = ["pi·r²", "pir²", "pi*d²/4", "indiv_0"]
-        elif typ > 11:
+        elif typ in (12,13,14,15):                                          # Fläche und Umfang von Kreisen
             gegeben = random.randint(10,23)*2/10
             str_gegeben = str(gegeben).replace(".",",")
             text = "Der {} dieses Kreises beträgt {}cm. Berechne {}."
             parameter['object'] = 'kreis'
             parameter['typ'] = typ
-            if typ in (12,14):
+            if typ in (12,14):                                                  # Umfang aus d
                 if typ == 12:
                     variable = ["Durchmesser", str_gegeben, "seinen Umfang", "d"]
                     parameter['gegeben_text'] = "d=" + str_gegeben +"cm"
                     hilfe_id = 120
                     hilfe = "Die Formel heißt u=pi·d"
-                else:
+                else:                                                           # Umfang aus r
                     variable = ["Radius", str_gegeben, "seinen Umfang", "r"]
                     parameter['gegeben_text'] = "r=" + str_gegeben +"cm"
                     gegeben = 2*gegeben
@@ -7461,13 +7464,13 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 term = "pi·" + str(gegeben)
                 wert = gegeben*math.pi
                 str_wert =  format_zahl(wert,1) + "cm"
-            elif typ in (13,15):
+            elif typ in (13,15):                                                # Fläche aus r
                 if typ == 13:
                     variable = ["Radius", str_gegeben, "seine Fläche", "r"]
                     parameter['gegeben_text'] = "r=" + str_gegeben  +"cm"
                     hilfe_id = 130
                     hilfe = "Die Formel heißt A=pi·r²"
-                else:
+                else:                                                           # Fläche aus d
                     variable = ["Durchmesser", str_gegeben, "seine Fläche", "d"]
                     parameter['gegeben_text'] = "d=" + str_gegeben  +"cm" 
                     gegeben = gegeben/2 
@@ -7480,26 +7483,51 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 wert = math.pi*gegeben**2
                 str_wert =  format_zahl(wert,1) + "cm²"
                 term = "pi·" + str(gegeben) + "²"
-            elif typ == 16:
-                titel = "Zylinder"
-                text = "Berechne das Volumen dieses Zylinders"
-                pro_text = "V Zylinder"
-                frage = "V="
-                radius = random.randint(4,10)
-                hoehe = random.randint(4,10)
-                parameter['object'] = 'zylinder'
+        elif typ in (16,17):                                                # Volumen von Zylinder
+            titel = "Zylinder"
+            text = "Berechne das Volumen dieses Zylinders"
+            pro_text = "V Zylinder"
+            frage = "V="
+            hoehe = random.randint(4,10)
+            parameter['object'] = 'zylinder'
+            formel = "V=G·k = π·r²·k"
+            radius = random.randint(4,10)
+            term = "pi·" + str(radius) + "²·" + str(hoehe)
+            wert = radius**2*math.pi*hoehe
+            str_wert = format_zahl(wert,1) + "cm³"
+            if typ == 16:                                                       # aus r
                 koordinaten = sub_zylinder(radius, hoehe, "r=")
-                parameter.update(koordinaten)
-                formel = "V=G·k = π·r²·k"
-                term = "pi·" + str(radius) + "²·" + str(hoehe)
-                wert = radius**2*math.pi*hoehe
-                str_wert = format_zahl(wert,1) + "cm²"
+                hilfe_id = 160
+                hilfe = "Die Formel lautet V=G·k = π·r²·k"
+            else:                                                               # aus d
+                koordinaten = sub_zylinder(radius, hoehe, "d=")
+                hilfe_id = 170
+                hilfe = "Die Formel lautet V=G·k = π·r²·k, Da hier aber der Durchmesser angegeben ist, musst du zunächst den Radius bestimmen. (Am besten rechnest du r² im Kopf aus.)"
+            parameter.update(koordinaten)
+        elif typ == 18:                                                # Mantelfläche des Zylinders
+            titel = "Mantelfläche"
+            text = "Berechne die <b>Mantelfläche</b> dieses Zylinders"
+            pro_text = "M Zylinder"
+            frage = "M="
+            hoehe = random.randint(4,10)
+            parameter['object'] = 'zylinder'
+            formel = "M=u·k = π·d·k"
+            radius = random.randint(4,10)
+            term = "pi·" + str(radius*2) + "·" + str(hoehe)
+            wert = radius*2*math.pi*hoehe
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, hoehe, "d=")
+            parameter.update(koordinaten)
+            hilfe_id = 180
+            hilfe = "Die Formel lautet V=u·k = π·d·k"
+
         if typ in (10,11):
             anmerkung = "Anstelle von ² kannst du ^2 schreiben."
         else:
-            lsg = [formel + "=" + term + "=" + str_wert, str_wert, wert, "indiv_0"]
+            lsg = [formel + "=" + term + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
             parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
             parameter['popup_text'] = "popups/pi.html"
+        print(lsg)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
