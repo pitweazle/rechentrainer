@@ -128,7 +128,7 @@ viewbox="0 0 400 200">
   {% if parameter.typ < 19 %}
     <line x1="{{parameter.rux}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
     <text x="{{parameter.rux|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>
-  {% elif parameter.typ == 20 %}
+  {% elif parameter.typ == 20 or parameter.typ == 22 %}
     <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
     <text x="{{parameter.mx|add:10}}" y="{{parameter.my|add:5}}" class = "masze">s={{parameter.masz2}}cm</text>
   {% else %}

@@ -7242,7 +7242,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         typ_anf = 1
         typ_end = 15
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
-            typ_end = 18
+            typ_end = 20
         return typ_anf, typ_end
     elif eingabe != "":
         if typ in (10,11):
@@ -7271,7 +7271,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=20
+        typ=22
         typ2 = 0
         parameter = {'name':'svg/kreise.svg'}
         einheit = anmerkung = ""
@@ -7555,6 +7555,40 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter['masz2'] = seitenhoehe
             hilfe_id = 200
             hilfe = "Die Formel lautet M=π·r·s"
+        elif typ == 21:                                                     # Oberfläche des Zylinders
+            titel = "Oberfläche eines Zylinders"
+            text = "Berechne die <b>Oberfläche</b> dieses Zylinders."
+            pro_text = "O Zylinder"
+            frage = "O="
+            parameter['object'] = 'zylinder'
+            formel = "O=2·G+M=2·π·r·(r+k)"
+            radius = random.randint(4,10)
+            hoehe = random.randint(4,10)
+            term = "2·π·" + str(radius) + "·(" + str(radius) + "+" + str(hoehe) + ")"
+            wert = 2*math.pi*radius*(radius+hoehe)
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ)
+            parameter.update(koordinaten)
+            hilfe_id = 210
+            hilfe = "Die Formel lautet O=2·G+M=2·π·r²+2·π·r·k=2·π·r·(r+k)" 
+        elif typ == 22:                                                     # Oberfläche eines Kegels
+            titel = "Oberfläche eines Kegels"
+            text = "Berechne die Oberfläche dieses Kegels.<br>Die Formel dafür bekommst du, wenn du auf 'Hilfe' klickst."
+            pro_text = "O Kegel"
+            frage = "O="
+            radius = random.randint(4,10)
+            hoehe = random.randint(6,10)
+            seitenhoehe = int(math.sqrt(radius**2+hoehe*2))
+            parameter['object'] = 'zylinder'
+            formel = "O=π·r²+π·r·s=π·r·(r+s)"
+            term = "pi·" + str(radius) + "·(" + str(radius) + "+" + str(seitenhoehe) + ")"
+            wert = radius*math.pi*(radius+seitenhoehe)
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, 0, hoehe, typ)
+            parameter.update(koordinaten)
+            parameter['masz2'] = seitenhoehe
+            hilfe_id = 210
+            hilfe = "Die Formel lautet O=π·r²+π·r·s=π·r·(r+s)"       
         if typ in (10,11):
             anmerkung = "Anstelle von ² kannst du ^2 schreiben."
         else:
