@@ -11,6 +11,13 @@ viewbox="0 0 400 200">
     <stop offset="50%" stop-color="#E0FFFF" stop-opacity="10"/>
     <stop offset="100%" stop-color="#90FFFF"/>
   </linearGradient>
+
+  <linearGradient id="Gradient2" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#171717"/>
+    <stop offset="50%" stop-color="#C8C8C8" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#C8C8C8"/>
+  </linearGradient>
+  
 </defs> 
 
 <style>
@@ -111,15 +118,35 @@ viewbox="0 0 400 200">
     stroke="black" fill="url(#Gradient1)"
     />
 
-  <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" class="blau"/>
-  <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
-  <text x="{{parameter.rox|add:8}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.masz2}}cm</text>
-  {% if "r" in parameter.masz1 %}
-    <line x1="{{parameter.ox}}" y1="{{parameter.oy}}" x2="{{parameter.rox}}" y2="{{parameter.roy}}" stroke="blue" stroke-width="2"/>
-    <text x="{{parameter.ox|add:10}}" y="{{parameter.oy|add:-5}}" class = "masze">{{parameter.masz1}}cm</text>
+    <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" 
+    {% if parameter.typ == 18 %}
+      stroke="black" stroke-width="0.5" fill="url(#Gradient2)"   
+    {% else %}
+      class="blau"/>
+    {% endif %}
+
+  {% if parameter.typ < 19 %}
+    <line x1="{{parameter.rux}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.rux|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>
+  {% elif parameter.typ == 20 %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.mx|add:10}}" y="{{parameter.my|add:5}}" class = "masze">s={{parameter.masz2}}cm</text>
   {% else %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rox}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.rox|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>  
+
+  {% endif %}
+
+  {% if parameter.typ == 16 %}
+    <line x1="{{parameter.ox}}" y1="{{parameter.oy}}" x2="{{parameter.rox}}" y2="{{parameter.roy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ox|add:10}}" y="{{parameter.oy|add:-5}}" class = "masze">r={{parameter.masz1}}cm</text>
+  {% elif parameter.typ < 19 %}
     <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.lox}}" y2="{{parameter.loy}}" stroke="blue" stroke-width="2"/>
-    <text x="{{parameter.ox|add:-10}}" y="{{parameter.oy|add:-5}}" class = "masze">{{parameter.masz1}}cm</text>
+    <text x="{{parameter.ox|add:-10}}" y="{{parameter.oy|add:-5}}" class = "masze">d={{parameter.masz1}}cm</text>
+  {% else %}
+    <line x1="{{parameter.ux}}" y1="{{parameter.uy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ux|add:10}}" y="{{parameter.uy|add:15}}" class = "masze">r={{parameter.masz1}}cm</text>
+
   {% endif %}
   <path d="M {{parameter.lux}} {{parameter.luy}} 
     A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
