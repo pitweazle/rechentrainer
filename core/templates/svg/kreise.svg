@@ -17,6 +17,12 @@ viewbox="0 0 400 200">
     <stop offset="50%" stop-color="#C8C8C8" stop-opacity="10"/>
     <stop offset="100%" stop-color="#C8C8C8"/>
   </linearGradient>
+
+  <linearGradient id="Gradient3" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#90FFFF"/>
+    <stop offset="50%" stop-color="#E0FFFF" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#E0FFFF"/>
+  </linearGradient>
   
 </defs> 
 
@@ -152,5 +158,34 @@ viewbox="0 0 400 200">
     A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
     stroke-dasharray="10,2" stroke="black" fill="none"
     />
+
+{% elif parameter.object == "fuellstand" %}
+
+    <path d="M {{parameter.lox}} {{parameter.rlmy}} 
+    L {{parameter.lox}} {{parameter.luy}} 
+    A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.ruy}} 
+    L {{parameter.rox}} {{parameter.rlmy}} "
+    stroke="black" fill="#e0add2"
+    />
+
+  <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
+    stroke="black" stroke-width="0.5" fill="url(#Gradient3)"/>
+
+  <ellipse cx="{{parameter.ox}}" cy="{{parameter.rlmy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
+    stroke="black" stroke-width="0.5" fill="#e0add2"/>
+
+  <path d="M {{parameter.lox}} {{parameter.loy}} 
+      A {{parameter.roa}} {{parameter.rob}} 0 0 0 {{parameter.rox}} {{parameter.roy}}"  
+      stroke="black" stroke-width="0.5" fill="none"
+      />
+      
+  <path d="M {{parameter.lox}} {{parameter.loy}}
+      A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.roy}} 
+      L {{parameter.rox}} {{parameter.rlmy}} 
+      A {{parameter.rua}} {{parameter.rub}} 0 0 1 {{parameter.lox}} {{parameter.rlmy}} 
+      L {{parameter.lox}} {{parameter.loy}} "
+    stroke="black" fill="url(#Gradient1)" opacity="0.4"
+    />
+
 {%endif %}
  </svg>
