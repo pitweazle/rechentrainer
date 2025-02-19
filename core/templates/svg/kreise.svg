@@ -7,9 +7,9 @@ viewbox="0 0 400 200">
   </g>
 
   <linearGradient id="Gradient1" x1="0" x2="1" y1="0" y2="0">
-    <stop offset="0%" stop-color="#E0FFFF"/>
-    <stop offset="50%" stop-color="#E0FFFF" stop-opacity="10"/>
-    <stop offset="100%" stop-color="#90FFFF"/>
+    <stop offset="0%" stop-color="#B0FFFF"/>
+    <stop offset="50%" stop-color="#B0FFFF" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#70FFFF"/>
   </linearGradient>
 
   <linearGradient id="Gradient2" x1="0" x2="1" y1="0" y2="0">
@@ -117,24 +117,26 @@ viewbox="0 0 400 200">
   {% endif %}
 
 {% elif parameter.object == "zylinder" %}
+
   <path d="M {{parameter.lox}} {{parameter.loy}} 
-    L {{parameter.lux}} {{parameter.luy}} 
-    A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rux}} {{parameter.ruy}} 
-    L {{parameter.rox}} {{parameter.roy}} "
-    stroke="black" fill="url(#Gradient1)"
+    A {{parameter.roa}} {{parameter.rob}} 0 0 0 {{parameter.rox}} {{parameter.roy}} 
+    L {{parameter.rux}} {{parameter.ruy}} 
+    A {{parameter.rua}} {{parameter.rub}} 0 0 1 {{parameter.lux}} {{parameter.luy}} 
+    L {{parameter.lox}} {{parameter.loy}} "
+    stroke="black" stroke-width="0.5" fill="url(#Gradient1)"
     />
 
     <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" 
     {% if parameter.typ == 18 %}
-      stroke="black" stroke-width="0.5" fill="url(#Gradient2)"   
+      stroke="black" stroke-width="0.5" fill="url(#Gradient3)" opacity="0.4"    
     {% else %}
-      class="blau"/>
+      stroke="black" stroke-width="0.5" fill="#70FFFF"/>
     {% endif %}
 
   {% if parameter.typ < 19 %}
     <line x1="{{parameter.rux}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
     <text x="{{parameter.rux|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>
-  {% elif parameter.typ == 20 or parameter.typ == 22 %}
+  {% elif parameter.typ == 20 or parameter.typ == 23 %}
     <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
     <text x="{{parameter.mx|add:10}}" y="{{parameter.my|add:5}}" class = "masze">s={{parameter.masz2}}cm</text>
   {% else %}

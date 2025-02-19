@@ -7219,7 +7219,7 @@ def sub_restflaeche(scale, x0, seite, radius,):
                  'ym': rand + seite}
     return parameter
  
-def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = ""):
+def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = 0):
     masz1 = radius
     masz2 = hoehe
     if hoehe > radius:
@@ -7236,12 +7236,12 @@ def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = ""):
                 'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
                 'roa': radius_o, 'rob': radius_o/3,                                                     # Durchmesser oben x / y
                 'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
-                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': masz2}        # mittlere Hoehe und Beschriftung
+                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': masz2}                  # mittlere Hoehe und Beschriftung
     if typ in (17,18):
         parameter['masz1'] = masz1*2
     else:
         parameter['masz1'] = masz1
-    if typ == 23:
+    if typ == 21:
         fuellstand = {'rlmy': rand + hoehe_2,}                              # Bogen mitte links / rechts}
         parameter['my'] = rand + hoehe - fuellhoehe/2 * scale
         parameter.update(fuellstand)
@@ -7595,7 +7595,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             term = str(fluessigkeit) + "/" + str(flaeche)
             wert = fluessigkeit/flaeche
             str_wert = format_zahl(wert,1) + "cm"
-            lsg = [formel + "=" + term +"=" + str_wert, str_wert, wert, "indiv_0"]
+            lsg = [formel + "=" + term +"=" + str_wert, term, wert, str_wert, term.replace("/",":"), "indiv_0"]
             koordinaten = sub_zylinder(radius, radius, hoehe, typ, fuellhoehe)
             parameter.update(koordinaten)   
         elif typ == 22:                                                     # Oberfläche des Zylinders
