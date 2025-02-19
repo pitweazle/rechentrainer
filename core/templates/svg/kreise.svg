@@ -161,7 +161,7 @@ viewbox="0 0 400 200">
 
 {% elif parameter.object == "fuellstand" %}
 
-    <path d="M {{parameter.lox}} {{parameter.rlmy}} 
+  <path d="M {{parameter.lox}} {{parameter.rlmy}} 
     L {{parameter.lox}} {{parameter.luy}} 
     A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.ruy}} 
     L {{parameter.rox}} {{parameter.rlmy}} "
@@ -169,16 +169,16 @@ viewbox="0 0 400 200">
     />
 
   <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
-    stroke="black" stroke-width="0.5" fill="url(#Gradient3)"/>
+    stroke="black" stroke-width="0.5" fill="url(#Gradient3)" opacity="0.4"/>
 
-  <ellipse cx="{{parameter.ox}}" cy="{{parameter.rlmy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
-    stroke="black" stroke-width="0.5" fill="#e0add2"/>
+   <ellipse cx="{{parameter.ox}}" cy="{{parameter.rlmy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
+      stroke="black" stroke-width="0.5" fill="#e0add2"/>
 
   <path d="M {{parameter.lox}} {{parameter.loy}} 
       A {{parameter.roa}} {{parameter.rob}} 0 0 0 {{parameter.rox}} {{parameter.roy}}"  
       stroke="black" stroke-width="0.5" fill="none"
       />
-      
+
   <path d="M {{parameter.lox}} {{parameter.loy}}
       A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.roy}} 
       L {{parameter.rox}} {{parameter.rlmy}} 
@@ -186,6 +186,19 @@ viewbox="0 0 400 200">
       L {{parameter.lox}} {{parameter.loy}} "
     stroke="black" fill="url(#Gradient1)" opacity="0.4"
     />
+
+  <path d="M {{parameter.rux|add:5}} {{parameter.rlmy|add:5}}
+      L {{parameter.rux|add:10}} {{parameter.rlmy}} 
+      L {{parameter.rux|add:15}} {{parameter.rlmy|add:5}}"
+      stroke="red" fill="none"
+    />
+  <line x1="{{parameter.rux|add:10}}" y1="{{parameter.rlmy}}" x2="{{parameter.rux|add:10}}" y2="{{parameter.ruy}}" stroke="red" />
+  <path d="M {{parameter.rux|add:5}} {{parameter.ruy|add:-5}}
+      L {{parameter.rux|add:10}} {{parameter.ruy}} 
+      L {{parameter.rux|add:15}} {{parameter.ruy|add:-5}}"
+    stroke="red" fill="none"
+    />
+  <text x="{{parameter.rux|add:15}}" y="{{parameter.my|add:5}}" class = "masze">h=?</text>
 
 {%endif %}
  </svg>

@@ -7219,24 +7219,31 @@ def sub_restflaeche(scale, x0, seite, radius,):
                  'ym': rand + seite}
     return parameter
  
-def sub_zylinder(radius, radius_o, hoehe, typ):
-    radius *= 10
-    radius_o *= 10
-    hoehe *= 10
-    hoehe_2 = hoehe*0.2
+def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = ""):
+    masz1 = radius
+    masz2 = hoehe
+    if hoehe > radius:
+        scale = 100/hoehe
+    else:
+        scale = 100/radius
+    radius *= scale
+    radius_o *= scale
+    hoehe *= scale
+    hoehe_2 = hoehe - fuellhoehe * scale
     rand = radius/2 + 100 - hoehe
     parameter = {'typ': typ, 'ox': 200, 'oy': rand, 'ux': 200, 'uy': rand + hoehe,                      # Kreimittelpunkt oben / unten
                 'lox': 200 - radius_o, 'loy': rand,  'rox': 200 + radius_o, 'roy': rand,                # Bogen oben links / rechts
                 'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
                 'roa': radius_o, 'rob': radius_o/3,                                                     # Durchmesser oben x / y
                 'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
-                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': (int(hoehe/10))}        # mittlere Hoehe und Beschriftung
+                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': masz2}        # mittlere Hoehe und Beschriftung
     if typ in (17,18):
-        parameter['masz1'] = (int(radius/5))
+        parameter['masz1'] = masz1*2
     else:
-        parameter['masz1'] = (int(radius/10))
+        parameter['masz1'] = masz1
     if typ == 23:
         fuellstand = {'rlmy': rand + hoehe_2,}                              # Bogen mitte links / rechts}
+        parameter['my'] = rand + hoehe - fuellhoehe/2 * scale
         parameter.update(fuellstand)
 
     return parameter
@@ -7245,8 +7252,10 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 15
-        if stufe >= 6 or jg >= 7 or "mit" in optionen:
-            typ_end = 20
+        if stufe >= 34 or jg >= 8 or "mit" in optionen:
+            typ_end = 21
+        if jg >= 9 or "schwieriger" in optionen:
+            typ_end = 23
         return typ_anf, typ_end
     elif eingabe != "":
         if typ in (10,11):
@@ -7271,11 +7280,16 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                         return -1, ""
                 except:
                     return 0, "Den Term, den du eingegeben hast, kann ich nicht berechnen."
+            elif typ == 21:
+                eingabe = eingabe.replace("cm","") 
+                if eingabe == str(round(lsg[2])).replace(".",","):
+                    return 0, "Du sollst das Ergebnis auf eine Stelle nach dem Komma gerundet angeben."
+                else:
+                    return -1, ""
             else:
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ2 = 0
         parameter = {'name':'svg/kreise.svg'}
         einheit = anmerkung = ""
         variable = []
@@ -7558,7 +7572,33 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter['masz2'] = seitenhoehe
             hilfe_id = 200
             hilfe = "Die Formel lautet M=π·r·s"
-        elif typ == 21:                                                     # Oberfläche des Zylinders
+        elif typ == 21:                                                     # Füllhöhe von Zylinder
+            titel = "Füllhöhe"
+            radius = random.randint(4,10)
+            hoehe = random.randint(4,10)
+            flaeche = int(radius**2*math.pi/10)*10
+            volumen = int(flaeche * hoehe/50)*50
+            fluessigkeit = volumen*random.randint(6,9)//10
+            fuellhoehe = fluessigkeit/flaeche
+            if volumen >= 300 and hoehe < radius*2:
+                behaelter = "Diese runde Glaswanne"
+            elif volumen <= 300 and hoehe < radius*2:
+                behaelter = "Dieses Becherglas"
+            else:
+                behaelter = "Dieser Standzylinder"
+            variable = [behaelter,volumen,flaeche,fluessigkeit]
+            text = "{0} hat ein Volumen von {1}cm³ und eine Grundfläche von {2}cm². Es sollen genau {3}cm³ einer Flüssigkeit eingefüllt werden. Bis zu welcher Höhe muss diese Gefäß gefüllt werden?"
+            pro_text = "Füllhöhe"
+            frage = "h="
+            parameter['object'] = 'fuellstand'
+            formel = "h=V·G"
+            term = str(fluessigkeit) + "/" + str(flaeche)
+            wert = fluessigkeit/flaeche
+            str_wert = format_zahl(wert,1) + "cm"
+            lsg = [formel + "=" + term +"=" + str_wert, str_wert, wert, "indiv_0"]
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ, fuellhoehe)
+            parameter.update(koordinaten)   
+        elif typ == 22:                                                     # Oberfläche des Zylinders
             titel = "Oberfläche eines Zylinders"
             text = "Berechne die <b>Oberfläche</b> dieses Zylinders."
             pro_text = "O Zylinder"
@@ -7574,7 +7614,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter.update(koordinaten)
             hilfe_id = 210
             hilfe = "Die Formel lautet O=2·G+M=2·π·r²+2·π·r·k=2·π·r·(r+k)" 
-        elif typ == 22:                                                     # Oberfläche eines Kegels
+        elif typ == 23:                                                     # Oberfläche eines Kegels
             titel = "Oberfläche eines Kegels"
             text = "Berechne die Oberfläche dieses Kegels.<br>(Die Formel dafür bekommst du, wenn du auf 'Hilfe' klickst.)"
             pro_text = "O Kegel"
@@ -7592,27 +7632,14 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter['masz2'] = seitenhoehe
             hilfe_id = 210
             hilfe = "Die Formel lautet O=π·r²+π·r·s=π·r·(r+s)"  
-        elif typ == 23:                                                # Füllhöhe von Zylinder
-            titel = "Füllhöhe"
-            text = "Berechne das Volumen dieses Zylinders"
-            pro_text = "V Zylinder"
-            frage = "V="
-            hoehe = random.randint(4,10)
-            parameter['object'] = 'fuellstand'
-            formel = "V=G·k = π·r²·k"
-            radius = random.randint(4,10)
-            term = "pi·" + str(radius) + "²·" + str(hoehe)
-            wert = radius**2*math.pi*hoehe
-            str_wert = format_zahl(wert,1) + "cm³"
-            koordinaten = sub_zylinder(radius, radius, hoehe, typ)
-            parameter.update(koordinaten)   
         if typ in (10,11):
             anmerkung = "Anstelle von ² kannst du ^2 schreiben."
+        elif typ == 21:
+            anmerkung = "Du kannst die Rechnung wie in einen Taschenrechner eintippen oder das Ergebnis auf eine Stelle gerundet und mit der richtigen Einheit angeben."
         else:
             lsg = [formel + "=" + term + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
             parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
             parameter['popup_text'] = "popups/pi.html"
-        print(lsg)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
