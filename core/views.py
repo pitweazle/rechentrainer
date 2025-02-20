@@ -4271,7 +4271,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
         parameter = {'name': 'normal',} 
         text = pro_text = einheit = anmerkung = frage = ""
         hilfe_id = 0
-        hilfe_text = []
+        variable = []
         erg = None 
         prozent_liste=[0.50,0.25,0.10,0.20,0.75,0.90,  0.30,0.40,0.60,0.80,  0.05,0.125]
         #für E-Kurs', für G-Kurs bis 6, A-Kurs alle:
@@ -4590,25 +4590,27 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             lsg = [str(int(wert)),str(wert),"indiv_0"] 
         elif typ <= 18:                             # Tageszinsen
             titel = "Tageszinsen"
-            kapital_liste = [2,3,4,5,10]
-            kapital = random.choice(kapital_liste)*1000
-            vorkomma = random.randint(3,5)
-            nachkomma = [0,0.5]
-            zinsen = vorkomma+random.choice(nachkomma)
+            wert = 0.333
+            while wert*10%1 > 0:
+                kapital_liste = [2,3,4,5,10]
+                kapital = random.choice(kapital_liste)*1000
+                vorkomma = random.randint(3,5)
+                nachkomma = [0,0.5]
+                zinsen = vorkomma+random.choice(nachkomma)
+                tage = random.randint(1,30)*10
+                wert = kapital/100*zinsen/360*tage
             if zinsen%1 == 0:
                 str_zinsen = str(int(zinsen))
             else:
                 str_zinsen = str(round(zinsen,1))
-            tage = random.randint(1,30)*10
             text = "Für {} über {}€ muss man {}% Zinsen im Jahr bezahlen. <br>Gib den Term an mit dem man die Tageszinsen für {} Tage berechnen kann."
             pro_text = "{}, {}€, {}%, {} Tage"
             baustein = "einen Kredit"
-            anmerkung = "Denke daran: Für die bank hat das Jahr 360 Tage."
+            anmerkung = "Denke daran: Für die Bank hat das Jahr 360 Tage."
             variable = [baustein, trenner(kapital), str(zinsen).replace(".",","), tage]
             frage = "Z="
             einheit = "€"
             hilfe_id = 171
-            wert = kapital/100*zinsen/360*tage 
             lsg = [str(int(kapital))+"/100*"+str_zinsen+"/360*"+str(tage)] 
         else:                                       # Kapital aus Monatszinsen - nur A-Kurs und Gymnasium
             titel = "Zinsrechnung"
@@ -4623,7 +4625,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             einheit = "€"
             wert = belastung*12/zinsen*100
             lsg = [str(belastung)+"*12/"+str(zinsen)+"*100="+str(trenner(wert))+"€"] 
-        if typ in (8,10,12) or typ >= 18:        # sorgt dafür, dass überprüft wird, ob anstelle eines Termes der Wert eingegeben wurde
+        if typ in (8,10,12) or typ >= 18:           # sorgt dafür, dass überprüft wird, ob anstelle eines Termes der Wert eingegeben wurde
             parser = Parser()
             zahl=round(parser.parse(lsg[0].replace(",",".")).evaluate({}),3)
             lsg.append((zahl))
@@ -7597,7 +7599,9 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             str_wert = format_zahl(wert,1) + "cm"
             lsg = [formel + "=" + term +"=" + str_wert, term, wert, str_wert, term.replace("/",":"), "indiv_0"]
             koordinaten = sub_zylinder(radius, radius, hoehe, typ, fuellhoehe)
-            parameter.update(koordinaten)   
+            parameter.update(koordinaten) 
+            hilfe_id = 210
+            hilfe = "Um das Volumen zu berechnen, muss man die Grundfläche mit der Körperhöhe multiplizieren. Um hier die Füllhöhe zu berechnen muss man also das Volumen der Flüssigkeit durch die Grundfläche teilen." 
         elif typ == 22:                                                     # Oberfläche des Zylinders
             titel = "Oberfläche eines Zylinders"
             text = "Berechne die <b>Oberfläche</b> dieses Zylinders."
@@ -7612,7 +7616,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             str_wert = format_zahl(wert,1) + "cm²"
             koordinaten = sub_zylinder(radius, radius, hoehe, typ)
             parameter.update(koordinaten)
-            hilfe_id = 210
+            hilfe_id = 220
             hilfe = "Die Formel lautet O=2·G+M=2·π·r²+2·π·r·k=2·π·r·(r+k)" 
         elif typ == 23:                                                     # Oberfläche eines Kegels
             titel = "Oberfläche eines Kegels"
@@ -7630,7 +7634,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             koordinaten = sub_zylinder(radius, 0, hoehe, typ)
             parameter.update(koordinaten)
             parameter['masz2'] = seitenhoehe
-            hilfe_id = 210
+            hilfe_id = 230
             hilfe = "Die Formel lautet O=π·r²+π·r·s=π·r·(r+s)"  
         if typ in (10,11):
             anmerkung = "Anstelle von ² kannst du ^2 schreiben."
