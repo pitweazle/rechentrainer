@@ -1,9 +1,22 @@
-<footer>
-  <div class="footer">
-    <div class="navbar">
-        <a href="{% url 'datenschutz' %}">Datenschutz</a>
-        <a href="{% url 'stimmen' %}">Bewertungen</a>
-        <a href="{% url 'weitere_projekte' %}">weitere Projekte</a>
+<footer class="footer">
+  <div class="navbar">
+    <div class="dropdown">
+      <button class="dropbtn">
+        Kontakt & Impressum
+      </button>
+      <div class="dropdown-content">
+        <p>Den Rechentrainer habe ich (fast) ganz alleine programmiert
+          <br>und auch für diese Seite bin ich zuständig:
+          <br><b>Peter Doll</b>
+          <br>64572 Büttelborn
+          <br>Gartenstr. 61
+          <br>Tel.: 06152 9774291
+          <br>info&#64rechentrainer.app
+        </p>
+      </div>
     </div>
+    <a href="{% url 'datenschutz' %}">Datenschutz</a>
+    <a href="{% url 'stimmen' %}">Bewertungen</a>
+    <a href="{% url 'weitere_projekte' %}">weitere Projekte</a>
   </div>
 </footer>

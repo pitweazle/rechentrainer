@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+version=1.1"center_y3
+viewbox="0 0 400 200">
+<defs>
+  <g id="speiche">
+    <line x1="135" y1="100" x2="265" y2="100" stroke="silver" stroke-width="1"/>
+  </g>
+
+  <linearGradient id="Gradient1" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#B0FFFF"/>
+    <stop offset="50%" stop-color="#B0FFFF" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#70FFFF"/>
+  </linearGradient>
+
+  <linearGradient id="Gradient2" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#171717"/>
+    <stop offset="50%" stop-color="#C8C8C8" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#C8C8C8"/>
+  </linearGradient>
+
+  <linearGradient id="Gradient3" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0%" stop-color="#90FFFF"/>
+    <stop offset="50%" stop-color="#E0FFFF" stop-opacity="10"/>
+    <stop offset="100%" stop-color="#E0FFFF"/>
+  </linearGradient>
+  
+</defs> 
+
+<style>
+  .blau {stroke:black; stroke-width:1; fill: #E0FFFF}
+  .masze {font: italic 16px sans-serif;}
+</style> 
+
+{% if parameter.object == "segment" %}
+  {% if parameter.typ == 4 %}
+    <rect x="{{parameter.s_ex}}"" y= "{{parameter.s_ey}}" width="{{parameter.Radius}}" height="{{parameter.Radius}}"
+    stroke="black" 
+    stroke-width="0.5"
+    fill="yellow" />
+  {% endif %}
+
+    <path d="
+    M {{parameter.x0}}, {{parameter.y0}}
+    L {{parameter.s_ax}} {{parameter.s_ay}}        
+    A {{parameter.Radius}} {{parameter.Radius}} 0 0 0 {{parameter.s_ex}} {{parameter.s_ey}}
+    Z "
+    stroke="black" 
+    stroke-width="0.5"
+    {% if parameter.typ == 4 %}
+      fill="white"
+    {% elif parameter.typ == 5 %}
+      fill="yellow"
+    {% else %}
+      fill="lightskyblue"
+    {% endif %}
+    />
+
+    {% if parameter.typ == 2 %}
+      <path d="
+        M {{parameter.s_ax}}, {{parameter.s_ay}} A {{parameter.Radius}} {{parameter.Radius}} 0 0 0 {{parameter.s_ex}} {{parameter.s_ey}}"
+        stroke="red" 
+        stroke-width="2"
+        fill="lightskyblue"
+        />  
+    {% endif %}
+
+    {% if parameter.typ == 3 or parameter.typ == 6 %}
+      <line x1="{{parameter.s_ex}}" y1="{{parameter.s_ey}}" x2="{{parameter.s_ax}}" y2="{{parameter.s_ay}}" stroke="green" stroke-width="2"/>
+    {% elif parameter.typ < 3 %}
+      <path d="
+      M {{parameter.w_ax}}, {{parameter.w_ay}} A 30 30 0 0 0 {{parameter.w_ex}} {{parameter.w_ey}}"
+      stroke="blue" 
+      fill="lightskyblue"
+      />
+    {% elif parameter.typ != 3 %}
+      <line x1="{{parameter.x0}}" y1="{{parameter.y0}}" x2="{{parameter.s_ax}}" y2="{{parameter.s_ay}}" stroke="green" stroke-width="2"/>
+
+    {% endif %}
+
+    <text x="{{parameter.mx|add:-15}}" y="{{parameter.y0|add:15}}" class = "masze">{{parameter.radius_text}}</text>
+    <text x="{{parameter.w_mx|add:-15}}" y="{{parameter.w_my|add:15}}" class = "masze">{{parameter.winkel_text}}</text>
+
+{% elif parameter.object == "kreisring" %}
+  <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.Radius}}"  fill="lightskyblue" stroke = "black"/>
+  <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.radius}}"  fill="white" stroke = "black"/>
+  <line x1="{{parameter.x}}" y1="{{parameter.y}}" x2="{{parameter.xo}}" y2="{{parameter.yo}}" stroke="green" stroke-width="2"/>
+  <line x1="{{parameter.x}}" y1="{{parameter.y}}" x2="{{parameter.xu}}" y2="{{parameter.yu}}" stroke="red" stroke-width="2"/>
+{% elif parameter.object == "restflaeche" %}
+  <rect x="{{parameter.x0}}"" y= "{{parameter.y0}}" width="{{parameter.seite}}" height="{{parameter.seite}}" fill="yellow" stroke = "black"/>
+  <circle cx="{{parameter.x}}" cy="{{parameter.y}}" r="{{parameter.radius}}"  fill="white" stroke = "black"/>
+  <line x1="{{parameter.xd_a}}" y1="{{parameter.y}}" x2="{{parameter.xd_e}}" y2="{{parameter.y}}" stroke="green" stroke-width="2"/>
+  <text x="{{parameter.x|add:-15}}" y="{{parameter.y|add:15}}" class = "masze">{{parameter.durchmesser_text}}</text>
+  <text x="{{parameter.x|add:-15}}" y="{{parameter.ym|add:15}}" class = "masze">{{parameter.seite_text}}</text>
+{% elif parameter.object == "rad" %}
+  <circle cx="200" cy="100" r="70"  fill="white" stroke = "grey" stroke-width="10"/>
+  {% for n in parameter.winkel %}
+    <use href="#speiche" transform="rotate({{n}} 200 100)"/>
+  {% endfor%}
+  <circle cx="200" cy="100" r="10"  fill="silver" stroke = "grey" stroke-width="1"/>
+{% elif parameter.object == "kreis" %}
+  {% if parameter.typ == 12 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "red" stroke-width="2"/>
+    <line x1="130" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="180" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 13 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "black"/>
+    <line x1="200" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="205" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 14 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "red" stroke-width="2"/>
+    <line x1="200" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="205" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% elif parameter.typ == 15 %}
+    <circle cx="200" cy="100" r="70"  fill="lightskyblue" stroke = "black"/>
+    <line x1="130" y1="100" x2="270" y2="100" stroke="blue" stroke-width="1"/>
+    <text x="180" y="115" class = "masze">{{parameter.gegeben_text}}</text>
+  {% endif %}
+
+{% elif parameter.object == "zylinder" %}
+
+  <path d="M {{parameter.lox}} {{parameter.loy}} 
+    A {{parameter.roa}} {{parameter.rob}} 0 0 0 {{parameter.rox}} {{parameter.roy}} 
+    L {{parameter.rux}} {{parameter.ruy}} 
+    A {{parameter.rua}} {{parameter.rub}} 0 0 1 {{parameter.lux}} {{parameter.luy}} 
+    L {{parameter.lox}} {{parameter.loy}} "
+    stroke="black" stroke-width="0.5" fill="url(#Gradient1)"
+    />
+
+    <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}" 
+    {% if parameter.typ == 18 %}
+      stroke="black" stroke-width="0.5" fill="url(#Gradient3)" opacity="0.4"    
+    {% else %}
+      stroke="black" stroke-width="0.5" fill="#70FFFF"/>
+    {% endif %}
+
+  {% if parameter.typ < 19 %}
+    <line x1="{{parameter.rux}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.rux|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>
+  {% elif parameter.typ == 20 or parameter.typ == 23 %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.mx|add:10}}" y="{{parameter.my|add:5}}" class = "masze">s={{parameter.masz2}}cm</text>
+  {% else %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.rox}}" y2="{{parameter.ruy}}" stroke="red" stroke-width="2"/>
+    <text x="{{parameter.rox|add:8}}" y="{{parameter.my|add:5}}" class = "masze">k={{parameter.masz2}}cm</text>  
+
+  {% endif %}
+
+  {% if parameter.typ == 16 %}
+    <line x1="{{parameter.ox}}" y1="{{parameter.oy}}" x2="{{parameter.rox}}" y2="{{parameter.roy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ox|add:10}}" y="{{parameter.oy|add:-5}}" class = "masze">r={{parameter.masz1}}cm</text>
+  {% elif parameter.typ < 19 %}
+    <line x1="{{parameter.rox}}" y1="{{parameter.roy}}" x2="{{parameter.lox}}" y2="{{parameter.loy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ox|add:-10}}" y="{{parameter.oy|add:-5}}" class = "masze">d={{parameter.masz1}}cm</text>
+  {% else %}
+    <line x1="{{parameter.ux}}" y1="{{parameter.uy}}" x2="{{parameter.rux}}" y2="{{parameter.ruy}}" stroke="blue" stroke-width="2"/>
+    <text x="{{parameter.ux|add:10}}" y="{{parameter.uy|add:15}}" class = "masze">r={{parameter.masz1}}cm</text>
+
+  {% endif %}
+  <path d="M {{parameter.lux}} {{parameter.luy}} 
+    A {{parameter.ux}} {{parameter.uy}} 0 0 1 {{parameter.rux}} {{parameter.ruy}}"  
+    stroke-dasharray="10,2" stroke="black" fill="none"
+    />
+
+{% elif parameter.object == "fuellstand" %}
+
+  <path d="M {{parameter.lox}} {{parameter.rlmy}} 
+    L {{parameter.lox}} {{parameter.luy}} 
+    A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.ruy}} 
+    L {{parameter.rox}} {{parameter.rlmy}} "
+    stroke="black" fill="#e0add2"
+    />
+
+  <ellipse cx="{{parameter.ox}}" cy="{{parameter.oy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
+    stroke="black" stroke-width="0.5" fill="url(#Gradient3)" opacity="0.4"/>
+
+   <ellipse cx="{{parameter.ox}}" cy="{{parameter.rlmy}}" rx="{{parameter.roa}}" ry="{{parameter.rob}}"
+      stroke="black" stroke-width="0.5" fill="#e0add2"/>
+
+  <path d="M {{parameter.lox}} {{parameter.loy}} 
+      A {{parameter.roa}} {{parameter.rob}} 0 0 0 {{parameter.rox}} {{parameter.roy}}"  
+      stroke="black" stroke-width="0.5" fill="none"
+      />
+
+  <path d="M {{parameter.lox}} {{parameter.loy}}
+      A {{parameter.rua}} {{parameter.rub}} 0 0 0 {{parameter.rox}} {{parameter.roy}} 
+      L {{parameter.rox}} {{parameter.rlmy}} 
+      A {{parameter.rua}} {{parameter.rub}} 0 0 1 {{parameter.lox}} {{parameter.rlmy}} 
+      L {{parameter.lox}} {{parameter.loy}} "
+    stroke="black" fill="url(#Gradient1)" opacity="0.4"
+    />
+
+  <path d="M {{parameter.rux|add:5}} {{parameter.rlmy|add:5}}
+      L {{parameter.rux|add:10}} {{parameter.rlmy}} 
+      L {{parameter.rux|add:15}} {{parameter.rlmy|add:5}}"
+      stroke="red" fill="none"
+    />
+  <line x1="{{parameter.rux|add:10}}" y1="{{parameter.rlmy}}" x2="{{parameter.rux|add:10}}" y2="{{parameter.ruy}}" stroke="red" />
+  <path d="M {{parameter.rux|add:5}} {{parameter.ruy|add:-5}}
+      L {{parameter.rux|add:10}} {{parameter.ruy}} 
+      L {{parameter.rux|add:15}} {{parameter.ruy|add:-5}}"
+    stroke="red" fill="none"
+    />
+  <text x="{{parameter.rux|add:15}}" y="{{parameter.my|add:5}}" class = "masze">h=?</text>
+
+{%endif %}
+ </svg>

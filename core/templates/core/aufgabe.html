@@ -131,23 +131,12 @@
                 {% else %}
                     {{message_unten}}
                     {% if parameter.popup %}
-                        <a href="#" id="openPopup"><br>{{parameter.popup}}&#128521;</a>
+                        <a href="#" id="openPopup"><br>{{parameter.popup}}</a>
                 
                         <!-- Popup-Struktur -->
                         <div class="popup-overlay" id="popupOverlay"></div>
                         <div class="popup" id="popup">
-                            <span class="popup-close" id="closePopup">&times;</span>
-                            <p>Mithilfe der pythagoreischen Zahlentripel erstellt der Rechentrainer rechtwinklige Dreiecke mit ganzzahligen Seitenlängen:</p>
-                            <p>Das bekannteste ist</p>
-                            <p> 5² = 4² + 3² (25=16+9)</p>
-                            <p>oder mehrfache davon:</p>
-                            <p>10² = 8² + 6² (100=64+36)</p>
-                            <p>15² = 12² + 9² (225=144*81) ...</p>
-                            <p>kleiner (mit Kommazahlen):</p>
-                            <p>2,5² = 2,0² + 1,5² (6,25=4+2,25)</p>
-                            <p>0,5² = 0,4² + 0,3² (0,25=0,16+0,09) ...</p>
-                            <p>und kennen solltest du auch:</p>
-                            <p>13² = 12² + 5² (169=144+25)</p>
+                            {% include parameter.popup_text %}
                         </div>
                         <script>
                             // JavaScript für das Popup

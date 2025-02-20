@@ -28,7 +28,7 @@ class Kategorie(models.Model):
     start_jg = models.PositiveSmallIntegerField(default=5, verbose_name="Start in Jahrgang")
     start_sw = models.PositiveSmallIntegerField(default=1, verbose_name="Start in Schulwoche")
 
-    eof = models.PositiveSmallIntegerField(default=15, verbose_name="Eingaben ohne Fehler")  # Aufgaben die an einem Stück richtig beantwortet werden müssen damit der Fehlerzähler zurückgesetzt wird
+    eof = models.PositiveSmallIntegerField(default=10, verbose_name="Eingaben ohne Fehler")  # Aufgaben die an einem Stück richtig beantwortet werden müssen damit der Fehlerzähler zurückgesetzt wird
 
     slug=models.SlugField(default="", null=False)
 

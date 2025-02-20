@@ -19,7 +19,7 @@ class LerngruppeAdmin(admin.ModelAdmin):
 class ProfilAdmin(admin.ModelAdmin):
     list_filter=('gruppe',  )
     search_fields = ['vorname', 'nachname']
-    list_display = ('vorname', 'nachname', 'klasse', 'gruppe') 
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'gruppe') 
 
 class BenutzerAdmin(UserAdmin):
     list_display = ('id', 'username', 'profil_nachname', 'profil_vorname', 'profil_gruppe', 'date_joined', 'last_login')
