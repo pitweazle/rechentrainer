@@ -4271,7 +4271,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
         parameter = {'name': 'normal',} 
         text = pro_text = einheit = anmerkung = frage = ""
         hilfe_id = 0
-        hilfe_text = []
+        variable = []
         erg = None 
         prozent_liste=[0.50,0.25,0.10,0.20,0.75,0.90,  0.30,0.40,0.60,0.80,  0.05,0.125]
         #für E-Kurs', für G-Kurs bis 6, A-Kurs alle:
@@ -4590,25 +4590,27 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             lsg = [str(int(wert)),str(wert),"indiv_0"] 
         elif typ <= 18:                             # Tageszinsen
             titel = "Tageszinsen"
-            kapital_liste = [2,3,4,5,10]
-            kapital = random.choice(kapital_liste)*1000
-            vorkomma = random.randint(3,5)
-            nachkomma = [0,0.5]
-            zinsen = vorkomma+random.choice(nachkomma)
+            wert = 0.333
+            while wert*10%1 > 0:
+                kapital_liste = [2,3,4,5,10]
+                kapital = random.choice(kapital_liste)*1000
+                vorkomma = random.randint(3,5)
+                nachkomma = [0,0.5]
+                zinsen = vorkomma+random.choice(nachkomma)
+                tage = random.randint(1,30)*10
+                wert = kapital/100*zinsen/360*tage
             if zinsen%1 == 0:
                 str_zinsen = str(int(zinsen))
             else:
                 str_zinsen = str(round(zinsen,1))
-            tage = random.randint(1,30)*10
             text = "Für {} über {}€ muss man {}% Zinsen im Jahr bezahlen. <br>Gib den Term an mit dem man die Tageszinsen für {} Tage berechnen kann."
             pro_text = "{}, {}€, {}%, {} Tage"
             baustein = "einen Kredit"
-            anmerkung = "Denke daran: Für die bank hat das Jahr 360 Tage."
+            anmerkung = "Denke daran: Für die Bank hat das Jahr 360 Tage."
             variable = [baustein, trenner(kapital), str(zinsen).replace(".",","), tage]
             frage = "Z="
             einheit = "€"
             hilfe_id = 171
-            wert = kapital/100*zinsen/360*tage 
             lsg = [str(int(kapital))+"/100*"+str_zinsen+"/360*"+str(tage)] 
         else:                                       # Kapital aus Monatszinsen - nur A-Kurs und Gymnasium
             titel = "Zinsrechnung"
@@ -4623,7 +4625,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             einheit = "€"
             wert = belastung*12/zinsen*100
             lsg = [str(belastung)+"*12/"+str(zinsen)+"*100="+str(trenner(wert))+"€"] 
-        if typ in (8,10,12) or typ >= 18:        # sorgt dafür, dass überprüft wird, ob anstelle eines Termes der Wert eingegeben wurde
+        if typ in (8,10,12) or typ >= 18:           # sorgt dafür, dass überprüft wird, ob anstelle eines Termes der Wert eingegeben wurde
             parser = Parser()
             zahl=round(parser.parse(lsg[0].replace(",",".")).evaluate({}),3)
             lsg.append((zahl))
@@ -6428,7 +6430,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             lsg = [str(kante)]
             hilfe_id = 20
             hilfe = "Das sind {} Würfel. Du musst zunächst das Volumen eines Würfels ausrechnen.<br>Anschließend musst du die dritte Wurzel ziehen." 
-            parameter = {'name': 'svg/geometrie.svg', 'object': 'kubik', 'schieb': schieb_positionen,}                 
+            parameter = {'name': 'svg/geometrie.svg', 'object': 'kubik', 'schieb': schieb_positionen,} 
         elif typ == 3:                                  # Kubikzahlen
             titel = "Kubikzahlen" 
             zahl1 = random.randint(2,5)
@@ -6764,8 +6766,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ == 1:
-            if "*" in eingabe:
-                return 0, "lass bitte das '*' weg"
+            if not "*" in eingabe:
+                return 0, "Du musst '*' für die Multiplikation ergänzen."
             elif "=" in eingabe:
                 return 0, lsg[0][:3] + " steht schon da"
             else:
@@ -6803,7 +6805,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             a, b, c, p = sub_dreiecksseiten(q, h)
         if typ >= 10:                                           # pythagoräische Zahlentripel
             p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen "
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen &#128521;"
+            parameter['popup_text'] = "popups/pythagoras.html"
             if stufe%2 == 1:
                 typ2 = random.randint(0,5)
             else:
@@ -6824,16 +6827,16 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             if typ2 == 1:
                 text="Ergänze den Kathetensatz für die Seite a:"
                 frage = "a²="
-                lsg = ["a²=pc","pc","cp","a²=cp","indiv_0"]
+                lsg = ["a²=p·c","p*c","c*p","a²=c*p","indiv_0"]
             elif typ2 == 2:
                 text="Ergänze den Kathetensatz für die Seite b:"
                 frage = "b²="
-                lsg = ["b²=qc","qc","qq","b²=cq","indiv_0"]
+                lsg = ["b²=q·c","q*c","q*q","b²=c*q","indiv_0"]
             else:
                 titel = "Höhensatz"
                 text = "Wie lautet der Höhensatz?"
                 frage = "h²="  
-                lsg = ["h²=pq","qp","pq","indiv_0"]
+                lsg = ["h²=p·q","q*p","p*q","indiv_0"]
         elif typ == 2:                                          # Kathetensatz anwenden
             x0 = (350 - c*scale)/2
             scale = 25
@@ -7185,6 +7188,463 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+def sub_kreissegment(scale, x0, Radius, winkel):
+    rand = 30
+    Radius = Radius * scale
+    parameter = {'Radius':Radius, 'winkel': winkel, 'x0': x0,  'y0': Radius + rand, 'mx': x0 +Radius/2, 
+                  's_ax': x0 + Radius,                   's_ay': Radius + rand, 
+                  's_ex': x0 + Radius *math.cos(winkel), 's_ey': Radius + rand - Radius*math.sin(winkel),
+                  'w_ax': x0 + 30,                       'w_ay': Radius + rand, 
+                  'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel),
+                  'w_mx': x0 + 30 *math.cos(winkel/2),   'w_my': Radius + rand - 30*math.sin(winkel/2)
+                  }
+    return parameter
+
+def sub_kreisring(scale, Radius, radius,):
+    rand = 30
+    Radius = Radius * scale
+    radius = radius * scale
+    parameter = {'Radius': Radius, 'radius': radius, 'x': 200, 'y': 100,
+                 'xo': 200 + Radius*math.cos(0.5), 'yo': 100-Radius*math.sin(0.5),
+                 'xu': 200 + radius*math.cos(0.5), 'yu': 100+radius*math.sin(0.5)}
+    return parameter
+
+def sub_restflaeche(scale, x0, seite, radius,):
+    rand = 30
+    seite = seite * scale
+    radius = radius * scale
+    parameter = {'x0': x0, 'y0': rand, 'seite': seite, 'radius': radius, 
+                 'x': x0 + seite/2, 'y': rand + seite/2, 
+                 'xd_a': x0 +seite/2 - radius, 'xd_e': x0 +seite/2 + radius,
+                 'ym': rand + seite}
+    return parameter
+ 
+def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = 0):
+    masz1 = radius
+    masz2 = hoehe
+    if hoehe > radius:
+        scale = 100/hoehe
+    else:
+        scale = 100/radius
+    radius *= scale
+    radius_o *= scale
+    hoehe *= scale
+    hoehe_2 = hoehe - fuellhoehe * scale
+    rand = radius/2 + 100 - hoehe
+    parameter = {'typ': typ, 'ox': 200, 'oy': rand, 'ux': 200, 'uy': rand + hoehe,                      # Kreimittelpunkt oben / unten
+                'lox': 200 - radius_o, 'loy': rand,  'rox': 200 + radius_o, 'roy': rand,                # Bogen oben links / rechts
+                'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
+                'roa': radius_o, 'rob': radius_o/3,                                                     # Durchmesser oben x / y
+                'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
+                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': masz2}                  # mittlere Hoehe und Beschriftung
+    if typ in (17,18):
+        parameter['masz1'] = masz1*2
+    else:
+        parameter['masz1'] = masz1
+    if typ == 21:
+        fuellstand = {'rlmy': rand + hoehe_2,}                              # Bogen mitte links / rechts}
+        parameter['my'] = rand + hoehe - fuellhoehe/2 * scale
+        parameter.update(fuellstand)
+
+    return parameter
+
+def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 15
+        if stufe >= 34 or jg >= 8 or "mit" in optionen:
+            typ_end = 21
+        if jg >= 9 or "schwieriger" in optionen:
+            typ_end = 23
+        return typ_anf, typ_end
+    elif eingabe != "":
+        if typ in (10,11):
+            eingabe = eingabe.replace("*","").replace("^2","²").replace("Pi","pi").replace("PI","pi")
+            for loe in lsg:
+                if eingabe == loe:
+                    return 1, ""
+            return -1, ""
+        else:
+            if eingabe  == str(round(lsg[2],1)).replace(".",","):
+                return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
+            elif "=" in eingabe:
+                return 0, "Das Gleichheitszeichen ist unnötig. Du sollst entweder den Term zum Berechnen des Ergebnisses eingeben oder das Ergebnis mit Einheit."
+            elif "pi" in eingabe.lower():
+                eingabe = eingabe.replace(" ","").replace("^2","²").replace(",",".").replace("pi","PI").replace("Pi","PI")
+                parser = Parser()
+                try:
+                    wert = parser.parse(eingabe).evaluate({})
+                    if round(wert,1) == round(lsg[2],1):
+                        return 1, ""
+                    else:
+                        return -1, ""
+                except:
+                    return 0, "Den Term, den du eingegeben hast, kann ich nicht berechnen."
+            elif typ == 21:
+                eingabe = eingabe.replace("cm","") 
+                if eingabe == str(round(lsg[2])).replace(".",","):
+                    return 0, "Du sollst das Ergebnis auf eine Stelle nach dem Komma gerundet angeben."
+                else:
+                    return -1, ""
+            else:
+                return -1, ""
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end)
+        parameter = {'name':'svg/kreise.svg'}
+        einheit = anmerkung = ""
+        variable = []
+        hilfe_id = 0
+        erg = None 
+        if typ < 7:
+            parameter['object'] = 'segment'
+            parameter['typ'] = typ
+            radius = random.randint(4,8)
+            parameter['radius_text'] = "r=" + str(radius) + "cm"
+            if typ in (3,6):
+                winkel = 180
+            elif typ > 3:
+                winkel = 90
+            else:
+                winkel = random. randint(5,180)
+                parameter['winkel_text'] = str(winkel)+"°"
+            scale = 100/radius
+            if winkel < 115:
+                x0 = (400-radius*scale)/2
+            else:
+                x0 = (400-radius*scale/2)/2
+            variable = [radius, winkel]
+            segment = sub_kreissegment(scale, x0, radius, winkel*math.pi/180)
+            parameter.update(segment)
+            if typ == 1:                                                    # Fläche Kreisegment
+                titel = "Fläche eines Kreissegments"
+                frage = "A="
+                formel = "A= π·r²· ϕ/360"
+                term = "pi·"+str(radius)+"²·"+str(winkel)+"/360"
+                wert = radius**2*math.pi*winkel/360
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechnet die Fläche des Kreissegments."
+                pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
+                hilfe_id = 10
+                hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
+            elif typ == 2:                                                  # Länge Kreisbogen
+                titel = "Länge eines Kreisbogens"
+                frage = "b="
+                formel = "b= 2·π·r· ϕ/360"
+                term = "2·pi*"+str(radius)+"·"+str(winkel)+"/360"
+                wert = radius*2*math.pi*winkel/360
+                str_wert = str(round(wert,1)).replace(".",",")+"cm"
+                text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechne die Länge des Kreisbogens (rot)."
+                pro_text = "Länge eines Kreisbogens, r={}, ϕ={}"
+                hilfe_id = 20
+                hilfe="Du musst den Umfang des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."   
+            elif typ == 3:                                                  # Umfang Halbkreis
+                titel = "Umfang eines Halbkreises"
+                frage = "u="
+                formel = "u= π·d/2 + d"
+                wert = radius*math.pi+2*radius
+                str_wert = str(round(wert,1)).replace(".",",")+"cm"
+                term = "pi*"+ str(2*radius)+"/2+" + str(2*radius)
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne seinen Umfang."
+                pro_text = "Umfang Halbkreis, r={}"
+                hilfe_id = 30
+                hilfe="Zunächst musst du den Umfang des ganzen Kreises berechnen und durch 2 teilen. Anschließend muss du noch den Durchmesser (grün) (=2·Radius)addieren."       
+            elif typ == 4:                                                  # Fläche Halbkreis
+                titel = "Fläche und Kreissegment"
+                frage = "A="
+                formel = "A=r²-π·r²/4"
+                wert = radius**2-radius**2*math.pi/4
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = str(radius**2) + "-pi*"+ str(radius**2)+"/4"
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
+                pro_text = "Fläche Quadrat-Viertelkreis, r={}"
+                hilfe_id = 40
+                hilfe="Zunächst musst du die Fläche des Quadrates berechnen und davon die Fläche des Viertelkreises subtrahieren."
+            elif typ == 5:                                                  # Fläche Viertelkreis
+                titel = "Fläche eines Viertelkreises"
+                frage = "A="
+                formel = "A=π·r²/4"
+                wert = radius**2*math.pi/4
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = "pi*"+ str(radius**2)+"/4"
+                text = "Der Halbkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
+                pro_text = "Fläche Viertelkreis, r={}"
+                hilfe_id = 50
+                hilfe="Du musst die Fläche des ganzen Kreises durch vier teilen."
+            elif typ == 6:                                                  # Fläche Halbkreis aus d
+                titel = "Fläche eines Halbkreises"
+                frage = "A="
+                formel = "A=π·r²/2"
+                variable[0] = 2*radius
+                wert = radius**2*math.pi/2
+                str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+                term = "pi*"+ str(radius**2)+"/2"
+                text = "Der Halbkreis hat einen <b>Durchmesser</b> von {}cm. Berechne seine Fläche."
+                pro_text = "Fläche Halbkreis, d={}"
+                parameter['radius_text'] = "d=" + str(2*radius) + "cm"
+                hilfe_id = 60
+                hilfe="Du musst die Fläche des ganzen Kreises durch zwei teilen.(Achtung: Hier ist der Durchmesser angegeben und nicht der Radius!)"   
+        elif typ == 7:                                                      # Fläche Kreisring
+            titel = "Kreisring"
+            frage = "A=" 
+            parameter['object'] = 'kreisring'
+            Radius = random.randint(4,8)
+            radius = Radius - random.randint(1,3)
+            parameter['radius_text'] = "r=" + str(radius) + "cm"
+            scale = 100/Radius
+            x0 = (400-radius*scale)/2
+            variable = [Radius, radius]
+            kreisring = sub_kreisring(scale, Radius,radius)
+            parameter.update(kreisring)
+            formel = "A= (R²-r²)·π"
+            term = "(" + str(Radius**2) + "-" + str(radius**2) + "·pi"
+            wert = (Radius**2-radius**2)*math.pi
+            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            text = "Der äußere Radius (grün) dieses Kreisringes beträgt R={}cm, der innere (rot) r={}cm. Berechnet die Fläche des Kreisrings."
+            pro_text = "Fläche Kreisring, R={}, r={}"
+            hilfe_id = 70
+            hilfe="Zunächst das Quadrat des kleinen Radiuses vom Quadrat des großen Radiuses subtrahieren (am besten im Kopf) und das Ergebnis mit Pi multiplizieren."
+        elif typ == 8:                                                      # Fläche Quadrat minus Kreis
+            titel = "Fläche"
+            frage = "A=" 
+            parameter['object'] = 'restflaeche'
+            Radius = random.randint(4,8)
+            radius = Radius - random.randint(1,3)
+            seite = 2*Radius
+            scale = 130/seite
+            x0 = (400-seite*scale)/2
+            variable = [seite, 2*radius]
+            restflaeche = sub_restflaeche(scale, x0, seite, radius)
+            parameter.update(restflaeche)
+            if Radius != radius:
+                parameter['durchmesser_text'] = "d=" + str(radius*2) + "cm"
+            parameter['seite_text'] = "s=" + str(seite) + "cm"
+            formel = "A= s²-r²·π"
+            term = str(seite**2) + "-" + str(radius**2) + "·pi"
+            wert = seite**2-(radius**2*math.pi)
+            str_wert = str(round(wert,1)).replace(".",",")+"cm²"
+            text = "Aus dem Quadrat mit der Seitenlänge s={}cm wurde ein Kreis mit einem Durchmesser von {}cm ausgeschnitten. Berechnet die gelbe Restfläche."
+            pro_text = "Quadrat minus Kreis, d={}, r={}"
+            hilfe_id = 80
+            hilfe="Du musst das Quadrat der seitenlänge ausrechnen und davon das Quadrat des Kreisraiuses multipliziert mit Pi davon subtrahieren.<br>Die Quadrate rechnest du am besten im Kopf aus)."
+        elif typ == 9:                                                      # zurückgelegter Weg
+            titel = "zurückgelegter Weg"
+            frage = "l=" 
+            parameter['object'] = 'rad'
+            zoll = random.randint(10,14)*2
+            durchmesser = int(zoll*2.54)
+            n = random.randint(2,10)
+            scale = 130/durchmesser
+            x0 = (400-durchmesser*scale)/2
+            variable = [zoll, durchmesser, n]
+            parameter['winkel'] = list(range(0,360,10))                        
+            parameter['durchmesser_text'] = "d=" + str(durchmesser) + "cm"
+            formel = "l=d·π·n"
+            term = str(durchmesser) + "·pi·" + str(n) + "="
+            wert = durchmesser*math.pi*n
+            str_wert = str(round(wert,1)).replace(".",",")+"cm"
+            text = "Ein Fahrradreifen mit einer Felgengröße von {} Zoll hat einen Durchmesser von etwa d={}cm. Welchen Weg legt er zurück, wenn es sich n={} mal dreht?"
+            pro_text = "Rad mit d={1}, zurückgelgter Weg nach {2} Drehungen"
+            hilfe_id = 90
+            hilfe="Du musst nur den Durchmesser (in cm) mit Pi und der Anzahl der Umderhungen multiplizieren."
+        elif typ == 10:                                                     # Formel für Kreisumfang
+            titel = "Formel für Kreisumfang"
+            frage = "u="
+            text = "Wie heißt die Formel zur Berechnung des Kreisumfangs?"
+            pro_text = "Formel Kreisumfang"
+            lsg = ["pi·d", "pi*d", "pid", "2pir", "pi2r", "indiv_0"]
+        elif typ == 11:                                                     # Formel für Kreisfläche
+            titel = "Formel für Kreisfläche"
+            frage = "A="
+            text = "Wie heißt die Formel zur Berechnung der Kreisfläche?"
+            pro_text = "Formel Kreisfläche"
+            lsg = ["pi·r²", "pir²", "pi*d²/4", "indiv_0"]
+        elif typ in (12,13,14,15):                                          # Fläche und Umfang von Kreisen
+            gegeben = random.randint(10,23)*2/10
+            str_gegeben = str(gegeben).replace(".",",")
+            text = "Der {} dieses Kreises beträgt {}cm. Berechne {}."
+            parameter['object'] = 'kreis'
+            parameter['typ'] = typ
+            if typ in (12,14):                                                  # Umfang aus d
+                if typ == 12:
+                    variable = ["Durchmesser", str_gegeben, "seinen Umfang", "d"]
+                    parameter['gegeben_text'] = "d=" + str_gegeben +"cm"
+                    hilfe_id = 120
+                    hilfe = "Die Formel heißt u=pi·d"
+                else:                                                           # Umfang aus r
+                    variable = ["Radius", str_gegeben, "seinen Umfang", "r"]
+                    parameter['gegeben_text'] = "r=" + str_gegeben +"cm"
+                    gegeben = 2*gegeben
+                    hilfe_id = 140
+                    hilfe = "Die Formel heißt u=pi·d<br>Entweder du rechnest also zuerst d aus oder du multiplizierst mit u=2·pi·r"
+                titel = "Kreisumfang"
+                frage = "u="
+                pro_text = titel + "? {3}={1}"
+                formel = "u= π·d"
+                term = "pi·" + str(gegeben)
+                wert = gegeben*math.pi
+                str_wert =  format_zahl(wert,1) + "cm"
+            elif typ in (13,15):                                                # Fläche aus r
+                if typ == 13:
+                    variable = ["Radius", str_gegeben, "seine Fläche", "r"]
+                    parameter['gegeben_text'] = "r=" + str_gegeben  +"cm"
+                    hilfe_id = 130
+                    hilfe = "Die Formel heißt A=pi·r²"
+                else:                                                           # Fläche aus d
+                    variable = ["Durchmesser", str_gegeben, "seine Fläche", "d"]
+                    parameter['gegeben_text'] = "d=" + str_gegeben  +"cm" 
+                    gegeben = gegeben/2 
+                    hilfe_id = 150
+                    hilfe = "Die Formel heißt A=pi·r²<br>Am besten ist es, du rechnest zunächst den Radius aus ... wenn du willst, kannst du aber auch die Formel A=pi·d²/4 benutzen"                  
+                titel = "Kreisfläche"
+                frage = "A="
+                pro_text = titel + ", {3}={1}"
+                formel = "A=pi·r²"
+                wert = math.pi*gegeben**2
+                str_wert =  format_zahl(wert,1) + "cm²"
+                term = "pi·" + str(gegeben) + "²"
+        elif typ in (16,17):                                                # Volumen von Zylinder
+            titel = "Zylinder"
+            text = "Berechne das Volumen dieses Zylinders"
+            pro_text = "V Zylinder"
+            frage = "V="
+            hoehe = random.randint(4,10)
+            parameter['object'] = 'zylinder'
+            formel = "V=G·k = π·r²·k"
+            radius = random.randint(4,10)
+            term = "pi·" + str(radius) + "²·" + str(hoehe)
+            wert = radius**2*math.pi*hoehe
+            str_wert = format_zahl(wert,1) + "cm³"
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ)
+            parameter.update(koordinaten)
+            if typ == 16:                                                       # aus r
+                hilfe_id = 160
+                hilfe = "Die Formel lautet V=G·k = π·r²·k"
+            else:                                                               # aus d
+                hilfe_id = 170
+                hilfe = "Die Formel lautet V=G·k = π·r²·k, Da hier aber der Durchmesser angegeben ist, musst du zunächst den Radius bestimmen. (Am besten rechnest du r² im Kopf aus.)"
+        elif typ == 18:                                                     # Mantelfläche des Zylinders
+            titel = "Mantelfläche"
+            text = "Berechne die <b>Mantelfläche</b> dieses Zylinders."
+            pro_text = "M Zylinder"
+            frage = "M="
+            hoehe = random.randint(4,10)
+            parameter['object'] = 'zylinder'
+            formel = "M=u·k = π·d·k"
+            radius = random.randint(4,10)
+            term = "pi·" + str(radius*2) + "·" + str(hoehe)
+            wert = radius*2*math.pi*hoehe
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ)
+            parameter.update(koordinaten)
+            hilfe_id = 180
+            hilfe = "Die Formel lautet V=u·k = π·d·k"
+        elif typ == 19:                                                     # Volumen eines Kegels
+            titel = "Volumen eines Kegels"
+            text = "Berechne das Volumen dieses Kegels."
+            pro_text = "V Kegel"
+            frage = "V="
+            hoehe = random.randint(6,10)
+            parameter['object'] = 'zylinder'
+            formel = "V=G·k/3 =pi·r²·k/3"
+            radius = random.randint(4,10)
+            term = "pi·" + str(radius**2) + "·" + str(hoehe) + "/3"
+            wert = radius**2*math.pi*hoehe/3
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, 0, hoehe, typ)
+            parameter.update(koordinaten)
+            hilfe_id = 190
+            hilfe = "Die Formel lautet V=G·k/3 = π·r²·k/3"
+        elif typ == 20:                                                     # Mantelfläche eines Kegels
+            titel = "Mantelfläche eines Kegels"
+            text = "Berechne die Mantelfläche dieses Kegels.<br>(Die Formel dafür bekommst du, wenn du auf 'Hilfe' klickst.)"
+            pro_text = "M Kegel"
+            frage = "M="
+            radius = random.randint(4,10)
+            hoehe = random.randint(6,10)
+            seitenhoehe = int(math.sqrt(radius**2+hoehe*2))
+            parameter['object'] = 'zylinder'
+            formel = "M=π·r·s"
+            term = "pi·" + str(radius) + "·" + str(seitenhoehe)
+            wert = radius*math.pi*seitenhoehe
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, 0, hoehe, typ)
+            parameter.update(koordinaten)
+            parameter['masz2'] = seitenhoehe
+            hilfe_id = 200
+            hilfe = "Die Formel lautet M=π·r·s"
+        elif typ == 21:                                                     # Füllhöhe von Zylinder
+            titel = "Füllhöhe"
+            radius = random.randint(4,10)
+            hoehe = random.randint(4,10)
+            flaeche = int(radius**2*math.pi/10)*10
+            volumen = int(flaeche * hoehe/50)*50
+            fluessigkeit = volumen*random.randint(6,9)//10
+            fuellhoehe = fluessigkeit/flaeche
+            if volumen >= 300 and hoehe < radius*2:
+                behaelter = "Diese runde Glaswanne"
+            elif volumen <= 300 and hoehe < radius*2:
+                behaelter = "Dieses Becherglas"
+            else:
+                behaelter = "Dieser Standzylinder"
+            variable = [behaelter,volumen,flaeche,fluessigkeit]
+            text = "{0} hat ein Volumen von {1}cm³ und eine Grundfläche von {2}cm². Es sollen genau {3}cm³ einer Flüssigkeit eingefüllt werden. Bis zu welcher Höhe muss diese Gefäß gefüllt werden?"
+            pro_text = "Füllhöhe"
+            frage = "h="
+            parameter['object'] = 'fuellstand'
+            formel = "h=V·G"
+            term = str(fluessigkeit) + "/" + str(flaeche)
+            wert = fluessigkeit/flaeche
+            str_wert = format_zahl(wert,1) + "cm"
+            lsg = [formel + "=" + term +"=" + str_wert, term, wert, str_wert, term.replace("/",":"), "indiv_0"]
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ, fuellhoehe)
+            parameter.update(koordinaten) 
+            hilfe_id = 210
+            hilfe = "Um das Volumen zu berechnen, muss man die Grundfläche mit der Körperhöhe multiplizieren. Um hier die Füllhöhe zu berechnen muss man also das Volumen der Flüssigkeit durch die Grundfläche teilen." 
+        elif typ == 22:                                                     # Oberfläche des Zylinders
+            titel = "Oberfläche eines Zylinders"
+            text = "Berechne die <b>Oberfläche</b> dieses Zylinders."
+            pro_text = "O Zylinder"
+            frage = "O="
+            parameter['object'] = 'zylinder'
+            formel = "O=2·G+M=2·π·r·(r+k)"
+            radius = random.randint(4,10)
+            hoehe = random.randint(4,10)
+            term = "2·π·" + str(radius) + "·(" + str(radius) + "+" + str(hoehe) + ")"
+            wert = 2*math.pi*radius*(radius+hoehe)
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, radius, hoehe, typ)
+            parameter.update(koordinaten)
+            hilfe_id = 220
+            hilfe = "Die Formel lautet O=2·G+M=2·π·r²+2·π·r·k=2·π·r·(r+k)" 
+        elif typ == 23:                                                     # Oberfläche eines Kegels
+            titel = "Oberfläche eines Kegels"
+            text = "Berechne die Oberfläche dieses Kegels.<br>(Die Formel dafür bekommst du, wenn du auf 'Hilfe' klickst.)"
+            pro_text = "O Kegel"
+            frage = "O="
+            radius = random.randint(4,10)
+            hoehe = random.randint(6,10)
+            seitenhoehe = int(math.sqrt(radius**2+hoehe*2))
+            parameter['object'] = 'zylinder'
+            formel = "O=π·r²+π·r·s=π·r·(r+s)"
+            term = "pi·" + str(radius) + "·(" + str(radius) + "+" + str(seitenhoehe) + ")"
+            wert = radius*math.pi*(radius+seitenhoehe)
+            str_wert = format_zahl(wert,1) + "cm²"
+            koordinaten = sub_zylinder(radius, 0, hoehe, typ)
+            parameter.update(koordinaten)
+            parameter['masz2'] = seitenhoehe
+            hilfe_id = 230
+            hilfe = "Die Formel lautet O=π·r²+π·r·s=π·r·(r+s)"  
+        if typ in (10,11):
+            anmerkung = "Anstelle von ² kannst du ^2 schreiben."
+        elif typ == 21:
+            anmerkung = "Du kannst die Rechnung wie in einen Taschenrechner eintippen oder das Ergebnis auf eine Stelle gerundet und mit der richtigen Einheit angeben."
+        else:
+            lsg = [formel + "=" + term + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
+            parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
+            parameter['popup_text'] = "popups/pi.html"
+        #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -7858,7 +8318,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke,}
+    29: wurzeln, 30: dreiecke, 31: kreise}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)

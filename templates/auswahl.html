@@ -2,33 +2,36 @@
 {% load static %}
 
 <html lang="de">
-    <head>       
-        <title>Rechentrainer von Peter Doll</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
-        {% block css_files %}
-        {% endblock %}
-        <style>
-            td { 
-              text-align: left;
-            }
-          </style>
-    </head>
 
+<head>
+    <title>Rechentrainer von Peter Doll</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'auswahl.css' %}">
+    {% block css_files %}
+    {% endblock %}
+    <style>
+        td {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
     <header>
         <div class="navbar">
-            <a href="{% url 'index' %}">&#8962 Home</a>            
+            <a href="{% url 'index' %}">&#8962 Home</a>
             <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
-            <a>{{titel}}</a>
-        </div> 
+            <span>{{titel}}</span>
+        </div>
     </header>
 
-    <body>
-        <container>
-            {% block content %}
-            {% endblock %}
-        </container>
-    </body>
+
+    <container>
+        {% block content %}
+        {% endblock %}
+    </container>
+</body>
+
 </html>
