@@ -7496,7 +7496,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     parameter['gegeben_text'] = "d=" + str_gegeben  +"cm" 
                     gegeben = gegeben/2 
                     hilfe_id = 150
-                    hilfe = "Die Formel heißt A=pi·r²<br>Am besten ist es, du rechnest zunächst den Radius aus ... wenn du willst, kannst du aber auch die Formel A=pi·d²/4 benutzen"                  
+                    hilfe = "Die Formel heißt A=pi·r²<br>Am besten ist es, du rechnest zunächst den Radius aus ... wenn du willst, kannst du aber auch die Formel A=pi·d²/4 benutzen."                  
                 titel = "Kreisfläche"
                 frage = "A="
                 pro_text = titel + ", {3}={1}"
