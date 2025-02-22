@@ -49,6 +49,8 @@ urlpatterns = [
     path("datum_suchen/", views.datum_suchen),
 
     path("suchen/", views.suchen, name="suchen"),
+
+    path("statistik/", views.statistik),
     
     path("", include("django.contrib.auth.urls")),
 ]
