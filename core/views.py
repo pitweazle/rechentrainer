@@ -4547,7 +4547,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
                 term = str(p)+"/"+str(int((1-prozent)*100))+"*100"
                 variable = [str_prozent,p,int((1-prozent)*100),str(1-prozent).replace(".",",")]
                 wert = zahl1*100
-                anmerkung = "Wenn du das nicht im Kopf rechnen kannst, kannst du auch einen Term zur Berechnung eingeben"
+            anmerkung = "Wenn du das nicht im Kopf rechnen kannst, kannst du auch einen Term zur Berechnung eingeben"
             lsg = [term+"="+str(wert),str(wert),"indiv_0"]
             hilfe_id = 143
         elif typ <= 16:                             # Zinsen 
