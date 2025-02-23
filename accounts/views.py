@@ -964,8 +964,8 @@ from decimal import Decimal
 
 def statistik(req):
     sj, hj = name_hj()
-    # alleschueler = []
-    # schueler = Profil.objects.all()
+    alleschueler = []
+    schueler = Profil.objects.all()
     # for s in schueler:
     #     protokoll = Protokoll.objects.filter(profil = s)
     #     summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
@@ -979,21 +979,20 @@ def statistik(req):
     #     hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
     #     hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
 
-
-    #     schuelerliste = {"profil": s, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
+    #     schuelerliste = {"profil": s.id, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
     #     alleschueler.append(schuelerliste)
 
     # alleschueler = sorted(
     #     [entry for entry in alleschueler if entry["hjsumme"] > 0], 
     #     key=lambda x: x["hjsumme"], 
     #     reverse=True
-    #     )[:10]
+    #     )[:5]
     
     # print(alleschueler)
 
 
     # gruppe = Lerngruppe.objects.all()
-    # allegruppen = []
+    allegruppen = []
     
     # for g in gruppe:
     #     protokoll = Protokoll.objects.filter(profil__gruppe=g)
@@ -1017,7 +1016,7 @@ def statistik(req):
     #     reverse=True
     #     )[:10]
     
-    # n=0
+    n=0
     # for gruppe in allegruppen:
     #     print(gruppe['gruppe'])
     #     mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
@@ -1030,14 +1029,15 @@ def statistik(req):
     #     n +=1
     # print(allegruppen)
 
-    kategorien = Kategorie.objects.all()
-    kategorieliste = []
+    kategorien = Kategorie.objects.all().order_by('zeile')
+    kategorienliste = []
     for kategorie in kategorien:
         protokoll = Protokoll.objects.filter(kategorie = kategorie)
         anzahl = {"kategorie": kategorie, "anzahl": protokoll.count()}
-        kategorieliste.append(anzahl)
-    print(kategorieliste)
+        kategorienliste.append(anzahl)
+    print(kategorienliste[:3])
 
 
-    return HttpResponse("Fertig")   
+    return render(req, 'statistik.html', context= {'bestenliste': alleschueler, 'gruppen': allegruppen, 'kategorien': kategorienliste})
+
   

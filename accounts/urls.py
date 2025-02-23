@@ -50,7 +50,7 @@ urlpatterns = [
 
     path("suchen/", views.suchen, name="suchen"),
 
-    path("statistik/", views.statistik),
+    path("statistik/", views.statistik, name="statistik"),
     
     path("", include("django.contrib.auth.urls")),
 ]

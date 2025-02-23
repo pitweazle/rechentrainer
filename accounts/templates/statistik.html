@@ -1,0 +1,59 @@
+{% extends 'auswahl.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/auswahl.css' %}">
+{% endblock %}
+
+<head>
+    <style>
+    </style>
+</head>
+
+{% block content %}
+    <body>
+        <div class="container" >
+            <table>
+                {% comment %} <thead>
+                    <tr>
+                        {% for item in kategorien %}
+                            <th>
+                                <div class="rotated-th"; style = "{{item.kategorie.farbe}}">
+                                    <span class="rotated-th__label">
+                                        {{item.kategorie.name}}
+                                    </span>
+                                </div>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        {% for item in kategorien %}
+                            <th>
+                                <div class="rotated-th">
+                                    <span class="rotated-th__label">
+                                        {{item.anzahl}}
+                                    </span>
+                                </div>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead> {% endcomment %}
+                <thead>
+                    <th>Kategorie</th>
+                    <th>Aufgaben</th>
+                </thead>
+                <tbody>
+                    <tr>
+
+                    {% for item in kategorien %}
+                        <tr>
+                            <td style="{{item.kategorie.farbe}}; text-align: left; width: 180px" >{{item.kategorie.name}}</td>
+                            <td style="text-align: right;">{{item.anzahl}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+{% endblock %}
+
