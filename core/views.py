@@ -1485,23 +1485,26 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
     return parameter
 
 def sub_punkt_pruefen(eingabe, loesung):
-    if "(" not in eingabe or not ")" in eingabe:
-            return 0, "Du musst die Koordinaten in Klammern eingeben."
-    elif not (";" in eingabe or "|" in eingabe) :
-        return 0, "Du musst die Koordinaten mit ';' trennen."        
-    else:
-        eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
-        if ";" in eingabe:
-            eingabe=eingabe.split(";")
-        elif "|" in eingabe:
-            eingabe=eingabe.split("|")
-        elif ":" in eingabe:
-            eingabe=eingabe.split(":")
-        zahl=(float(eingabe[0])*10+20)*1000
-        zahl = zahl + float(eingabe[1])*10
-        if zahl == float(loesung):
-            return 1, ""
-    return 0, "" 
+    try:
+        if "(" not in eingabe or not ")" in eingabe:
+                return 0, "Du musst die Koordinaten in Klammern eingeben."
+        elif not (";" in eingabe or "|" in eingabe) :
+            return 0, "Du musst die Koordinaten mit ';' trennen."        
+        else:
+            eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
+            if ";" in eingabe:
+                eingabe=eingabe.split(";")
+            elif "|" in eingabe:
+                eingabe=eingabe.split("|")
+            elif ":" in eingabe:
+                eingabe=eingabe.split(":")
+            zahl=(float(eingabe[0])*10+20)*1000
+            zahl = zahl + float(eingabe[1])*10
+            if zahl == float(loesung):
+                return 1, ""
+        return 0, "" 
+    except:
+        return 0, "Mit deiner Eingabe stimmt etwas nicht."
 
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
