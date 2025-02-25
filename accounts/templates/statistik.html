@@ -1,13 +1,17 @@
 {% extends 'auswahl.html' %}
 {% load static %}
+
 {% block css_files %}
     <link rel="stylesheet" href="{% static 'core/auswahl.css' %}">
+    <style>
+        .balken{
+            background-color: yellow;
+            width: var(--p);
+        }
+    </style>
 {% endblock %}
 
-<head>
-    <style>
-    </style>
-</head>
+
 
 {% block content %}
     <body>
@@ -44,10 +48,13 @@
                 <tbody>
                     <tr>
 
-                    {% for item in kategorien %}
+                    {% for kategorie, anzahl, breite in kategorien %}
                         <tr>
-                            <td style="{{item.kategorie.farbe}}; text-align: left; width: 180px" >{{item.kategorie.name}}</td>
-                            <td style="text-align: right;">{{item.anzahl}}</td>
+                            <td style="{{kategorie.farbe}}; text-align: left; width: 180px" >{{kategorie.name}}</td>
+                            {% comment %} <td style="text-align: right;">{{anzahl}}</td> {% endcomment %}
+                            <td>
+                                <div class="balken" style="{{breite}}">{{anzahl}}</div>                                
+                            </td>
                         </tr>
                     {% endfor %}
                     </tr>
