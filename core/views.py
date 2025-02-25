@@ -6791,8 +6791,10 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""       
         elif typ == 10:
-            if eingabe.upper() == lsg[0].upper() or eingabe.upper() == lsg[1].upper():
-                return 1, "" 
+            if eingabe.lower() == lsg[0] or eingabe.lower() == lsg[1]:
+                return 1, ""
+            else:
+                return -1, "" 
         else:
             return -1, "" 
     else:                                                                            
