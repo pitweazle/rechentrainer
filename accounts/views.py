@@ -963,6 +963,20 @@ from django.db.models import Sum
 from decimal import Decimal
 
 def statistik(req):
+    kategorien = Kategorie.objects.all().order_by('zeile')
+    kategorienliste = []
+    max = 0
+    for kategorie in kategorien:
+        protokoll = Protokoll.objects.filter(kategorie = kategorie)
+        anzahl = [kategorie, protokoll.count(), ]
+        kategorienliste.append(anzahl)
+        if protokoll.count() > max:
+            max = protokoll.count()
+    for kategorie in kategorienliste:
+        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
+    return render(req, 'statistik.html', context= {'kategorien': kategorienliste})
+
+def bestenliste(req):
     sj, hj = name_hj()
     alleschueler = []
     schueler = Profil.objects.all()
@@ -1031,13 +1045,16 @@ def statistik(req):
 
     kategorien = Kategorie.objects.all().order_by('zeile')
     kategorienliste = []
+    max = 0
     for kategorie in kategorien:
         protokoll = Protokoll.objects.filter(kategorie = kategorie)
-        anzahl = {"kategorie": kategorie, "anzahl": protokoll.count()}
+        anzahl = [kategorie, protokoll.count(), ]
         kategorienliste.append(anzahl)
-    print(kategorienliste[:3])
+        if protokoll.count() > max:
+            max = protokoll.count()
+    for kategorie in kategorienliste:
+        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
 
 
     return render(req, 'statistik.html', context= {'bestenliste': alleschueler, 'gruppen': allegruppen, 'kategorien': kategorienliste})
-
   
