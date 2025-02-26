@@ -8336,22 +8336,25 @@ def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end =
 #hier erfolgt die Kontrolle. Entweder der Zahlenwert oder eine Texteingabe. Falls die Aufgabe hier nicht als richtig gewertet wird, wird u.U. 
 #(Wenn in den Lösungen "indiv_0" steht) nochmals individuell in den Funktionen der Kategorien die Eingabe überprüft.
 def kontrolle(eingabe, wert, lsg, protokoll_id):
-    if wert != None: 
-        try:
-            if  decimal.Decimal(eingabe) == wert:
-                return 1, ""
-            else:
-                if "indiv_0" in lsg:
-                    protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
-                    punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
-                    return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist                         
+    if wert != None:
+        try: 
+            try:
+                if  decimal.Decimal(eingabe) == wert:
+                    return 1, ""
                 else:
-                    return -1, ""   
-        except:                                     # damit wird ein Fehler abgefangen, falls 0,0 eingegeben wurde
-            if  round(float(eingabe.replace(",",".")),3) == wert:
-                return 1, ""  
-            else:
-                return -1, ""  
+                    if "indiv_0" in lsg:
+                        protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
+                        punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
+                        return punkte, rueckmeldung             #hier wurde festgestellt, dass die Eingabe doch richtig ist                         
+                    else:
+                        return -1, ""   
+            except:                                     # damit wird ein Fehler abgefangen, falls 0,0 eingegeben wurde
+                if  round(float(eingabe.replace(",",".")),3) == wert:
+                    return 1, ""  
+                else:
+                    return -1, "" 
+        except:
+            return -1, "" 
     else:
         if isinstance(eingabe, list):                           # für Wertetabellen
             lsg = lsg[0]
@@ -8369,6 +8372,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                     punkte += 2*10**(n)
             return punkte, rueckmeldung
         else:
+
             eingabe=eingabe.replace("^2","²")
             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
             if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
