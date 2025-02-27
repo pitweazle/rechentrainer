@@ -1,0 +1,39 @@
+{% extends 'auswahl.html' %}
+{% load static %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'core/auswahl.css' %}">
+    <style>
+        .balken{
+            background-color: yellow;
+            width: var(--p);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <body>
+        <div class="container" >
+            <p>Insgesamt wurden bisher genau {{gesamt}} Aufgaben gerechnet. Hier ist die Übersicht, wieviele Aufgaben jeweils in den einzelnen Kategorien bearbeitet wurden:</p>
+            <table>
+                <thead>
+                    <th>Kategorie</th>
+                    <th>Aufgaben</th>
+                </thead>
+                <tbody>
+                    <tr>
+                    {% for kategorie, anzahl, breite in kategorien %}
+                        <tr>
+                            <td style="{{kategorie.farbe}}; text-align: left; width: 180px" >{{kategorie.name}}</td>
+                            {% comment %} <td style="text-align: right;">{{anzahl}}</td> {% endcomment %}
+                            <td>
+                                <div class="balken" style="{{breite}}">{{anzahl}}</div>                                
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+{% endblock %}
