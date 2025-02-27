@@ -997,32 +997,27 @@ def bestenliste(req):
 
         schuelerliste = {"profil": s, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
         alleschueler.append(schuelerliste)
-
     hjschueler = sorted(
         [entry for entry in alleschueler if entry["hjsumme"] > 0], 
         key=lambda x: x["hjsumme"], 
         reverse=True
-        )[:10]
-    
+        )[:10] 
     sjschueler = sorted(
         [entry for entry in alleschueler if entry["sjsumme"] > 0], 
         key=lambda x: x["sjsumme"], 
         reverse=True
         )[:10]
-    
     gesamtschueler = sorted(
         [entry for entry in alleschueler if entry["summe"] > 0], 
         key=lambda x: x["summe"], 
         reverse=True
         )[:10]
-    
+
     gruppe = Lerngruppe.objects.all()
     allegruppen = []
-    
     for g in gruppe:
         mitglieder = Profil.objects.filter(gruppe = g).count()
         if mitglieder > 0:
-
             protokoll = Protokoll.objects.filter(profil__gruppe=g)
             
             summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
@@ -1036,7 +1031,10 @@ def bestenliste(req):
             hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
             hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
             
-            gruppenliste = {"gruppe": g, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
+            gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
+                            "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
+                            "sjsumme": sjsumme, "sjschnitt": round(sjsumme/mitglieder),
+                            "summe": summe, "summeschnitt": round(summe/mitglieder)}
             allegruppen.append(gruppenliste)
         
         hjgruppen = sorted(
@@ -1045,29 +1043,11 @@ def bestenliste(req):
             reverse=True
             )[:10]
         
-        n=0
-        for gruppe in hjgruppen:
-            mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
-            hjgruppen[n].update({'anzahl': mitglieder.count()})
-            hjgruppen[n].update({'hjschnitt': hjgruppen[n]['hjsumme']//mitglieder.count()})
-            hjgruppen[n].update({'sjschnitt': hjgruppen[n]['sjsumme']//mitglieder.count()})
-            hjgruppen[n].update({'gesamtschnitt': hjgruppen[n]['summe']//mitglieder.count()})
-            n +=1
-
         gruppen = sorted(
             [entry for entry in allegruppen if entry["summe"] > 0], 
             key=lambda x: x["summe"], 
             reverse=True
             )[:10]
-        
-        n=0
-        for gruppe in gruppen:
-            mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
-            gruppen[n].update({'anzahl': mitglieder.count()})
-            gruppen[n].update({'hjschnitt': gruppen[n]['hjsumme']//mitglieder.count()})
-            gruppen[n].update({'sjschnitt': gruppen[n]['sjsumme']//mitglieder.count()})
-            gruppen[n].update({'gesamtschnitt': gruppen[n]['summe']//mitglieder.count()})
-            n +=1
 
     context= {'hjliste': hjschueler, 'sjliste': sjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
     return render(req, 'bestenliste.html', context)
