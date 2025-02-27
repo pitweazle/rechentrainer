@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, time
+from decimal import Decimal
 
 from django.utils import timezone
 
@@ -736,9 +737,6 @@ def suchen(req, gruppe_id=None):
     if not req.user.is_authenticated:
         return redirect('anmelden')  
     if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists() or req.user.is_superuser:
-        loeschen_form = Loeschen_Form
-        zusammen_form = Zusammen_Form
-        abmelden_form = Abmelden_Form
         vorname = nachname = nachricht = ""
         if not gruppe_id: 
             profile = Profil.objects.filter(gruppe = None).order_by('vorname','nachname')
@@ -840,7 +838,6 @@ def suchen(req, gruppe_id=None):
             loeschen_form = Loeschen_Form(req.POST)
             if loeschen_form.is_valid():
                 loeschen = loeschen_form.cleaned_data['loeschen']
-                user = User.objects.get(id = loeschen)
                 if loeschen:
                     user, nachricht = account_pruefen(loeschen)
                     if len(nachricht) < 5:
@@ -852,15 +849,16 @@ def suchen(req, gruppe_id=None):
                             if protokolle.count() > 0:
                                 nachricht = 'Mit dem Account "{}"  von {} wurden schon {} Aufgaben gerechnet, die müssen zuerst übertragen werden!'.format(user, profil.vorname+" "+profil.nachname, protokolle.count())
                             else:
-                                profil = Profil.objects.get(id = user.profil.id)
-                                profil.delete()
-                                # user.groups.clear()
-                                # user.delete()
+                                user.groups.clear()
+                                user.delete()
                                 heute = date.today()
                                 nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.username, heute, req.user.profil.vorname, req.user.profil.nachname)
                                 geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
                                 geloescht.save()
+        loeschen_form = Loeschen_Form
+        zusammen_form = Zusammen_Form
+        abmelden_form = Abmelden_Form
         context = {"abmelden_form": abmelden_form, "loeschen_form": loeschen_form, "zusammen_form": zusammen_form, "zeilen" : zeilen, "nachricht": nachricht, 'titel': "Accounts löschen", "gruppe_id": gruppe_id}
         return render(req, 'admin/suchen.html', context)
     else:
@@ -890,7 +888,6 @@ def karteileichen(req):
                 nachricht += ": " +profil.vorname + " " + profil.nachname+ " hat"
             nachricht += " sich zuletzt am "+ str(a.last_login.date())+ " angemeldet - Account wurde gelöscht"
             geloescht.text += nachricht
-            print(nachricht)
             #geloescht.user = None
             #geloescht.save()
             #a.groups.clear()
@@ -960,4 +957,98 @@ def reparatur(req):
         eintrag.save()
         n +=1
     nachricht = str(n) + " Einträge geändert"
-    return HttpResponse(nachricht)    
+    return HttpResponse(nachricht) 
+
+from django.db.models import Sum
+from decimal import Decimal
+
+def statistik(req):
+    kategorien = Kategorie.objects.all().order_by('zeile')
+    protokoll = Protokoll.objects.all()
+    gesamt = protokoll.count()
+    kategorienliste = []
+    max = 0
+    for kategorie in kategorien:
+        protokoll = Protokoll.objects.filter(kategorie = kategorie)
+        anzahl = [kategorie, protokoll.count(), ]
+        kategorienliste.append(anzahl)
+        if protokoll.count() > max:
+            max = protokoll.count()
+    for kategorie in kategorienliste:
+        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
+    return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
+
+def bestenliste(req):
+    sj, hj = name_hj()
+    alleschueler = []
+    schueler = Profil.objects.all()
+    for s in schueler:
+        protokoll = Protokoll.objects.filter(profil = s)
+        summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+
+        protokoll = protokoll.filter(sj = sj)
+        sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+
+        protokoll = protokoll.filter(hj = hj)
+        hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+
+        schuelerliste = {"profil": s, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
+        alleschueler.append(schuelerliste)
+    hjschueler = sorted(
+        [entry for entry in alleschueler if entry["hjsumme"] > 0], 
+        key=lambda x: x["hjsumme"], 
+        reverse=True
+        )[:10] 
+    sjschueler = sorted(
+        [entry for entry in alleschueler if entry["sjsumme"] > 0], 
+        key=lambda x: x["sjsumme"], 
+        reverse=True
+        )[:10]
+    gesamtschueler = sorted(
+        [entry for entry in alleschueler if entry["summe"] > 0], 
+        key=lambda x: x["summe"], 
+        reverse=True
+        )[:10]
+
+    gruppe = Lerngruppe.objects.all()
+    allegruppen = []
+    for g in gruppe:
+        mitglieder = Profil.objects.filter(gruppe = g).count()
+        if mitglieder > 0:
+            protokoll = Protokoll.objects.filter(profil__gruppe=g)
+            
+            summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+
+            protokoll = protokoll.filter(sj = sj)
+            sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+
+            protokoll = protokoll.filter(hj = hj)
+            hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+            
+            gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
+                            "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
+                            "sjsumme": sjsumme, "sjschnitt": round(sjsumme/mitglieder),
+                            "summe": summe, "summeschnitt": round(summe/mitglieder)}
+            allegruppen.append(gruppenliste)
+        
+        hjgruppen = sorted(
+            [entry for entry in allegruppen if entry["hjsumme"] > 0], 
+            key=lambda x: x["hjsumme"], 
+            reverse=True
+            )[:10]
+        
+        gruppen = sorted(
+            [entry for entry in allegruppen if entry["summe"] > 0], 
+            key=lambda x: x["summe"], 
+            reverse=True
+            )[:10]
+
+    context= {'hjliste': hjschueler, 'sjliste': sjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
+    return render(req, 'bestenliste.html', context)
+  

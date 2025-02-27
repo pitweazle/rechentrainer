@@ -18,7 +18,7 @@ class Schule(models.Model):
     schulname = models.CharField(max_length=50)
     
     def __str__(self):
-        return f"{self.pk} {self.schulname}, {self.ort}"
+        return f"{self.schulname}, {self.ort}"
     
     class Meta:
         verbose_name_plural = 'Schulen'
@@ -89,7 +89,6 @@ class Profil(models.Model):
         verbose_name_plural = 'Profile'
 
 class Geloescht(models.Model):
-    user = models.OneToOneField(User, related_name='geloescht', on_delete = models.DO_NOTHING, null=True)
     benutzername = models.CharField(max_length=25, blank=True)
     text = models.CharField(max_length=200)
     class Meta:
