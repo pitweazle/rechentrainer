@@ -50,6 +50,7 @@ urlpatterns = [
 
     path("suchen/", views.suchen, name="suchen"),
 
+    path("bestenliste/", views.bestenliste, name="bestenliste"),
     path("statistik/", views.statistik, name="statistik"),
     
     path("", include("django.contrib.auth.urls")),

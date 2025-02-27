@@ -18,7 +18,7 @@ class Schule(models.Model):
     schulname = models.CharField(max_length=50)
     
     def __str__(self):
-        return f"{self.pk} {self.schulname}, {self.ort}"
+        return f"{self.schulname}, {self.ort}"
     
     class Meta:
         verbose_name_plural = 'Schulen'

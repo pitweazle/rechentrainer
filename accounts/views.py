@@ -964,6 +964,8 @@ from decimal import Decimal
 
 def statistik(req):
     kategorien = Kategorie.objects.all().order_by('zeile')
+    protokoll = Protokoll.objects.all()
+    gesamt = protokoll.count()
     kategorienliste = []
     max = 0
     for kategorie in kategorien:
@@ -974,87 +976,99 @@ def statistik(req):
             max = protokoll.count()
     for kategorie in kategorienliste:
         kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
-    return render(req, 'statistik.html', context= {'kategorien': kategorienliste})
+    return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
 
 def bestenliste(req):
     sj, hj = name_hj()
     alleschueler = []
     schueler = Profil.objects.all()
-    # for s in schueler:
-    #     protokoll = Protokoll.objects.filter(profil = s)
-    #     summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+    for s in schueler:
+        protokoll = Protokoll.objects.filter(profil = s)
+        summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
 
-    #     protokoll = protokoll.filter(sj = sj)
-    #     sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+        protokoll = protokoll.filter(sj = sj)
+        sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
 
-    #     protokoll = protokoll.filter(hj = hj)
-    #     hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+        protokoll = protokoll.filter(hj = hj)
+        hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
 
-    #     schuelerliste = {"profil": s.id, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
-    #     alleschueler.append(schuelerliste)
+        schuelerliste = {"profil": s, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
+        alleschueler.append(schuelerliste)
 
-    # alleschueler = sorted(
-    #     [entry for entry in alleschueler if entry["hjsumme"] > 0], 
-    #     key=lambda x: x["hjsumme"], 
-    #     reverse=True
-    #     )[:5]
+    hjschueler = sorted(
+        [entry for entry in alleschueler if entry["hjsumme"] > 0], 
+        key=lambda x: x["hjsumme"], 
+        reverse=True
+        )[:10]
     
-    # print(alleschueler)
-
-
-    # gruppe = Lerngruppe.objects.all()
+    sjschueler = sorted(
+        [entry for entry in alleschueler if entry["sjsumme"] > 0], 
+        key=lambda x: x["sjsumme"], 
+        reverse=True
+        )[:10]
+    
+    gesamtschueler = sorted(
+        [entry for entry in alleschueler if entry["summe"] > 0], 
+        key=lambda x: x["summe"], 
+        reverse=True
+        )[:10]
+    
+    gruppe = Lerngruppe.objects.all()
     allegruppen = []
     
-    # for g in gruppe:
-    #     protokoll = Protokoll.objects.filter(profil__gruppe=g)
-    #     summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+    for g in gruppe:
+        mitglieder = Profil.objects.filter(gruppe = g).count()
+        if mitglieder > 0:
 
-    #     protokoll = protokoll.filter(sj = sj)
-    #     sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+            protokoll = Protokoll.objects.filter(profil__gruppe=g)
+            
+            summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
 
-    #     protokoll = protokoll.filter(hj = hj)
-    #     hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-    #     hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+            protokoll = protokoll.filter(sj = sj)
+            sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+
+            protokoll = protokoll.filter(hj = hj)
+            hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+            
+            gruppenliste = {"gruppe": g, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
+            allegruppen.append(gruppenliste)
         
-    #     gruppenliste = {"gruppe": g, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
-    #     allegruppen.append(gruppenliste)
-    
-    # allegruppen = sorted(
-    #     [entry for entry in allegruppen if entry["hjsumme"] > 0], 
-    #     key=lambda x: x["hjsumme"], 
-    #     reverse=True
-    #     )[:10]
-    
-    n=0
-    # for gruppe in allegruppen:
-    #     print(gruppe['gruppe'])
-    #     mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
-    #     print(mitglieder.count())
-    #     allegruppen[n].update({'anzahl': mitglieder.count()})
-    #     allegruppen[n].update({'hjschnitt': allegruppen[n]['hjsumme']//mitglieder.count()})
-    #     allegruppen[n].update({'sjschnitt': allegruppen[n]['sjsumme']//mitglieder.count()})
-    #     allegruppen[n].update({'gesamtschnitt': allegruppen[n]['summe']//mitglieder.count()})
+        hjgruppen = sorted(
+            [entry for entry in allegruppen if entry["hjsumme"] > 0], 
+            key=lambda x: x["hjsumme"], 
+            reverse=True
+            )[:10]
+        
+        n=0
+        for gruppe in hjgruppen:
+            mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
+            hjgruppen[n].update({'anzahl': mitglieder.count()})
+            hjgruppen[n].update({'hjschnitt': hjgruppen[n]['hjsumme']//mitglieder.count()})
+            hjgruppen[n].update({'sjschnitt': hjgruppen[n]['sjsumme']//mitglieder.count()})
+            hjgruppen[n].update({'gesamtschnitt': hjgruppen[n]['summe']//mitglieder.count()})
+            n +=1
 
-    #     n +=1
-    # print(allegruppen)
+        gruppen = sorted(
+            [entry for entry in allegruppen if entry["summe"] > 0], 
+            key=lambda x: x["summe"], 
+            reverse=True
+            )[:10]
+        
+        n=0
+        for gruppe in gruppen:
+            mitglieder = Profil.objects.filter(gruppe = gruppe['gruppe'])
+            gruppen[n].update({'anzahl': mitglieder.count()})
+            gruppen[n].update({'hjschnitt': gruppen[n]['hjsumme']//mitglieder.count()})
+            gruppen[n].update({'sjschnitt': gruppen[n]['sjsumme']//mitglieder.count()})
+            gruppen[n].update({'gesamtschnitt': gruppen[n]['summe']//mitglieder.count()})
+            n +=1
 
-    kategorien = Kategorie.objects.all().order_by('zeile')
-    kategorienliste = []
-    max = 0
-    for kategorie in kategorien:
-        protokoll = Protokoll.objects.filter(kategorie = kategorie)
-        anzahl = [kategorie, protokoll.count(), ]
-        kategorienliste.append(anzahl)
-        if protokoll.count() > max:
-            max = protokoll.count()
-    for kategorie in kategorienliste:
-        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
-
-
-    return render(req, 'statistik.html', context= {'bestenliste': alleschueler, 'gruppen': allegruppen, 'kategorien': kategorienliste})
+    context= {'hjliste': hjschueler, 'sjliste': sjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
+    return render(req, 'bestenliste.html', context)
   
