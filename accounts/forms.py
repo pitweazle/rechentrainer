@@ -97,10 +97,13 @@ class Gruppe_Neu_Form(forms.ModelForm):
                       'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
 
 class ProtokollFilter_Gruppe(forms.Form):
-    auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ('8 Tage','8 Tage'), ('9 Tage','9 Tage'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("all",'Alle Aufgaben'),("next",'nächstes Halbjahr'), ])
+    auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("all",'Alle Aufgaben'),("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])
 
-# class Datum_Form(forms.Form):
-#     aufgaben_seit = forms.DateField(label="", widget = forms.SelectDateWidget())
+class Start_Datum(forms.Form):
+    aufgaben_seit = forms.DateField(label="", widget = forms.SelectDateWidget())
+
+class End_Datum(forms.Form):
+    aufgaben_bis = forms.DateField(label="", widget = forms.SelectDateWidget())
 
 class Schueler_Aendern_Form(forms.ModelForm):
     class Meta:
