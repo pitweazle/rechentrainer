@@ -7340,7 +7340,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 term = "pi·"+str(radius)+"²·"+str(winkel)+"/360"
                 wert = radius**2*math.pi*winkel/360
                 str_wert = str(round(wert,1)).replace(".",",")+"cm²"
-                text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechnet die Fläche des Kreissegments."
+                text = "Der Radius dieses Kreissegmentes beträgt {}cm, der Winkel hat {}°. Berechnet die Fläche des Kreissegments."
                 pro_text = "Fläche Kreissegnment, r={}, ϕ={}"
                 hilfe_id = 10
                 hilfe="Du musst die Fläche des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."
@@ -7351,7 +7351,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 term = "2·pi*"+str(radius)+"·"+str(winkel)+"/360"
                 wert = radius*2*math.pi*winkel/360
                 str_wert = str(round(wert,1)).replace(".",",")+"cm"
-                text = "Der Radius (grün) dieses Kreissegmentes beträgt {}cm, der Winkel (blau) hat {}°. Berechne die Länge des Kreisbogens (rot)."
+                text = "Der Radius dieses Kreissegmentes beträgt {}cm, der Winkel hat {}°. Berechne die Länge des Kreisbogens (rot)."
                 pro_text = "Länge eines Kreisbogens, r={}, ϕ={}"
                 hilfe_id = 20
                 hilfe="Du musst den Umfang des ganzen Kreises berechnen, mit dem Winkel malnehmen und durch 360 teilen."   
@@ -7365,7 +7365,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 text = "Der Halbkreis hat einen Radius von {}cm. Berechne seinen Umfang."
                 pro_text = "Umfang Halbkreis, r={}"
                 hilfe_id = 30
-                hilfe="Zunächst musst du den Umfang des ganzen Kreises berechnen und durch 2 teilen. Anschließend muss du noch den Durchmesser (grün) (=2·Radius)addieren."       
+                hilfe="Zunächst musst du den Umfang des ganzen Kreises berechnen und durch 2 teilen. Anschließend muss du noch den Durchmesser (=2·Radius)addieren."       
             elif typ == 4:                                                  # Fläche Halbkreis
                 titel = "Fläche und Kreissegment"
                 frage = "A="
@@ -7958,8 +7958,8 @@ def uebersicht(req, schueler_id=0):
                         kat_farbe = "gruen"
                     elif richtig_kat >= 10:
                         kat_farbe = "gelb"
-                    elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
-                        kat_farbe = "gelb"
+                    # elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
+                    #     kat_farbe = "gelb"
                     #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
                     falsch_kat = zaehler_kategorie.fehler_zaehler
                     abbr_kat = zaehler_kategorie.abbr_zaehler
