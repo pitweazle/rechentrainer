@@ -7281,6 +7281,10 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
             elif "=" in eingabe:
                 return 0, "Das Gleichheitszeichen ist unnötig. Du sollst entweder den Term zum Berechnen des Ergebnisses eingeben oder das Ergebnis mit Einheit."
+            elif "pi" in eingabe and ("cm" in eingabe or "°" in eingabe):
+                return 0, "Die Einheit (z.B. 'cm') ist unnötig. Du sollst entweder den Term zum Berechnen des Ergebnisses eingeben oder das Ergebnis mit Einheit."
+            elif "pi" in eingabe and not ("*" in eingabe or "/" in eingabe):
+                return 0, "Du musst die Faktoren der Multiplikation mit '*' verbinden."
             elif "pi" in eingabe.lower():
                 eingabe = eingabe.replace(" ","").replace("^2","²").replace(",",".").replace("pi","PI").replace("Pi","PI")
                 parser = Parser()
@@ -7299,6 +7303,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 else:
                     return -1, ""
             else:
+                print("C")
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
@@ -7378,7 +7383,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 wert = radius**2*math.pi/4
                 str_wert = str(round(wert,1)).replace(".",",")+"cm²"
                 term = "pi*"+ str(radius**2)+"/4"
-                text = "Der Halbkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
+                text = "Der Viertelkreis hat einen Radius von {}cm. Berechne die gelbe Fläche."
                 pro_text = "Fläche Viertelkreis, r={}"
                 hilfe_id = 50
                 hilfe="Du musst die Fläche des ganzen Kreises durch vier teilen."
@@ -7603,7 +7608,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             pro_text = "Füllhöhe"
             frage = "h="
             parameter['object'] = 'fuellstand'
-            formel = "h=V·G"
+            formel = "h=V/G"
             term = str(fluessigkeit) + "/" + str(flaeche)
             wert = fluessigkeit/flaeche
             str_wert = format_zahl(wert,1) + "cm"
