@@ -508,7 +508,7 @@ def gruppe_uebersicht(req, gruppe_id):
             auswahl = auswahl.cleaned_data['auswahl']
             protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
             wahl = auswahl_liste[auswahl]
-        elif start_datum.is_valid() and end_datum.is_valid:
+        elif start_datum.is_valid() and end_datum.is_valid():
             start = start_datum.cleaned_data['aufgaben_seit']
             ende = end_datum.cleaned_data['aufgaben_bis']
             protokoll_zeitraum =  protokoll_gruppe.filter(start__date__gte = start, start__date__lte = ende)
