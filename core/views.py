@@ -7603,7 +7603,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             pro_text = "Füllhöhe"
             frage = "h="
             parameter['object'] = 'fuellstand'
-            formel = "h=V·G"
+            formel = "h=V/G"
             term = str(fluessigkeit) + "/" + str(flaeche)
             wert = fluessigkeit/flaeche
             str_wert = format_zahl(wert,1) + "cm"
