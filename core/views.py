@@ -7277,6 +7277,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     return 1, ""
             return -1, ""
         else:
+            eingabe = eingabe.replace(",",".")
             if eingabe  == str(round(lsg[2],1)).replace(".",","):
                 return 0, "Wenn du mit dem Taschenrechner rechnest, sollst du die Einheit mit eingeben."
             elif "=" in eingabe:
@@ -7286,7 +7287,8 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             elif "pi" in eingabe and not ("*" in eingabe or "/" in eingabe):
                 return 0, "Du musst die Faktoren der Multiplikation mit '*' verbinden."
             elif "pi" in eingabe.lower():
-                eingabe = eingabe.replace(" ","").replace("^2","²").replace(",",".").replace("pi","PI").replace("Pi","PI")
+                eingabe = eingabe.replace(" ","").replace("²","^2").replace(",",".").replace("pi","PI").replace("Pi","PI")
+                print("Eingabe: ",eingabe)
                 parser = Parser()
                 try:
                     wert = parser.parse(eingabe).evaluate({})
@@ -7303,7 +7305,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 else:
                     return -1, ""
             else:
-                print("C")
                 return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
@@ -7656,9 +7657,10 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         elif typ == 21:
             anmerkung = "Du kannst die Rechnung wie in einen Taschenrechner eintippen oder das Ergebnis auf eine Stelle gerundet und mit der richtigen Einheit angeben."
         else:
-            lsg = [formel + "=" + term + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
+            lsg = [formel + "=" + term.replace(".",",") + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
             parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
             parameter['popup_text'] = "popups/pi.html"
+        print(lsg)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
@@ -8377,7 +8379,6 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                     punkte += 2*10**(n)
             return punkte, rueckmeldung
         else:
-
             eingabe=eingabe.replace("^2","²")
             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
             if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
