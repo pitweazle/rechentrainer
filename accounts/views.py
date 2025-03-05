@@ -13,7 +13,7 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form,  ProtokollFilter_Gruppe
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
 
 from .models import Schule, Lerngruppe,  Geloescht
 
@@ -498,6 +498,9 @@ def gruppe_uebersicht(req, gruppe_id):
     else:
         protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
     if req.method == 'POST':
+        start_datum = Start_Datum(req.POST)
+        end_datum = End_Datum(req.POST)
+        #print("Ende: ", end_datum)
         auswahl = form_filter(req.POST)
         filter = auswahl.fields['auswahl'].choices
         auswahl_liste = dict(filter)
@@ -505,10 +508,14 @@ def gruppe_uebersicht(req, gruppe_id):
             auswahl = auswahl.cleaned_data['auswahl']
             protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
             wahl = auswahl_liste[auswahl]
+        elif start_datum.is_valid() and end_datum.is_valid():
+            start = start_datum.cleaned_data['aufgaben_seit']
+            ende = end_datum.cleaned_data['aufgaben_bis']
+            protokoll_zeitraum =  protokoll_gruppe.filter(start__date__gte = start, start__date__lte = ende)
+            wahl = start.strftime("%d.%m.%y") + " bis " + ende.strftime("%d.%m.%y")
     else:
         wahl = "aktuelles Halbjahr"
         protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
-        #protokoll = protokoll.filter(sj=sj, hj=hj)
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
     prozent_summe = 0
     prozent_summe_farbe = False
@@ -645,7 +652,7 @@ def gruppe_uebersicht(req, gruppe_id):
     # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
-    context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 
+    context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'startdatum': Start_Datum, 'enddatum': End_Datum,
         'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text, 'note_anzeigen': note_anzeigen}  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 
@@ -870,6 +877,8 @@ def karteileichen(req):
         return HttpResponse("Zugriff verweigert")
     #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
     auswahl = User.objects.filter(last_login__lt = date(2023,8,1))
+    auswahl = auswahl.exclude(username = "super")
+    print(auswahl)
     #auswahl = User.objects.all()
     n=0 
     m=0
@@ -887,6 +896,7 @@ def karteileichen(req):
                 m += aufgaben
                 nachricht += ": " +profil.vorname + " " + profil.nachname+ " hat"
             nachricht += " sich zuletzt am "+ str(a.last_login.date())+ " angemeldet - Account wurde gelöscht"
+            print(nachricht)
             geloescht.text += nachricht
             #geloescht.user = None
             #geloescht.save()

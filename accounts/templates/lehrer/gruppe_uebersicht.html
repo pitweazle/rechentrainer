@@ -36,9 +36,20 @@
     <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
         {% csrf_token %}
         <h2 style= "text-align: left;"> Zeitraum: 
-            <button type="button">
-                {{form_filter.auswahl}}
-            </button type="button">
+            {% if "individuelle Auswahl" in wahl %}
+                oder von:
+                <button type="button">
+                    {{startdatum}}
+                </button type="button">
+                bis:
+                <button type="button">
+                    {{enddatum}}
+                </button type="button">
+            {% else %}
+                <button type="button">
+                    {{form_filter.auswahl}}
+                </button type="button">
+            {% endif %}
             <button type="button">
                 <input name="filter" type="submit" value="anwenden">
             </button type="button">
