@@ -100,10 +100,10 @@ class ProtokollFilter_Gruppe(forms.Form):
     auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("all",'Alle Aufgaben'),("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])
 
 class Start_Datum(forms.Form):
-    aufgaben_seit = forms.DateField(label="", widget = forms.SelectDateWidget())
+    aufgaben_seit = forms.DateField(label="", widget = forms.SelectDateWidget(years=range(2024, 2031)))
 
 class End_Datum(forms.Form):
-    aufgaben_bis = forms.DateField(label="", widget = forms.SelectDateWidget())
+    aufgaben_bis = forms.DateField(label="", widget = forms.SelectDateWidget(years=range(2024, 2031)))
 
 class Schueler_Aendern_Form(forms.ModelForm):
     class Meta:
