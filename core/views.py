@@ -7567,7 +7567,7 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             radius = random.randint(4,10)
             term = "pi·" + str(radius**2) + "·" + str(hoehe) + "/3"
             wert = radius**2*math.pi*hoehe/3
-            str_wert = format_zahl(wert,1) + "cm²"
+            str_wert = format_zahl(wert,1) + "cm³"
             koordinaten = sub_zylinder(radius, 0, hoehe, typ)
             parameter.update(koordinaten)
             hilfe_id = 190
