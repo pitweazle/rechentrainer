@@ -43,8 +43,8 @@
                     {% for item in hjliste %}
                         <tr>
                             <td  style= "text-align: center;">{{item.hjsumme}}</td>
-                            <td > {{item.profil.vorname}} {{item.profil.nachname}}</td>
-                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.vorname}} {{item.profil.gruppe.lehrer.profil.nachname}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
+                            <td > {{item.profil.vorname|truncatechars_html:2}} {{item.profil.nachname|truncatechars_html:2}}</td>
+                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
                         </tr>
                     {% endfor %}
                     </tr>
@@ -81,8 +81,8 @@
                     {% for item in gesamtliste %}
                         <tr>
                             <td  style= "text-align: center;">{{item.summe}}</td>
-                            <td > {{item.profil.vorname}} {{item.profil.nachname}}</td>
-                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.vorname}} {{item.profil.gruppe.lehrer.profil.nachname}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
+                            <td > {{item.profil.vorname|truncatechars_html:2}} {{item.profil.nachname|truncatechars_html:2}}</td>
+                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
                         </tr>
                     {% endfor %}
                     </tr>
@@ -102,7 +102,8 @@
                         <tr>
                             <td  style= "text-align: center;">{{item.hjsumme}}</td>
                             <td>/{{item.mitglieder}}={{item.hjschnitt}}</td>
-                            <td > {{item.gruppe.name}}, {{item.gruppe.lehrer.profil.vorname}} {{item.gruppe.lehrer.profil.nachname}}</td>
+                            {% comment %} <td > {{item.gruppe.name}}, {{item.gruppe.lehrer.profil.vorname}} {{item.gruppe.lehrer.profil.nachname}}</td> {% endcomment %}
+                            <td > {{item.gruppe.name}}, </td>
                             <td> {{item.gruppe.lehrer.profil.schule.schulname}}, {{item.gruppe.lehrer.profil.schule.ort.name}}</td>
                         </tr>
                     {% endfor %}
@@ -123,7 +124,7 @@
                         <tr>
                             <td  style= "text-align: center;">{{item.summe}}</td>
                             <td>/{{item.mitglieder}}={{item.summeschnitt}}</td>
-                            <td > {{item.gruppe.name}}, {{item.gruppe.lehrer.profil.vorname}} {{item.gruppe.lehrer.profil.nachname}}</td>
+                            <td > {{item.gruppe.name}},</td>
                             <td> {{item.gruppe.lehrer.profil.schule.schulname}}, {{item.gruppe.lehrer.profil.schule.ort.name}}</td>
                         </tr>
                     {% endfor %}

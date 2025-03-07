@@ -35,13 +35,13 @@
 <body>
     <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
         {% csrf_token %}
-        <h2 style= "text-align: left;"> Zeitraum: 
+        <h2 style= "text-align: left;"> 
             {% if "individuelle Auswahl" in wahl %}
-                oder von:
+                
                 <button type="button">
                     {{startdatum}}
                 </button type="button">
-                bis:
+                
                 <button type="button">
                     {{enddatum}}
                 </button type="button">
