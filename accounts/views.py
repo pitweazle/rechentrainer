@@ -336,6 +336,109 @@ def profil(req):
     context = {'schueler': schueler, 'profil_form': profil_form, 'ort': ort_form, 'titel': "Profil", }
     return render(req, 'schueler/profil.html', context)
 
+#Statistik
+def bestenliste(req):
+    from core.views import soll_berechnung
+    sj, hj = name_hj()
+    alleschueler = []
+    schueler = Profil.objects.all()
+    for s in schueler:
+        profil_gruppe = s.gruppe
+        if profil_gruppe:
+            startdatum = s.gruppe.erstellt_am
+        else:
+            startdatum = s.user.date_joined
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, s.jg, s.jg*10, startdatum) 
+        protokoll = Protokoll.objects.filter(profil = s)
+        summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+
+        # protokoll = protokoll.filter(sj = sj)
+        # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        # sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+
+        protokoll = protokoll.filter(hj = hj)
+        hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+        hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+
+
+        schuelerliste = {"profil": s, "hjsumme": hjsumme, "summe": summe, "soll": soll_hj}
+        alleschueler.append(schuelerliste)
+    hjschueler = sorted(
+        [entry for entry in alleschueler if entry["hjsumme"] > entry["soll"]], 
+        key=lambda x: x["hjsumme"], 
+        reverse=True
+        )[:10] 
+    # sjschueler = sorted(
+    #     [entry for entry in alleschueler if entry["sjsumme"] > 0], 
+    #     key=lambda x: x["sjsumme"], 
+    #     reverse=True
+    #     )[:10]
+    gesamtschueler = sorted(
+        [entry for entry in alleschueler if entry["summe"] > 0], 
+        key=lambda x: x["summe"], 
+        reverse=True
+        )[:10]
+
+    gruppe = Lerngruppe.objects.all()
+    allegruppen = []
+    for g in gruppe:
+        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
+        mitglieder = Profil.objects.filter(gruppe = g).count()
+
+        if mitglieder > 0:
+            protokoll = Protokoll.objects.filter(profil__gruppe=g)
+            summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+
+            # protokoll = protokoll.filter(sj = sj)
+            # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            # sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+
+            protokoll = protokoll.filter(hj = hj)
+            hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
+            hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+
+            if hjsumme > mitglieder*soll_hj:
+                print(g, mitglieder, soll_hj)
+            
+                gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
+                                "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
+                                "summe": summe, "summeschnitt": round(summe/mitglieder)}
+                allegruppen.append(gruppenliste)
+        
+        hjgruppen = sorted(
+            [entry for entry in allegruppen if entry["hjsumme"] > soll_hj*mitglieder], 
+            key=lambda x: x["hjsumme"], 
+            reverse=True
+            )[:10]
+        
+        gruppen = sorted(
+            [entry for entry in allegruppen if entry["summe"] > 0], 
+            key=lambda x: x["summe"], 
+            reverse=True
+            )[:10]
+
+    context= {'hjliste': hjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
+    return render(req, 'bestenliste.html', context)
+
+def statistik(req):
+    kategorien = Kategorie.objects.all().order_by('zeile')
+    protokoll = Protokoll.objects.all()
+    gesamt = protokoll.count()
+    kategorienliste = []
+    max = 0
+    for kategorie in kategorien:
+        protokoll = Protokoll.objects.filter(kategorie = kategorie)
+        anzahl = [kategorie, protokoll.count(), ]
+        kategorienliste.append(anzahl)
+        if protokoll.count() > max:
+            max = protokoll.count()
+    for kategorie in kategorienliste:
+        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
+    return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
+  
+
 # wird nur bei der Registrierung aufgerufen
 def ort_wahl(req):
     ort_form = Ort_Form()
@@ -971,94 +1074,3 @@ def reparatur(req):
 
 from django.db.models import Sum
 from decimal import Decimal
-
-def statistik(req):
-    kategorien = Kategorie.objects.all().order_by('zeile')
-    protokoll = Protokoll.objects.all()
-    gesamt = protokoll.count()
-    kategorienliste = []
-    max = 0
-    for kategorie in kategorien:
-        protokoll = Protokoll.objects.filter(kategorie = kategorie)
-        anzahl = [kategorie, protokoll.count(), ]
-        kategorienliste.append(anzahl)
-        if protokoll.count() > max:
-            max = protokoll.count()
-    for kategorie in kategorienliste:
-        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
-    return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
-
-def bestenliste(req):
-    sj, hj = name_hj()
-    alleschueler = []
-    schueler = Profil.objects.all()
-    for s in schueler:
-        protokoll = Protokoll.objects.filter(profil = s)
-        summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
-
-        protokoll = protokoll.filter(sj = sj)
-        sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
-
-        protokoll = protokoll.filter(hj = hj)
-        hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
-
-        schuelerliste = {"profil": s, "hjsumme": hjsumme, "sjsumme": sjsumme, "summe": summe}
-        alleschueler.append(schuelerliste)
-    hjschueler = sorted(
-        [entry for entry in alleschueler if entry["hjsumme"] > 0], 
-        key=lambda x: x["hjsumme"], 
-        reverse=True
-        )[:10] 
-    sjschueler = sorted(
-        [entry for entry in alleschueler if entry["sjsumme"] > 0], 
-        key=lambda x: x["sjsumme"], 
-        reverse=True
-        )[:10]
-    gesamtschueler = sorted(
-        [entry for entry in alleschueler if entry["summe"] > 0], 
-        key=lambda x: x["summe"], 
-        reverse=True
-        )[:10]
-
-    gruppe = Lerngruppe.objects.all()
-    allegruppen = []
-    for g in gruppe:
-        mitglieder = Profil.objects.filter(gruppe = g).count()
-        if mitglieder > 0:
-            protokoll = Protokoll.objects.filter(profil__gruppe=g)
-            
-            summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
-
-            protokoll = protokoll.filter(sj = sj)
-            sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
-
-            protokoll = protokoll.filter(hj = hj)
-            hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
-            
-            gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
-                            "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
-                            "sjsumme": sjsumme, "sjschnitt": round(sjsumme/mitglieder),
-                            "summe": summe, "summeschnitt": round(summe/mitglieder)}
-            allegruppen.append(gruppenliste)
-        
-        hjgruppen = sorted(
-            [entry for entry in allegruppen if entry["hjsumme"] > 0], 
-            key=lambda x: x["hjsumme"], 
-            reverse=True
-            )[:10]
-        
-        gruppen = sorted(
-            [entry for entry in allegruppen if entry["summe"] > 0], 
-            key=lambda x: x["summe"], 
-            reverse=True
-            )[:10]
-
-    context= {'hjliste': hjschueler, 'sjliste': sjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
-    return render(req, 'bestenliste.html', context)
-  
