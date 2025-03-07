@@ -381,7 +381,8 @@ def bestenliste(req):
         )[:10]
 
     gruppe = Lerngruppe.objects.all()
-    allegruppen = []
+    hjgruppen = []
+    bestgruppen = []
     for g in gruppe:
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
         mitglieder = Profil.objects.filter(gruppe = g).count()
@@ -400,26 +401,31 @@ def bestenliste(req):
             hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
 
             if hjsumme > mitglieder*soll_hj:
-                print(g, mitglieder, soll_hj)
-            
                 gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
                                 "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
                                 "summe": summe, "summeschnitt": round(summe/mitglieder)}
-                allegruppen.append(gruppenliste)
+                hjgruppen.append(gruppenliste)
+
+            if summe/mitglieder > 300:
+                gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
+                                "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
+                                "summe": summe, "summeschnitt": round(summe/mitglieder)}
+                bestgruppen.append(gruppenliste)
+
         
         hjgruppen = sorted(
-            [entry for entry in allegruppen if entry["hjsumme"] > soll_hj*mitglieder], 
+            [entry for entry in hjgruppen], 
             key=lambda x: x["hjsumme"], 
             reverse=True
             )[:10]
         
-        gruppen = sorted(
-            [entry for entry in allegruppen if entry["summe"] > 0], 
+        bestgruppen = sorted(
+            [entry for entry in bestgruppen], 
             key=lambda x: x["summe"], 
             reverse=True
             )[:10]
 
-    context= {'hjliste': hjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'gruppen': gruppen}
+    context= {'hjliste': hjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'bestgruppen': bestgruppen}
     return render(req, 'bestenliste.html', context)
 
 def statistik(req):
