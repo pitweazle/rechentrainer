@@ -353,7 +353,7 @@ def bestenliste(req):
         summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
         summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
 
-        # protokoll = protokoll.filter(sj = sj)
+        protokoll = protokoll.filter(sj = sj)
         # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
         # sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
 
@@ -387,12 +387,15 @@ def bestenliste(req):
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
         mitglieder = Profil.objects.filter(gruppe = g).count()
 
+
         if mitglieder > 0:
             protokoll = Protokoll.objects.filter(profil__gruppe=g)
             summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
             summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+            if summe>0:
+                print(g, soll_hj, int(summe/mitglieder))
 
-            # protokoll = protokoll.filter(sj = sj)
+            protokoll = protokoll.filter(sj = sj)
             # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
             # sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
 
@@ -400,13 +403,13 @@ def bestenliste(req):
             hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
             hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
 
-            if hjsumme > mitglieder*soll_hj:
+            if hjsumme > mitglieder*soll_hj*0.5:
                 gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
                                 "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
                                 "summe": summe, "summeschnitt": round(summe/mitglieder)}
                 hjgruppen.append(gruppenliste)
 
-            if summe/mitglieder > 300:
+            if summe/mitglieder > soll_hj:
                 gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
                                 "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
                                 "summe": summe, "summeschnitt": round(summe/mitglieder)}
