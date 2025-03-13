@@ -6799,7 +6799,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=10
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -7088,7 +7087,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 scale = 180/a
                 koordinaten = sub_hypo_oben(a, b, 0, scale) 
                 parameter.update(koordinaten) 
-                werte = {'m': str(a).replace(".",","), 'n': str(c).replace(".",","),'o': str(b).replace(".",","),
+                werte = {'m': str(a).replace(".",","), 'n': str(c).replace(".",","), 'o': str(b).replace(".",","),
                         'dx': parameter['bx']} 
                 ecken =  {'A': " ", 'B': " ", 'C': " ",}
                 parameter.update(ecken)              
@@ -7096,6 +7095,10 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = ["j", "ja", "indiv_0"]
             else:
                 c +=p_zahlen[typ2][3]
+                if typ3 != 1:
+                    werte['n']= str(c).replace(".",",")
+                else:
+                    werte['c']= str(c).replace(".",",")
                 lsg = ["n", "nein", "indiv_0"]
             parameter.update(werte)
             parameter['kein_winkel'] = True
