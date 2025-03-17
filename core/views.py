@@ -2330,7 +2330,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         einheit_aufg = einheiten_liste[typ3]
         zahl1 = random.randint(4, 12)
         zahl2 = random.randint(2, 11)
-        if typ == 1:                                                            #Seite aus Fläche oder Umfang
+        if typ == 1:                                # Seite aus Fläche oder Umfang
             anmerkung = "Vergiss die Einheit nicht!"
             parameter = {'name':'normal'}
             typ2 = random.randint(1,5)
@@ -2383,7 +2383,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             variable = [frage, gegeben1, gegeben2, zahl, zahl1, einheit_aufg, exp]
             frage = frage + "="
             lsg = ["{} {}".format(erg, einheit_aufg)]
-        elif typ == 2:                                                          #Figuren benennen
+        elif typ == 2:                              # Figuren benennen
             liste = ["Rechteck", "Quadrat", "Parallelogramm", "Trapez", "Drachen", "Raute", "Rhombus", "allgemeines Viereck"]
             hilfe_id = 20
             variable = []
@@ -2391,7 +2391,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             text = "Wie heißt dieses Viereck?"
             frage = "Das ist ein(e)"
             typ2, anmerkung, lsg, parameter = sub_figuren()
-        elif typ == 3:                                                          #Fläche und Umfang von Rechtecken
+        elif typ == 3:                              # Fläche und Umfang von Rechtecken
             anmerkung = "Vergiss die Einheit nicht! (Anstelle von ² kannst du ^2 eintippen.)"
             figur = "Rechtecks"
             typ2 = random.randint(1,6)
@@ -2430,12 +2430,11 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 pro_text = "{5}: a={0}{2}, {4}=?" 
             lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
             parameter = {'name':'normal'}
-        elif typ == 9:
+        elif typ == 9:                              # Benennung am Dreieck
             titel = "Benennungen am Dreieck"
             variable = []
             typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ)
-        else:
-        #elif typ == 4 or typ == 5 or typ == 6 or typ ==7:                      #Figuren mit Maßlinien typ2: 1 u Rechteck, 2 A Rechteck, 3 Parallelogramm, 4 Trapez, 5 und 6 Dreieck
+        else:                                       #Figuren mit Maßlinien typ2: 1 u Rechteck, 2 A Rechteck, 3 Parallelogramm, 4 Trapez, 5 und 6 Dreieck
             titel = "Umfang und Fläche von Figuren" 
             anmerkung = "Vergiss die Einheit nicht! <br>(Anstelle von ² kannst du ^2 eintippen.)"
             einheit_aufg = "mm"
@@ -2446,7 +2445,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 typ2 = random.randint(1,2)
             elif typ == 5:                          # + Flache von Parallelogramm und Trapez
                 typ2 = random.randint(1,4)
-            else:                                   # + Dreicksfläche
+            else:                                   # + Dreiecksfläche
                 typ2 = random.randint(1,6)
             if typ2 == 1:                           # Umfang Rechteck
                 figur = "Rechtecks"
@@ -2468,7 +2467,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 gesucht = "die Fläche"
                 exp ="²"
                 frage = "A="
-                if typ2 == 2:                       #Fläche Rechteck
+                if typ2 == 2:                       # Fläche Rechteck
                     figur = "Rechtecks"
                     erg = (zahl1*zahl2)
                     hilfe_id = 11
@@ -2481,7 +2480,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                     y3 = y4 = y1 - hoehe*20
                     xkoo = [x1, x2, x3, x4, x1]
                     ykoo = [y1, y2, y3, y4, y1] 
-                elif typ2 == 3:                     #Fläche Paralleogramm
+                elif typ2 == 3:                     # Fläche Paralleogramm
                     schieb = 0
                     while schieb == 0:
                         schieb = random.randint(-3,3)
@@ -2499,7 +2498,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                     ykoo = [y1, y2, y3, y4, y1]  
                     erg = (zahl1*zahl2)
                     #hilfe_id = 13
-                elif typ2 == 4:                     #Fläche Trapez
+                elif typ2 == 4:                     # Fläche Trapez
                     schieb = random.randint(2,zahl1-1)
                     while ((2*breite-schieb)*hoehe/2)%1 != 0:                        
                         schieb = random.randint(2,zahl1-1)
@@ -2518,7 +2517,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                     xkoo = [x1, x2, x3, x4, x1]
                     ykoo = [y1, y2, y3, y4, y1]  
                     erg = int((2*zahl1-schieb)*hoehe/2)
-                else:                               #Fläche Dreieck
+                else:                               # Fläche Dreieck
                     schieb = random.randint(0,breite)
                     while ((breite*hoehe)/2)%1 != 0:
                         breite = random.randint(4, 12)
