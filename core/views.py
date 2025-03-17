@@ -2275,7 +2275,7 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         typ_end = 4
         if stufe >= 6 or jg >= 7 or "Dreieck" in optionen: 
             typ_anf = 1
-            typ_end = 9 
+            typ_end = 10 
         elif stufe >= 4 or jg >= 6 or "Parallelogramm" in optionen:
             typ_anf = 1
             typ_end = 5
@@ -2430,11 +2430,11 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 pro_text = "{5}: a={0}{2}, {4}=?" 
             lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
             parameter = {'name':'normal'}
-        elif typ == 9:                              # Benennung am Dreieck
+        elif typ == 10:                             # Benennung am Dreieck
             titel = "Benennungen am Dreieck"
             variable = []
             typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ)
-        else:                                       #Figuren mit Maßlinien typ2: 1 u Rechteck, 2 A Rechteck, 3 Parallelogramm, 4 Trapez, 5 und 6 Dreieck
+        else:                                       # Figuren mit Maßlinien typ2: 1 u Rechteck, 2 A Rechteck, 3 Parallelogramm, 4 Trapez, 5 und 6 Dreieck
             titel = "Umfang und Fläche von Figuren" 
             anmerkung = "Vergiss die Einheit nicht! <br>(Anstelle von ² kannst du ^2 eintippen.)"
             einheit_aufg = "mm"
