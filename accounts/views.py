@@ -159,6 +159,13 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
+def kein_hj(profil):
+    if (profil.gruppe):
+        kein_hj = True if profil.gruppe.note_anzeigen else False
+    else:
+        kein_hj = True
+    return kein_hj
+
 def hj_pruefen(req):
     if req.user.is_authenticated:
         email = req.user.email
@@ -177,39 +184,48 @@ def hj_pruefen(req):
             logout(req)
             return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
         heute = datetime.now()
-        if heute.month == 1 or heute.month == 7:                            #Frage nach neuem Halbjahr
-            next_sj, next_hj = name_next_hj()
-            if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
-                return redirect('uebersicht') 
-            else:
-                sj, hj = name_hj()
-                if profil.hj == hj and profil.sj == sj:
-                    pass
-                else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
-                    return redirect('wiederanmeldung')  
-                try:
-                    if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                        test = False
-                except:
-                    profil.voreinst["frage_hj"] = 0
-                    profil.voreinstt["no_hj"] = False
-                    profil.save()
-                if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                    if heute.month == 1:
-                        monat = "Juli"
-                        wechsel = "Februar"
-                    else:
-                        monat = "Januar"
-                        wechsel = "August"
-                    context = {'monat' : monat, 'wechsel': wechsel}
-                    return render(req, 'naechstes_halbjahr.html', context)
-            return redirect('uebersicht')  
-        else:                                                                   #Überprüfung, ob Halbjahr aktuell ist
+        if kein_hj(profil):
             sj, hj = name_hj()
             if profil.hj == hj and profil.sj == sj:
-                pass  
-            else:                                                               #falls nicht
-                return redirect('neues_halbjahr')  
+                pass
+            else:
+                profil.hj = hj
+                profil.sj = sj
+                profil.save()
+        else:
+            if heute.month == 1 or heute.month == 7:                                #Frage nach neuem Halbjahr
+                next_sj, next_hj = name_next_hj()
+                if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
+                    return redirect('uebersicht') 
+                else:
+                    sj, hj = name_hj()
+                    if profil.hj == hj and profil.sj == sj:
+                        pass
+                    else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
+                        return redirect('wiederanmeldung')  
+                    try:
+                        if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
+                            test = False
+                    except:
+                        profil.voreinst["frage_hj"] = 0
+                        profil.voreinstt["no_hj"] = False
+                        profil.save()
+                    if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
+                        if heute.month == 1:
+                            monat = "Juli"
+                            wechsel = "Februar"
+                        else:
+                            monat = "Januar"
+                            wechsel = "August"
+                        context = {'monat' : monat, 'wechsel': wechsel}
+                        return render(req, 'naechstes_halbjahr.html', context)
+                return redirect('uebersicht')  
+            else:                                                                   #Überprüfung, ob Halbjahr aktuell ist
+                sj, hj = name_hj()
+                if profil.hj == hj and profil.sj == sj:
+                    pass  
+                else:                                                               #falls nicht
+                    return redirect('neues_halbjahr')  
         return redirect('uebersicht') 
     else:
         return redirect('anmelden')  
@@ -447,7 +463,6 @@ def statistik(req):
         kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
     return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
   
-
 # wird nur bei der Registrierung aufgerufen
 def ort_wahl(req):
     ort_form = Ort_Form()

@@ -22,9 +22,8 @@
     </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
     (Jg. und Stufe können im Profil geändert werden)</h5>
 {% endif %}
-
 <ul class={{breite}}>
-    {% if not bewertung or lehrer %}
+    {% if schueler.gruppe or lehrer %}
         <form action="/uebersicht/{{schueler.id}}/" method="POST">
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
@@ -78,7 +77,7 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
-            {% if not alle  %}
+            {% if not alle_kat %}
             <tr>
             <td  colspan="3", align="left">
                 <form action="{% url 'uebersicht' %}" method="post">
@@ -90,10 +89,18 @@
             {% endif %}          
         </tbody>
     </table>
-    <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
     <p>
-        Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
-    </p>
+        {% if details %}
+            Wenn du mit einem Smartphone arbeitest, kannst du hier "Details anzeigen" anklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+    
+        {% else %}
+            Wenn du hier unter "Details anzeigen" anklickst, bekommst du mehr Informationen.
+        {% endif %}
+        <form action="{% url 'uebersicht' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="Details anzeigen"><b>Details anzeigen</b></button>
+        </form>
+        </p>
 </ul>
 
 {% endblock %}

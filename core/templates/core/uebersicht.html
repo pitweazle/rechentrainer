@@ -24,7 +24,7 @@
 {% endif %}
 
 <ul class={{breite}}>
-    {% if not bewertung or lehrer %}
+    {% if schueler.gruppe or lehrer %}
         <form action="/uebersicht/{{schueler.id}}/" method="POST">
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
@@ -55,7 +55,9 @@
                     <th width=40>nicht richtig</th>
                     <th width=50> %</th>
                 {% endif %}
-                <th width=60>erledigt</th>
+                {% if schueler.gruppe.note_anzeigen %}
+                    <th width=60>erledigt</th>
+                {% endif %}
                 {% if details == True %}
                     <th width=100>letzte Bearbeitung</th>
                 {%endif%} 
@@ -97,16 +99,16 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
-            {% if not alle  %}
             <tr>
-            <td  colspan="3", align="left">
-                <form action="{% url 'uebersicht' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit"><b>alle Kategorien anzeigen</b></button>
-                </form>
-            </td>
-            </tr> 
-            {% endif %}          
+            {% if not alle_kat %}
+                <td  colspan="3", align="left">
+                    <form action="{% url 'uebersicht' %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" name="alle Kategorien"><b>alle Kategorien anzeigen</b></button>
+                    </form>
+                </td>
+            {% endif %}
+            </tr>          
         </tbody>
     </table>
     {% if soll_hj <= 0 %}
@@ -116,10 +118,15 @@
     {% endif %}
     <p>
     {% if details %}
-        Wenn du mit einem Smartphone arbeitest, kannst du unter "mein Profil" "Details anzeigen" wegklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+        Wenn du mit einem Smartphone arbeitest, kannst du hier "Details anzeigen" anklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+
     {% else %}
         Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
     {% endif %}
+    <form action="{% url 'uebersicht' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" name="Details ausblenden"><b>Details ausblenden</b></button>
+    </form>
     </p>
 
 </ul>

@@ -21,7 +21,7 @@ from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
 from django.db.models import Sum, F,  Max
-from accounts.views import name_hj, name_next_hj, quote_farbe, hj_pruefen
+from accounts.views import name_hj, name_next_hj, quote_farbe, kein_hj
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def format_zahl(wert, stellen=2, trailing_zeros=True):
@@ -7860,23 +7860,13 @@ def uebersicht(req, schueler_id=0):
         if gruppe:
             aufgaben_pro_woche = gruppe.aufgaben_pro_woche
             bewertung_anzeigen = gruppe.note_anzeigen
-            if bewertung_anzeigen:
-                profil.alle_zeigen = False
-                profil.save()
             if aufgaben_pro_woche < 1:
                 aufgaben_pro_woche = 10 * profil.jg
         else:
             aufgaben_pro_woche = 10 * profil.jg
             bewertung_anzeigen = False
-        alle_zeigen = profil.alle_zeigen
-        # form = UebersichtAlle()
-        # form.fields['auswahl'].choices = [('1', 'eins'), ('2', "Zwei")]
-        #form.as_p()
         protokoll = Protokoll.objects.filter(profil=profil)
-        if alle_zeigen:
-            form = UebersichtAlle
-        else:
-            form = UebersichtHalbjahr
+        form = UebersichtHalbjahr
         if req.method == 'POST':
             auswahl = form(req.POST)
             if auswahl.is_valid(): 
@@ -7890,17 +7880,26 @@ def uebersicht(req, schueler_id=0):
         else:
             form = UebersichtHalbjahr
             protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+        form = UebersichtHalbjahr
+        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
         #if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
         richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
             #letzte = k['letzte']
         # else:
         #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
-        alle = False
-        if req.method == 'POST':
-            alle = True
-        if profil.jg >= 7 or alle:
-            kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle kategorien
-            alle = True
+        alle_kat= False
+        print("POST: ",req.POST)
+        if "Details ausblenden" in req.POST:
+            profil.details = False
+            profil.save()
+        if "Details anzeigen" in req.POST:
+            profil.details = True
+            profil.save()
+        if "alle Kategorien" in req.POST:
+            alle_kat= True
+        if profil.jg >= 7 or alle_kat:
+            kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle_kat egorien
+            alle_kat= True
         elif profil.jg >= 6:
             kategorien = Kategorie.objects.filter(zeile__lt = 22)
         elif profil.jg >= 5:
@@ -7966,35 +7965,37 @@ def uebersicht(req, schueler_id=0):
                     falsch_kat = zaehler_kategorie.fehler_zaehler
                     abbr_kat = zaehler_kategorie.abbr_zaehler
                     lsg_kat = zaehler_kategorie.lsg_zaehler
-                    hilfe_kat = zaehler_kategorie.hilfe_zaehler  
-                    # else:
-                    #     fehler_ab = zaehler_kategorie.fehler_ab
-                    #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
-                    #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
-                    #         protokoll_fehler
-                    #         .values("kategorie__zeile")
-                    #         .annotate(falsch_kat=Sum('falsch'))
-                    #         .annotate(abbr_kat=Sum('abbr'))
-                    #         .annotate(lsg_kat=Sum('lsg'))
-                    #         .annotate(hilfe_kat=Sum('hilfe'))
-                    #         ) 
-                    #     for f in protokoll_fehler:
-                    #         falsch_kat = f['falsch_kat'] 
-                    #         abbr_kat = f['abbr_kat']
-                    #         lsg_kat = f['lsg_kat'] 
-                    #         hilfe_kat = f['hilfe_kat'] 
-                    #         if abbr_kat == True:
-                    #             abbr_kat = 1
-                    #         elif abbr_kat == False:
-                    #             abbr_kat = 0 
-                    #         if lsg_kat == True:
-                    #             lsg_kat = 1
-                    #         elif lsg_kat == False:
-                    #             lsg_kat = 0 
-                    #         if hilfe_kat == True:
-                    #             hilfe_kat = 1
-                    #         elif hilfe_kat == False:
-                    #             hilfe_kat = 0 
+                    hilfe_kat = zaehler_kategorie.hilfe_zaehler
+                    if 1==1:
+                        pass  
+                        # else:
+                        #     fehler_ab = zaehler_kategorie.fehler_ab
+                        #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
+                        #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+                        #         protokoll_fehler
+                        #         .values("kategorie__zeile")
+                        #         .annotate(falsch_kat=Sum('falsch'))
+                        #         .annotate(abbr_kat=Sum('abbr'))
+                        #         .annotate(lsg_kat=Sum('lsg'))
+                        #         .annotate(hilfe_kat=Sum('hilfe'))
+                        #         ) 
+                        #     for f in protokoll_fehler:
+                        #         falsch_kat = f['falsch_kat'] 
+                        #         abbr_kat = f['abbr_kat']
+                        #         lsg_kat = f['lsg_kat'] 
+                        #         hilfe_kat = f['hilfe_kat'] 
+                        #         if abbr_kat == True:
+                        #             abbr_kat = 1
+                        #         elif abbr_kat == False:
+                        #             abbr_kat = 0 
+                        #         if lsg_kat == True:
+                        #             lsg_kat = 1
+                        #         elif lsg_kat == False:
+                        #             lsg_kat = 0 
+                        #         if hilfe_kat == True:
+                        #             hilfe_kat = 1
+                        #         elif hilfe_kat == False:
+                        #             hilfe_kat = 0 
                     qfarbe = quote_farbe(richtig_kat, falsch_kat)
                     zeit_kat = k['zeit_sum']
                     try:
@@ -8048,13 +8049,18 @@ def uebersicht(req, schueler_id=0):
                             kat_farbe = None
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
-                    if alle_zeigen:
-                        kat_farbe = None if richtig_kat >= 10 else "rot"
                     if details == True:
-                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)), 
-                                (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat), (prozent_farbe,"" if alle_zeigen else str(int(prozent_kat))+"%"), (None,letzte_kat)))
+                        werte = (kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)),                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat),
                     else:
-                        zeile = (kategorie,((kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%"),  (prozent_farbe,"" if alle_zeigen else str(int(prozent_kat))+"%")))   
+                        werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%"),  (prozent_farbe, str(int(prozent_kat))+"%")
+                    if not kein_hj(profil):
+                        werte + ((prozent_farbe, str(int(prozent_kat))+"%"))
+                        #print("Datum", letzte_kat)
+
+                    werte + (None,letzte_kat)
+                    zeile = (kategorie,(werte))
+                    #print(zeile) 
+ 
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
@@ -8073,12 +8079,18 @@ def uebersicht(req, schueler_id=0):
                     kat_farbe = 'rot' if pflicht else None
                     prozent_farbe = 'rot' if pflicht and bewertung_anzeigen else None
                     richtig_kat = '-'
+                mehr = 0 if kein_hj(profil) else 1
                 if details == True:
-                    zeile = kategorie, ((kat_farbe,richtig_kat), *((None,'-'),) * 8,(prozent_farbe,'0%' if pflicht else '-'),(None,'-'))
+                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * (8 + mehr) ,
+
                     breite = "breit"
                 else:
-                    zeile = kategorie, ((kat_farbe,richtig_kat), *((None,'-'),) * 2,(prozent_farbe,'0%' if pflicht else '-'))
+                    zeile = (kat_farbe,richtig_kat), *((None,'-'),) * (2 + mehr),
                     breite = "schmal"
+                if not kein_hj(profil):
+                    werte + (prozent_farbe,'0%' if pflicht else '-')
+                werte + (None,'-')
+                zeile = (kategorie,(werte))
             zeilen.append(zeile)
         summe_farbe = prozent_summe_farbe = "unset" 
         if richtig_gesamt + falsch_gesamt >0:
@@ -8115,9 +8127,9 @@ def uebersicht(req, schueler_id=0):
             pro_aufg = "-" 
         context = dict(lehrer= lehrer, loeschen= loeschen, form= form, schueler = profil, schueler_id = schueler_id, 
             zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
-            richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle = alle,
+            richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
             abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
-            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung = bewertung_anzeigen)
+            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung_anzeigen = bewertung_anzeigen)
         # try:
         #     context["letzte"] = letzte.strftime("%d.%m.%y %H:%M")
         # except:
@@ -8481,7 +8493,7 @@ def main(req, slug):
                         tabelle = 5
                 #wenn Eingabe richtig:
                 if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
-                    if tabelle > 0:                  # alle Eingaben in der Tabelle richtig
+                    if tabelle > 0:                  # alle_katEingaben in der Tabelle richtig
                         rueckmeldung = "Alle Werte waren richtig."
                         zaehler.richtig_of += tabelle
                         zaehler.aufgnr += tabelle
