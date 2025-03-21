@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
-from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, UebersichtHalbjahr, UebersichtAlle
+from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, UebersichtHalbjahr
 
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
@@ -7865,30 +7865,21 @@ def uebersicht(req, schueler_id=0):
         else:
             aufgaben_pro_woche = 10 * profil.jg
             bewertung_anzeigen = False
-        protokoll = Protokoll.objects.filter(profil=profil)
+        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
         form = UebersichtHalbjahr
         if req.method == 'POST':
             auswahl = form(req.POST)
             if auswahl.is_valid(): 
                 auswahl = auswahl.cleaned_data['auswahl']
-                profil.alle_zeigen = True if auswahl == "all" else False
-                profil.save()
-        alle_zeigen = profil.alle_zeigen
-        if alle_zeigen:
-            form = UebersichtAlle
-            bewertung_anzeigen = False
-        else:
-            form = UebersichtHalbjahr
-            protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-        form = UebersichtHalbjahr
-        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+                if auswahl == "alle":
+                    protokoll = Protokoll.objects.filter(profil=profil)
+                    form = UebersichtHalbjahr(initial = {"choices": [("alle",'alle Aufgaben'), ("Halbjahr",'aktuelles Halbjahr'), ]}) 
         #if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
         richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
             #letzte = k['letzte']
         # else:
         #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
         alle_kat= False
-        print("POST: ",req.POST)
         if "Details ausblenden" in req.POST:
             profil.details = False
             profil.save()
@@ -7930,6 +7921,8 @@ def uebersicht(req, schueler_id=0):
         else:
             startdatum = profil.user.date_joined
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+        zaehler_profil = Zaehler.objects.filter(profil=profil)
+        letzte_alle = zaehler_profil.order_by('letzte').first()
         for kategorie in kategorien:
             pflicht = False
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
@@ -8055,12 +8048,8 @@ def uebersicht(req, schueler_id=0):
                         werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%"),  (prozent_farbe, str(int(prozent_kat))+"%")
                     if not kein_hj(profil):
                         werte + ((prozent_farbe, str(int(prozent_kat))+"%"))
-                        #print("Datum", letzte_kat)
-
                     werte + (None,letzte_kat)
                     zeile = (kategorie,(werte))
-                    #print(zeile) 
- 
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
@@ -8130,10 +8119,10 @@ def uebersicht(req, schueler_id=0):
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
             abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
             nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung_anzeigen = bewertung_anzeigen)
-        # try:
-        #     context["letzte"] = letzte.strftime("%d.%m.%y %H:%M")
-        # except:
-        #     pass
+        try:
+            context["letzte"] = letzte_alle.letzte.strftime("%d.%m.%y %H:%M")
+        except:
+            pass
         if details:
             return render(req, 'core/uebersicht.html', context)
         else:
