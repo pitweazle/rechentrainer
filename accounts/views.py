@@ -104,7 +104,6 @@ def registrieren(req):
                 profil.sj = sj
                 profil.hj = hj
                 profil.user = user
-                profil.save()
                 username = reg_form.cleaned_data['username']
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
@@ -115,9 +114,14 @@ def registrieren(req):
                     sj, hj = name_next_hj()            
                     profil.sj = sj
                     profil.hj = hj
-                    profil.save()
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
+                if profil.hj == 1:
+                    print("C")
+                    profil.schuljahr_ab = timezone.now()
+                else:
+                    profil.halbjahr_ab = timezone.now()
+                profil.save()
                 return redirect(ort_wahl)
     context = {'reg_form' : reg_form, 'profil_form' : profil_form, 'datenschutz': datenschutz,'titel': "Registrieren"} 
     return render(req, 'registrieren.html', context)
@@ -184,48 +188,55 @@ def hj_pruefen(req):
             logout(req)
             return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
         heute = datetime.now()
-        if not sub_note_anzeigen(profil):
-            sj, hj = name_hj()
-            if profil.hj == hj and profil.sj == sj:
-                pass
+        # if not sub_note_anzeigen(profil):
+        #     sj, hj = name_hj()
+        #     print(sj,hj)
+        #     if profil.hj == hj and profil.sj == sj:
+        #         pass
+        #     else:
+        #         profil.hj = hj
+        #         profil.sj = sj
+        #         profil.save()
+        # else:
+        if heute.month == 1 or heute.month == 7 and sub_note_anzeigen(profil):  #Frage nach neuem Halbjahr
+            next_sj, next_hj = name_next_hj()
+            if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
+                return redirect('uebersicht') 
             else:
-                profil.hj = hj
-                profil.sj = sj
-                profil.save()
-        else:
-            if heute.month == 1 or heute.month == 7:                                #Frage nach neuem Halbjahr
-                next_sj, next_hj = name_next_hj()
-                if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
-                    return redirect('uebersicht') 
-                else:
-                    sj, hj = name_hj()
-                    if profil.hj == hj and profil.sj == sj:
-                        pass
-                    else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
-                        return redirect('wiederanmeldung')  
-                    try:
-                        if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                            test = False
-                    except:
-                        profil.voreinst["frage_hj"] = 0
-                        profil.voreinstt["no_hj"] = False
-                        profil.save()
-                    if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                        if heute.month == 1:
-                            monat = "Juli"
-                            wechsel = "Februar"
-                        else:
-                            monat = "Januar"
-                            wechsel = "August"
-                        context = {'monat' : monat, 'wechsel': wechsel}
-                        return render(req, 'naechstes_halbjahr.html', context)
-                return redirect('uebersicht')  
-            else:                                                                   #Überprüfung, ob Halbjahr aktuell ist
                 sj, hj = name_hj()
                 if profil.hj == hj and profil.sj == sj:
-                    pass  
-                else:                                                               #falls nicht
-                    return redirect('neues_halbjahr')  
+                    pass
+                else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
+                    return redirect('wiederanmeldung')  
+                try:
+                    if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
+                        test = False
+                except:
+                    profil.voreinst["frage_hj"] = 0
+                    profil.voreinstt["no_hj"] = False
+                    profil.save()
+                if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
+                    if heute.month == 1:
+                        monat = "Juli"
+                        wechsel = "Februar"
+                    else:
+                        monat = "Januar"
+                        wechsel = "August"
+                    context = {'monat' : monat, 'wechsel': wechsel}
+                    return render(req, 'naechstes_halbjahr.html', context)
+            return redirect('uebersicht')  
+        else:                                                                   #Überprüfung, ob Halbjahr aktuell ist
+            sj, hj = name_hj()
+            if profil.hj == hj and profil.sj == sj:
+                pass  
+            else:                                                               #falls nicht
+                if sub_note_anzeigen(profil):
+                    return redirect('neues_halbjahr')
+                else:
+                    profil.hj = hj
+                    profil.sj = sj
+                    profil.save()
+                    halbjahr = sub_daten_loeschen(req)  
         return redirect('uebersicht') 
     else:
         return redirect('anmelden')  
@@ -239,7 +250,10 @@ def naechstes_halbjahr(req):
             sj, hj = name_next_hj()
             profil.hj = hj
             profil.sj = sj
-            profil.halbjahr_ab = timezone.now()
+            if hj == 1:
+                profil.schuljahr_ab = timezone.now()
+            else:
+                profil.halbjahr_ab = timezone.now()
             profil.save()
             halbjahr = sub_daten_loeschen(req)
             return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
@@ -277,7 +291,7 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)    
+    halbjahr = sub_daten_loeschen(req)
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def wiederanmeldung(req):
@@ -302,8 +316,11 @@ def sub_daten_loeschen(req):
         zaehler.save()
     if profil.hj == 2:
         halbjahr = "Halbjahr"
+        profil.halbjahr_ab = timezone.now()
+        profil.save()
     else:
-        halbjahr = "Schuljahr"            
+        halbjahr = "Schuljahr"
+        profil.schuljahr_ab = timezone.now()
         if profil.jg < 13:
             if str(profil.jg) in profil.klasse:
                 profil.klasse = profil.klasse.replace(str(profil.jg), str(profil.jg+1),1)
@@ -311,8 +328,8 @@ def sub_daten_loeschen(req):
             neue_stufe = stufe_aus_jg(profil.jg, profil.kurs)
             if neue_stufe > profil.stufe:
                 profil.stufe = neue_stufe
-            profil.save()
-    return halbjahr 
+        profil.save()
+        return halbjahr
 
 # für Schüler
 def profil(req):
