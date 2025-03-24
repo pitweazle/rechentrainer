@@ -17,7 +17,7 @@
 
 <h2>{{schueler.vorname}} {{schueler.nachname}}
 {% if not loeschen or not lehrer %}
-{{schueler.klasse}}</h2>
+    {{schueler.klasse}}</h2>
 {%else%}
     </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
     (Jg. und Stufe können im Profil geändert werden)</h5>
@@ -29,7 +29,7 @@
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
                 <button type="button">
-                    {{form.auswahl}}
+                    {{form.auswahl}}        
                 </button type="button">
                 <button type="button">
                     <input name="filter" type="submit" value="anwenden">
@@ -55,34 +55,28 @@
                     <th width=40>nicht richtig</th>
                     <th width=50> %</th>
                 {% endif %}
-                {% if schueler.gruppe.note_anzeigen %}
+                {% if note_anzeigen %}
                     <th width=60>erledigt</th>
                 {% endif %}
-                {% if details == True %}
-                    <th width=100>letzte Bearbeitung</th>
-                {%endif%} 
+                <th width=100>letzte Bearbeitung</th>
             </tr>
         </thead>
         <tbody>
             <td style="text-align: center;">Summe</td>
             <td class = "{{summe_farbe}}">{{richtig}}</td>
-            {% if details == True %}
-                <td>{{falsch}}</td>
-                <td class ="{{qfarbe}}">{{quote}}%</td>
-                <td>{{dauer}}</td>
-                <td>{{pro_aufg}}</td>
-                <td></td>            
-                <td>{{abbr}}</td>
-                <td>{{lsg}}</td>
-                <td>{{hilfe}}</td>
-            {% else %}
-                <td>{{nicht_richtig_summe}}</td> 
-                <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% endif %}
-            <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-                <td>{{letzte}}</td> 
-            {% if bewertung == True %}
+            <td>{{falsch}}</td>
+            <td class ="{{qfarbe}}">{{quote}}%</td>
+            <td>{{dauer}}</td>
+            <td>{{pro_aufg}}</td>
+            <td></td>            
+            <td>{{abbr}}</td>
+            <td>{{lsg}}</td>
+            <td>{{hilfe}}</td>
+            {% if note_anzeigen == True %}
+                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+            {% else %}
+                <td>{{letzte}}</td> 
             {% endif %} 
             {% for kategorie, zeile in zeilen %}            
                 <tr>

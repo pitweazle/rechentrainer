@@ -21,7 +21,7 @@ from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
 from django.db.models import Sum, F,  Max
-from accounts.views import name_hj, name_next_hj, quote_farbe, kein_hj
+from accounts.views import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def format_zahl(wert, stellen=2, trailing_zeros=True):
@@ -7290,7 +7290,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return 0, "Du musst die Faktoren der Multiplikation mit '*' verbinden."
             elif "pi" in eingabe.lower():
                 eingabe = eingabe.replace(" ","").replace("²","^2").replace(",",".").replace("pi","PI").replace("Pi","PI")
-                print("Eingabe: ",eingabe)
                 parser = Parser()
                 try:
                     wert = parser.parse(eingabe).evaluate({})
@@ -7662,7 +7661,6 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             lsg = [formel + "=" + term.replace(".",",") + "=" + str_wert, str_wert, wert, str_wert.replace("²","^2").replace("³","^3"), "indiv_0"]
             parameter['popup'] = "Klick mich: Wie rechne ich mit Pi?"
             parameter['popup_text'] = "popups/pi.html"
-        print(lsg)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
@@ -7819,10 +7817,12 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            
     note = 6 if prozent_summe < 25 else 7-((prozent_summe-stufe%2*5)//15)       # für E-Kurs 1,2,3,4,5 bei 95,80,65,50% für G-Kurs entsprechende Note mit 5% weniger
     plusminus = (prozent_summe+3-stufe%2*5)%15                                  # + oder - bei 3% mehr oder weniger
     if plusminus in range (3,6):
-        note = str(note)+"-"
+        str_note = str(note)+"-"
     if plusminus in range (0,3):
-        note = str(note)+"+"
-    return prozent_summe_farbe, prozent_summe, note 
+        str_note = str(note)+"+"
+    if note > 4:
+        str_note = '-'
+    return prozent_summe_farbe, prozent_summe, str_note 
 
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
@@ -7857,14 +7857,13 @@ def uebersicht(req, schueler_id=0):
             else:
                 return HttpResponse("Zugriff verweigert")
         gruppe = profil.gruppe
-        if gruppe:
+        note_anzeigen = sub_note_anzeigen(profil)
+        if note_anzeigen:
             aufgaben_pro_woche = gruppe.aufgaben_pro_woche
-            bewertung_anzeigen = gruppe.note_anzeigen
             if aufgaben_pro_woche < 1:
                 aufgaben_pro_woche = 10 * profil.jg
         else:
             aufgaben_pro_woche = 10 * profil.jg
-            bewertung_anzeigen = False
         protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
         form = UebersichtHalbjahr
         if req.method == 'POST':
@@ -7872,12 +7871,11 @@ def uebersicht(req, schueler_id=0):
             if auswahl.is_valid(): 
                 auswahl = auswahl.cleaned_data['auswahl']
                 if auswahl == "alle":
+                    note_anzeigen = False
                     protokoll = Protokoll.objects.filter(profil=profil)
-                    form = UebersichtHalbjahr(initial = {"choices": [("alle",'alle Aufgaben'), ("Halbjahr",'aktuelles Halbjahr'), ]}) 
-        #if protokoll.count() == 0:                                                                  # noch keine Aufgaben da
+                    form = UebersichtHalbjahr()
+                    form.fields['auswahl'].initial = 'alle' 
         richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
-            #letzte = k['letzte']
-        # else:
         #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
         alle_kat= False
         if "Details ausblenden" in req.POST:
@@ -7913,6 +7911,8 @@ def uebersicht(req, schueler_id=0):
         try:
             details = profil.details
         except:
+            details = True
+        if lehrer:
             details = True
         # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
         profil_gruppe = profil.gruppe
@@ -8032,7 +8032,7 @@ def uebersicht(req, schueler_id=0):
                     else:
                         zeit_gesamt += zeit_kat.seconds
                     prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
-                    if not pflicht or not bewertung_anzeigen:
+                    if not pflicht or not note_anzeigen:
                         prozent_farbe = None
                     if not pflicht:
                         qfarbe = abbr_farbe = lsg_farbe = None
@@ -8045,10 +8045,10 @@ def uebersicht(req, schueler_id=0):
                     if details == True:
                         werte = (kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)),                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat),
                     else:
-                        werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%"),  (prozent_farbe, str(int(prozent_kat))+"%")
-                    if not kein_hj(profil):
-                        werte + ((prozent_farbe, str(int(prozent_kat))+"%"))
-                    werte + (None,letzte_kat)
+                        werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%")
+                    if note_anzeigen:
+                        werte += ((prozent_farbe, str(int(prozent_kat))+"%"),)
+                    werte += ((None,letzte_kat),)
                     zeile = (kategorie,(werte))
                     bearbeitet = index
             if index != bearbeitet:
@@ -8066,19 +8066,17 @@ def uebersicht(req, schueler_id=0):
                         kat_farbe = "gelb"
                 else:
                     kat_farbe = 'rot' if pflicht else None
-                    prozent_farbe = 'rot' if pflicht and bewertung_anzeigen else None
+                    prozent_farbe = 'rot' if pflicht and note_anzeigen else None
                     richtig_kat = '-'
-                mehr = 0 if kein_hj(profil) else 1
                 if details == True:
-                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * (8 + mehr) ,
-
+                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * 8,
                     breite = "breit"
                 else:
-                    zeile = (kat_farbe,richtig_kat), *((None,'-'),) * (2 + mehr),
+                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * 2,
                     breite = "schmal"
-                if not kein_hj(profil):
-                    werte + (prozent_farbe,'0%' if pflicht else '-')
-                werte + (None,'-')
+                if note_anzeigen:
+                    werte += ((prozent_farbe,'0%' if pflicht else '-'),)
+                werte += ((None,'-'),)
                 zeile = (kategorie,(werte))
             zeilen.append(zeile)
         summe_farbe = prozent_summe_farbe = "unset" 
@@ -8094,7 +8092,7 @@ def uebersicht(req, schueler_id=0):
                 prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe)                         # Berechnung der Gesamtnote
             else:
                 prozent_summe_farbe = prozent_summe = note = None  
-            if not bewertung_anzeigen:
+            if not note_anzeigen:
                 prozent_summe_farbe = None
             if not details:
                 nicht_richtig_summe_quote = int(nicht_richtig_summe/(richtig_gesamt + nicht_richtig_summe)*100)
@@ -8117,8 +8115,8 @@ def uebersicht(req, schueler_id=0):
         context = dict(lehrer= lehrer, loeschen= loeschen, form= form, schueler = profil, schueler_id = schueler_id, 
             zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
             richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
-            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note=note, 
-            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite, bewertung_anzeigen = bewertung_anzeigen)
+            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note_anzeigen=note_anzeigen, note=note, 
+            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite,)
         try:
             context["letzte"] = letzte_alle.letzte.strftime("%d.%m.%y %H:%M")
         except:

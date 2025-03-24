@@ -159,12 +159,12 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
-def kein_hj(profil):
+def sub_note_anzeigen(profil):
     if (profil.gruppe):
-        kein_hj = True if profil.gruppe.note_anzeigen else False
+        note_anzeigen = True if profil.gruppe.note_anzeigen else False
     else:
-        kein_hj = True
-    return kein_hj
+        note_anzeigen = False
+    return note_anzeigen
 
 def hj_pruefen(req):
     if req.user.is_authenticated:
@@ -184,7 +184,7 @@ def hj_pruefen(req):
             logout(req)
             return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
         heute = datetime.now()
-        if kein_hj(profil):
+        if not sub_note_anzeigen(profil):
             sj, hj = name_hj()
             if profil.hj == hj and profil.sj == sj:
                 pass
@@ -780,7 +780,8 @@ def gruppe_uebersicht(req, gruppe_id):
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
     context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'startdatum': Start_Datum, 'enddatum': End_Datum,
-        'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text, 'note_anzeigen': note_anzeigen}  
+        'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
+        'note_anzeigen': note_anzeigen}  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 
 def neue_gruppe(req):
@@ -841,7 +842,7 @@ def mein_schueler(req, schueler_id, hj_stimmt):
             return HttpResponse("keine Daten vorhanden")
     try:
         gruppe = mein_schueler.gruppe
-        titel = str(gruppe.name) + ": " + str(mein_schueler)
+        titel = str(gruppe.name) + ": " + str(mein_schueler.vorname) + " " + str(mein_schueler.nachname)
     except:
         gruppe = get_object_or_404(Lerngruppe, name = "keine Gruppe")
         titel = str(mein_schueler) + " keine Gruppe"
