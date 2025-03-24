@@ -19,6 +19,12 @@ class LerngruppeAdmin(admin.ModelAdmin):
 class ProfilAdmin(admin.ModelAdmin):
     list_filter=('gruppe',  )
     search_fields = ['vorname', 'nachname']
+
+    # fieldsets = [
+    #     (None,   {'fields': [('vorname', 'nachname', 'klasse', 'gruppe') ]}),
+    #             ('weitere Infos', {'fields': ['schuljahr_ab', 'halbjahr_ab'], 'classes': ['collapse']}),        
+    # ]
+
     list_display = ('pk', 'vorname', 'nachname', 'klasse', 'gruppe') 
 
 class BenutzerAdmin(UserAdmin):
