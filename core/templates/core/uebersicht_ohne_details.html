@@ -22,9 +22,8 @@
     </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
     (Jg. und Stufe können im Profil geändert werden)</h5>
 {% endif %}
-
 <ul class={{breite}}>
-    {% if not bewertung or lehrer %}
+    {% if schueler.gruppe or lehrer %}
         <form action="/uebersicht/{{schueler.id}}/" method="POST">
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
@@ -44,11 +43,10 @@
                 <th width=60>richtig</th>
                 <th width=40>nicht richtig</th>
                 <th width=50> %</th>
-                {% if bewertung == True %}
-                    <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-                {% else %}   
-                    <th width=60>erledigt</th>
+                {% if note_anzeigen == True %}
+                    <th width=60>erledigt</th>                
                 {% endif %}
+                <th width=100>letzte Bearbeitung</th>
             </tr>
         </thead>
         <tbody>
@@ -56,12 +54,12 @@
             <td class = "{{summe_farbe}}">{{richtig}}</td>
             <td>{{nicht_richtig_summe}}</td> 
             <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% comment %} {% if prozent_summe %} {% endcomment %}
+            {% if note_anzeigen == True %}
                 <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-            {% comment %} {% else %}
-                <th></th> 
-            {% endif %}               {% endcomment %}
-           
+                <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+            {% else %}
+                <td>{{letzte}}</td> 
+            {% endif %}         
             {% for kategorie, zeile in zeilen %}            
                 <tr>
                     {% if lehrer and not loeschen %}
@@ -78,7 +76,7 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
-            {% if not alle  %}
+            {% if not alle_kat %}
             <tr>
             <td  colspan="3", align="left">
                 <form action="{% url 'uebersicht' %}" method="post">
@@ -90,10 +88,18 @@
             {% endif %}          
         </tbody>
     </table>
-    <p>Du solltest in diesem Halbjahr mindestens {{soll_hj}} Aufgaben gerechnet haben ({{pro_woche}} pro Woche) - und von jeder Aufgabenkategorie mindesten {{soll_kat}} Aufgaben.</p>
     <p>
-        Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
-    </p>
+        {% if details %}
+            Wenn du mit einem Smartphone arbeitest, kannst du hier "Details anzeigen" anklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+    
+        {% else %}
+            Wenn du hier unter "Details anzeigen" anklickst, bekommst du mehr Informationen.
+        {% endif %}
+        <form action="{% url 'uebersicht' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="Details anzeigen"><b>Details anzeigen</b></button>
+        </form>
+        </p>
 </ul>
 
 {% endblock %}
