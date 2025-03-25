@@ -7815,6 +7815,7 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            
     prozent_summe = int(prozent_summe/pflicht_kat)                              # addiert alle Prozentwerte und bildet den Durchschnitt (aus)
     prozent_summe_farbe = quote_farbe(prozent_summe,100-prozent_summe,0.5)
     note = 6 if prozent_summe < 25 else 7-((prozent_summe-stufe%2*5)//15)       # für E-Kurs 1,2,3,4,5 bei 95,80,65,50% für G-Kurs entsprechende Note mit 5% weniger
+    str_note = str(note)
     plusminus = (prozent_summe+3-stufe%2*5)%15                                  # + oder - bei 3% mehr oder weniger
     if plusminus in range (3,6):
         str_note = str(note)+"-"
