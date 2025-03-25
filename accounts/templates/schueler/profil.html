@@ -45,14 +45,6 @@
                     <td>keine</td></td>
                 {%endif%}
             </tr>
-            <tr>
-                <form action="/profil/" method="POST">
-                    {% csrf_token %}         
-                    <td>Details anzeigen:</td>
-                    <td><input type="Checkbox"  name="details" checked /> 
-                    <input type="submit" value="ändern"></td>
-                </form>
-            </tr>
         </table>
         {% if schueler.schule %}
             <h4>Hier kannst du deine Lerngruppe oder deine Schule und den Schulort wechseln:</h4>

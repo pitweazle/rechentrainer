@@ -104,7 +104,6 @@ def registrieren(req):
                 profil.sj = sj
                 profil.hj = hj
                 profil.user = user
-                profil.save()
                 username = reg_form.cleaned_data['username']
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
@@ -115,9 +114,14 @@ def registrieren(req):
                     sj, hj = name_next_hj()            
                     profil.sj = sj
                     profil.hj = hj
-                    profil.save()
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
+                if profil.hj == 1:
+                    print("C")
+                    profil.schuljahr_ab = timezone.now()
+                else:
+                    profil.halbjahr_ab = timezone.now()
+                profil.save()
                 return redirect(ort_wahl)
     context = {'reg_form' : reg_form, 'profil_form' : profil_form, 'datenschutz': datenschutz,'titel': "Registrieren"} 
     return render(req, 'registrieren.html', context)
@@ -159,6 +163,13 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
+def sub_note_anzeigen(profil):
+    if (profil.gruppe):
+        note_anzeigen = True if profil.gruppe.note_anzeigen else False
+    else:
+        note_anzeigen = False
+    return note_anzeigen
+
 def hj_pruefen(req):
     if req.user.is_authenticated:
         email = req.user.email
@@ -177,7 +188,17 @@ def hj_pruefen(req):
             logout(req)
             return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
         heute = datetime.now()
-        if heute.month == 1 or heute.month == 7:                            #Frage nach neuem Halbjahr
+        # if not sub_note_anzeigen(profil):
+        #     sj, hj = name_hj()
+        #     print(sj,hj)
+        #     if profil.hj == hj and profil.sj == sj:
+        #         pass
+        #     else:
+        #         profil.hj = hj
+        #         profil.sj = sj
+        #         profil.save()
+        # else:
+        if heute.month == 1 or heute.month == 7 and sub_note_anzeigen(profil):  #Frage nach neuem Halbjahr
             next_sj, next_hj = name_next_hj()
             if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
                 return redirect('uebersicht') 
@@ -209,7 +230,13 @@ def hj_pruefen(req):
             if profil.hj == hj and profil.sj == sj:
                 pass  
             else:                                                               #falls nicht
-                return redirect('neues_halbjahr')  
+                if sub_note_anzeigen(profil):
+                    return redirect('neues_halbjahr')
+                else:
+                    profil.hj = hj
+                    profil.sj = sj
+                    profil.save()
+                    halbjahr = sub_daten_loeschen(req)  
         return redirect('uebersicht') 
     else:
         return redirect('anmelden')  
@@ -223,7 +250,10 @@ def naechstes_halbjahr(req):
             sj, hj = name_next_hj()
             profil.hj = hj
             profil.sj = sj
-            profil.halbjahr_ab = timezone.now()
+            if hj == 1:
+                profil.schuljahr_ab = timezone.now()
+            else:
+                profil.halbjahr_ab = timezone.now()
             profil.save()
             halbjahr = sub_daten_loeschen(req)
             return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
@@ -261,7 +291,7 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)    
+    halbjahr = sub_daten_loeschen(req)
     return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
 
 def wiederanmeldung(req):
@@ -286,8 +316,11 @@ def sub_daten_loeschen(req):
         zaehler.save()
     if profil.hj == 2:
         halbjahr = "Halbjahr"
+        profil.halbjahr_ab = timezone.now()
+        profil.save()
     else:
-        halbjahr = "Schuljahr"            
+        halbjahr = "Schuljahr"
+        profil.schuljahr_ab = timezone.now()
         if profil.jg < 13:
             if str(profil.jg) in profil.klasse:
                 profil.klasse = profil.klasse.replace(str(profil.jg), str(profil.jg+1),1)
@@ -295,8 +328,8 @@ def sub_daten_loeschen(req):
             neue_stufe = stufe_aus_jg(profil.jg, profil.kurs)
             if neue_stufe > profil.stufe:
                 profil.stufe = neue_stufe
-            profil.save()
-    return halbjahr 
+        profil.save()
+        return halbjahr
 
 # für Schüler
 def profil(req):
@@ -447,7 +480,6 @@ def statistik(req):
         kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
     return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
   
-
 # wird nur bei der Registrierung aufgerufen
 def ort_wahl(req):
     ort_form = Ort_Form()
@@ -765,7 +797,8 @@ def gruppe_uebersicht(req, gruppe_id):
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
     context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'startdatum': Start_Datum, 'enddatum': End_Datum,
-        'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text, 'note_anzeigen': note_anzeigen}  
+        'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
+        'note_anzeigen': note_anzeigen}  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 
 def neue_gruppe(req):
@@ -826,7 +859,7 @@ def mein_schueler(req, schueler_id, hj_stimmt):
             return HttpResponse("keine Daten vorhanden")
     try:
         gruppe = mein_schueler.gruppe
-        titel = str(gruppe.name) + ": " + str(mein_schueler)
+        titel = str(gruppe.name) + ": " + str(mein_schueler.vorname) + " " + str(mein_schueler.nachname)
     except:
         gruppe = get_object_or_404(Lerngruppe, name = "keine Gruppe")
         titel = str(mein_schueler) + " keine Gruppe"

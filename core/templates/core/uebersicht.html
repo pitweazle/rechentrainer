@@ -17,19 +17,19 @@
 
 <h2>{{schueler.vorname}} {{schueler.nachname}}
 {% if not loeschen or not lehrer %}
-{{schueler.klasse}}</h2>
+    {{schueler.klasse}}</h2>
 {%else%}
     </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
     (Jg. und Stufe können im Profil geändert werden)</h5>
 {% endif %}
 
 <ul class={{breite}}>
-    {% if not bewertung or lehrer %}
+    {% if schueler.gruppe or lehrer %}
         <form action="/uebersicht/{{schueler.id}}/" method="POST">
             {% csrf_token %}
             <h2 style= "text-align: left;"> Zeitraum: 
                 <button type="button">
-                    {{form.auswahl}}
+                    {{form.auswahl}}        
                 </button type="button">
                 <button type="button">
                     <input name="filter" type="submit" value="anwenden">
@@ -55,35 +55,28 @@
                     <th width=40>nicht richtig</th>
                     <th width=50> %</th>
                 {% endif %}
-                <th width=60>erledigt</th>
-                {% if details == True %}
-                    <th width=100>letzte Bearbeitung</th>
-                {%endif%} 
+                {% if note_anzeigen %}
+                    <th width=60>erledigt</th>
+                {% endif %}
+                <th width=100>letzte Bearbeitung</th>
             </tr>
         </thead>
         <tbody>
             <td style="text-align: center;">Summe</td>
             <td class = "{{summe_farbe}}">{{richtig}}</td>
-            {% if details == True %}
-                <td>{{falsch}}</td>
-                <td class ="{{qfarbe}}">{{quote}}%</td>
-                <td>{{dauer}}</td>
-                <td>{{pro_aufg}}</td>
-                <td></td>            
-                <td>{{abbr}}</td>
-                <td>{{lsg}}</td>
-                <td>{{hilfe}}</td>
-            {% else %}
-                <td>{{nicht_richtig_summe}}</td> 
-                <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% endif %}
-            {% comment %} {% if prozent_summe %} {% endcomment %}
-            <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-            {% comment %} {% else %}
-                <th></th> 
-            {% endif %}               {% endcomment %}
-            {% if bewertung == True %}
+            <td>{{falsch}}</td>
+            <td class ="{{qfarbe}}">{{quote}}%</td>
+            <td>{{dauer}}</td>
+            <td>{{pro_aufg}}</td>
+            <td></td>            
+            <td>{{abbr}}</td>
+            <td>{{lsg}}</td>
+            <td>{{hilfe}}</td>
+            {% if note_anzeigen == True %}
+                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+            {% else %}
+                <td>{{letzte}}</td> 
             {% endif %} 
             {% for kategorie, zeile in zeilen %}            
                 <tr>
@@ -97,16 +90,16 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
-            {% if not alle  %}
             <tr>
-            <td  colspan="3", align="left">
-                <form action="{% url 'uebersicht' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit"><b>alle Kategorien anzeigen</b></button>
-                </form>
-            </td>
-            </tr> 
-            {% endif %}          
+            {% if not alle_kat %}
+                <td  colspan="3", align="left">
+                    <form action="{% url 'uebersicht' %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" name="alle Kategorien"><b>alle Kategorien anzeigen</b></button>
+                    </form>
+                </td>
+            {% endif %}
+            </tr>          
         </tbody>
     </table>
     {% if soll_hj <= 0 %}
@@ -116,10 +109,15 @@
     {% endif %}
     <p>
     {% if details %}
-        Wenn du mit einem Smartphone arbeitest, kannst du unter "mein Profil" "Details anzeigen" wegklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+        Wenn du mit einem Smartphone arbeitest, kannst du hier "Details anzeigen" anklicken, dann wird diese Anzeige schmaler und passt auf das Display.
+
     {% else %}
         Wenn du unter "mein Profil" "Details anzeigen" anklickst, bekommst du mehr Informationen.
     {% endif %}
+    <form action="{% url 'uebersicht' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" name="Details ausblenden"><b>Details ausblenden</b></button>
+    </form>
     </p>
 
 </ul>
