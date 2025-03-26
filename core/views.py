@@ -7937,7 +7937,7 @@ def uebersicht(req, schueler_id=0):
             index =  kategorie.zeile
             protokoll_kategorie = protokoll.filter(kategorie = kategorie)
             if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
-                zaehler_kategorie = Zaehler.objects.get(profil=profil, kategorie = kategorie)
+                zaehler_kategorie, created = Zaehler.objects.get_or_create(profil=profil, kategorie = kategorie)
                 kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
                     protokoll_kategorie
                     .values("kategorie__zeile")
