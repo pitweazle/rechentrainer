@@ -4643,8 +4643,11 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         typ_anf = 1
         typ_end = 13
         return typ_anf, typ_end
-    else:                                                                            
-        typ = random.randint(typ_anf, typ_end) 
+    else:
+        if stufe%2 ==1:                                                                            
+            typ = random.randint(typ_anf, typ_end) 
+        else:
+            typ = random.randint(1,6)*2
         typ2 = 0
         titel = "Titel" 
         text = "default{}"
