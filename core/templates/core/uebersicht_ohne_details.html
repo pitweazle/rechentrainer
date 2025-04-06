@@ -60,9 +60,9 @@
             {% else %}
                 <td>{{letzte}}</td> 
             {% endif %}         
-            {% for kategorie, zeile in zeilen %}            
+            {% for kategorie, sperren, zeile in zeilen %}            
                 <tr>
-                    {% if lehrer and not loeschen %}
+                    {% if lehrer and not loeschen or sperren%}
                         {% if lehrer and not loeschen %}
                         <td style="text-align: center;">{{kategorie.name}}</td>
                     {%else%}    

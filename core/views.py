@@ -7929,6 +7929,7 @@ def uebersicht(req, schueler_id=0):
         letzte_alle = zaehler_profil.order_by('letzte').first()
         for kategorie in kategorien:
             pflicht = False
+            sperren = True
             falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
             nicht_richtig_kat = prozent_kat = 0
             prozent_farbe = nicht_richtg_farbe = None
@@ -8044,6 +8045,9 @@ def uebersicht(req, schueler_id=0):
                             kat_farbe = "gruen"
                         else:
                             kat_farbe = None
+                    else:
+                        if prozent_kat>=110 and not lehrer:
+                            sperren = False
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
                     if details == True:
@@ -8053,7 +8057,7 @@ def uebersicht(req, schueler_id=0):
                     if note_anzeigen:
                         werte += ((prozent_farbe, str(int(prozent_kat))+"%"),)
                     werte += ((None,letzte_kat),)
-                    zeile = (kategorie,(werte))
+                    zeile = (kategorie,sperren,(werte))
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
@@ -8081,7 +8085,7 @@ def uebersicht(req, schueler_id=0):
                 if note_anzeigen:
                     werte += ((prozent_farbe,'0%' if pflicht else '-'),)
                 werte += ((None,'-'),)
-                zeile = (kategorie,(werte))
+                zeile = (kategorie, sperren,(werte))
             zeilen.append(zeile)
         summe_farbe = prozent_summe_farbe = "unset" 
         if richtig_gesamt + falsch_gesamt >0:
@@ -8617,10 +8621,10 @@ def main(req, slug):
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
                 zaehler.zeit_summe = 0
-                durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
-                if richtig_gesamt > 100 and fehler_kat < 1:
-                    if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
-                        return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
+                #durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
+                # if richtig_gesamt > 100 and fehler_kat < 1:
+                #     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
+                #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
             if not zaehler.optionen_text :  
