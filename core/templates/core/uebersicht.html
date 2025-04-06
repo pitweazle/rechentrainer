@@ -78,9 +78,9 @@
             {% else %}
                 <td>{{letzte}}</td> 
             {% endif %} 
-            {% for kategorie, zeile in zeilen %}            
+            {% for kategorie, aktiv, zeile in zeilen %}            
                 <tr>
-                    {% if lehrer and not loeschen %}
+                    {% if lehrer and not loeschen or sperren %}
                         <td style="text-align: center;">{{kategorie.name}}</td>
                     {%else%}
                         <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
