@@ -67,9 +67,6 @@
                     {%else%}    
                         <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
                     {%endif%} 
-                    {%else%}    
-                        <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
-                    {%endif%}  
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}

@@ -82,9 +82,9 @@
                 <tr>
                     {% if lehrer and not loeschen or not aktiv %}
                         <td style="text-align: center;">{{kategorie.name}}</td>
-                    {%else%}
+                    {% else %}
                         <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
-                    {%endif%}
+                    {% endif %}
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}
