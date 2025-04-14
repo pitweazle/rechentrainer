@@ -4884,7 +4884,7 @@ def sortieren(zahl,buchstaben):
         term = term.replace("1","")
     return term
 
-def wertetabelle(parameter,stufe):
+def sub_wertetabelle(parameter,stufe):
     zahlen = [0,1,2,-1,0.5]
     zahlen.append(random.randint(-2,2))                                            # nur für das Duell
     lsg = [""]
@@ -4981,7 +4981,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         if typ == 1:                        # Wertetabelle                                                                          # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
             parameter = {'name': 'tab_term',}
-            parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+            parameter, term, koeffizient, absolut, lsg = sub_wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
         elif typ == 2:                      # nach Alphabet sortieren                                                      # Terme zusammenfassen
@@ -6035,7 +6035,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
  
-def funktionsgleichung(typ2):
+def sub_funktionsgleichung(typ2):
     if typ2 == 1:                               # nur ganze Zahlen
         basis = 1
         absolut_max = 6
@@ -6151,7 +6151,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         if typ == 1:                        # Wertetabelle
                 text = "Berechne die Funktionswerte"
                 parameter = {'name': 'tab_term',}
-                tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+                tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle(parameter,stufe)
                 parameter.update(tabellenwerte)
                 parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
                 pro_text = "Termbelegung: " + term
@@ -7667,6 +7667,107 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_wertetabelle_quadfu(parameter,stufe):
+    zahlen = [0,1,2,-1]
+    zahlen.append(random.randint(-2,2))                                            # nur für das Duell
+    absolut = koeffizient = 0
+    while absolut == 0:
+        absolut = random.randint(-4,4)
+    koeffizient = random.randint(-4,4)                          # für quadratische Funktionen
+    term = "x²{:+d}x{:+d}".format(koeffizient, absolut).replace("+0x","").replace("+1x","+x").replace("-1x","-x")
+    x_werte = {}
+    y_werte = {}
+    #y_farbe = {}
+    lsg = []
+    for n in range (0,5):
+        x_werte["x" + str(n)] = zahlen[n]
+        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+        lsg.append(str(zahlen[n]**2+zahlen[n]*koeffizient+absolut))
+    lsg = [lsg]
+    parameter.update(x_werte)
+    parameter.update(y_werte)
+    return parameter, term, koeffizient, absolut, lsg
+
+def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 1
+        return typ_anf, typ_end
+    elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
+        if typ == 3 and typ2 == 2:
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[1])
+            return richtig, meldung
+        elif typ == 5:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        elif typ > 8:
+            if "-1x" in eingabe :
+                return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
+            if "1x" in eingabe:
+                return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
+            if not "x" in eingabe:
+                return 0, "In der Funktionsgleichung muss ein 'x' vorkommen"
+            if  "*" in eingabe:
+                return 0, "'*' lässt man weg"
+            wert_eingabe, rueckmeldung = termwert(eingabe)                  # akkzeptiert auch Brüche
+            wert_loesung, rueckmeldung = termwert(lsg[0].replace(",","."))
+            if wert_eingabe == wert_loesung:
+                return 1, ""
+            try:
+                eingabe=eingabe.replace(",",".")
+                eingabe=eingabe.split("x")
+                zahl = float(eingabe[0])*10
+                if not eingabe[1]:
+                    zahl +=2000
+                else:
+                    zahl=zahl + (float(eingabe[1])*10+20)*100
+                if round(zahl,2) == round(float(lsg[1]),2):
+                    return 1, ""
+                else:
+                    return -1, "" 
+            except:
+                return -1, "" 
+        elif typ == 4:
+            if typ2 == 1:
+                if eingabe not in ["l", "s", "g"] :
+                    return 0, "Du musst dich zwischen 's' 'l' und 'g' entscheiden"
+                else:
+                    pass
+            elif typ2 == 2:
+                if not ":" in eingabe:
+                    return 0, "Gib die Uhrzeit z.B. so ein: 9:15"
+                else:
+                    pass
+            return -1, "" 
+    else: 
+        # if aufgnr == 1:
+        #     typ = 1 
+        # else:
+        #     typ = random.randint(2, typ_end) 
+        # typ2 = 0
+        typ=1
+        titel = "quadratische Funktionen" 
+        text = "default{}"
+        hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
+        variable = [""]
+        hilfe_id = 0 
+        erg = None
+        parameter = {'name':'normal'}
+          
+        if typ == 1:                        # Wertetabelle
+                text = "Berechne die Funktionswerte"
+                parameter = {'name': 'tab_quad_term',}
+                tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle_quadfu(parameter,stufe)
+                parameter.update(tabellenwerte)
+                parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
+                pro_text = "Termbelegung: " + term
+                print(parameter)
+
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -8345,7 +8446,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke, 31: kreise}
+    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
@@ -8387,6 +8488,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 else:
                     rueckmeldung = rueckmeldung + (str(n+1) + ": leer ")
                     punkte += 2*10**(n)
+                print("Punkte", punkte)
             return punkte, rueckmeldung
         else:
             eingabe=eingabe.replace("^2","²")
@@ -8485,6 +8587,8 @@ def main(req, slug):
                         tabelle = 3
                         richtig = str(wertung).count("1")
                         falsch = str(wertung).count("0")
+                    if wertung >= 30000:
+                        tabelle = 4
                     if wertung >= 300000:
                         tabelle = 5
                 #wenn Eingabe richtig:
@@ -8559,7 +8663,7 @@ def main(req, slug):
                         color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
                         color_wertung =color_wertung[:-1].split(",")
                         y_farbe = {}
-                        if tabelle == 5:
+                        if tabelle >3:
                             for n in range (0,tabelle):
                                 y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
                         else:
