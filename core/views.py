@@ -6147,7 +6147,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                         typ2 = 5
                     else:
                         typ2 = random.randint(2,5)
-                gleichung, steigung, absolut, basis = funktionsgleichung(typ2)            
+                gleichung, steigung, absolut, basis = sub_funktionsgleichung(typ2)            
         if typ == 1:                        # Wertetabelle
                 text = "Berechne die Funktionswerte"
                 parameter = {'name': 'tab_term',}
@@ -6156,7 +6156,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                 parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
                 pro_text = "Termbelegung: " + term
         elif typ in (2,3):                  # Funktionswert / Nullstelle berechnen
-            gleichung, steigung, absolut, basis = funktionsgleichung(1)
+            gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
             x = random.randint(-3,6)
             variable = [gleichung, x]
             if typ == 2:
@@ -6185,7 +6185,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     frage = pro_text = "x="
                     erg = 1/3
                     while erg*100%1>0:
-                        gleichung, steigung, absolut, basis = funktionsgleichung(1)
+                        gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
                         erg = -absolut/steigung
                     variable = [gleichung, x]
                     lsg = [str(erg).replace(".",",")]
@@ -7747,7 +7747,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=1
+        typ=2
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7755,15 +7755,29 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         hilfe_id = 0 
         erg = None
         parameter = {'name':'normal'}
-          
         if typ == 1:                        # Wertetabelle
-                text = "Berechne die Funktionswerte"
-                parameter = {'name': 'tab_quad_term',}
-                tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle_quadfu(parameter,stufe)
-                parameter.update(tabellenwerte)
-                parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
-                pro_text = "Termbelegung: " + term
-                print(parameter)
+            text = "Berechne die Funktionswerte"
+            parameter = {'name': 'tab_quad_term',}
+            tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle_quadfu(parameter,stufe)
+            parameter.update(tabellenwerte)
+            parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
+            pro_text = "Termbelegung: " + term
+        else:
+                # Koordinatensystem
+                box_hoehe = 360
+                box_breite = 400
+                grid = 20
+                y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+                x_null = 140                    # x_Null  Lage der y-Achse
+                parameter = sub_koordinatensystem(x_null, y_null)
+                gleichung, steigung, absolut, basis = sub_funktionsgleichung(2)
+                titel = "Nullstellen" 
+                text = ""
+                x = random.choice([-10, -5, 6, 7, 10])
+                y = steigung*x+absolut
+                variable = [gleichung, x, str(y).replace(".",",")]
+                graph = {'object': 'quadfu',}
+                parameter.update(graph)       
 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
