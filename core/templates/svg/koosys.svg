@@ -139,11 +139,10 @@
     {% endif %}
 
     {% if parameter.object == "quadfu" %}
-        <g transform="translate(0 120)">
+        <g transform="translate({{parameter.p}} {{parameter.q}})">
             {% comment %} <path d="M 20 -10 C  20 -10 140 777 260 -10"  {% endcomment %}
-            {% comment %} <path d="M 60 60 C  60 60 140 420 220 60"  {% endcomment %}
-            <path d="M 20 -160 L 60 60 C 60 60 140 420 220 60 L 260 -160" 
-
+            <path d="M 20 -160 L 60 60 C 60 60 135 420 220 60 L 260 -160" 
+             {% comment %} <path d="M 20 -240  C 20 -240 138 522 260 -240"  {% endcomment %}
             style="stroke-width: 2px; stroke: black; fill: none;">
             </path>
         </g> 

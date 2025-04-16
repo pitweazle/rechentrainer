@@ -7688,59 +7688,40 @@ def sub_wertetabelle_quadfu(parameter,stufe):
     parameter.update(y_werte)
     return parameter, term, koeffizient, absolut, lsg
 
+def sub_parabel(p,q):
+    box_hoehe = 360
+    box_breite = 400
+    grid = 20
+    y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+    x_null = 140                    # x_Null  Lage der y-Achse
+    parameter = sub_koordinatensystem(x_null, y_null)
+    graph = {'object': 'quadfu', 'p':p*40, 'q':q*40}
+    parameter.update(graph)
+    return parameter     
+
 def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 1
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if typ == 3 and typ2 == 2:
-            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[1])
-            return richtig, meldung
-        elif typ == 5:
-            if eingabe not in ["ja", "nein"] :
-                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
-            else:
-                return -1, ""
-        elif typ > 8:
-            if "-1x" in eingabe :
-                return 0, "'-1x' schreibt man nicht, man lässt die '1' weg"
-            if "1x" in eingabe:
-                return 0, "'1x' schreibt man nicht, man lässt die '1' weg"
-            if not "x" in eingabe:
-                return 0, "In der Funktionsgleichung muss ein 'x' vorkommen"
-            if  "*" in eingabe:
-                return 0, "'*' lässt man weg"
-            wert_eingabe, rueckmeldung = termwert(eingabe)                  # akkzeptiert auch Brüche
-            wert_loesung, rueckmeldung = termwert(lsg[0].replace(",","."))
-            if wert_eingabe == wert_loesung:
+        if typ in (2,3):
+            if not ";" in eingabe:
+                return 0, "Du musst die Koordinaten mit einem Semikolon trennen"
+        if typ == 3:
+            if not "(" in eingabe:
+                return 0, "Du musst die Koordinaten in Klammern angeben"
+        if typ in (2,3):
+            if typ == 3:
+                eingabe = eingabe.replace("(","").replace(")","")
+            zahlen = eingabe.split(";")
+            x1 = float(zahlen[0].replace(",","."))
+            x2 = float(zahlen[1].replace(",","."))
+            print("Zahl",int(x1*1000)+int(x2*10))
+            if int(x1*1000)+int(x2*10) == lsg[2] or int(x1*1000)+int(x2*10) == lsg[3]:
                 return 1, ""
-            try:
-                eingabe=eingabe.replace(",",".")
-                eingabe=eingabe.split("x")
-                zahl = float(eingabe[0])*10
-                if not eingabe[1]:
-                    zahl +=2000
-                else:
-                    zahl=zahl + (float(eingabe[1])*10+20)*100
-                if round(zahl,2) == round(float(lsg[1]),2):
-                    return 1, ""
-                else:
-                    return -1, "" 
-            except:
+            else:    
                 return -1, "" 
-        elif typ == 4:
-            if typ2 == 1:
-                if eingabe not in ["l", "s", "g"] :
-                    return 0, "Du musst dich zwischen 's' 'l' und 'g' entscheiden"
-                else:
-                    pass
-            elif typ2 == 2:
-                if not ":" in eingabe:
-                    return 0, "Gib die Uhrzeit z.B. so ein: 9:15"
-                else:
-                    pass
-            return -1, "" 
     else: 
         # if aufgnr == 1:
         #     typ = 1 
@@ -7762,23 +7743,33 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
+        if typ == 2:
+            titel = "Nullstellen"
+            text = "Gib die Schnittstellen mit der x-Achse an!"
+            anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
+            frage = "x1; x2:"
+            x1 = -6
+            x2 = 10
+            while abs(x1-x2) > 5:
+                x1 = x2 = (random.randint(-6,10))/2
+                while x1 == x2:
+                    x2 = (random.randint(-6,10))/2
+            lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), 1000*x1+10*x2, 1000*x2+10*x1,"indiv_0"]								
+            hilfe="Die musst du nur ablesen."	
+            p = -(x1+x2)/(-2)
+            q = -(x1-x2)*(x1-x2)/(-4)
+            parameter = sub_parabel(p,q) 
         else:
-                # Koordinatensystem
-                box_hoehe = 360
-                box_breite = 400
-                grid = 20
-                y_null = box_hoehe-140          # y_Null  Lage der x-Achse
-                x_null = 140                    # x_Null  Lage der y-Achse
-                parameter = sub_koordinatensystem(x_null, y_null)
-                gleichung, steigung, absolut, basis = sub_funktionsgleichung(2)
-                titel = "Nullstellen" 
-                text = ""
-                x = random.choice([-10, -5, 6, 7, 10])
-                y = steigung*x+absolut
-                variable = [gleichung, x, str(y).replace(".",",")]
-                graph = {'object': 'quadfu',}
-                parameter.update(graph)       
-
+            titel="Scheitelpunkt"
+            text="Gib den Scheitelpunkt an!"
+            frage="S="
+            anmerkung="(Mit Klammer und Semikolon: (  ;  ))"
+            hilfe="Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
+            p = (random.randint(-6,8))/2
+            q = (random.randint(-6,8))/2
+			#lsg = -p & ";" & q								
+            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", 99999, 99999, int(p*1000+q*10), "indiv_0"]
+            parameter = sub_parabel(p,-q) 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 
