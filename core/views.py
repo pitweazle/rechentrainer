@@ -7709,8 +7709,11 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             if not ";" in eingabe:
                 return 0, "Du musst die Koordinaten mit einem Semikolon trennen"
         if typ == 3:
-            if not "(" in eingabe:
+            if not "(" in eingabe or not ")" in eingabe:
                 return 0, "Du musst die Koordinaten in Klammern angeben"
+        if typ == 4:
+            if  "+0" in eingabe:
+                return 0, "Lass '+0' weg"
         if typ in (2,3):
             if typ == 3:
                 eingabe = eingabe.replace("(","").replace(")","")
@@ -7728,7 +7731,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=2
+        typ=4
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7759,7 +7762,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             p = -(x1+x2)/(-2)
             q = -(x1-x2)*(x1-x2)/(-4)
             parameter = sub_parabel(p,q) 
-        else:
+        if typ == 3:
             titel="Scheitelpunkt"
             text="Gib den Scheitelpunkt an!"
             frage="S="
@@ -7767,9 +7770,22 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             hilfe="Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
             p = (random.randint(-6,8))/2
             q = (random.randint(-6,8))/2
-			#lsg = -p & ";" & q								
-            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", 99999, 99999, int(p*1000+q*10), "indiv_0"]
-            parameter = sub_parabel(p,-q) 
+            zahl = int(p*1000+q*10)							
+            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", zahl, zahl, zahl, "indiv_0"]
+            parameter = sub_parabel(p,-q)
+        if typ == 4: 
+            titel = "Scheitelpunkform"
+            text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
+            frage = "y= "
+            hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
+            p = 0
+            while p == 0:
+                p = (random.randint(-2,3))
+            q = (random.randint(-2,3))
+            term = "(x{:+d})²{:+d}".format(-p,q).replace("+0","")
+            lsg = ["y=" + term, term, term.replace("²","^2"), "indiv_0"]
+        if typ > 1:
+            parameter = sub_parabel(p,-q)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 
