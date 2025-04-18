@@ -7731,7 +7731,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=4
+        typ=7
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7773,17 +7773,44 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             zahl = int(p*1000+q*10)							
             lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", zahl, zahl, zahl, "indiv_0"]
             parameter = sub_parabel(p,-q)
-        if typ == 4: 
-            titel = "Scheitelpunkform"
-            text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
-            frage = "y= "
-            hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
+        if typ > 3: 
             p = 0
             while p == 0:
                 p = (random.randint(-2,3))
             q = (random.randint(-2,3))
+            frage = "y="
             term = "(x{:+d})²{:+d}".format(-p,q).replace("+0","")
-            lsg = ["y=" + term, term, term.replace("²","^2"), "indiv_0"]
+            normalform = "x²{:+d}x{:+d}".format(-2*p,p**2+q).replace("+0","")
+            if typ in (4,5):
+                titel = "Scheitelpunkform"
+                text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
+                lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
+                hilfe_id = 40
+                hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
+            if typ == 6:
+                titel = "Normalform"
+                text = "Die Scheitelpunktform dieses Graphen lautet: {}. Gib sie in der Normalform an!".format(term)
+                lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id == 61
+                    hilfe="Hier musst du die binomischen Formeln anwenden."
+                else:
+                    if p > 0:
+                        hilfe_id == 62
+                        hilfe="Diese heißt in diesem Fall:(x+p)²=x²+2px+p². Zu p² musst du noch {} addieren.".format(q)
+                    else:
+                        hilfe_id == 63
+                        hilfe="Diese heißt in diesem Fall:(x-p)²=x²-2px+p². Zu p² musst du noch {} addieren.".format(q)			
+            if typ == 7:
+                titel = "Funktionswert"
+                x = random.randint(-2, 3)
+                variable = [normalform,x]
+                text = "Berechne für die Funktion y={} den Funktionswert für x={}." 
+                frage = "f({})=".format(x)
+                erg = (x-p)**2+q  
+                lsg = [(str(erg))]
+                hilfe_id = 70 
+                hilfe="Du musst {1} in die Funktionsgleichung für x einsetzen und diese ausrechnen.<br>(Das geht genauso wie bei der Tabelle.)"           
         if typ > 1:
             parameter = sub_parabel(p,-q)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
