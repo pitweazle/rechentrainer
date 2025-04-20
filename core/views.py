@@ -7714,6 +7714,11 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         if typ == 4:
             if  "+0" in eingabe:
                 return 0, "Lass '+0' weg"
+        if typ == 8:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
         if typ in (2,3):
             if typ == 3:
                 eingabe = eingabe.replace("(","").replace(")","")
@@ -7731,10 +7736,10 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=7
+        typ=8
         titel = "quadratische Funktionen" 
         text = "default{}"
-        hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
+        hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
         variable = [""]
         hilfe_id = 0 
         erg = None
@@ -7746,7 +7751,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-        if typ == 2:
+        if typ == 2:                        # Schnittpunkte mit der x-Achse
             titel = "Nullstellen"
             text = "Gib die Schnittstellen mit der x-Achse an!"
             anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
@@ -7762,7 +7767,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             p = -(x1+x2)/(-2)
             q = -(x1-x2)*(x1-x2)/(-4)
             parameter = sub_parabel(p,q) 
-        if typ == 3:
+        if typ == 3:                        # Scheitelpunkt
             titel="Scheitelpunkt"
             text="Gib den Scheitelpunkt an!"
             frage="S="
@@ -7781,27 +7786,29 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             frage = "y="
             term = "(x{:+d})²{:+d}".format(-p,q).replace("+0","")
             normalform = "x²{:+d}x{:+d}".format(-2*p,p**2+q).replace("+0","")
-            if typ in (4,5):
+            if typ in (4,5):                # Scheitelpunktform
                 titel = "Scheitelpunkform"
                 text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
                 lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
                 hilfe_id = 40
                 hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
-            if typ == 6:
+            if typ == 6:                    # Normalform
                 titel = "Normalform"
-                text = "Die Scheitelpunktform dieses Graphen lautet: {}. Gib sie in der Normalform an!".format(term)
+                variable = []
+                text = "Die Scheitelpunktform dieses Graphen lautet: {}. Gib sie in der Normalform an!"
                 lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
                 if stufe%2 == 1:
                     hilfe_id == 61
                     hilfe="Hier musst du die binomischen Formeln anwenden."
                 else:
+                    variable.append(q)
+                    hilfe_id == 62
                     if p > 0:
-                        hilfe_id == 62
-                        hilfe="Diese heißt in diesem Fall:(x+p)²=x²+2px+p². Zu p² musst du noch {} addieren.".format(q)
+                        variable.append("+")
                     else:
-                        hilfe_id == 63
-                        hilfe="Diese heißt in diesem Fall:(x-p)²=x²-2px+p². Zu p² musst du noch {} addieren.".format(q)			
-            if typ == 7:
+                        variable.append("-")
+                    hilfe="Diese heißt in diesem Fall:(x{2}p)²=x²{2}2px+p². Zu p² musst du noch {1} addieren."			
+            if typ == 7:                    # Funktionswert
                 titel = "Funktionswert"
                 x = random.randint(-2, 3)
                 variable = [normalform,x]
@@ -7811,8 +7818,32 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 lsg = [(str(erg))]
                 hilfe_id = 70 
                 hilfe="Du musst {1} in die Funktionsgleichung für x einsetzen und diese ausrechnen.<br>(Das geht genauso wie bei der Tabelle.)"           
+            if typ == 8:                    # liegt Punkt auf Graph?
+                titel = "Funktionswerte" 
+                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechnen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
+                frage = "ja/nein"
+                y = 0
+                while y < 6:
+                    x = random.randint(-3,6)
+                    janein = random.randint(-1,1)                
+                    y = (x-p)**2+q+janein
+                variable = [normalform, x, y]
+                if janein == 0:
+                    lsg = ["ja", "j", "indiv_0"]
+                else:
+                    lsg = ["nein", "n", "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id = 80
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht."						
+                else:
+                    hilfe_id = 81
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
+
         if typ > 1:
             parameter = sub_parabel(p,-q)
+        hilfe = hilfe.format(*variable)
+        print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 
