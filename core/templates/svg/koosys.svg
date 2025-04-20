@@ -47,7 +47,11 @@
         <g id="kreuz">
             <line x1="-5" y1="-5" x2="5" y2="5"  style="stroke:black;stroke-width:1;" />
             <line x1="-5" y1="5" x2="5" y2="-5"  style="stroke:black;stroke-width:1;" />
-        </g>  
+        </g> 
+        
+        <g id="parabel">
+            <path d="M 20 -160 L 60 60 C 60 60 135 420 220 60 L 260 -160">
+        </g>
     </defs>	
 
 <!-- Karo-Muster -->
@@ -139,13 +143,13 @@
     {% endif %}
 
     {% if parameter.object == "quadfu" %}
-        <g transform="translate({{parameter.p}} {{parameter.q}})">
-            {% comment %} <path d="M 20 -10 C  20 -10 140 777 260 -10"  {% endcomment %}
-            <path d="M 20 -160 L 60 60 C 60 60 135 420 220 60 L 260 -160" 
-             {% comment %} <path d="M 20 -240  C 20 -240 138 522 260 -240"  {% endcomment %}
-            style="stroke-width: 2px; stroke: black; fill: none;">
-            </path>
-        </g> 
+        <use href="#parabel"  
+        transform="translate({{parameter.p}} {{parameter.q}})" style="stroke-width: 2px; stroke: black; fill: none;">
+    {% endif %}
+
+    {% if parameter.object == "gestreckt" %}
+        <use href="#parabel"  
+        transform="translate({{parameter.p}} {{parameter.q}}), scale(1 -1)" style="stroke-width: 2px; stroke: red; fill: none;">
     {% endif %}
 
     {% if parameter.hilfe == 90 or parameter.hilfe == 91 %}
