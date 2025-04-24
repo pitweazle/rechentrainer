@@ -6305,7 +6305,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ == 6:                      # Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
-            hilfe_id = 50
+            hilfe_id = 59
             hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen, von da aus weiter zur y-Achse und liest dort den gesuchten Funktionswert ab."
             erg = 99
             while erg <-3 or erg > 4.5 or x <-3 or x > 4.5:
@@ -6319,7 +6319,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ == 7:                      # x für Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
-            hilfe_id = 60
+            hilfe_id = 69
             hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
             x = y = 99
             while x <-3 or x > 4.5 or y <-3 or y > 4.5:
@@ -6354,10 +6354,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             frage = "y="
             if round(steigung,3) == 0.667:
                 anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                hilfe_id = 91
+                hilfe_id = 99
                 hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
             else:
-                hilfe_id = 90
+                hilfe_id = 98
                 hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
             lsg = [gleichung]
             zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
