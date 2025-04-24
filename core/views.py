@@ -6305,7 +6305,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ == 6:                      # Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Lies aus diesem Graphen den Funktionswert für <br>x= {1} ab:"
-            hilfe_id = 50
+            hilfe_id = 59
             hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der x-Achse bis zum Graphen, von da aus weiter zur y-Achse und liest dort den gesuchten Funktionswert ab."
             erg = 99
             while erg <-3 or erg > 4.5 or x <-3 or x > 4.5:
@@ -6319,7 +6319,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
         elif typ == 7:                      # x für Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
-            hilfe_id = 60
+            hilfe_id = 69
             hilfe_text = "Hier hilft dir diese grüne Linie: Du gehst von {1} auf der y-Achse bis zum Graphen, von da aus weiter zur x-Achse und liest dort den gesuchten x-Wert ab."
             x = y = 99
             while x <-3 or x > 4.5 or y <-3 or y > 4.5:
@@ -6354,10 +6354,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             frage = "y="
             if round(steigung,3) == 0.667:
                 anmerkung= "Hier musst du die Steigung als Bruch angeben. Wenn du nicht weißt, wie das geht, dann klicke auf 'Hilfe'"
-                hilfe_id = 91
+                hilfe_id = 99
                 hilfe_text = "Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen: Der Zähler des Bruches entspricht der Höhe dieses Dreiecks (h), den Nenner der Grundlinie(g).<br>Das muss dann so aussehen: y=h/g x+b. Für 'b' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen)."
             else:
-                hilfe_id = 90
+                hilfe_id = 98
                 hilfe_text = "Das muss etwa so aussehen: y=mx+n. Für 'n' muss du den Schnittpunkt des Graphen mit der y-Achse einsetzen (+/- nicht vergessen).<br>'m' ist die Steigung des Graphen, die bekommst du so raus: Gehe von einer beliebigen Stelle des Graphen eine Einheit nach rechts und zähle wie viele Einheiten du nach oben (+) oder nach unten (-) du gehen musst um wieder auf den Graphen zu kommen. Nach dieser Zahl kommt ein 'x'.<br>Das kannst du gut an dem gelben 'Steigungsdreieck' ablesen."
             lsg = [gleichung]
             zahl = (absolut*10+20)*100+steigung*10                       # Diese Zahl wird benutzt, um Eingaben zu übrprüfen, die nicht der obigen Lösung exakt übereinstimmen (Komma oder nicht)
@@ -7702,41 +7702,57 @@ def sub_parabel(p,q):
 def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 1
+        typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ in (2,3):
+            if typ == 3:
+                if not "(" in eingabe or not ")" in eingabe:
+                    return 0, "Du musst die Koordinaten in Klammern angeben"
             if not ";" in eingabe:
                 return 0, "Du musst die Koordinaten mit einem Semikolon trennen"
-        if typ == 3:
-            if not "(" in eingabe or not ")" in eingabe:
-                return 0, "Du musst die Koordinaten in Klammern angeben"
-        if typ == 4:
-            if  "+0" in eingabe:
-                return 0, "Lass '+0' weg"
-        if typ == 8:
-            if eingabe not in ["ja", "nein"] :
-                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
-            else:
-                return -1, ""
-        if typ in (2,3):
             if typ == 3:
                 eingabe = eingabe.replace("(","").replace(")","")
             zahlen = eingabe.split(";")
             x1 = float(zahlen[0].replace(",","."))
             x2 = float(zahlen[1].replace(",","."))
-            print("Zahl",int(x1*1000)+int(x2*10))
             if int(x1*1000)+int(x2*10) == lsg[2] or int(x1*1000)+int(x2*10) == lsg[3]:
                 return 1, ""
             else:    
                 return -1, "" 
+        elif typ in (4,5,9):
+            if typ2%2 !=1:
+                if (lsg[0][:8]) in eingabe:
+                    return 1, ""
+                else:
+                    return -1, ""
+            else:
+                vorzeichen = lsg[-2]
+                if (vorzeichen == "minuS" and "x-" in eingabe) or (vorzeichen == "pluS" and "x+" in eingabe):
+                    return -1, "Du musst bei der x-Koordinate das Vorzeichen umdrehen."
+                if not "(" in eingabe or not ")" in eingabe:
+                    return 0, "Bei der Scheitelpunktform erwarte ich eine Klammer."
+                if  "+0" in eingabe:
+                    return 0, "Lass '+0' weg"
+                if  "y=" in eingabe:
+                    return 0, "Lass 'y=' weg - das steht schon da."
+                if typ == 9:
+                    if  "*(" in eingabe:
+                            return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
+        elif typ == 8:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        else:
+            return -1, ""
     else: 
         # if aufgnr == 1:
         #     typ = 1 
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=8
+        typ=7
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7754,6 +7770,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         if typ == 2:                        # Schnittpunkte mit der x-Achse
             titel = "Nullstellen"
             text = "Gib die Schnittstellen mit der x-Achse an!"
+            pro_text = "Schnittstellen mit der x-Achse an"
             anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
             frage = "x1; x2:"
             x1 = -6
@@ -7768,11 +7785,11 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             q = -(x1-x2)*(x1-x2)/(-4)
             parameter = sub_parabel(p,q) 
         if typ == 3:                        # Scheitelpunkt
-            titel="Scheitelpunkt"
-            text="Gib den Scheitelpunkt an!"
-            frage="S="
-            anmerkung="(Mit Klammer und Semikolon: (  ;  ))"
-            hilfe="Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
+            titel = pro_text = "Scheitelpunkt"
+            text = "Gib den Scheitelpunkt an!"
+            frage = "S="
+            anmerkung = "(Mit Klammer und Semikolon: (  ;  ))"
+            hilfe = "Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
             p = (random.randint(-6,8))/2
             q = (random.randint(-6,8))/2
             zahl = int(p*1000+q*10)							
@@ -7787,14 +7804,18 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             term = "(x{:+d})²{:+d}".format(-p,q).replace("+0","")
             normalform = "x²{:+d}x{:+d}".format(-2*p,p**2+q).replace("+0","")
             if typ in (4,5):                # Scheitelpunktform
-                titel = "Scheitelpunkform"
+                titel = pro_text = "Scheitelpunkform"
                 text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
-                lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
+                if p < 0:
+                    vorzeichen = "minuS"
+                else:
+                    vorzeichen = "pluS"
+                lsg = ["y=" + term, term, term.replace("²","^2"), vorzeichen, "indiv_0"]
                 hilfe_id = 40
                 hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
             if typ == 6:                    # Normalform
-                titel = "Normalform"
-                variable = []
+                titel = pro_text = "Normalform"
+                variable = [term]
                 text = "Die Scheitelpunktform dieses Graphen lautet: {}. Gib sie in der Normalform an!"
                 lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
                 if stufe%2 == 1:
@@ -7812,7 +7833,8 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 titel = "Funktionswert"
                 x = random.randint(-2, 3)
                 variable = [normalform,x]
-                text = "Berechne für die Funktion y={} den Funktionswert für x={}." 
+                text = "Berechne für die Funktion y={} den Funktionswert für x={}."
+                pro_text = "f({1})={0}"
                 frage = "f({})=".format(x)
                 erg = (x-p)**2+q  
                 lsg = [(str(erg))]
@@ -7839,11 +7861,45 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 else:
                     hilfe_id = 81
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
-
-        if typ > 1:
+            if typ == 9:                    # gestreckt oder gestaucht
+                titel = "Parabel"
+                parameter = sub_parabel(p,-q)
+                typ2 = random.randint(1,4)
+                if typ2%2 == 1:
+                    if p < 0:
+                        vorzeichen = "minuS"
+                    else:
+                        vorzeichen = "pluS"
+                    text = "Der rote Graph ist eine verschobene Normalparabel.<br>Gib die Funktionsgleichung des <b>blauen</b> Graphen in der Scheitelpunktform an!"            
+                else:
+                    text = "Der rote Graph ist eine verschobene Normalparabel.<br>Wie nennt man eine Parabel, die so aussieht wie die blaue?"            
+                    frage = "Das ist eine"
+                    einheit = "Parabel"
+                    hilfe_id = 90
+                    hilfe = "Es gibt: die 'Normal', 'verschobene', 'gestreckte', 'gestauchte' und die 'nach unten geöffnete' -parabel"
+                if typ2 <= 2:
+                    parameter['object'] = 'gestreckt'
+                    if typ2 == 1:
+                        pro_text = "Scheitelpunkform für gestreckte Parabel"
+                        lsg = ["y=2" + term, "2" + term, "2" + term.replace("²","^2"), vorzeichen, "indiv_0"]
+                        hilfe_id == 92
+                        hilfe = "Dies ist eine gestreckte Parabel.<br>Die Funktionsgleichung hat die allgemeine Form a(x+m)²+n. 'a' bekommt man so raus: Man geht vom Scheitelpunkt eine Einheit nach rechts und dann zählt man wie weit man nach oben (+) oder unten (-) gehen muss um wieder auf den Graphen zu kommen."							
+                    else:
+                        pro_text = "Benennung gestreckte Parabel"
+                        lsg = ["gestreckte", "indiv_0"]
+                else:
+                    parameter['object'] = 'gestaucht'
+                    if typ2 == 3: 
+                        pro_text = "Scheitelpunkform für gestauchte Parabel"
+                        lsg = ["y=0,5" + term, "0,5" + term, "0,5" + term.replace("²","^2"), "1/2" + term, "1/2" + term.replace("²","^2"), vorzeichen, "indiv_0"]
+                        hilfe_id == 94
+                        hilfe = "Dies ist eine gestauchte Parabel.<br>Die Funktionsgleichung hat die allgemeine Form a(x+m)²+n. 'a' bekommt man so raus: Man geht vom Scheitelpunkt eine Einheit nach rechts und dann zählt man wie weit man nach oben (+) oder unten (-) gehen muss um wieder auf den Graphen zu kommen."							
+                    else:
+                        pro_text = "Benennung gestauchte Parabel"
+                        lsg = ["gestauchte", "indiv_0"]
+        if typ > 1 and typ != 9:
             parameter = sub_parabel(p,-q)
-        hilfe = hilfe.format(*variable)
-        print(hilfe)
+        #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 
@@ -8228,7 +8284,7 @@ def uebersicht(req, schueler_id=0):
                     else:
                         if prozent_kat>=110 and not lehrer:
                             aktiv = False
-                    print(kategorie, prozent_kat, aktiv)
+                    #print(kategorie, prozent_kat, aktiv)
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
                     if details == True:
@@ -8582,7 +8638,9 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                         return -1, ""
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
+            print("Eingabe",eingabe)
             for loe in (lsg):
+                print(loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
@@ -8699,8 +8757,10 @@ def main(req, slug):
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
                     mehr = 0
-                    if kategorie.name == "Funktionen":
-                        mehr=5
+                    if kategorie.name == 28:            # Funktionen
+                        mehr = 5
+                    elif kategorie.zeile == 32:         # quadratische Funktionen
+                        mehr = 3
                     if zaehler.aufgnr > 10+mehr:
                         if  zaehler.optionen_text not in ["", "keine",] and profil.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
                             max_stufe = 3
