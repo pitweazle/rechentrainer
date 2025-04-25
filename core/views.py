@@ -7720,10 +7720,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if typ in (2,10):
-            if typ == 10:
-                if ";" in lsg[0] and not ";" in eingabe:
-                    return 0, "Du musst die Werte mit ';' trennen."                      
+        if typ == 2 :
             richtig, meldung = sub_2werte_pruefen(eingabe, lsg[2])
             return richtig, meldung        
         elif typ == 3:
@@ -7753,15 +7750,29 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
             else:
                 return -1, ""
+        elif typ >9:
+            try:
+                if not ";" in lsg[0]:
+                    if float(eingabe.replace(",","."))==float(lsg[0]):
+                        return 1, ""
+                    else:
+                        return -1, ""                
+                else: 
+                    if not ";" in eingabe:
+                        return 0, "Du musst die Werte mit ';' trennen."                      
+                richtig, meldung = sub_2werte_pruefen(eingabe, lsg[2])
+                return richtig, meldung 
+            except:
+                return 0, "Mit deiner Eingabe stimmt etwas nicht."
         else:
             return -1, ""
     else: 
-        # if aufgnr == 1:
-        #     typ = 1 
-        # else:
-        #     typ = random.randint(2, typ_end) 
-        # typ2 = 0
-        typ=3
+        if aufgnr == 1:
+            typ = 1 
+        else:
+            typ = random.randint(2, typ_end) 
+        typ2 = 0
+        typ=2
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7769,19 +7780,19 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         hilfe_id = 0 
         erg = None
         parameter = {'name':'normal'}
-        if typ == 1:                        # Wertetabelle
+        if typ == 1:                            # Wertetabelle
             text = "Berechne die Funktionswerte"
             parameter = {'name': 'tab_quad_term',}
             tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle_quadfu(parameter,stufe)
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-        elif typ == 2:                        # Schnittpunkte mit der x-Achse
+        elif typ == 2:                          # Schnittpunkte mit der x-Achse
             titel = "Nullstellen"
             text = "Gib die Schnittstellen mit der x-Achse an!"
             pro_text = "Schnittstellen mit der x-Achse an"
             anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
-            frage = "x1; x2:"
+            frage = "x₁;x₂="
             x1 = -6
             x2 = 10
             while abs(x1-x2) > 5:
@@ -7794,7 +7805,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             p = -(x1+x2)/(-2)
             q = -(x1-x2)*(x1-x2)/(-4)
             parameter = sub_parabel(p,q) 
-        elif typ == 3:                        # Scheitelpunkt
+        elif typ == 3:                          # Scheitelpunkt
             titel = pro_text = "Scheitelpunkt"
             text = "Gib den Scheitelpunkt an!"
             frage = "S="
@@ -7805,17 +7816,32 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             wert = (-p*10+20)*1000+q*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
             lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", wert, wert, "indiv_0"]
             parameter = sub_parabel(p,-q)
-        elif typ == 10:
+        elif typ > 9:                           # quadratische Funktionen                          
             titel = "quadratische Gleichung"
             frage = "x₁;x₂="
-            x = 0
-            x = random.randint(1,12)
-            variable = [x**2]
-            wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-            lsg = [str(x)+";"+str(-x), str(-x)+";-"+str(x), wert, "indiv_0"]
-            text = "Welche Lösungen hat die Gleichung 0=x²-{}"
             anmerkung = "Manche Gleichungen haben keine Lösung. Dann musste du 'keine' schreiben."
-        else: 
+            if typ == 10:                   # 0 = x² +- 9
+                x = random.randint(1,12)
+                typ2 = random.randint(1,3)
+                variable = [x**2]
+                if typ2 == 3:
+                    lsg = ["keine Lösung", "keine"]
+                    text = "Welche Lösungen hat die Gleichung 0=x²+{}"                
+                else:
+                    wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = ["{};{:+d}".format(x,-x), "{};{:+d}".format(-x,x), wert, "indiv_0"]
+                    text = "Welche Lösungen hat die Gleichung 0=x²-{}"
+            elif typ == 11:
+                x = 0
+                while x == 0:
+                    x = random.randint(-12,12)
+                variable = [x]
+                text = "Welche Lösungen hat die Gleichung 0=(x{:+d})²"
+                wert = (-x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [str(-x),"{};{}".format(-x,-x), wert, "indiv_0"]
+                               
+                
+        else:
             p = 0
             while p == 0:
                 p = (random.randint(-2,3))
