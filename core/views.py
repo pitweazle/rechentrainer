@@ -7699,27 +7699,36 @@ def sub_parabel(p,q):
     parameter.update(graph)
     return parameter     
 
+def sub_2werte_pruefen(eingabe,wert):
+    # zahl=(x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+    try:
+        eingabe=eingabe.split(";")
+        x1 = float(eingabe[0].replace(",","."))
+        x2 = float(eingabe[1].replace(",","."))
+        if int(x1*10+20)*1000+int(x2*10) == wert:
+            return 1, ""
+        if int(x2*10+20)*1000+int(x1*10) == wert:
+            return 1, ""
+        else:    
+            return -1, "" 
+    except:
+        return 0, "Mit deiner Eingabe stimmt etwas nicht."
+
 def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 9
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
-        if typ in (2,3):
-            if typ == 3:
-                if not "(" in eingabe or not ")" in eingabe:
-                    return 0, "Du musst die Koordinaten in Klammern angeben"
-            if not ";" in eingabe:
-                return 0, "Du musst die Koordinaten mit einem Semikolon trennen"
-            if typ == 3:
-                eingabe = eingabe.replace("(","").replace(")","")
-            zahlen = eingabe.split(";")
-            x1 = float(zahlen[0].replace(",","."))
-            x2 = float(zahlen[1].replace(",","."))
-            if int(x1*1000)+int(x2*10) == lsg[2] or int(x1*1000)+int(x2*10) == lsg[3]:
-                return 1, ""
-            else:    
-                return -1, "" 
+        if typ in (2,10):
+            if typ == 10:
+                if ";" in lsg[0] and not ";" in eingabe:
+                    return 0, "Du musst die Werte mit ';' trennen."                      
+            richtig, meldung = sub_2werte_pruefen(eingabe, lsg[2])
+            return richtig, meldung        
+        elif typ == 3:
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+            return richtig, meldung
         elif typ in (4,5,9):
             if typ2%2 !=1:
                 if (lsg[0][:8]) in eingabe:
@@ -7752,7 +7761,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         # else:
         #     typ = random.randint(2, typ_end) 
         # typ2 = 0
-        typ=7
+        typ=3
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7767,7 +7776,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter.update(tabellenwerte)
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
-        if typ == 2:                        # Schnittpunkte mit der x-Achse
+        elif typ == 2:                        # Schnittpunkte mit der x-Achse
             titel = "Nullstellen"
             text = "Gib die Schnittstellen mit der x-Achse an!"
             pro_text = "Schnittstellen mit der x-Achse an"
@@ -7779,12 +7788,13 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 x1 = x2 = (random.randint(-6,10))/2
                 while x1 == x2:
                     x2 = (random.randint(-6,10))/2
-            lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), 1000*x1+10*x2, 1000*x2+10*x1,"indiv_0"]								
+            wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
             hilfe="Die musst du nur ablesen."	
             p = -(x1+x2)/(-2)
             q = -(x1-x2)*(x1-x2)/(-4)
             parameter = sub_parabel(p,q) 
-        if typ == 3:                        # Scheitelpunkt
+        elif typ == 3:                        # Scheitelpunkt
             titel = pro_text = "Scheitelpunkt"
             text = "Gib den Scheitelpunkt an!"
             frage = "S="
@@ -7792,10 +7802,20 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             hilfe = "Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
             p = (random.randint(-6,8))/2
             q = (random.randint(-6,8))/2
-            zahl = int(p*1000+q*10)							
-            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", zahl, zahl, zahl, "indiv_0"]
+            wert = (-p*10+20)*1000+q*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", wert, wert, "indiv_0"]
             parameter = sub_parabel(p,-q)
-        if typ > 3: 
+        elif typ == 10:
+            titel = "quadratische Gleichung"
+            frage = "x₁;x₂="
+            x = 0
+            x = random.randint(1,12)
+            variable = [x**2]
+            wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = [str(x)+";"+str(-x), str(-x)+";-"+str(x), wert, "indiv_0"]
+            text = "Welche Lösungen hat die Gleichung 0=x²-{}"
+            anmerkung = "Manche Gleichungen haben keine Lösung. Dann musste du 'keine' schreiben."
+        else: 
             p = 0
             while p == 0:
                 p = (random.randint(-2,3))
@@ -7897,7 +7917,8 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     else:
                         pro_text = "Benennung gestauchte Parabel"
                         lsg = ["gestauchte", "indiv_0"]
-        if typ > 1 and typ != 9:
+
+        if typ > 1 and typ < 9:
             parameter = sub_parabel(p,-q)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
@@ -8284,7 +8305,6 @@ def uebersicht(req, schueler_id=0):
                     else:
                         if prozent_kat>=110 and not lehrer:
                             aktiv = False
-                    #print(kategorie, prozent_kat, aktiv)
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
                     if details == True:
@@ -8623,7 +8643,6 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 else:
                     rueckmeldung = rueckmeldung + (str(n+1) + ": leer ")
                     punkte += 2*10**(n)
-                print("Punkte", punkte)
             return punkte, rueckmeldung
         else:
             eingabe=eingabe.replace("^2","²")
@@ -8638,9 +8657,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                         return -1, ""
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
-            print("Eingabe",eingabe)
             for loe in (lsg):
-                print(loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
