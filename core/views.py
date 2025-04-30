@@ -7695,7 +7695,7 @@ def sub_parabel(p,q):
     y_null = box_hoehe-140          # y_Null  Lage der x-Achse
     x_null = 140                    # x_Null  Lage der y-Achse
     parameter = sub_koordinatensystem(x_null, y_null)
-    graph = {'object': 'quadfu', 'p':p*40, 'q':q*40}
+    graph = {'object': 'quadfu', 'p':p*40, 'q':-q*40}
     parameter.update(graph)
     return parameter     
 
@@ -7772,6 +7772,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             typ = random.randint(2, typ_end) 
         typ2 = 0
+        typ_end=11
         typ=2
         titel = "quadratische Funktionen" 
         text = "default{}"
@@ -7788,34 +7789,49 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
             pro_text = "Termbelegung: " + term
         elif typ == 2:                          # Schnittpunkte mit der x-Achse
-            titel = "Nullstellen"
-            text = "Gib die Schnittstellen mit der x-Achse an!"
-            pro_text = "Schnittstellen mit der x-Achse an"
             anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
             frage = "x₁;x₂="
             x1 = -6
             x2 = 10
-            while abs(x1-x2) > 5:
+            while abs(x1-x2) > 3:
                 x1 = x2 = (random.randint(-6,10))/2
                 while x1 == x2:
                     x2 = (random.randint(-6,10))/2
+            p = (x1+x2)/(2)
+            q = -(x1-x2)*(x1-x2)/(4)
             wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
             lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
-            hilfe="Die musst du nur ablesen."	
-            p = -(x1+x2)/(-2)
-            q = -(x1-x2)*(x1-x2)/(-4)
-            parameter = sub_parabel(p,q) 
+            hilfe="Die musst du nur ablesen."
+            if typ_end < 10:
+                titel = "Nullstellen"
+                text = "Gib die Schnittstellen mit der x-Achse an!"
+                pro_text = "Schnittstellen mit der x-Achse an"
+            else:
+                titel = "grafische Lösung quadratischer Gleichungen"	
+                #normalform = "x²{:+2.1f}x{:+2.1f}".format(-2*p,p**2+q).replace(".0","").replace("1x","x").replace("-0x","").replace(".",",")
+                m = -2*p
+                n = p**2+q
+                term = "x²"
+                if m !=0:
+                    term += f"{m:+.{2}f}".replace(".0", "").rstrip("0")
+                    term +="x"
+                if n !=0:    
+                    term += f"{n:+.{2}f}".replace(".0", "").rstrip("0")
+                term = term.replace(".", ",").replace("1x", "x").replace(".", ",")
+                text = "Dies ist der Graph der Funktion f(x)={0}.<br>Du kannst die Lösungen der quadratischen Gleichung 0={0} hier einfach ablesen.".format(term)
+                pro_text = "Ablesen Lösung 0={}".format(term)
         elif typ == 3:                          # Scheitelpunkt
             titel = pro_text = "Scheitelpunkt"
             text = "Gib den Scheitelpunkt an!"
             frage = "S="
             anmerkung = "(Mit Klammer und Semikolon: (  ;  ))"
+            hilfe_id = 30
             hilfe = "Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
             p = (random.randint(-6,8))/2
             q = (random.randint(-6,8))/2
             wert = (-p*10+20)*1000+q*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
             lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", wert, wert, "indiv_0"]
-            parameter = sub_parabel(p,-q)
+            parameter = sub_parabel(p,q)
         elif typ > 9:                           # quadratische Funktionen                          
             titel = "quadratische Gleichung"
             frage = "x₁;x₂="
@@ -7839,8 +7855,6 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 text = "Welche Lösungen hat die Gleichung 0=(x{:+d})²"
                 wert = (-x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                 lsg = [str(-x),"{};{}".format(-x,-x), wert, "indiv_0"]
-                               
-                
         else:
             p = 0
             while p == 0:
@@ -7909,7 +7923,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
             if typ == 9:                    # gestreckt oder gestaucht
                 titel = "Parabel"
-                parameter = sub_parabel(p,-q)
+                parameter = sub_parabel(p,q)
                 typ2 = random.randint(1,4)
                 if typ2%2 == 1:
                     if p < 0:
@@ -7945,7 +7959,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                         lsg = ["gestauchte", "indiv_0"]
 
         if typ > 1 and typ < 9:
-            parameter = sub_parabel(p,-q)
+            parameter = sub_parabel(p,q)
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
