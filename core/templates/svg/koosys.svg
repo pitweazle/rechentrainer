@@ -47,7 +47,11 @@
         <g id="kreuz">
             <line x1="-5" y1="-5" x2="5" y2="5"  style="stroke:black;stroke-width:1;" />
             <line x1="-5" y1="5" x2="5" y2="-5"  style="stroke:black;stroke-width:1;" />
-        </g>  
+        </g> 
+        
+        <g id="parabel">
+            <path d="M 20 -160 C 20 -160 135 695 260 -160">
+        </g>
     </defs>	
 
 <!-- Karo-Muster -->
@@ -132,24 +136,18 @@
         <line x1="{{parameter.x_koo|add:5}}" y1="{{parameter.y_koo|add:5}}" x2="{{parameter.x_koo|add:-5}}" y2="{{parameter.y_koo|add:-5}}" style="stroke:red;stroke-width:2;" />	
         <line x1="{{parameter.x_koo|add:-5}}" y1="{{parameter.y_koo|add:5}}" x2="{{parameter.x_koo|add:5}}" y2="{{parameter.y_koo|add:-5}}" style="stroke:red;stroke-width:2;" />
         <text x="{{parameter.x_koo|add:10}}" y="{{parameter.y_koo|add:5}}" style="stroke:red;stroke-width:1;">{{parameter.text_a}}</text>
-    {% endif %}
     
-    {% if parameter.object == "graph" %}
+    {% elif parameter.object == "graph" %}
         <line x1="{{parameter.von_x}}" y1="{{parameter.von_y}}" x2="{{parameter.bis_x}}" y2="{{parameter.bis_y}}" style="stroke:red;stroke-width:2;" />
-    {% endif %}
-
-    {% if parameter.hilfe == 98 or parameter.hilfe == 99 %}
-        <use href="#steigungsdreieck"/>          
-    {%endif%}
-
-    {% if parameter.hilfe == 59 or parameter.hilfe == 69 %}
-        <path d="M{{parameter.x_null}} {{parameter.y}}
-        L{{parameter.x}} {{parameter.y}}
-        L{{parameter.x}} {{parameter.y_null}}"
-        style = "fill:none; stroke:green; stroke-width: 3"/>
-    {%endif%} 
-
-    {% if parameter.object == "spiegel" %}
+        {% if parameter.hilfe == 98 or parameter.hilfe == 99 %}
+            <use href="#steigungsdreieck"/> 
+        {% elif parameter.hilfe == 59 or parameter.hilfe == 69 %}
+            <path d="M{{parameter.x_null}} {{parameter.y}}
+            L{{parameter.x}} {{parameter.y}}
+            L{{parameter.x}} {{parameter.y_null}}"
+            style = "fill:none; stroke:green; stroke-width: 3"/>
+        {% endif %} 
+    {% elif parameter.object == "spiegel" %}
         <polygon points="{{parameter.Ax}},{{parameter.Ay}} {{parameter.Bx}},{{parameter.By}} {{parameter.Cx}},{{parameter.Cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF; fill-opacity: 0.4;"/>
         {% comment %} <use href="#kreuz" transform="translate({{parameter.x1}},{{parameter.y1}})"/>
         <use href="#kreuz" transform="translate({{parameter.x2}},{{parameter.y2}})"/>
@@ -159,14 +157,30 @@
         {%endfor%}
         <line x1="{{parameter.x_start}}" y1="{{parameter.y_start}}" x2="{{parameter.x_end}}" y2="{{parameter.y_end}}" style="stroke:red;stroke-width:2;" />	
         <text x="{{parameter.x_end|add:-20}}" y="{{parameter.y_end|add:30}}" style="stroke:red;stroke-width:1;">S</text>  
-    {% endif %}
 
-    {% if parameter.object == "fahrtstrecke" %}
+    {% elif parameter.object == "fahrtstrecke" %}
         <path d="M{{parameter.x_null}} {{parameter.y_null}}
         L{{parameter.zeit_1}} {{parameter.strecke_1}}
         L{{parameter.pause}} {{parameter.strecke_1}}
         L{{parameter.zeit_2}} {{parameter.strecke_2}}
         "
         style = "fill:none; stroke:blue; stroke-width: 2"/>
+
+
+    {% elif parameter.object == "quadfu" %}
+        <use href="#parabel"  
+        transform="translate({{parameter.p}} {{parameter.q}})" style="stroke-width: 2px; stroke: black; fill: none;">
+
+    {% elif parameter.object == "gestreckt" %}
+        <g transform="translate({{parameter.p}} {{parameter.q}})"  style="stroke-width: 2px; stroke: blue; fill: none;">
+            <path d="M 60 -160 C 60 -160 135 693 220 -160"> 
+        </g>
+        <use href="#parabel" transform="translate({{parameter.p}} {{parameter.q}})" style="stroke-width: 2px; stroke: red; fill: none;">
+
+    {% elif parameter.object == "gestaucht" %}
+            <g transform="translate({{parameter.p}} {{parameter.q}})"  style="stroke-width: 2px; stroke: blue; fill: none;">
+                <path d="M -20 -100 C -20 -100 135 610  290 -85"> 
+            </g>
+            <use href="#parabel" transform="translate({{parameter.p}} {{parameter.q}})" style="stroke-width: 2px; stroke: red; fill: none;">
     {% endif %}
 </svg>
