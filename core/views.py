@@ -7714,10 +7714,25 @@ def sub_2werte_pruefen(eingabe,wert):
     except:
         return 0, "Mit deiner Eingabe stimmt etwas nicht."
 
+def sub_normalform(p,q):
+    #normalform = "x²{:+2.1f}x{:+2.1f}".format(-2*p,p**2+q).replace(".0","").replace("1x","x").replace("-0x","").replace(".",",")
+    m = -2*p
+    n = p**2+q
+    normalform = "x²"
+    if m !=0:
+        normalform += f"{m:+.{2}f}".replace(".0", "").rstrip("0")
+        normalform +="x"
+    if n !=0:    
+        normalform += f"{n:+.{2}f}".replace(".0", "").rstrip("0")
+    normalform = normalform.replace(".", ",").replace("1x", "x").replace(".", ",")
+    return normalform
+
 def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 9
+        if "Gleichung" in optionen:
+            typ_end = 14
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
         if typ == 2 :
@@ -7772,8 +7787,6 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:
             typ = random.randint(2, typ_end) 
         typ2 = 0
-        typ_end=11
-        typ=2
         titel = "quadratische Funktionen" 
         text = "default{}"
         hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -7808,18 +7821,9 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 pro_text = "Schnittstellen mit der x-Achse an"
             else:
                 titel = "grafische Lösung quadratischer Gleichungen"	
-                #normalform = "x²{:+2.1f}x{:+2.1f}".format(-2*p,p**2+q).replace(".0","").replace("1x","x").replace("-0x","").replace(".",",")
-                m = -2*p
-                n = p**2+q
-                term = "x²"
-                if m !=0:
-                    term += f"{m:+.{2}f}".replace(".0", "").rstrip("0")
-                    term +="x"
-                if n !=0:    
-                    term += f"{n:+.{2}f}".replace(".0", "").rstrip("0")
-                term = term.replace(".", ",").replace("1x", "x").replace(".", ",")
-                text = "Dies ist der Graph der Funktion f(x)={0}.<br>Du kannst die Lösungen der quadratischen Gleichung 0={0} hier einfach ablesen.".format(term)
-                pro_text = "Ablesen Lösung 0={}".format(term)
+                normalform = sub_normalform(p,q)
+                text = "Dies ist der Graph der Funktion f(x)={0}.<br>Du kannst die Lösungen der quadratischen Gleichung 0={0} hier einfach ablesen.".format(normalform)
+                pro_text = "Ablesen Lösung 0={}".format(normalform)
         elif typ == 3:                          # Scheitelpunkt
             titel = pro_text = "Scheitelpunkt"
             text = "Gib den Scheitelpunkt an!"
@@ -7833,9 +7837,9 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", wert, wert, "indiv_0"]
             parameter = sub_parabel(p,q)
         elif typ > 9:                           # quadratische Funktionen                          
-            titel = "quadratische Gleichung"
+            titel = "quadratische Gleichungen"
             frage = "x₁;x₂="
-            anmerkung = "Manche Gleichungen haben keine Lösung. Dann musste du 'keine' schreiben."
+            anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
             if typ == 10:                   # 0 = x² +- 9
                 x = random.randint(1,12)
                 typ2 = random.randint(1,3)
@@ -7847,7 +7851,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                     lsg = ["{};{:+d}".format(x,-x), "{};{:+d}".format(-x,x), wert, "indiv_0"]
                     text = "Welche Lösungen hat die Gleichung 0=x²-{}"
-            elif typ == 11:
+            elif typ == 11:                 # 0 = (x-x1)²
                 x = 0
                 while x == 0:
                     x = random.randint(-12,12)
@@ -7855,6 +7859,69 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 text = "Welche Lösungen hat die Gleichung 0=(x{:+d})²"
                 wert = (-x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                 lsg = [str(-x),"{};{}".format(-x,-x), wert, "indiv_0"]
+            elif typ == 12:                 # 0 = (x-x1)(x-x2)
+                x1 = x2 = 0
+                while x1 == 0 or x2 ==0:
+                    x1 = (random.randint(-6,10))/2
+                    x2 = (random.randint(-6,10))/2
+                p = (x1+x2)/(2)
+                q = -(x1-x2)*(x1-x2)/(4)
+                str_x1 = f"{-x1:+.{2}f}".replace(".0", "").rstrip("0")
+                str_x2 = f"{-x2:+.{2}f}".replace(".0", "").rstrip("0")
+                term = "(x{})(x{})".format(str_x1,str_x2)
+                wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
+                normalform = sub_normalform(p,q)
+                variable = [term, normalform]
+                text = "Die Funktionsgleichung y={1}<br>kann man umwandeln in y={0}.<br>Jetzt kannst du einfach die beiden Lösungen der Gleichung 0={0} bestimmen."
+                pro_text = "0={}"
+                hilfe_id = 120
+                hilfe = "Das Ergbenis einer Multiplikation von zwie zahlen ergibt nur dann Null, wenn einer (oder beide) Faktoren gleich Null ist. Also muss entweder die erste Klammer oder die zweite Klammer Null ergeben - die beiden Möglichkeiten sind einfach, oder?"
+            elif typ == 13:
+                x1 = x2 = 0
+                while x1 == 0 or x2 ==0:
+                    x1 = (random.randint(-5,5))
+                    x2 = (random.randint(-5,5))
+                p = (x1+x2)/(2)
+                q = -(x1-x2)*(x1-x2)/(4)
+                str_p = f"{-p:+.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                str_q = f"{q:+.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                str_qq = f"{-q:.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                term = "(x{})²{}".format(str_p, str_q)
+                wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
+                normalform = sub_normalform(p,q)
+                variable = [term, normalform, str_q, str_p, str_qq]
+                text = "Um die quadratische Gleichung 0={1} zu lösen, kannst du sie in die Scheitelpunktform 0={0} bringen.<br>"
+                text += "Dann kannst du q={2} auf die andere Seite bringen: {4}=(x{3})² und anschließend rechts und links die Wurzel ziehen."
+                pro_text = "0={}"
+                hilfe_id = 130
+                hilfe = "Beachte, dass die Wurzel aus {4} zwei Lösungen hat (einmal + und einmal -). Von diesen musst du {3} subtrahieren."
+            elif typ == 14:
+                titel = frage = "quadratische Ergänzung"
+                anmerkung = ""
+                n = 1
+                erg = 0
+                while n > 0 or erg == 0:
+                    p = (random.randint(-5,5))
+                    q = (random.choice([-1,-4,-9,-16]))
+                    m = -2*p
+                    n = p**2+q
+                    erg = (m/2)**2
+                lsg = [str(erg)]
+                x1 = int(math.sqrt(erg-n)-m)
+                x2 = int(-math.sqrt(erg-n)-m)
+                term = "x²{:+d}x={}".format(m,-n)
+                teilterm = "x²{:+d}x".format(m)
+                variable = [term,teilterm]
+                if m <0:
+                    variable.append("-")
+                else:
+                    variable.append("+")
+                text = "Die quadratische Gleichung {} kann man mithilfe der quadratischen Ergänzung lösen.<br>Berechne die quadratische Ergänzung."
+                anmerkung = "Nicht die beiden Lösungen x₁={} und x₂={} sind gesucht sondern die quadratische Ergänzung".format(str(x1),str(x2))
+                hilfe_id = 160
+                hilfe = "Mithilfe der quadratischen Ergänzung kann man die binomische Formel a²{2}2ab+b²=(a{2}b)² anwenden.<br>Die quadratische Ergänzung ist das 'b' das hier fehlt:{1} und das kannst du ausrechnen indem du die Zahl vor dem x durch 2 teilst und dann quadrierst"
         else:
             p = 0
             while p == 0:
@@ -7957,10 +8024,11 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     else:
                         pro_text = "Benennung gestauchte Parabel"
                         lsg = ["gestauchte", "indiv_0"]
-
-        if typ > 1 and typ < 9:
+        if typ > 1 and typ < 9 and typ < 12:
             parameter = sub_parabel(p,q)
-        #hilfe = hilfe.format(*variable)
+        if hilfe_id >0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 
@@ -8005,7 +8073,9 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         else:
             pass
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        #hilfe = hilfe.format(*variable)
+        if hilfe_id != 0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
 #********************************************************************************************************************************************************
