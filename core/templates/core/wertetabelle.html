@@ -32,13 +32,12 @@
             <tr>
                 <td class = "linie_rechts">{{parameter.x3}}</td>
                 <td class = "{{parameter.color3}}">{{form.y3}}</td>                                                                    
-            </tr> 
-            <tr>
-                <td class = "linie_rechts">{{parameter.x4}}</td>
-                <td class = "{{parameter.color4}}">{{form.y4}}</td>                                                                    
-            </tr> 
-            {% comment %} <tr>
-                <td><input type="submit" value="Prüfen"></td>
-            </tr> {% endcomment %}
+            </tr>
+            {% if not 'quad' in parameter.name %} 
+                <tr>
+                    <td class = "linie_rechts">{{parameter.x4}}</td>
+                    <td class = "{{parameter.color4}}">{{form.y4}}</td>                                                                    
+                </tr> 
+            {% endif %}
     </table>
 </form>
