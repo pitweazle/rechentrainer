@@ -4884,7 +4884,7 @@ def sortieren(zahl,buchstaben):
         term = term.replace("1","")
     return term
 
-def wertetabelle(parameter,stufe):
+def sub_wertetabelle(parameter,stufe):
     zahlen = [0,1,2,-1,0.5]
     zahlen.append(random.randint(-2,2))                                            # nur für das Duell
     lsg = [""]
@@ -4981,7 +4981,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
         if typ == 1:                        # Wertetabelle                                                                          # Wertetabelle'
             text = "Berechne jeweils den Wert des Termes"
             parameter = {'name': 'tab_term',}
-            parameter, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+            parameter, term, koeffizient, absolut, lsg = sub_wertetabelle(parameter,stufe)
             parameter.update({'titel_x': 'x', 'titel_y': term})
             pro_text = "Termbelegung: " + term
         elif typ == 2:                      # nach Alphabet sortieren                                                      # Terme zusammenfassen
@@ -6035,7 +6035,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
  
-def funktionsgleichung(typ2):
+def sub_funktionsgleichung(typ2):
     if typ2 == 1:                               # nur ganze Zahlen
         basis = 1
         absolut_max = 6
@@ -6147,16 +6147,16 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                         typ2 = 5
                     else:
                         typ2 = random.randint(2,5)
-                gleichung, steigung, absolut, basis = funktionsgleichung(typ2)            
+                gleichung, steigung, absolut, basis = sub_funktionsgleichung(typ2)            
         if typ == 1:                        # Wertetabelle
                 text = "Berechne die Funktionswerte"
                 parameter = {'name': 'tab_term',}
-                tabellenwerte, term, koeffizient, absolut, lsg = wertetabelle(parameter,stufe)
+                tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle(parameter,stufe)
                 parameter.update(tabellenwerte)
                 parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
                 pro_text = "Termbelegung: " + term
         elif typ in (2,3):                  # Funktionswert / Nullstelle berechnen
-            gleichung, steigung, absolut, basis = funktionsgleichung(1)
+            gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
             x = random.randint(-3,6)
             variable = [gleichung, x]
             if typ == 2:
@@ -6185,7 +6185,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
                     frage = pro_text = "x="
                     erg = 1/3
                     while erg*100%1>0:
-                        gleichung, steigung, absolut, basis = funktionsgleichung(1)
+                        gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
                         erg = -absolut/steigung
                     variable = [gleichung, x]
                     lsg = [str(erg).replace(".",",")]
@@ -7667,6 +7667,372 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_wertetabelle_quadfu(parameter,stufe):
+    zahlen = [0,1,2,-1]
+    zahlen.append(random.randint(-2,2))                                            # nur für das Duell
+    absolut = koeffizient = 0
+    while absolut == 0:
+        absolut = random.randint(-4,4)
+    koeffizient = random.randint(-4,4)                          # für quadratische Funktionen
+    term = "x²{:+d}x{:+d}".format(koeffizient, absolut).replace("+0x","").replace("+1x","+x").replace("-1x","-x")
+    x_werte = {}
+    y_werte = {}
+    #y_farbe = {}
+    lsg = []
+    for n in range (0,5):
+        x_werte["x" + str(n)] = zahlen[n]
+        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+        lsg.append(str(zahlen[n]**2+zahlen[n]*koeffizient+absolut))
+    lsg = [lsg]
+    parameter.update(x_werte)
+    parameter.update(y_werte)
+    return parameter, term, koeffizient, absolut, lsg
+
+def sub_parabel(p,q):
+    box_hoehe = 360
+    box_breite = 400
+    grid = 20
+    y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+    x_null = 140                    # x_Null  Lage der y-Achse
+    parameter = sub_koordinatensystem(x_null, y_null)
+    graph = {'object': 'quadfu', 'p':p*40, 'q':-q*40}
+    parameter.update(graph)
+    return parameter     
+
+def sub_2werte_pruefen(eingabe,wert):
+    # zahl=(x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+    try:
+        eingabe=eingabe.split(";")
+        x1 = float(eingabe[0].replace(",","."))
+        x2 = float(eingabe[1].replace(",","."))
+        if int(x1*10+20)*1000+int(x2*10) == wert:
+            return 1, ""
+        if int(x2*10+20)*1000+int(x1*10) == wert:
+            return 1, ""
+        else:    
+            return -1, "" 
+    except:
+        return 0, "Mit deiner Eingabe stimmt etwas nicht."
+
+def sub_normalform(p,q):
+    #normalform = "x²{:+2.1f}x{:+2.1f}".format(-2*p,p**2+q).replace(".0","").replace("1x","x").replace("-0x","").replace(".",",")
+    m = -2*p
+    n = p**2+q
+    normalform = "x²"
+    if m !=0:
+        normalform += f"{m:+.{2}f}".replace(".0", "").rstrip("0")
+        normalform +="x"
+    if n !=0:    
+        normalform += f"{n:+.{2}f}".replace(".0", "").rstrip("0")
+    normalform = normalform.replace(".", ",").replace("1x", "x").replace(".", ",")
+    return normalform
+
+def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 9
+        if "Gleichung" in optionen:
+            typ_end = 14
+        return typ_anf, typ_end
+    elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "indiv_0" in den Lösungen steht
+        if typ == 2 :
+            richtig, meldung = sub_2werte_pruefen(eingabe, lsg[2])
+            return richtig, meldung        
+        elif typ == 3:
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+            return richtig, meldung
+        elif typ in (4,5,9):
+            if typ2%2 !=1:
+                if (lsg[0][:8]) in eingabe:
+                    return 1, ""
+                else:
+                    return -1, ""
+            else:
+                vorzeichen = lsg[-2]
+                if (vorzeichen == "minuS" and "x-" in eingabe) or (vorzeichen == "pluS" and "x+" in eingabe):
+                    return -1, "Du musst bei der x-Koordinate das Vorzeichen umdrehen."
+                if not "(" in eingabe or not ")" in eingabe:
+                    return 0, "Bei der Scheitelpunktform erwarte ich eine Klammer."
+                if  "+0" in eingabe:
+                    return 0, "Lass '+0' weg"
+                if  "y=" in eingabe:
+                    return 0, "Lass 'y=' weg - das steht schon da."
+                if typ == 9:
+                    if  "*(" in eingabe:
+                            return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
+        elif typ == 8:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                return -1, ""
+        elif typ >9:
+            try:
+                if not ";" in lsg[0]:
+                    if float(eingabe.replace(",","."))==float(lsg[0]):
+                        return 1, ""
+                    else:
+                        return -1, ""                
+                else: 
+                    if not ";" in eingabe:
+                        return 0, "Du musst die Werte mit ';' trennen."                      
+                richtig, meldung = sub_2werte_pruefen(eingabe, lsg[2])
+                return richtig, meldung 
+            except:
+                return 0, "Mit deiner Eingabe stimmt etwas nicht."
+        else:
+            return -1, ""
+    else: 
+        if aufgnr == 1:
+            typ = 1 
+        else:
+            typ = random.randint(2, typ_end) 
+        typ2 = 0
+        titel = "quadratische Funktionen" 
+        text = "default{}"
+        hilfe = frage = pro_text = anmerkung = einheit = lsg = ""
+        variable = [""]
+        hilfe_id = 0 
+        erg = None
+        parameter = {'name':'normal'}
+        if typ == 1:                            # Wertetabelle
+            text = "Berechne die Funktionswerte"
+            parameter = {'name': 'tab_quad_term',}
+            tabellenwerte, term, koeffizient, absolut, lsg = sub_wertetabelle_quadfu(parameter,stufe)
+            parameter.update(tabellenwerte)
+            parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
+            pro_text = "Termbelegung: " + term
+        elif typ == 2:                          # Schnittpunkte mit der x-Achse
+            anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
+            frage = "x₁;x₂="
+            x1 = -6
+            x2 = 10
+            while abs(x1-x2) > 3:
+                x1 = x2 = (random.randint(-6,10))/2
+                while x1 == x2:
+                    x2 = (random.randint(-6,10))/2
+            p = (x1+x2)/(2)
+            q = -(x1-x2)*(x1-x2)/(4)
+            wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
+            hilfe_id = 20
+            hilfe="Die musst du nur ablesen."
+            if typ_end < 10:
+                titel = "Nullstellen"
+                text = "Gib die Schnittstellen mit der x-Achse an!"
+                pro_text = "Schnittstellen mit der x-Achse an"
+            else:
+                titel = "grafische Lösung quadratischer Gleichungen"	
+                normalform = sub_normalform(p,q)
+                text = "Dies ist der Graph der Funktion f(x)={0}.<br>Du kannst die Lösungen der quadratischen Gleichung 0={0} hier einfach ablesen.".format(normalform)
+                pro_text = "Ablesen Lösung 0={}".format(normalform)
+        elif typ == 3:                          # Scheitelpunkt
+            titel = pro_text = "Scheitelpunkt"
+            text = "Gib den Scheitelpunkt an!"
+            frage = "S="
+            anmerkung = "(Mit Klammer und Semikolon: (  ;  ))"
+            hilfe_id = 30
+            hilfe = "Die x-Koordinate kommt nach links, die y-Koordinate nach rechts."
+            p = (random.randint(-6,8))/2
+            q = (random.randint(-6,8))/2
+            wert = (-p*10+20)*1000+q*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+            lsg = ["(" + format_zahl(p,1) + ";" + format_zahl(q,1) + ")", wert, wert, "indiv_0"]
+            parameter = sub_parabel(p,q)
+        elif typ > 9:                           # quadratische Funktionen                          
+            titel = "quadratische Gleichungen"
+            frage = "x₁;x₂="
+            anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
+            if typ == 10:                   # 0 = x² +- 9
+                x = random.randint(1,12)
+                typ2 = random.randint(1,3)
+                variable = [x**2]
+                if typ2 == 3:
+                    lsg = ["keine Lösung", "keine"]
+                    text = "Welche Lösungen hat die Gleichung 0=x²+{}"                
+                else:
+                    wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = ["{};{:+d}".format(x,-x), "{};{:+d}".format(-x,x), wert, "indiv_0"]
+                    text = "Welche Lösungen hat die Gleichung 0=x²-{}"
+            elif typ == 11:                 # 0 = (x-x1)²
+                x = 0
+                while x == 0:
+                    x = random.randint(-12,12)
+                variable = [x]
+                text = "Welche Lösungen hat die Gleichung 0=(x{:+d})²"
+                wert = (-x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [str(-x),"{};{}".format(-x,-x), wert, "indiv_0"]
+            elif typ == 12:                 # 0 = (x-x1)(x-x2)
+                x1 = x2 = 0
+                while x1 == 0 or x2 ==0:
+                    x1 = (random.randint(-6,10))/2
+                    x2 = (random.randint(-6,10))/2
+                p = (x1+x2)/(2)
+                q = -(x1-x2)*(x1-x2)/(4)
+                str_x1 = f"{-x1:+.{2}f}".replace(".0", "").rstrip("0")
+                str_x2 = f"{-x2:+.{2}f}".replace(".0", "").rstrip("0")
+                term = "(x{})(x{})".format(str_x1,str_x2)
+                wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
+                normalform = sub_normalform(p,q)
+                variable = [term, normalform]
+                text = "Die Funktionsgleichung y={1}<br>kann man umwandeln in y={0}.<br>Jetzt kannst du einfach die beiden Lösungen der Gleichung 0={0} bestimmen."
+                pro_text = "0={}"
+                hilfe_id = 120
+                hilfe = "Das Ergebnis einer Multiplikation von zwei Zahlen ergibt nur dann Null, wenn einer (oder beide) Faktoren gleich Null ist. Also muss entweder die erste Klammer oder die zweite Klammer Null ergeben - die beiden Möglichkeiten sind einfach, oder?"
+            elif typ == 13:
+                x1 = x2 = 0
+                while x1 == 0 or x2 ==0:
+                    x1 = (random.randint(-5,5))
+                    x2 = (random.randint(-5,5))
+                p = (x1+x2)/(2)
+                q = -(x1-x2)*(x1-x2)/(4)
+                str_p = f"{-p:+.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                str_q = f"{q:+.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                str_qq = f"{-q:.{2}f}".replace(".0", "").rstrip("0").replace(".",",")
+                term = "(x{})²{}".format(str_p, str_q)
+                wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                lsg = [format_zahl(x2,1) + ";" + format_zahl(x1,1), format_zahl(x1,1) + ";" + format_zahl(x2,1), wert,"indiv_0"]								
+                normalform = sub_normalform(p,q)
+                variable = [term, normalform, str_q, str_p, str_qq]
+                text = "Um die quadratische Gleichung 0={1} zu lösen, kannst du sie in die Scheitelpunktform 0={0} bringen.<br>"
+                text += "Dann kannst du q={2} auf die andere Seite bringen: {4}=(x{3})² und anschließend rechts und links die Wurzel ziehen."
+                pro_text = "0={}"
+                hilfe_id = 130
+                hilfe = "Beachte, dass die Wurzel aus {4} zwei Lösungen hat (einmal + und einmal -). Von diesen musst du {3} subtrahieren."
+            elif typ == 14:
+                titel = frage = "quadratische Ergänzung"
+                anmerkung = ""
+                n = 1
+                erg = 0
+                while n > 0 or erg == 0:
+                    p = (random.randint(-5,5))
+                    q = (random.choice([-1,-4,-9,-16]))
+                    m = -2*p
+                    n = p**2+q
+                    erg = (m/2)**2
+                lsg = [str(erg)]
+                x1 = int(math.sqrt(erg-n)-m)
+                x2 = int(-math.sqrt(erg-n)-m)
+                term = "x²{:+d}x={}".format(m,-n)
+                teilterm = "x²{:+d}x".format(m)
+                variable = [term,teilterm]
+                if m <0:
+                    variable.append("-")
+                else:
+                    variable.append("+")
+                text = "Die quadratische Gleichung {} kann man mithilfe der quadratischen Ergänzung lösen.<br>Berechne die quadratische Ergänzung."
+                anmerkung = "Nicht die beiden Lösungen x₁={} und x₂={} sind gesucht sondern die quadratische Ergänzung".format(str(x1),str(x2))
+                hilfe_id = 160
+                hilfe = "Mithilfe der quadratischen Ergänzung kann man die binomische Formel a²{2}2ab+b²=(a{2}b)² anwenden.<br>Die quadratische Ergänzung ist das 'b' das hier fehlt:{1} und das kannst du ausrechnen indem du die Zahl vor dem x durch 2 teilst und dann quadrierst"
+        else:
+            p = 0
+            while p == 0:
+                p = (random.randint(-2,3))
+            q = (random.randint(-2,3))
+            frage = "y="
+            term = "(x{:+d})²{:+d}".format(-p,q).replace("+0","")
+            normalform = "x²{:+d}x{:+d}".format(-2*p,p**2+q).replace("+0","")
+            if typ in (4,5):                # Scheitelpunktform
+                titel = pro_text = "Scheitelpunkform"
+                text = "Gib die Funktionsgleichung in der Scheitelpunktform an!"
+                if p < 0:
+                    vorzeichen = "minuS"
+                else:
+                    vorzeichen = "pluS"
+                lsg = ["y=" + term, term, term.replace("²","^2"), vorzeichen, "indiv_0"]
+                hilfe_id = 40
+                hilfe="Das sieht so aus: (x+m)²+n. 'n' musst du durch die y-Koordinate des Scheitelpunkts ersetzen und 'm' durch die x-Koordinate mit umgekehrtem Vorzeichen."		
+            if typ == 6:                    # Normalform
+                titel = pro_text = "Normalform"
+                variable = [term]
+                text = "Die Scheitelpunktform dieses Graphen lautet: {}. Gib sie in der Normalform an!"
+                lsg = ["y=" + normalform, normalform, normalform.replace("²","^2"), "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id == 61
+                    hilfe="Hier musst du die binomischen Formeln anwenden."
+                else:
+                    variable.append(q)
+                    hilfe_id == 62
+                    if p > 0:
+                        variable.append("+")
+                    else:
+                        variable.append("-")
+                    hilfe="Diese heißt in diesem Fall:(x{2}p)²=x²{2}2px+p². Zu p² musst du noch {1} addieren."			
+            if typ == 7:                    # Funktionswert
+                titel = "Funktionswert"
+                x = random.randint(-2, 3)
+                variable = [normalform,x]
+                text = "Berechne für die Funktion y={} den Funktionswert für x={}."
+                pro_text = "f({1})={0}"
+                frage = "f({})=".format(x)
+                erg = (x-p)**2+q  
+                lsg = [(str(erg))]
+                hilfe_id = 70 
+                hilfe="Du musst {1} in die Funktionsgleichung für x einsetzen und diese ausrechnen.<br>(Das geht genauso wie bei der Tabelle.)"           
+            if typ == 8:                    # liegt Punkt auf Graph?
+                titel = "Funktionswerte" 
+                text = "Dies ist der Graph der Funktion f(x)={0}<br>Leider kann man nicht erkennen, ob der Punkt ({1};{2}) auf dem Graphen liegt - aber du kannst es ausrechnen.<br>Liegt er auf dem Graphen (ja/nein)?"
+                pro_text = "Liegt der Punkt ({1};{2}) auf dem Graphen f(x)={0}?"
+                frage = "ja/nein"
+                y = 0
+                while y < 6:
+                    x = random.randint(-3,6)
+                    janein = random.randint(-1,1)                
+                    y = (x-p)**2+q+janein
+                variable = [normalform, x, y]
+                if janein == 0:
+                    lsg = ["ja", "j", "indiv_0"]
+                else:
+                    lsg = ["nein", "n", "indiv_0"]
+                if stufe%2 == 1:
+                    hilfe_id = 81
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht."						
+                else:
+                    hilfe_id = 82
+                    hilfe_text = "Du musst die x-Koordinate in die Funktionsgleichung einsetzen und diese ausrechnen. Wenn die y-Koordinate des Punktes rauskommt, dann liegt der Punkt auf dem Graphen, sonst nicht.<br>({} ist die x-Koordinate, {} ist die y-Koordinate.)"
+            if typ == 9:                    # gestreckt oder gestaucht
+                titel = "Parabel"
+                parameter = sub_parabel(p,q)
+                typ2 = random.randint(1,4)
+                if typ2%2 == 1:
+                    if p < 0:
+                        vorzeichen = "minuS"
+                    else:
+                        vorzeichen = "pluS"
+                    text = "Der rote Graph ist eine verschobene Normalparabel.<br>Gib die Funktionsgleichung des <b>blauen</b> Graphen in der Scheitelpunktform an!"            
+                else:
+                    text = "Der rote Graph ist eine verschobene Normalparabel.<br>Wie nennt man eine Parabel, die so aussieht wie die blaue?"            
+                    frage = "Das ist eine"
+                    einheit = "Parabel"
+                    hilfe_id = 90
+                    hilfe = "Es gibt: die 'Normal', 'verschobene', 'gestreckte', 'gestauchte' und die 'nach unten geöffnete' -parabel"
+                if typ2 <= 2:
+                    parameter['object'] = 'gestreckt'
+                    if typ2 == 1:
+                        pro_text = "Scheitelpunkform für gestreckte Parabel"
+                        lsg = ["y=2" + term, "2" + term, "2" + term.replace("²","^2"), vorzeichen, "indiv_0"]
+                        hilfe_id == 92
+                        hilfe = "Dies ist eine gestreckte Parabel.<br>Die Funktionsgleichung hat die allgemeine Form a(x+m)²+n. 'a' bekommt man so raus: Man geht vom Scheitelpunkt eine Einheit nach rechts und dann zählt man wie weit man nach oben (+) oder unten (-) gehen muss um wieder auf den Graphen zu kommen."							
+                    else:
+                        pro_text = "Benennung gestreckte Parabel"
+                        lsg = ["gestreckte", "indiv_0"]
+                else:
+                    parameter['object'] = 'gestaucht'
+                    if typ2 == 3: 
+                        pro_text = "Scheitelpunkform für gestauchte Parabel"
+                        lsg = ["y=0,5" + term, "0,5" + term, "0,5" + term.replace("²","^2"), "1/2" + term, "1/2" + term.replace("²","^2"), vorzeichen, "indiv_0"]
+                        hilfe_id == 94
+                        hilfe = "Dies ist eine gestauchte Parabel.<br>Die Funktionsgleichung hat die allgemeine Form a(x+m)²+n. 'a' bekommt man so raus: Man geht vom Scheitelpunkt eine Einheit nach rechts und dann zählt man wie weit man nach oben (+) oder unten (-) gehen muss um wieder auf den Graphen zu kommen."							
+                    else:
+                        pro_text = "Benennung gestauchte Parabel"
+                        lsg = ["gestauchte", "indiv_0"]
+        if typ > 1 and typ < 9 and typ < 12:
+            parameter = sub_parabel(p,q)
+        if hilfe_id >0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -7708,7 +8074,9 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         else:
             pass
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        #hilfe = hilfe.format(*variable)
+        if hilfe_id != 0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
 #********************************************************************************************************************************************************
@@ -8048,7 +8416,6 @@ def uebersicht(req, schueler_id=0):
                     else:
                         if prozent_kat>=110 and not lehrer:
                             aktiv = False
-                    print(kategorie, prozent_kat, aktiv)
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
                     if details == True:
@@ -8345,7 +8712,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke, 31: kreise}
+    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
@@ -8485,6 +8852,8 @@ def main(req, slug):
                         tabelle = 3
                         richtig = str(wertung).count("1")
                         falsch = str(wertung).count("0")
+                    if wertung >= 30000:
+                        tabelle = 4
                     if wertung >= 300000:
                         tabelle = 5
                 #wenn Eingabe richtig:
@@ -8516,8 +8885,10 @@ def main(req, slug):
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
                     mehr = 0
-                    if kategorie.name == "Funktionen":
-                        mehr=5
+                    if kategorie.name == 28:            # Funktionen
+                        mehr = 5
+                    elif kategorie.zeile == 32:         # quadratische Funktionen
+                        mehr = 3
                     if zaehler.aufgnr > 10+mehr:
                         if  zaehler.optionen_text not in ["", "keine",] and profil.stufe > 1:         #setzt Stufe hoch wenn eine Option angekreuzt wurde und in der Option "update" = True - nur wenn stufe > 1 (Nicht bei Förder- und Grundschule)
                             max_stufe = 3
@@ -8559,7 +8930,7 @@ def main(req, slug):
                         color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
                         color_wertung =color_wertung[:-1].split(",")
                         y_farbe = {}
-                        if tabelle == 5:
+                        if tabelle >3:
                             for n in range (0,tabelle):
                                 y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
                         else:

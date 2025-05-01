@@ -19,8 +19,10 @@
         <td class = "linie_rechts">{{parameter.x3}}</td>
         <td>{{parameter.y3}}</td>                                                                    
     </tr> 
-    <tr>
-        <td class = "linie_rechts"">{{parameter.x4}}</td>
-        <td>{{parameter.y4}}</td>                                                                    
-    </tr>
+    {% if not 'quad' in parameter.name %} 
+        <tr>
+            <td class = "linie_rechts"">{{parameter.x4}}</td>
+            <td>{{parameter.y4}}</td>                                                                    
+        </tr>
+    {% endif %}
 </table>
