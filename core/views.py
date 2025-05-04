@@ -7842,17 +7842,23 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             frage = "x₁;x₂="
             anmerkung = "(Trenne die Werte mit einem Semikolon (;))"
             if typ == 10:                   # 0 = x² +- 9
+                hilfe_id = 100
+                hilfe = "Bringe {1}{0} auf die andere Seite des Gleichheitszeichens und ziehe die Wurzel."
                 x = random.randint(1,12)
                 typ2 = random.randint(1,3)
                 variable = [x**2]
                 if typ2 == 3:
                     lsg = ["keine Lösung", "keine"]
-                    text = "Welche Lösungen hat die Gleichung 0=x²+{}"                
+                    text = "Welche Lösungen hat die Gleichung 0=x²+{}"
+                    variable.append("")                
                 else:
                     wert = (x*10+20)*1000-x*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                     lsg = ["{};{:+d}".format(x,-x), "{};{:+d}".format(-x,x), wert, "indiv_0"]
                     text = "Welche Lösungen hat die Gleichung 0=x²-{}"
+                    variable.append("-") 
             elif typ == 11:                 # 0 = (x-x1)²
+                hilfe_id = 110
+                hilfe = "Du musst zunächst die Wurzel ziehen und dann {0} auf die andere Seite des Gleichheitszeichens bringen."
                 x = 0
                 while x == 0:
                     x = random.randint(-12,12)
@@ -7921,7 +7927,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     variable.append("+")
                 text = "Die quadratische Gleichung {} kann man mithilfe der quadratischen Ergänzung lösen.<br>Berechne die quadratische Ergänzung."
                 anmerkung = "Nicht die beiden Lösungen x₁={} und x₂={} sind gesucht sondern die quadratische Ergänzung".format(str(x1),str(x2))
-                hilfe_id = 160
+                hilfe_id = 140
                 hilfe = "Mithilfe der quadratischen Ergänzung kann man die binomische Formel a²{2}2ab+b²=(a{2}b)² anwenden.<br>Die quadratische Ergänzung ist das 'b' das hier fehlt:{1} und das kannst du ausrechnen indem du die Zahl vor dem x durch 2 teilst und dann quadrierst"
         else:
             p = 0
@@ -8027,11 +8033,8 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                         lsg = ["gestauchte", "indiv_0"]
         if typ > 1 and typ < 9 and typ < 12:
             parameter = sub_parabel(p,q)
-        if hilfe_id >0:
-            hilfe = hilfe.format(*variable)
-            print(hilfe)
-        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8999,7 +9002,7 @@ def main(req, slug):
                 #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
-            if not zaehler.optionen_text :  
+            if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
             if kategorie.slug == "sachaufgaben":
