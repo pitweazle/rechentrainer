@@ -8039,17 +8039,18 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 1
+        typ_end = 2
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ < 3:
-            print("OK")
             if "*" not in eingabe:
                 return 0, "'*10^' muss in deiner Antwort vorkommen."
             else:
                 eingabe = eingabe.replace("²","^2").replace("³","^3").replace("10^","")
                 eingabe=eingabe.split("*")
                 x1 = float(eingabe[0].replace(",","."))
+                if x1 < 0 or x1 > 9:
+                    return 0, "Die Zahl vor dem Komma muss größer als 0 und kleiner als 10 sein."
                 x2 = float(eingabe[1].replace(",","."))
                 print(int((x1+2)*10000+x2*10))
                 wert = lsg[2]
@@ -8057,7 +8058,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     return 1, ""
                 else:    
                     return -1, ""
-             
+
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)  
         typ2 = 0
@@ -8068,29 +8069,46 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         pro_text = frage = einheit = anmerkung = hilfe = ""
         erg = None
         hilfe_id = 0
-        if typ < 3:
+        if typ < 3:                                                 # Exponentialdarstellung
+                typ2 = random.randint(1,4)
                 titel = "scientific notation"
                 koeff = random.randint(1,999)
                 if koeff > 99:
                     koeff /= 100
                 elif koeff > 9:
                     koeff /= 10
-                exp = random.randint(2,6)
-                str_zahl = format_zahl(koeff*10**exp,0)
+                if typ2 in (1,3):
+                    if koeff < 9:
+                        exp = random.randint(2,4)*-1
+                    else:
+                        exp = random.randint(2,3)*-1
+                    str_zahl = format_zahl(koeff*10**exp,-exp+2)
+                    gesucht = "Kommazahl"
+                else:
+                    exp = random.randint(3,6)
+                    str_zahl = format_zahl(koeff*10**exp,0)
+                    gesucht = "ganze Zahl"
                 term = str(koeff).replace(".",",")+"·10^" + str(exp)
-                if typ == 1:
-                    text="Schreibe die Zahl <b>{}</b> in scientific notation (Exponentialdarstellung)".format(str_zahl)
+                if typ2 < 3:
+                    text = "Schreibe die Zahl <b>{}</b> in scientific notation (Exponentialdarstellung)"
+                    pro_text = "{} in scientific notation"
                     frage = str_zahl + "="
                     anmerkung="(Schreibe z:B. 1,23*10^4 )"
                     wert = int((koeff+2)*10000+exp*10)                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
                     lsg = [term, term.replace("·","*"),wert, "indiv_0"]
                 else:
-                    if exp < 4:
+                    if exp in (2,3):
                         term = term.replace("^2","²").replace("^3","³")
                     frage = term + "="
-                    text = "Wandle die Zahl <b>{}</b> in eine ganze Zahl um.".format(term)
+                    text = "Wandle die Zahl <b>{1}</b> in eine {2} um."
+                    pro_text = "{1}</b> in {2}"
                     erg = koeff*10**exp
-                    lsg = [format_zahl(erg,0)]
+                    if exp < 0:
+                        lsg = [format_zahl(erg,-exp+2)]
+                    else:
+                        lsg = [format_zahl(erg,0)]
+                variable = [str_zahl, term, gesucht]
+
         else:
             pass
         if hilfe_id != 0:
