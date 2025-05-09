@@ -7699,10 +7699,10 @@ def sub_parabel(p,q):
     parameter.update(graph)
     return parameter     
 
-def sub_2werte_pruefen(eingabe,wert):
+def sub_2werte_pruefen(eingabe,wert,trenner = ";"):
     # zahl=(x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
     try:
-        eingabe=eingabe.split(";")
+        eingabe=eingabe.split(trenner)
         x1 = float(eingabe[0].replace(",","."))
         x2 = float(eingabe[1].replace(",","."))
         if int(x1*10+20)*1000+int(x2*10) == wert:
@@ -7759,7 +7759,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     return 0, "Lass 'y=' weg - das steht schon da."
                 if typ == 9:
                     if  "*(" in eingabe:
-                            return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
+                        return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
         elif typ == 8:
             if eingabe not in ["ja", "nein"] :
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
@@ -8036,6 +8036,69 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 1
+        return typ_anf, typ_end
+    elif eingabe != "":                                                                                                         
+        if typ < 3:
+            print("OK")
+            if "*" not in eingabe:
+                return 0, "'*10^' muss in deiner Antwort vorkommen."
+            else:
+                eingabe = eingabe.replace("²","^2").replace("³","^3").replace("10^","")
+                eingabe=eingabe.split("*")
+                x1 = float(eingabe[0].replace(",","."))
+                x2 = float(eingabe[1].replace(",","."))
+                print(int((x1+2)*10000+x2*10))
+                wert = lsg[2]
+                if int((x1+2)*10000+x2*10) == wert:
+                    return 1, ""
+                else:    
+                    return -1, ""
+             
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end)  
+        typ2 = 0
+        typ=2
+        titel = "Titel" 
+        text = "default{}"
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        erg = None
+        hilfe_id = 0
+        if typ < 3:
+                titel = "scientific notation"
+                koeff = random.randint(1,999)
+                if koeff > 99:
+                    koeff /= 100
+                elif koeff > 9:
+                    koeff /= 10
+                exp = random.randint(2,6)
+                str_zahl = format_zahl(koeff*10**exp,0)
+                term = str(koeff).replace(".",",")+"·10^" + str(exp)
+                if typ == 1:
+                    text="Schreibe die Zahl <b>{}</b> in scientific notation (Exponentialdarstellung)".format(str_zahl)
+                    frage = str_zahl + "="
+                    anmerkung="(Schreibe z:B. 1,23*10^4 )"
+                    wert = int((koeff+2)*10000+exp*10)                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = [term, term.replace("·","*"),wert, "indiv_0"]
+                else:
+                    if exp < 4:
+                        term = term.replace("^2","²").replace("^3","³")
+                    frage = term + "="
+                    text = "Wandle die Zahl <b>{}</b> in eine ganze Zahl um.".format(term)
+                    erg = koeff*10**exp
+                    lsg = [format_zahl(erg,0)]
+        else:
+            pass
+        if hilfe_id != 0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -8049,7 +8112,13 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             typ_end = 2
         return typ_anf, typ_end
     #wenn in Lösungen 'indiv' steht und die eingegebene Lösung in "kontrolle" nicht als richtig bewertet wurde, kann die Lösung hier überprüft werden 
-    elif eingabe != "":                                                                                                         
+    elif eingabe != "":
+        if typ == 1:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+                return richtig, meldung
         loe = (lsg[0])
         if eingabe.replace(" ","") != loe.replace(" ",""):
             erg = loe.replace(",",".")
@@ -8069,14 +8138,15 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         hilfe_id = 0
         erg = None 
         if typ == 1:
-                zahl1 = random.randint(0,2)
+                zahl = random.randint(0,2)
                 text = ""
-                variable = [str(zahl1)]
+                variable = [str(zahl)]
                 erg = None
                 lsg = str(erg)
         else:
             pass
-        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+        #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+        lsg = [lsg] + [wert, "indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
@@ -8623,7 +8693,7 @@ def optionen(req, slug):
         else:
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
-    zaehler.optionen_text = optionen_text       
+    zaehler.optionen_text = optionen_text
     typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
@@ -8715,7 +8785,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu}
+    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu, 33:potenzen}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
