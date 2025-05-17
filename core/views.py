@@ -8185,7 +8185,7 @@ def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
     prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
     return prozent_farbe, prozent_kat 
 
-def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            # Bewertung + Note für das Halbjahr
+def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):                            # Bewertung + Note für das Halbjahr
     prozent_summe = int(prozent_summe/pflicht_kat)                              # addiert alle Prozentwerte und bildet den Durchschnitt (aus)
     prozent_summe_farbe = quote_farbe(prozent_summe,100-prozent_summe,0.5)
     note = 6 if prozent_summe < 25 else 7-((prozent_summe-stufe%2*5)//15)       # für E-Kurs 1,2,3,4,5 bei 95,80,65,50% für G-Kurs entsprechende Note mit 5% weniger
@@ -8195,8 +8195,8 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe):                            
         str_note = str(note)+"-"
     if plusminus in range (0,3):
         str_note = str(note)+"+"
-    if note > 4:
-        str_note = '-'
+    if note > 4 and keine5:
+         str_note = '-'
     return prozent_summe_farbe, prozent_summe, str_note 
 
 #Hier werden normalerweise die Aufgaben gestartet
