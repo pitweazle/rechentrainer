@@ -2023,6 +2023,7 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         else:
             komma = False
         typ = random.randint(typ_anf, typ_end)                                      #welche Größe 1=Zeit 2=Masse 3=Länge 4=Fläche 5=Volumen negativ = mit Komma
+        typ=0
         frage = "{}{}" + chr(8793)
         einheit = ""
         anmerkung = ""
@@ -2053,54 +2054,52 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
             titel = "Uhrzeit"
             umwandlung = 0
             erg = None
-            frage = ""
-            einheit = ""
-            h_digital = random.randint(1,24)
+            frage = einheit = halb = stunde = ""
+            h_digital = random.randint(1,24)                        # digital Stunde
             min_list = [2,3,5,7,10,15]
-            if random.random() < 0.9:
-                halb = "halb"
-            else:
-                halb = ""
-            if h_digital > 12:
+            if h_digital > 12:                                      # analoge Stunde von 0 bis 12
                 h = h_digital-12
             else:
-                h = h_digital                 
-            if random.random() <= 0.2:
-                vornach = 'nach'
-                if halb == 'halb':
-                    min = random.choice(min_list[:4])                    
-                else:    
-                    min = min_digital = random.choice(min_list)
-                if halb == 'halb':
+                h = h_digital 
+            if h_digital == 24:
+                stunde = "Mitternacht"
+                tageszeit = ""
+            else:
+                if random.random() < 0.3:                           # evtl "halb"
+                    halb = "halb"
+                    min_list = [2,3,4,5,7,10]                       # Minuten ohne 15
+            min = min_digital = random.choice(min_list)
+            if random.random() <= 0.5:                              # vor oder nach
+                vornach = 'nach'                                    # "nach"
+                if halb == 'halb':                                  
                     h_digital -=1
                     min_digital = 30+min
+                if stunde == "Mitternacht":
+                    h_digital = 0
             else:
-                vornach = 'vor'
+                vornach = 'vor'                                     # "vor"
                 h_digital -= 1 
-                if halb == 'halb':
-                    min = random.choice(min_list[:4])
-                else:
-                    min = random.choice(min_list[:5])
                 if halb == 'halb':
                     min_digital = 30-min
                 else:        
-                    min_digital = 60-min  
-            if h_digital < 12:
-                tageszeit = 'morgens'
-            elif h_digital < 14:
-                tageszeit = 'mittags'
-            elif h_digital < 18:
-                tageszeit = 'nachmittags'
-            elif h_digital < 22:
-                tageszeit = 'abends'
-            else:
-                tageszeit = 'nachts'
-            if h_digital == 0:
-                stunde = 'Mitternacht'
-            else:
-                stunde = zahl_wort(h) + " Uhr"                
+                    min_digital = 60-min
+            if stunde != "Mitternacht":
+                stunde = zahl_wort(h) + " Uhr"
+                if h_digital < 12:
+                    tageszeit = 'morgens'
+                elif h_digital < 14:
+                    tageszeit = 'mittags'
+                elif h_digital < 18:
+                    tageszeit = 'nachmittags'
+                elif h_digital < 22:
+                    tageszeit = 'abends'
+                else:
+                    tageszeit = 'nachts'
             if min == 15:
-                min = 'um viertel'
+                if stunde == "Mitternacht":
+                    min = "eine viertel Stunde "
+                else:
+                    min = 'um viertel'
             elif min == 30:
                 min = "um halb"
                 vornach = halb = ""
@@ -2114,6 +2113,7 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 min = "um " + zahl_wort(min) + " Minuten"    
             text = "Welche Uhrzeit zeigt eine Digitaluhr {} {} {} {} {}?".format(min,vornach,halb,stunde,tageszeit)
             lsg = [("{:02d}:{:02d}".format(h_digital,min_digital)),("{}:{:02d}".format(h_digital,min_digital)),"indiv_0"]
+            #print(lsg)
             anmerkung = "Trenne Stunden und Minuten mit einem Doppelpunkt - z.B. so '01:02'"
         elif typ == 1:                                      #Zeit
             einheiten_liste = ['sec', 'min', 'h', 'd']
