@@ -8036,10 +8036,20 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_potenz():
+    basis = random.randint(0,13)
+    if basis in (1,2,10):
+        exponent = random.randint(0,10)
+    elif basis in (3,4,5):
+        exponent = random.randint(2,4)
+    else:
+        exponent= 2
+    return basis, exponent
+
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 2
+        typ_end = 4
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ < 3:
@@ -8058,13 +8068,11 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     return 1, ""
                 else:    
                     return -1, ""
-
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)  
         typ2 = 0
-        typ=2
-        titel = "Titel" 
-        text = "default{}"
+        typ=5
+        titel = "Potenzen" 
         variable = ["",]
         pro_text = frage = einheit = anmerkung = hilfe = ""
         erg = None
@@ -8108,9 +8116,32 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     else:
                         lsg = [format_zahl(erg,0)]
                 variable = [str_zahl, term, gesucht]
-
-        else:
-            pass
+        elif typ == 3:
+            basis, exponent = sub_potenz()
+            frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
+            text = "Berechne " + frage 
+            frage +="="
+            erg = basis**exponent
+            lsg = [str(erg)]
+        elif typ == 4:
+            frage = "{}="
+            text = "Schreibe {} als Potenz zweier natürlicher Zahlen"
+            anmerkung = "(Z.B. 3^2)"
+            pot = [4,8,25,32,36,49,100,125,128]
+            bas = [2,2,5,2,6,7,10,5,2]
+            expo = [2,3,2,5,2,2,2,3,7]
+            zufall = random.randint(0,8)            
+            variable = [pot[zufall]]
+            term = "{}^{}".format(bas[zufall],expo[zufall])
+            lsg = [term.replace("^2","²").replace("^3","³"),term]            
+        elif typ == 5:
+            basis1, exponent1 = sub_potenz()
+            basis2, exponent2 = sub_potenz()
+            frage = "{}^{}+{}^{}".format(basis1,exponent1,basis2,exponent2)
+            text = "Berechne " + frage 
+            frage +="="
+            erg = basis1**exponent1+basis2**exponent2
+            lsg = [str(erg)]            
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
