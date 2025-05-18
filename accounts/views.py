@@ -769,7 +769,7 @@ def gruppe_uebersicht(req, gruppe_id):
                 aufgaben[index] = (quote, richtig_kat)
                 prozent_kat, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
                 prozent_summe += prozent_kat
-            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe)                         # Berechnung der Gesamtnote
+            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe, False)                         # Berechnung der Gesamtnote
             if soll_hj < 10*pflicht_kat and prozent_summe < 50:
                 note = "-"
                 prozent_summe_farbe = None
