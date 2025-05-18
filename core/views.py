@@ -2023,7 +2023,6 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         else:
             komma = False
         typ = random.randint(typ_anf, typ_end)                                      #welche Größe 1=Zeit 2=Masse 3=Länge 4=Fläche 5=Volumen negativ = mit Komma
-        typ=0
         frage = "{}{}" + chr(8793)
         einheit = ""
         anmerkung = ""
