@@ -8077,15 +8077,12 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return -1, ""
         elif typ in (9,10):
             eingabe = eingabe.replace(" ","")
-            print(eingabe, lsg)
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
             if typ == 9:
                 if "^1" in eingabe:
                     return 0, "'^1' kann man weglassen"
                 eingabe = eingabe.replace("²","^2").replace("³","^3")
-                if eingabe == lsg[1].replace("exponent",""):
-                    return 0, "Die Potenz mit dem höheren Exponenten gehört nach vorne."
                 for l in lsg:
                     if l == eingabe:
                         return 1, ""
@@ -8208,17 +8205,18 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
                 lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
                 lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
-                if zaehler1 > zaehler2:
-                    lsg = [lsgterm1, "exponent" + lsgterm2]
-                elif zaehler1 < zaehler2:
-                    lsg = [lsgterm2, "exponent" + lsgterm1]
+                if variable1 < variable2:
+                    lsg = [lsgterm1, "buchstabe" + lsgterm2]
                 else:
+                    lsg = [lsgterm2, "buchstabe" + lsgterm1]
+                if zaehler1 == zaehler2:
                     lsgterm3 = "(" + variable1 + variable2 + ")^" + str(zaehler1)
                     lsgterm4 = "(" + variable2 + variable1 + ")^" + str(zaehler1)
                     if variable1 < variable2:
-                        lsg = [lsgterm1, "buchstabe" + lsgterm2, lsgterm3, "buchstabe" + lsgterm4]
+                        lsg += [lsgterm3, "buchstabe" + lsgterm4]
                     else:
-                        lsg = [lsgterm2, "buchstabe" + lsgterm1, lsgterm4, "buchstabe" + lsgterm3]
+                        lsg += [lsgterm4, "buchstabe" + lsgterm3]
+                print(lsg)
             else:
                 zeichen = "+"
                 term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
@@ -8292,7 +8290,7 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         else:
             pass
         #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-        lsg = [lsg] + [wert, "indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
