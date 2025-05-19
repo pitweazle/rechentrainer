@@ -7698,10 +7698,10 @@ def sub_parabel(p,q):
     parameter.update(graph)
     return parameter     
 
-def sub_2werte_pruefen(eingabe,wert):
+def sub_2werte_pruefen(eingabe,wert,trenner = ";"):
     # zahl=(x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
     try:
-        eingabe=eingabe.split(";")
+        eingabe=eingabe.split(trenner)
         x1 = float(eingabe[0].replace(",","."))
         x2 = float(eingabe[1].replace(",","."))
         if int(x1*10+20)*1000+int(x2*10) == wert:
@@ -7758,7 +7758,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                     return 0, "Lass 'y=' weg - das steht schon da."
                 if typ == 9:
                     if  "*(" in eingabe:
-                            return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
+                        return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
         elif typ == 8:
             if eingabe not in ["ja", "nein"] :
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
@@ -8035,6 +8035,216 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_potenz():
+    basis = random.randint(0,13)
+    if basis in (1,2,10):
+        exponent = random.randint(0,10)
+    elif basis in (3,4,5):
+        exponent = random.randint(2,4)
+    else:
+        exponent= 2
+    return basis, exponent
+
+def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+    if optionen != "":                                                               
+        typ_anf = 1
+        typ_end = 9
+        return typ_anf, typ_end
+    elif eingabe != "":                                                                                                         
+        if typ < 3:
+            if "*" not in eingabe:
+                return 0, "'*10^' muss in deiner Antwort vorkommen."
+            else:
+                eingabe = eingabe.replace("²","^2").replace("³","^3").replace("10^","")
+                eingabe=eingabe.split("*")
+                x1 = float(eingabe[0].replace(",","."))
+                if x1 < 0 or x1 > 9:
+                    return 0, "Die Zahl vor dem Komma muss größer als 0 und kleiner als 10 sein."
+                x2 = float(eingabe[1].replace(",","."))
+                print(int((x1+2)*10000+x2*10))
+                wert = lsg[2]
+                if int((x1+2)*10000+x2*10) == wert:
+                    return 1, ""
+                else:    
+                    return -1, ""
+        elif typ == 8:
+            if "*" in eingabe:
+                return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
+            lsg = lsg[1].replace("falsch","")
+            if eingabe == lsg or eingabe == lsg.replace("^2","²").replace("^3","³"):
+                return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplikation wäre - es handelt sich aber um eine Addition."
+            else:
+                return -1, ""
+        elif typ in (9,10):
+            eingabe = eingabe.replace(" ","")
+            print(eingabe, lsg)
+            if "*" in eingabe:
+                return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
+            if typ == 9:
+                if "^1" in eingabe:
+                    return 0, "'^1' kann man weglassen"
+                eingabe = eingabe.replace("²","^2").replace("³","^3")
+                if eingabe == lsg[1].replace("exponent",""):
+                    return 0, "Die Potenz mit dem höheren Exponenten gehört nach vorne."
+                for l in lsg:
+                    if l == eingabe:
+                        return 1, ""
+            else:
+                if "1" in eingabe:
+                    return 0, "Die '1' kann man weglassen"
+            if eingabe == lsg[1].replace("buchstabe",""):
+                return 0, "Sortiere die Variablen nach dem Alphabet."
+            elif len(lsg) > 3:
+                if eingabe == lsg[3].replace("buchstabe",""):
+                    return 0, "Sortiere die Variablen nach dem Alphabet." 
+            else:
+                return -1, ""               
+            return -1, ""
+    else:                                                                            
+        typ = random.randint(typ_anf, typ_end)
+        typ2 = 0
+        titel = "Potenzen" 
+        variable = ["",]
+        pro_text = frage = einheit = anmerkung = hilfe = ""
+        erg = None
+        hilfe_id = 0
+        if typ < 3:                                                 # Exponentialdarstellung
+                typ2 = random.randint(1,4)
+                titel = "scientific notation"
+                koeff = random.randint(1,999)
+                if koeff > 99:
+                    koeff /= 100
+                elif koeff > 9:
+                    koeff /= 10
+                if typ2 in (1,3):
+                    if koeff < 9:
+                        exp = random.randint(2,4)*-1
+                    else:
+                        exp = random.randint(2,3)*-1
+                    str_zahl = format_zahl(koeff*10**exp,-exp+2)
+                    gesucht = "Kommazahl"
+                else:
+                    exp = random.randint(3,6)
+                    str_zahl = format_zahl(koeff*10**exp,0)
+                    gesucht = "ganze Zahl"
+                term = str(koeff).replace(".",",")+"·10^" + str(exp)
+                if typ2 < 3:
+                    text = "Schreibe die Zahl <b>{}</b> in scientific notation (Exponentialdarstellung)"
+                    pro_text = "{} in scientific notation"
+                    frage = str_zahl + "="
+                    anmerkung="(Schreibe z:B. 1,23*10^4 )"
+                    wert = int((koeff+2)*10000+exp*10)                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = [term, term.replace("·","*"),wert, "indiv_0"]
+                else:
+                    if exp in (2,3):
+                        term = term.replace("^2","²").replace("^3","³")
+                    frage = term + "="
+                    text = "Wandle die Zahl <b>{1}</b> in eine {2} um."
+                    pro_text = "{1}</b> in {2}"
+                    erg = koeff*10**exp
+                    if exp < 0:
+                        lsg = [format_zahl(erg,-exp+2)]
+                    else:
+                        lsg = [format_zahl(erg,0)]
+                variable = [str_zahl, term, gesucht]
+        elif typ < 5:                                               # Werte berechnen
+            basis, exponent = sub_potenz()
+            frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
+            text = "Berechne " + frage
+            frage +="="
+            erg = basis**exponent
+            lsg = [str(erg)]
+        elif typ == 5:                                              # Zahl als Potenz
+            frage = "{}="
+            text = "Schreibe {} als Potenz zweier natürlicher Zahlen"
+            anmerkung = "(Z.B. 3^2)"
+            pot = [4,8,25,32,36,49,100,125,128]
+            bas = [2,2,5,2,6,7,10,5,2]
+            expo = [2,3,2,5,2,2,2,3,7]
+            zufall = random.randint(0,8)            
+            variable = [pot[zufall]]
+            term = "{}^{}".format(bas[zufall],expo[zufall])
+            lsg = [term.replace("^2","²").replace("^3","³"),term]            
+        elif typ == 6:                                              # Addition zweier Potenzen
+            basis1, exponent1 = sub_potenz()
+            basis2, exponent2 = sub_potenz()
+            frage = "{}^{}+{}^{}".format(basis1,exponent1,basis2,exponent2)
+            text = "Berechne " + frage 
+            frage +="="
+            erg = basis1**exponent1+basis2**exponent2
+            lsg = [str(erg)]            
+        elif typ in (7,8):                                          # x+x+x und x*x*x vereinfachen
+            if typ == 7:
+                zeichen = "·"
+            else:
+                zeichen = "+"
+            buchstaben = ["x","y","z","x","y","z","a","b","c"]
+            zufall = random.randint(0,8)
+            buchstabe = buchstaben[zufall]
+            zufall = random.randint(2,8)
+            frage = zufall*(buchstabe + zeichen)
+            frage = frage[:-1]
+            text = "Vereinfache: " + frage
+            frage +="="
+            term = buchstabe + "^" + str(zufall)
+            if typ == 7:
+                lsg = [term.replace("^2","²").replace("^3","³"),term]
+            else:
+                lsg = [str(zufall) + buchstabe, "falsch" + term, "indiv_0"]
+        elif typ in (9,10):                                         # aaba  und a+a+b+a vereinfachen
+            buchstaben = ["x","y","z","a","b","c"]
+            if random.random() < 0.5:
+                buchstaben = buchstaben[:3]
+            else:
+                buchstaben = buchstaben[3:]
+            variable1 = variable2 = random.choice(buchstaben)
+            while variable2 == variable1:
+                variable2 = random.choice(buchstaben)
+            zaehler1 = zaehler2 = 5
+            while zaehler1 + zaehler2 > 8 or zaehler1 + zaehler2 == 2:
+                zaehler1 = random.randint(1,5)
+                zaehler2 = random.randint(1,5)
+            if typ == 9:    
+                term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
+                lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
+                lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
+                if zaehler1 > zaehler2:
+                    lsg = [lsgterm1, "exponent" + lsgterm2]
+                elif zaehler1 < zaehler2:
+                    lsg = [lsgterm2, "exponent" + lsgterm1]
+                else:
+                    lsgterm3 = "(" + variable1 + variable2 + ")^" + str(zaehler1)
+                    lsgterm4 = "(" + variable2 + variable1 + ")^" + str(zaehler1)
+                    if variable1 < variable2:
+                        lsg = [lsgterm1, "buchstabe" + lsgterm2, lsgterm3, "buchstabe" + lsgterm4]
+                    else:
+                        lsg = [lsgterm2, "buchstabe" + lsgterm1, lsgterm4, "buchstabe" + lsgterm3]
+            else:
+                zeichen = "+"
+                term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
+                lsgterm1 = (str(zaehler1) + variable1 + zeichen + str(zaehler2) + variable2).replace("1","")
+                lsgterm2 = (str(zaehler2) + variable2 + zeichen + str(zaehler1) + variable1).replace("1","")
+                if variable1 < variable2:
+                    lsg = [lsgterm1, "buchstabe" + lsgterm2]
+                    if zaehler1 == zaehler2:
+                        lsg.append = (str(zaehler1) + "(" + variable1 + variable2 + ")")
+                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable2 + variable1 + ")")
+                else:
+                    lsg = [lsgterm2, "buchstabe" + lsgterm1]
+                    if zaehler1 == zaehler2:
+                        lsg.append = (str(zaehler1) + "(" + variable2 + variable2 + ")")
+                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable1 + variable2 + ")")
+            lsg.append("indiv_0")
+            random.shuffle(term)
+            frage = "".join(term)
+            frage = frage[:-1]
+            text = "Vereinfache diesen Term: " + frage
+            frage += "="
+        if hilfe_id != 0:
+            hilfe = hilfe.format(*variable)
+            print(hilfe)
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
@@ -8048,7 +8258,13 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
             typ_end = 2
         return typ_anf, typ_end
     #wenn in Lösungen 'indiv' steht und die eingegebene Lösung in "kontrolle" nicht als richtig bewertet wurde, kann die Lösung hier überprüft werden 
-    elif eingabe != "":                                                                                                         
+    elif eingabe != "":
+        if typ == 1:
+            if eingabe not in ["ja", "nein"] :
+                return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"
+            else:
+                richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+                return richtig, meldung
         loe = (lsg[0])
         if eingabe.replace(" ","") != loe.replace(" ",""):
             erg = loe.replace(",",".")
@@ -8068,14 +8284,15 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         hilfe_id = 0
         erg = None 
         if typ == 1:
-                zahl1 = random.randint(0,2)
+                zahl = random.randint(0,2)
                 text = ""
-                variable = [str(zahl1)]
+                variable = [str(zahl)]
                 erg = None
                 lsg = str(erg)
         else:
             pass
-        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+        #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+        lsg = [lsg] + [wert, "indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
@@ -8622,7 +8839,7 @@ def optionen(req, slug):
         else:
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
-    zaehler.optionen_text = optionen_text       
+    zaehler.optionen_text = optionen_text
     typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
@@ -8714,7 +8931,7 @@ AUFGABEN = {
     8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
-    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu}
+    29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu, 33:potenzen}
 
 def aufgaben(kategorie_id, jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     return AUFGABEN[kategorie_id](jg, stufe, aufgnr, typ_anf, typ_end, typ, typ2, optionen, eingabe, lsg)
