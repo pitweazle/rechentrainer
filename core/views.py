@@ -2023,7 +2023,6 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
         else:
             komma = False
         typ = random.randint(typ_anf, typ_end)                                      #welche Größe 1=Zeit 2=Masse 3=Länge 4=Fläche 5=Volumen negativ = mit Komma
-        typ=0
         frage = "{}{}" + chr(8793)
         einheit = ""
         anmerkung = ""
@@ -8077,18 +8076,27 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""
         elif typ == 9:
+            eingabe = eingabe.replace(" ","").replace("²","^2").replace("³","^3")
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
             elif "^1" in eingabe:
                 return 0, "'^1' kann man weglassen"
             for l in lsg:
-                if l.replace("^2","²").replace("^3","³") == eingabe.replace("^2","²").replace("^3","³"):
+                if l == eingabe:
                     return 1, ""
+            if eingabe == lsg[1].replace("exponent",""):
+                return 0, "Die Potenz mit dem höheren Exponenten gehört nach vorne."
+            elif eingabe == lsg[1].replace("buchstabe",""):
+                return 0, "Sortiere die Variablen nach dem Alphabet."
+            elif len(lsg) > 3:
+                if eingabe == lsg[3].replace("buchstabe",""):
+                    return 0, "Sortiere die Variablen nach dem Alphabet." 
+            else:
+                return -1, ""               
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)  
         typ2 = 0
-        #typ=9
         titel = "Potenzen" 
         variable = ["",]
         pro_text = frage = einheit = anmerkung = hilfe = ""
@@ -8133,14 +8141,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     else:
                         lsg = [format_zahl(erg,0)]
                 variable = [str_zahl, term, gesucht]
-        elif typ < 5:
+        elif typ < 5:                                               # Werte berechnen
             basis, exponent = sub_potenz()
             frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
             text = "Berechne " + frage
             frage +="="
             erg = basis**exponent
             lsg = [str(erg)]
-        elif typ == 5:
+        elif typ == 5:                                              # Zahl als Potenz
             frage = "{}="
             text = "Schreibe {} als Potenz zweier natürlicher Zahlen"
             anmerkung = "(Z.B. 3^2)"
@@ -8151,7 +8159,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             variable = [pot[zufall]]
             term = "{}^{}".format(bas[zufall],expo[zufall])
             lsg = [term.replace("^2","²").replace("^3","³"),term]            
-        elif typ == 6:
+        elif typ == 6:                                              # Addition zweier Potenzen
             basis1, exponent1 = sub_potenz()
             basis2, exponent2 = sub_potenz()
             frage = "{}^{}+{}^{}".format(basis1,exponent1,basis2,exponent2)
@@ -8159,7 +8167,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage +="="
             erg = basis1**exponent1+basis2**exponent2
             lsg = [str(erg)]            
-        elif typ in (7,8):
+        elif typ in (7,8):                                          # x+x+x und x*x*x vereinfachen
             if typ == 7:
                 zeichen = "·"
             else:
@@ -8177,7 +8185,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = [term.replace("^2","²").replace("^3","³"),term]
             else:
                 lsg = [str(zufall) + buchstabe, "falsch" + term, "indiv_0"]
-        elif typ == 9:
+        elif typ == 9:                                              # a+a+b+a vereinfachen
             buchstaben = ["x","y","z","a","b","c"]
             if random.random() < 0.5:
                 buchstaben = buchstaben[:3]
@@ -8187,8 +8195,10 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             variable1 = variable2 = random.choice(buchstaben)
             while variable2 == variable1:
                 variable2 = random.choice(buchstaben)
-            zaehler1 = random.randint(1,5)
-            zaehler2 = random.randint(1,5)
+            zaehler1 = zaehler2 = 5
+            while zaehler1 + zaehler2 > 8 or zaehler1 + zaehler2 == 2:
+                zaehler1 = random.randint(1,5)
+                zaehler2 = random.randint(1,5)
             term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
             random.shuffle(term)
             frage = "".join(term)
@@ -8196,18 +8206,22 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage += "="
             lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
             lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
-            lsg = [lsgterm1, lsgterm2]
-            if zaehler1 == zaehler2:
+            if zaehler1 > zaehler2:
+                lsg = [lsgterm1, "exponent" + lsgterm2]
+            elif zaehler1 < zaehler2:
+                lsg = [lsgterm2, "exponent" + lsgterm1]
+            else:
                 lsgterm3 = "(" + variable1 + variable2 + ")^" + str(zaehler1)
-                lsg.append(lsgterm3)
                 lsgterm4 = "(" + variable2 + variable1 + ")^" + str(zaehler1)
-                lsg.append(lsgterm4)
+                if variable1 < variable2:
+                    lsg = [lsgterm1, "buchstabe" + lsgterm2, lsgterm3, "buchstabe" + lsgterm4]
+                else:
+                    lsg = [lsgterm2, "buchstabe" + lsgterm1, lsgterm4, "buchstabe" + lsgterm3]
             lsg.append("indiv_0")
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
-
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
