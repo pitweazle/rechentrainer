@@ -1383,6 +1383,8 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
             v = int((breite_u - breite_o)/8)
             v = v*int(hoehe/65)
         box_hoehe = hoehe + (tiefe*0.4) + 10
+        if jg == -1 and typ2 == 6:                                            # geändert
+            box_hoehe += 30
         y0 = box_hoehe -5#-int((hoehe + int (tiefe*0.4))/2)
         x0 = int((box_breite - tiefe*0.35)/2)
         x11 = x0 - breite_u
@@ -1404,8 +1406,8 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
             y14 = y14 - int(2.7*v)
             y23 = y23 + int(2.7*v) 
             y24 = y24 + int(2.7*v) 
-        if jg == -1:
-            box_hoehe = hoehe + tiefe*0.6 +20
+        if jg == -1 and typ2 == 6:
+            box_hoehe = hoehe + tiefe*0.6 + 50   # geändert
         elif typ2 == 4:
             x13 = x14 = x23 = x24 = x0 + int(tiefe*0.175)
             y13 = y14 = y23 = y24 = y0 - hoehe - int(tiefe*0.35)                
@@ -3811,6 +3813,12 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
     if optionen != "":                                                               
         typ_anf = 3
         typ_end = 7
+        if "Prismen" in optionen or jg >= 8:
+            typ_end = 9
+            if stufe%2 == 1 or jg > 8:
+                typ_anf = -1
+            else:
+                typ_anf = 2
         if "Oberfläche" in optionen or jg >= 7:
             if stufe%2 == 1 or jg > 8:
                 typ_anf = -1
@@ -3986,14 +3994,16 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         else:      # elif   typ == 8 or typ == 9 or typ == 0:               # Prismen
             titel = "Prismen"
             anmerkung= "Alle Angaben in cm"
-            if typ == 8:                                                                   # trapezförmig
+            if typ == 8:                                                     # trapezförmig
                 breite_o = breite_u = 1
                 while breite_o >= breite_u-5:
                     breite_u = random.randint(2,4)*20
                     breite_o = random.randint(1,3)*20
+                    breite_u_text = int(breite_u/5)
             else:                                                            # dreieckige Grundfläche                                                             
                 breite_u = random.randint(2,4)*20
-                breite_o = 0   
+                breite_o = 0 
+                breite_u_text = int(breite_u/5)
             tiefe = random.randint(1,2)*100
             if typ == 0:
                 einheit = "cm²"
