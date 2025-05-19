@@ -8075,18 +8075,24 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplikation wäre - es handelt sich aber um eine Addition."
             else:
                 return -1, ""
-        elif typ == 9:
-            eingabe = eingabe.replace(" ","").replace("²","^2").replace("³","^3")
+        elif typ in (9,10):
+            eingabe = eingabe.replace(" ","")
+            print(eingabe, lsg)
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
-            elif "^1" in eingabe:
-                return 0, "'^1' kann man weglassen"
-            for l in lsg:
-                if l == eingabe:
-                    return 1, ""
-            if eingabe == lsg[1].replace("exponent",""):
-                return 0, "Die Potenz mit dem höheren Exponenten gehört nach vorne."
-            elif eingabe == lsg[1].replace("buchstabe",""):
+            if typ == 9:
+                if "^1" in eingabe:
+                    return 0, "'^1' kann man weglassen"
+                eingabe = eingabe.replace("²","^2").replace("³","^3")
+                if eingabe == lsg[1].replace("exponent",""):
+                    return 0, "Die Potenz mit dem höheren Exponenten gehört nach vorne."
+                for l in lsg:
+                    if l == eingabe:
+                        return 1, ""
+            else:
+                if "1" in eingabe:
+                    return 0, "Die '1' kann man weglassen"
+            if eingabe == lsg[1].replace("buchstabe",""):
                 return 0, "Sortiere die Variablen nach dem Alphabet."
             elif len(lsg) > 3:
                 if eingabe == lsg[3].replace("buchstabe",""):
@@ -8095,7 +8101,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return -1, ""               
             return -1, ""
     else:                                                                            
-        typ = random.randint(typ_anf, typ_end)  
+        typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8185,13 +8191,12 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = [term.replace("^2","²").replace("^3","³"),term]
             else:
                 lsg = [str(zufall) + buchstabe, "falsch" + term, "indiv_0"]
-        elif typ == 9:                                              # a+a+b+a vereinfachen
+        elif typ in (9,10):                                         # aaba  und a+a+b+a vereinfachen
             buchstaben = ["x","y","z","a","b","c"]
             if random.random() < 0.5:
                 buchstaben = buchstaben[:3]
             else:
                 buchstaben = buchstaben[3:]
-            text = str(buchstaben)
             variable1 = variable2 = random.choice(buchstaben)
             while variable2 == variable1:
                 variable2 = random.choice(buchstaben)
@@ -8199,25 +8204,42 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             while zaehler1 + zaehler2 > 8 or zaehler1 + zaehler2 == 2:
                 zaehler1 = random.randint(1,5)
                 zaehler2 = random.randint(1,5)
-            term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
+            if typ == 9:    
+                term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
+                lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
+                lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
+                if zaehler1 > zaehler2:
+                    lsg = [lsgterm1, "exponent" + lsgterm2]
+                elif zaehler1 < zaehler2:
+                    lsg = [lsgterm2, "exponent" + lsgterm1]
+                else:
+                    lsgterm3 = "(" + variable1 + variable2 + ")^" + str(zaehler1)
+                    lsgterm4 = "(" + variable2 + variable1 + ")^" + str(zaehler1)
+                    if variable1 < variable2:
+                        lsg = [lsgterm1, "buchstabe" + lsgterm2, lsgterm3, "buchstabe" + lsgterm4]
+                    else:
+                        lsg = [lsgterm2, "buchstabe" + lsgterm1, lsgterm4, "buchstabe" + lsgterm3]
+            else:
+                zeichen = "+"
+                term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
+                lsgterm1 = (str(zaehler1) + variable1 + zeichen + str(zaehler2) + variable2).replace("1","")
+                lsgterm2 = (str(zaehler2) + variable2 + zeichen + str(zaehler1) + variable1).replace("1","")
+                if variable1 < variable2:
+                    lsg = [lsgterm1, "buchstabe" + lsgterm2]
+                    if zaehler1 == zaehler2:
+                        lsg.append = (str(zaehler1) + "(" + variable1 + variable2 + ")")
+                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable2 + variable1 + ")")
+                else:
+                    lsg = [lsgterm2, "buchstabe" + lsgterm1]
+                    if zaehler1 == zaehler2:
+                        lsg.append = (str(zaehler1) + "(" + variable2 + variable2 + ")")
+                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable1 + variable2 + ")")
+            lsg.append("indiv_0")
             random.shuffle(term)
             frage = "".join(term)
+            frage = frage[:-1]
             text = "Vereinfache diesen Term: " + frage
             frage += "="
-            lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
-            lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
-            if zaehler1 > zaehler2:
-                lsg = [lsgterm1, "exponent" + lsgterm2]
-            elif zaehler1 < zaehler2:
-                lsg = [lsgterm2, "exponent" + lsgterm1]
-            else:
-                lsgterm3 = "(" + variable1 + variable2 + ")^" + str(zaehler1)
-                lsgterm4 = "(" + variable2 + variable1 + ")^" + str(zaehler1)
-                if variable1 < variable2:
-                    lsg = [lsgterm1, "buchstabe" + lsgterm2, lsgterm3, "buchstabe" + lsgterm4]
-                else:
-                    lsg = [lsgterm2, "buchstabe" + lsgterm1, lsgterm4, "buchstabe" + lsgterm3]
-            lsg.append("indiv_0")
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
