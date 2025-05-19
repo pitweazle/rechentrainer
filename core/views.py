@@ -8154,6 +8154,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ == 5:                                              # Zahl als Potenz
             frage = "{}="
             text = "Schreibe {} als Potenz zweier natürlicher Zahlen"
+            pro_text = "{} als Potenz"
             anmerkung = "(Z.B. 3^2)"
             pot = [4,8,25,32,36,49,100,125,128]
             bas = [2,2,5,2,6,7,10,5,2]
@@ -8236,6 +8237,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage = "".join(term)
             frage = frage[:-1]
             text = "Vereinfache diesen Term: " + frage
+            pro_text = "Vereinfache:" + frage
             frage += "="
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
