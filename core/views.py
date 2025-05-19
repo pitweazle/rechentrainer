@@ -8038,7 +8038,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
 def sub_potenz():
     basis = random.randint(0,13)
     if basis in (1,2,10):
-        exponent = random.randint(0,10)
+        exponent = random.randint(0,5)
     elif basis in (3,4,5):
         exponent = random.randint(2,4)
     else:
@@ -8117,14 +8117,11 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 elif koeff > 9:
                     koeff /= 10
                 if typ2 in (1,3):
-                    if koeff < 9:
-                        exp = random.randint(2,4)*-1
-                    else:
-                        exp = random.randint(2,3)*-1
+                    exp = random.randint(2,3)*-1
                     str_zahl = format_zahl(koeff*10**exp,-exp+2)
                     gesucht = "Kommazahl"
                 else:
-                    exp = random.randint(3,6)
+                    exp = random.randint(3,5)
                     str_zahl = format_zahl(koeff*10**exp,0)
                     gesucht = "ganze Zahl"
                 term = str(koeff).replace(".",",")+"·10^" + str(exp)
