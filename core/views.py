@@ -669,12 +669,15 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': anf, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': int(zahl1)+20, 'bruch':bruch}
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anm, lsg, hilfe_id, erg, parameter 
 
-def malget10(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
+def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1
         typ_end = 3
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
-            typ_end = 8 + stufe%2                               #6 für E-Kurs
+            if stufe%2 == 1:
+                typ_end = 9
+            else:
+                typ_end = 7
         return typ_anf, typ_end
     else:
         typ = random.randint(typ_anf, typ_end)
@@ -8937,7 +8940,7 @@ def hilfe(req, zaehler_id, protokoll_id):
 #Dict zum Zuordnen der kategorie.zeile zu den einzelnen Aufgaben:
 AUFGABEN = {
     1: addieren, 2: subtrahieren, 3: verdoppeln, 4: halbieren, 5: einmaleins, 6: kopfrechnen, 7: sachaufgaben, 
-    8: zahlen, 9: malget10, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
+    8: zahlen, 9: zehner, 10: runden, 11: regeln, 12: geometrie, 13: einheiten, 14: figuren, 
     15: kommazahlen, 16: winkel, 17: bruchteile, 18: kuerzen, 19: bruch_komma, 20: bruchrechnung, 21: quader, 
     22: zuordnungen, 23: prozentrechnung, 24: negativ, 25: terme, 26: gleichungen, 27: wahrscheinlichkeit, 28: funktionen, 
     29: wurzeln, 30: dreiecke, 31: kreise, 32: quadfu, 33:potenzen}
