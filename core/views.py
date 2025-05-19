@@ -3811,6 +3811,12 @@ def quader(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
     if optionen != "":                                                               
         typ_anf = 3
         typ_end = 7
+        if "Prismen" in optionen or jg >= 8:
+            typ_end = 9
+            if stufe%2 == 1 or jg > 8:
+                typ_anf = -1
+            else:
+                typ_anf = 2
         if "Oberfläche" in optionen or jg >= 7:
             if stufe%2 == 1 or jg > 8:
                 typ_anf = -1
