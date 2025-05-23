@@ -6337,13 +6337,14 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             while x <-3 or x > 4.5 or y <-3 or y > 4.5:
                 x = random.randint(-6,10)/2
                 y = steigung*x+absolut
+            str_y = "0" if y == 0 else str(y)
             frage = "x="
             pro_text = "f(x)={1}, x=?"
-            variable = [gleichung, str(y).replace(".",",")]
+            variable = [gleichung, str_y.replace(".",",")]
             ablesen = {'x':x_null+x*40, 'y':y_null-y*40}
             parameter.update(ablesen)
             erg = x
-            lsg = [str(erg)]
+            lsg = [str(erg).replace(".",",")]
         elif typ == 8:                      # Steigung und Achsenabscnitt
             typ3 = random.randint(1,3)
             if typ3 == 1:
