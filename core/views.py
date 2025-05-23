@@ -8803,6 +8803,9 @@ def protokoll(req, schueler_id=0):
         hilfe = protokoll.filter(hilfe=True).count()
         #protokoll = protokoll.exclude(end__isnull=True, abbr__isnull=True, eingabe__exact="")
         exclude = ["", " Hilfe "]
+        # Die folgende Zeile sorgt dafür, dass eine Aufgabe im Protokoll nicht angezeigt wird, wenn keine Eingabe erfolgt. 
+        # Dadurch kann man sich nicht die Lösung der aktuellen Aufgabe in einem parallel göffneten Fenster anzeigen lassen.
+        # Dadurch werden aber auch Aufgaben die mit F5 (Seite erneuern) abgebrochen wurden nicht angezeigt
         protokoll = protokoll.exclude(eingabe__in = exclude)
         context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, protokoll= protokoll, form= form, wahl= wahl, 
             richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, abbr=abbr, lsg=lsg, hilfe = hilfe)
