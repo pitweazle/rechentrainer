@@ -8643,7 +8643,7 @@ def uebersicht(req, schueler_id=0):
                         else:
                             kat_farbe = None
                     else:
-                        if prozent_kat>=110 and not lehrer:
+                        if prozent_kat>=110 and not lehrer and falsch_kat < 1:
                             aktiv = False
                     prozent_summe +=prozent_kat
                     nicht_richtig_summe +=nicht_richtig_kat
