@@ -8081,7 +8081,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     return 1, ""
                 else:    
                     return -1, ""
-        elif typ == 8:
+        elif typ == 7:
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
             lsg = lsg[1].replace("falsch","")
@@ -8089,7 +8089,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplikation wäre - es handelt sich aber um eine Addition."
             else:
                 return -1, ""
-        elif typ in (9,10):
+        elif typ in (8,9):
             eingabe = eingabe.replace(" ","")
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
@@ -8174,15 +8174,15 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             variable = [pot[zufall]]
             term = "{}^{}".format(bas[zufall],expo[zufall])
             lsg = [term.replace("^2","²").replace("^3","³"),term]            
-        elif typ == 6:                                              # Addition zweier Potenzen
-            basis1, exponent1 = sub_potenz()
-            basis2, exponent2 = sub_potenz()
-            frage = "{}^{}+{}^{}".format(basis1,exponent1,basis2,exponent2)
-            text = "Berechne " + frage 
-            frage +="="
-            erg = basis1**exponent1+basis2**exponent2
-            lsg = [str(erg)]            
-        elif typ in (7,8):                                          # x+x+x und x*x*x vereinfachen
+        # elif typ == 6:                                              # Addition zweier Potenzen
+        #     basis1, exponent1 = sub_potenz()
+        #     basis2, exponent2 = sub_potenz()
+        #     frage = "{}^{}+{}^{}".format(basis1,exponent1,basis2,exponent2)
+        #     text = "Berechne " + frage 
+        #     frage +="="
+        #     erg = basis1**exponent1+basis2**exponent2
+        #     lsg = [str(erg)]            
+        elif typ in (6,7):                                          # x+x+x und x*x*x vereinfachen
             if typ == 7:
                 zeichen = "·"
             else:
@@ -8200,7 +8200,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = [term.replace("^2","²").replace("^3","³"),term]
             else:
                 lsg = [str(zufall) + buchstabe, "falsch" + term, "indiv_0"]
-        elif typ in (9,10):                                         # aaba  und a+a+b+a vereinfachen
+        elif typ in (8,9):                                          # aaba  und a+a+b+a vereinfachen
             buchstaben = ["x","y","z","a","b","c"]
             if random.random() < 0.5:
                 buchstaben = buchstaben[:3]
