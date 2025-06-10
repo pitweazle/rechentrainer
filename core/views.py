@@ -8060,53 +8060,91 @@ def sub_potenz():
     return basis, exponent
 
 def sub_potenzterm(typ2):
-    a_sum = b_sum = c_sum = 0
+    a_sum = b_sum = c_sum = koeff = 0
     faktor = 1
     variablen = ["a","b","c","zahl","zahl"]
-    if typ2 == 1:
+    if typ2 < 3:                                        # nur Buchstaben
         variablen = variablen[:3]
     exponenten = [1,2,3]
     frage = lsg = ""
-    faktoren = random.randint(3,4)
+    if typ2 < 3:
+        von = 3
+        bis = 4
+    else:
+        von = 2
+        bis = 3
+    faktoren = random.randint(von,bis)
     n = 0
     while n < faktoren:
         variable = random.choice(variablen)
         exponent = random.choice(exponenten)
         if variable == "a":
-            a_sum += exponent
+            a_sum += exponent 
+            if typ2 == 3:
+                koeff = 0
+                while koeff == 0:
+                    koeff = random.randint(-2,3)
         elif variable == "b":
-            b_sum += exponent  
+            b_sum += exponent 
+            if typ2 == 3:
+                koeff = 0
+                while koeff == 0:
+                    koeff = random.randint(-2,3)
         elif variable == "c":
             c_sum += exponent 
+            if typ2 == 3:
+                koeff = 0
+                while koeff == 0:
+                    koeff = random.randint(-2,3)
         elif variable == "zahl":
             zahl = random.randint(2,4)
-            exponent = 1 
+            exponent = koeff = 1 
             faktor *= zahl
             variable = str(zahl)
+        if faktor != 0:
+            faktor *= koeff 
         if exponent == 1:
-            str_exponent = "·"
+            str_exponent = ""
         elif exponent == 2:
-            str_exponent = "²·"                
+            str_exponent = "²"                
         elif exponent == 3:
-            str_exponent = "³·"
-        frage +=variable+str_exponent
+            str_exponent = "³"
+        if typ2 == 3:
+            teil="("+str(koeff)+variable+str_exponent+")·"
+            teil = teil.replace("(1","(").replace("(-1","(-")
+            if koeff > 0:
+                teil = teil.replace("(","").replace(")","")
+            frage += teil
+        else:
+            frage +=variable+str_exponent+"·"
         n += 1 
     frage = frage[:-1]
+    if frage[0] == "(":
+        frage = frage.replace("(","",1).replace(")","",1)
     if "a" in frage:
         lsg += "a^" + str(a_sum) + " "
     if "b" in frage:
         lsg += "b^" + str(b_sum) + " "
     if "c" in frage:
-        lsg += "c^" + str(c_sum) + " " 
-    if faktor > 1:
-        lsg = " " + str(faktor) + " " + lsg
-    lsg = lsg.replace("^1 ", " ")
-    term = lsg
+        lsg += "c^" + str(c_sum) + " "
+    if frage.count("a")>0 or frage.count("b")>0 or frage.count("c")>0:     
+        term = lsg
+    else:
+        term = " "
     for s in ["a","b","c"]:
-        term = term.replace(s, "*"+str(ord(s)))
-    term = term[1:]
+        term = term.replace(s, "*"+str(ord(s)-90))
+    if term[0] == "*":        
+        term = term[1:]
     parser = Parser()
-    wert = (parser.evaluate(term,{}))
+    try:
+        wert = parser.evaluate(term,{})
+    except:
+        wert = 1
+    if faktor != 1 and faktor != 0:
+        wert *= faktor
+        lsg = " " + str(faktor) + " " + lsg
+        lsg = lsg.replace("-1","-")
+    lsg = lsg.replace("^1 ", " ")
     return frage, lsg, wert
 
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8125,7 +8163,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 if x1 < 0 or x1 > 9:
                     return 0, "Die Zahl vor dem Komma muss größer als 0 und kleiner als 10 sein."
                 x2 = float(eingabe[1].replace(",","."))
-                print(int((x1+2)*10000+x2*10))
                 wert = lsg[2]
                 if int((x1+2)*10000+x2*10) == wert:
                     return 1, ""
@@ -8165,7 +8202,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
-            elif (lsg[1][0]).isdigit() and not (eingabe[0]).isdigit():
+            elif (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
                 return 0,  "Du musst die Zahl nach vorne schreiben."
             elif "*" in eingabe:
                 return 0, "Lass das '*' weg."
@@ -8179,10 +8216,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 try:
                     buchstabenliste = ["a","b","c"]
                     for s in buchstabenliste:
-                        eingabe = eingabe.replace(s, "*"+str(ord(s)))
-                    term = eingabe[1:]
+                        eingabe = eingabe.replace(s, "*"+str(ord(s)-90))
+                    term = eingabe
+                    if term[0] == "*":
+                        term = term[1:]
                     parser = Parser()
                     wert = (parser.evaluate(term,{}))
+                    if wert*-1 == lsg[2]:
+                        return -1, "Leider stimmt das Vorzeichen nicht."
                     if wert == lsg[2]:
                         return 0, "Der Wert stimmt, aber irgenwie würde ich das anders machen. Schicke deine Eingabe doch bitte per Mail an den Rechentrainer."
                 except:
@@ -8190,7 +8231,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=11
+        #typ=11
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8298,7 +8339,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                         lsg += [lsgterm3, "buchstabe" + lsgterm4]
                     else:
                         lsg += [lsgterm4, "buchstabe" + lsgterm3]
-                print(lsg)
             else:
                 zeichen = "+"
                 term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
@@ -8328,7 +8368,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
                 frage, lsg, wert  = sub_potenzterm(typ2)
             text = "Vereinfache diesen Term: " + frage
-            pro_text = "Vereinfache" +frage
+            pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"] 
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
