@@ -8059,12 +8059,15 @@ def sub_potenz():
         exponent= 2
     return basis, exponent
 
-def sub_potenzterm():
+def sub_potenzterm(typ2):
     a_sum = b_sum = c_sum = 0
-    variablen = ["a","b","c"]
+    faktor = 1
+    variablen = ["a","b","c","zahl","zahl"]
+    if typ2 == 1:
+        variablen = variablen[:3]
     exponenten = [1,2,3]
     frage = lsg = ""
-    faktoren = random.randint(3,5)
+    faktoren = random.randint(3,4)
     n = 0
     while n < faktoren:
         variable = random.choice(variablen)
@@ -8074,22 +8077,37 @@ def sub_potenzterm():
         elif variable == "b":
             b_sum += exponent  
         elif variable == "c":
-            c_sum += exponent  
+            c_sum += exponent 
+        elif variable == "zahl":
+            zahl = random.randint(2,4)
+            exponent = 1 
+            faktor *= zahl
+            variable = str(zahl)
         if exponent == 1:
-            str_exponent = " "
+            str_exponent = "·"
         elif exponent == 2:
-            str_exponent = "² "                
+            str_exponent = "²·"                
         elif exponent == 3:
-            str_exponent = "³ "
-        frage +=variable+str_exponent 
+            str_exponent = "³·"
+        frage +=variable+str_exponent
         n += 1 
+    frage = frage[:-1]
     if "a" in frage:
         lsg += "a^" + str(a_sum) + " "
     if "b" in frage:
         lsg += "b^" + str(b_sum) + " "
     if "c" in frage:
-        lsg += "c^" + str(c_sum) + " "             
-    return frage, lsg
+        lsg += "c^" + str(c_sum) + " " 
+    if faktor > 1:
+        lsg = " " + str(faktor) + " " + lsg
+    lsg = lsg.replace("^1 ", " ")
+    term = lsg
+    for s in ["a","b","c"]:
+        term = term.replace(s, "*"+str(ord(s)))
+    term = term[1:]
+    parser = Parser()
+    wert = (parser.evaluate(term,{}))
+    return frage, lsg, wert
 
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -8143,15 +8161,18 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""               
             return -1, ""
-        elif typ == 10:
-            print(eingabe, lsg[0], eingabe == lsg[0])
+        elif typ in (10,11):
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
+            elif (lsg[1][0]).isdigit() and not (eingabe[0]).isdigit():
+                return 0,  "Du musst die Zahl nach vorne schreiben."
+            elif "*" in eingabe:
+                return 0, "Lass das '*' weg."
             elif "^1" in eingabe:
                 return 0, "Lass das '^1' weg."
             elif "(" in eingabe:
-                return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, lasse sie hier aber bitte weg."            
+                return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
             elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1:
                 return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."
             else:
@@ -8169,7 +8190,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=10
+        typ=11
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8300,21 +8321,15 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ == 10:
+        elif typ in (10,11):
+            typ2 = random.randint(1,3)
             titel = "Potenzgesetze"
             frage = ""
             while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
-                frage, lsg  = sub_potenzterm()
+                frage, lsg, wert  = sub_potenzterm(typ2)
             text = "Vereinfache diesen Term: " + frage
-            pro_text = "Vereinfache:" + frage 
-            term = lsg
-            for s in ["a","b","c"]:
-                term = term.replace(s, "*"+str(ord(s)))
-            term = term[1:]
-            parser = Parser()
-            wert = (parser.evaluate(term,{}))
-            lsg = lsg.replace("^1 ", " ")
-            lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"]            
+            pro_text = "Vereinfache" +frage
+            lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"] 
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             print(hilfe)
