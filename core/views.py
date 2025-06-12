@@ -8059,7 +8059,7 @@ def sub_potenz():
         exponent= 2
     return basis, exponent
 
-def sub_potenzterm(typ2):
+def sub_potenzterm_mal(typ2):
     a_sum = b_sum = c_sum = koeff = 0
     faktor = 1
     variablen = ["a","b","c","zahl","zahl"]
@@ -8147,6 +8147,52 @@ def sub_potenzterm(typ2):
     lsg = lsg.replace("^1 ", " ")
     return frage, lsg, wert
 
+def sub_potenzterm_plus():
+    variablen = ["zahl","zahl","a","a²","a³","b","b²","b³","c","c²","c³"]
+    summen = [0,]*11
+    frage = lsg = ""
+    wert = 0
+    n = 0
+    while n < 2:
+        zuza = random.randint(0,10)
+        koeff = random.randint(1,3)
+        variable = variablen[zuza]
+        summen[zuza] += koeff
+        if variable == "zahl":
+            frage += str(koeff) + "+"
+            wert += koeff
+        else:
+            if "²" in variable:
+                zwischenwert = ((ord(variable[0]))-90)**2
+            elif "³" in variable:
+                zwischenwert = ((ord(variable[0]))-90)**3
+            else:
+                zwischenwert = (ord(variable[0]))-90
+            wert += zwischenwert*koeff
+            if koeff == 1:
+                frage += variable + "+"
+            else:
+                frage += str(koeff) + variable + "+"
+        n += 1 
+    print(summen)
+    summen[1] += summen[0]
+    
+    n = 1
+    while n < len(summen):
+        if summen[n] >0:
+            if n == 1:
+                lsg += str(summen[n])+"+"
+            else:
+                lsg += str(summen[n]).replace("1","")+variablen[n]+"+"
+        n +=1
+    print(lsg)    
+    print(wert)
+    frage = frage[:-1]
+    lsg = lsg[:-1]
+    print(lsg)    
+
+    return frage, lsg, wert
+
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -8231,7 +8277,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        #typ=11
+        typ=12
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8361,12 +8407,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ in (10,11):
-            typ2 = random.randint(1,3)
+        elif typ in (10,11,12):
+            if typ == 12:
+                frage, lsg, wert  = sub_potenzterm_plus()
+            else:
+                typ2 = random.randint(1,3)
+                while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
+                    frage, lsg, wert  = sub_potenzterm_mal(typ2)
             titel = "Potenzgesetze"
-            frage = ""
-            while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
-                frage, lsg, wert  = sub_potenzterm(typ2)
             text = "Vereinfache diesen Term: " + frage
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"] 
