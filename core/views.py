@@ -8059,14 +8059,102 @@ def sub_potenz():
         exponent= 2
     return basis, exponent
 
+# def sub_potenzterm_mal(typ2):
+#     a_sum = b_sum = c_sum = koeff = 0
+#     faktor = 1
+#     variablen = ["a","b","c","zahl","zahl"]
+#     if typ2 < 3:                                        # nur Buchstaben
+#         variablen = variablen[:3]
+#     exponenten = [1,2,3]
+#     frage = lsg = ""
+#     if typ2 < 3:
+#         von = 3
+#         bis = 4
+#     else:
+#         von = 2
+#         bis = 3
+#     faktoren = random.randint(von,bis)
+#     n = 0
+#     while n < faktoren:
+#         variable = random.choice(variablen)
+#         exponent = random.choice(exponenten)
+#         if variable == "a":
+#             a_sum += exponent 
+#             if typ2 == 3:
+#                 koeff = 0
+#                 while koeff == 0:
+#                     koeff = random.randint(-2,3)
+#         elif variable == "b":
+#             b_sum += exponent 
+#             if typ2 == 3:
+#                 koeff = 0
+#                 while koeff == 0:
+#                     koeff = random.randint(-2,3)
+#         elif variable == "c":
+#             c_sum += exponent 
+#             if typ2 == 3:
+#                 koeff = 0
+#                 while koeff == 0:
+#                     koeff = random.randint(-2,3)
+#         elif variable == "zahl":
+#             zahl = random.randint(2,4)
+#             exponent = koeff = 1 
+#             faktor *= zahl
+#             variable = str(zahl)
+#         if faktor != 0:
+#             faktor *= koeff 
+#         if exponent == 1:
+#             str_exponent = ""
+#         elif exponent == 2:
+#             str_exponent = "²"                
+#         elif exponent == 3:
+#             str_exponent = "³"
+#         if typ2 == 3:
+#             teil="("+str(koeff)+variable+str_exponent+")·"
+#             teil = teil.replace("(1","(").replace("(-1","(-")
+#             if koeff > 0:
+#                 teil = teil.replace("(","").replace(")","")
+#             frage += teil
+#         else:
+#             frage +=variable+str_exponent+"·"
+#         n += 1 
+#     frage = frage[:-1]
+#     if frage[0] == "(":
+#         frage = frage.replace("(","",1).replace(")","",1)
+#     if "a" in frage:
+#         lsg += "a^" + str(a_sum) + " "
+#     if "b" in frage:
+#         lsg += "b^" + str(b_sum) + " "
+#     if "c" in frage:
+#         lsg += "c^" + str(c_sum) + " "
+#     if frage.count("a")>0 or frage.count("b")>0 or frage.count("c")>0:     
+#         term = lsg
+#     else:
+#         term = " "
+#     for s in ["a","b","c"]:
+#         term = term.replace(s, "*"+str(ord(s)-90))
+#     if term[0] == "*":        
+#         term = term[1:]
+#     parser = Parser()
+#     try:
+#         wert = parser.evaluate(term,{})
+#     except:
+#         wert = 1
+#     if faktor != 1 and faktor != 0:
+#         wert *= faktor
+#         lsg = " " + str(faktor) + " " + lsg
+#         lsg = lsg.replace("-1","-")
+#     lsg = lsg.replace("^1 ", " ")
+#     return frage, lsg, wert
+
 def sub_potenzterm_mal(typ2):
-    a_sum = b_sum = c_sum = koeff = 0
-    faktor = 1
+    faktor = wert = 1
+    frage = lsg = ""
     variablen = ["a","b","c","zahl","zahl"]
+    summen = [0,]*3
     if typ2 < 3:                                        # nur Buchstaben
         variablen = variablen[:3]
     exponenten = [1,2,3]
-    frage = lsg = ""
     if typ2 < 3:
         von = 3
         bis = 4
@@ -8076,75 +8164,57 @@ def sub_potenzterm_mal(typ2):
     faktoren = random.randint(von,bis)
     n = 0
     while n < faktoren:
-        variable = random.choice(variablen)
-        exponent = random.choice(exponenten)
-        if variable == "a":
-            a_sum += exponent 
-            if typ2 == 3:
-                koeff = 0
-                while koeff == 0:
-                    koeff = random.randint(-2,3)
-        elif variable == "b":
-            b_sum += exponent 
-            if typ2 == 3:
-                koeff = 0
-                while koeff == 0:
-                    koeff = random.randint(-2,3)
-        elif variable == "c":
-            c_sum += exponent 
-            if typ2 == 3:
-                koeff = 0
-                while koeff == 0:
-                    koeff = random.randint(-2,3)
-        elif variable == "zahl":
+        zuza = random.randint(0,len(variablen)-1)
+        variable = variablen[zuza]
+        if variable == "zahl":
             zahl = random.randint(2,4)
-            exponent = koeff = 1 
             faktor *= zahl
-            variable = str(zahl)
-        if faktor != 0:
-            faktor *= koeff 
-        if exponent == 1:
-            str_exponent = ""
-        elif exponent == 2:
-            str_exponent = "²"                
-        elif exponent == 3:
-            str_exponent = "³"
-        if typ2 == 3:
-            teil="("+str(koeff)+variable+str_exponent+")·"
-            teil = teil.replace("(1","(").replace("(-1","(-")
-            if koeff > 0:
-                teil = teil.replace("(","").replace(")","")
-            frage += teil
+            wert *=zahl
+            frage +=str(zahl) + "·"
         else:
-            frage +=variable+str_exponent+"·"
+            exponent = random.choice(exponenten)
+            summen[zuza] += exponent
+            if typ2 == 3:
+                koeff = 0
+                while koeff == 0:
+                    koeff = random.randint(-2,3)
+                faktor *= koeff
+            
+            if exponent == 1:
+                str_exponent = ""
+            elif exponent == 2:
+                str_exponent = "²"
+            elif exponent == 3:
+                str_exponent = "³"
+            
+            if typ2 == 3:
+                teil="("+str(koeff)+variable+str_exponent+")·"
+                teil = teil.replace("(1","(").replace("(-1","(-")
+                if koeff > 0:
+                    teil = teil.replace("(","").replace(")","")
+                frage += teil
+            else:
+                frage +=variable+str_exponent+"·"
         n += 1 
     frage = frage[:-1]
-    if frage[0] == "(":
-        frage = frage.replace("(","",1).replace(")","",1)
-    if "a" in frage:
-        lsg += "a^" + str(a_sum) + " "
-    if "b" in frage:
-        lsg += "b^" + str(b_sum) + " "
-    if "c" in frage:
-        lsg += "c^" + str(c_sum) + " "
-    if frage.count("a")>0 or frage.count("b")>0 or frage.count("c")>0:     
-        term = lsg
-    else:
-        term = " "
-    for s in ["a","b","c"]:
-        term = term.replace(s, "*"+str(ord(s)-90))
-    if term[0] == "*":        
-        term = term[1:]
-    parser = Parser()
-    try:
-        wert = parser.evaluate(term,{})
-    except:
-        wert = 1
+   
+    n = 0
+    while n < len(summen):
+        if summen[n] > 0:
+            lsg += variablen[n] + "^" + str(summen[n]) + " "
+            wert *= (ord(variablen[n])-90)**summen[n]
+            print(variablen[n] , ": ", (ord(variablen[n])-90)**summen[n])
+        n +=1
+    lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³")  
+
     if faktor != 1 and faktor != 0:
-        wert *= faktor
         lsg = " " + str(faktor) + " " + lsg
         lsg = lsg.replace("-1","-")
-    lsg = lsg.replace("^1 ", " ")
+        
+    print("lsg: ",lsg)    
+    print("wert: ",wert)
+    print("faktor: ", faktor)    
+    
     return frage, lsg, wert
 
 def sub_potenzterm_plus():
@@ -8174,9 +8244,7 @@ def sub_potenzterm_plus():
             else:
                 frage += str(koeff) + variable + "+"
         n += 1 
-    print(summen)
     summen[1] += summen[0]
-    
     n = 1
     while n < len(summen):
         if summen[n] >0:
@@ -8277,7 +8345,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=12
+        typ=10
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
