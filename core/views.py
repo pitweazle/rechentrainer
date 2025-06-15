@@ -2117,7 +2117,6 @@ def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, 
                 min = "um " + zahl_wort(min) + " Minuten"    
             text = "Welche Uhrzeit zeigt eine Digitaluhr {} {} {} {} {}?".format(min,vornach,halb,stunde,tageszeit)
             lsg = [("{:02d}:{:02d}".format(h_digital,min_digital)),("{}:{:02d}".format(h_digital,min_digital)),"indiv_0"]
-            #print(lsg)
             anmerkung = "Trenne Stunden und Minuten mit einem Doppelpunkt - z.B. so '01:02'"
         elif typ == 1:                                      #Zeit
             einheiten_liste = ['sec', 'min', 'h', 'd']
@@ -8113,7 +8112,7 @@ def sub_potenzterm_mal(typ2):
         if summen[n] > 0:
             lsg += variablen[n] + "^" + str(summen[n]) + " "
             wert *= (ord(variablen[n])-90)**summen[n]
-            print(variablen[n] , ": ", (ord(variablen[n])-90)**summen[n])
+            ##print(variablen[n] , ": ", (ord(variablen[n])-90)**summen[n])
         n +=1
     lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³")  
     if faktor != 1 and faktor != 0:
@@ -8127,7 +8126,7 @@ def sub_potenzterm_plus():
     frage = lsg = ""
     wert = 0
     n = 0
-    while frage.count("a ")<2 and frage.count("a²")<2 and frage.count("a³")<2 and frage.count("b ")<2 and frage.count("b²")<2 and frage.count(" b³")<2 and frage.count("c ")<2 and frage.count("c²")<2 and frage.count("c³")<2 and n < 6:
+    while frage.count("a ")<2 and frage.count("a²")<2 and frage.count("a³")<2 and frage.count("b ")<2 and frage.count("b²")<2 and frage.count(" b³")<2 and frage.count("c ")<2 and frage.count("c²")<2 and frage.count("c³")<2:
         zuza = random.randint(0,10)
         koeff = random.randint(1,3)
         variable = variablen[zuza]
@@ -8161,7 +8160,6 @@ def sub_potenzterm_plus():
     frage = frage.replace(" +","+")
     lsg = lsg.replace(" +", "+")
     lsg = lsg[:-1]
-    print(lsg)
     return frage, lsg, wert
 
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8215,40 +8213,48 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""               
             return -1, ""
-        elif typ in (10,11):
+        elif typ in (10,11,12):
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
-            elif (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
-                return 0,  "Du musst die Zahl nach vorne schreiben."
             elif "*" in eingabe:
                 return 0, "Lass das '*' weg."
             elif "^1" in eingabe:
                 return 0, "Lass das '^1' weg."
             elif "(" in eingabe:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
-            elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1:
-                return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."
-            else:
-                try:
-                    buchstabenliste = ["a","b","c"]
-                    for s in buchstabenliste:
-                        eingabe = eingabe.replace(s, "*"+str(ord(s)-90))
-                    term = eingabe
-                    if term[0] == "*":
-                        term = term[1:]
-                    parser = Parser()
-                    wert = (parser.evaluate(term,{}))
-                    if wert*-1 == lsg[2]:
-                        return -1, "Leider stimmt das Vorzeichen nicht."
-                    if wert == lsg[2]:
-                        return 0, "Der Wert stimmt, aber irgenwie würde ich das anders machen. Schicke deine Eingabe doch bitte per Mail an den Rechentrainer."
-                except:
-                    return 0, "Hier stimmt was mit deiner Eingabe nicht"
+            elif typ in (10,11):
+                if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
+                    return 0,  "Du musst die Zahl nach vorne schreiben."
+                elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1:
+                    return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."            
+            if typ == 12:
+                eingabe2 = eingabe.replace("^2","²").replace("^3","³")
+                liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
+                for s in liste:
+                    if eingabe2.count(s) > 1:
+                        text = "'" + s + "' darf in der richtigen Lösung nur einmal vorkommen."
+                        return -1, text
+            term = eingabe
+            buchstabenliste = ["a","b","c"]
+            try:
+                for s in buchstabenliste:
+                    term = term.replace(s, "*"+str(ord(s)-90))
+                if term[0] == "*":
+                    term = term[1:]
+                term = term.replace("+*","+")
+                parser = Parser()
+                wert = (parser.evaluate(term,{}))
+                if wert*-1 == lsg[2]:
+                    return -1, "Leider stimmt das Vorzeichen nicht."
+                if wert == lsg[2]:
+                    return 1, ""
+            except:
+                return 0, "Hier stimmt was mit deiner Eingabe nicht"
             return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=12
+        #typ=12
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8381,7 +8387,9 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ in (10,11,12):
             titel = "Potenzgesetze"
             if typ == 12:
-                frage, lsg, wert  = sub_potenzterm_plus()
+                frage = "++++++"
+                while frage.count("+")>5:
+                    frage, lsg, wert  = sub_potenzterm_plus()
                 text = "Vereinfache diesen Term: " + frage
             else:
                 typ2 = random.randint(1,3)
@@ -8393,7 +8401,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"] 
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
-            print(hilfe)
+            #print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -8446,7 +8454,7 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
-            print(hilfe)
+            #print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
 #********************************************************************************************************************************************************
