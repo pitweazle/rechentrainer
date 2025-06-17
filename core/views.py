@@ -8106,13 +8106,11 @@ def sub_potenzterm_mal(typ2):
                 frage +=variable+str_exponent+"·"
         n += 1 
     frage = frage[:-1]
-   
     n = 0
     while n < len(summen):
         if summen[n] > 0:
             lsg += variablen[n] + "^" + str(summen[n]) + " "
             wert *= (ord(variablen[n])-90)**summen[n]
-            ##print(variablen[n] , ": ", (ord(variablen[n])-90)**summen[n])
         n +=1
     lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³")  
     if faktor != 1 and faktor != 0:
@@ -8121,12 +8119,17 @@ def sub_potenzterm_mal(typ2):
     return frage, lsg, wert
 
 def sub_potenzterm_plus():
-    variablen = ["zahl","zahl","a ","a²","a³","b ","b²","b³","c","c²","c³"]
+    if random.random() < 0.5:    
+        variablen = ["zahl","zahl","a ","a²","a³","b ","b²","b³","c ","c²","c³"]
+        abzgl = 90
+    else:
+        variablen = ["zahl","zahl","x ","x²","x³","y ","y²","y³","z ","z²","z³"]
+        abzgl = 102
     summen = [0,]*11
     frage = lsg = ""
     wert = 0
     n = 0
-    while frage.count("a ")<2 and frage.count("a²")<2 and frage.count("a³")<2 and frage.count("b ")<2 and frage.count("b²")<2 and frage.count(" b³")<2 and frage.count("c ")<2 and frage.count("c²")<2 and frage.count("c³")<2:
+    while frage.count(variablen[2])<2 and frage.count(variablen[3])<2 and frage.count(variablen[4])<2 and frage.count(variablen[5])<2 and frage.count(variablen[6])<2 and frage.count(variablen[7])<2 and frage.count(variablen[8])<2 and frage.count(variablen[9])<2 and frage.count(variablen[10])<2:
         zuza = random.randint(0,10)
         koeff = random.randint(1,3)
         variable = variablen[zuza]
@@ -8136,17 +8139,18 @@ def sub_potenzterm_plus():
             wert += koeff
         else:
             if "²" in variable:
-                zwischenwert = ((ord(variable[0]))-90)**2
+                zwischenwert = ((ord(variable[0]))-abzgl)**2
             elif "³" in variable:
-                zwischenwert = ((ord(variable[0]))-90)**3
+                zwischenwert = ((ord(variable[0]))-abzgl)**3
             else:
-                zwischenwert = (ord(variable[0]))-90
+                zwischenwert = (ord(variable[0]))-abzgl
             wert += zwischenwert*koeff
             if koeff == 1:
                 frage += variable + "+"
             else:
                 frage += str(koeff) + variable + "+"
         n += 1
+    #print(frage.count(variablen[2])<2 , frage.count(variablen[3])<2 , frage.count(variablen[4])<2 , frage.count(variablen[5])<2 , frage.count(variablen[6])<2 , frage.count(variablen[7])<2 , frage.count(variablen[8])<2 , frage.count(variablen[9])<2 , frage.count(variablen[10])<2)
     summen[1] += summen[0]
     n = 1
     while n < len(summen):
@@ -8214,6 +8218,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return -1, ""               
             return -1, ""
         elif typ in (10,11,12):
+            eingabe2 = eingabe.replace("^2","²").replace("^3","³")
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
@@ -8221,40 +8226,56 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, "Lass das '*' weg."
             elif "^1" in eingabe:
                 return 0, "Lass das '^1' weg."
+            elif eingabe[0] == "+":
+                return 0, "'+' am Anfang kannst du weglassen."
             elif "(" in eingabe:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
             elif typ in (10,11):
                 if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
                     return 0,  "Du musst die Zahl nach vorne schreiben."
-                elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1:
+                elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1 and eingabe.count("x")>1 or eingabe.count("y")>1 or eingabe.count("z")>1:
                     return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."            
             if typ == 12:
-                eingabe2 = eingabe.replace("^2","²").replace("^3","³")
-                liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
+                if "a" in eingabe or "b" in eingabe or "c" in eingabe :
+                    liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
+                else:
+                    liste = ["x+","x²","x³","y+","y²","y³","z+","z²","z³"]
                 for s in liste:
+                    #print(s, eingabe2.count(s))
                     if eingabe2.count(s) > 1:
-                        text = "'" + s + "' darf in der richtigen Lösung nur einmal vorkommen."
-                        return -1, text
+                        text = "'" + s + "' darf höchstens einmal vorkommen."
+                        return -1, text.replace("+","")
             term = eingabe
-            buchstabenliste = ["a","b","c"]
+            if "a" in eingabe or "b" in eingabe or "c" in eingabe :
+                buchstabenliste = ["a","b","c"]
+                abzgl = 90
+            else:
+                buchstabenliste = ["x","y","z"]
+                abzgl = 102
             try:
                 for s in buchstabenliste:
-                    term = term.replace(s, "*"+str(ord(s)-90))
+                    term = term.replace(s, "*"+str(ord(s)-abzgl))
                 if term[0] == "*":
                     term = term[1:]
                 term = term.replace("+*","+")
                 parser = Parser()
                 wert = (parser.evaluate(term,{}))
-                if wert*-1 == lsg[2]:
+                if wert*-1 == lsg[3]:
                     return -1, "Leider stimmt das Vorzeichen nicht."
-                if wert == lsg[2]:
-                    return 1, ""
+                if wert == lsg[3]:
+                    if len(eingabe) == len(lsg[2]): 
+                        return 1, ""
+                    else:
+                        return 0, "Den Term kann man noch kürzer zusammenfassen."
+                    # else:
+                    #     return -1, ""
             except:
-                return 0, "Hier stimmt was mit deiner Eingabe nicht"
-            return -1, ""
+                return 0, "Den Term, den du hier eingegeben hast, kann ich leider nicht berechnen."
+        return -1, ""
     else:                                                                            
-        typ = random.randint(typ_anf, typ_end)
-        #typ=12
+        #typ = random.randint(typ_anf, typ_end)
+        typ = random.randint(10,12)
+        typ=10
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8390,15 +8411,15 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
-                text = "Vereinfache diesen Term: " + frage
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
                     frage, lsg, wert  = sub_potenzterm_mal(typ2)
-                text = "Fasse zusammen: " + frage
+            text = "Fasse zusammen: " if typ == 12 else "Vereinfache diesen Term: "
+            text += frage
             frage += "="
             pro_text = frage + "="
-            lsg = [lsg, lsg.replace(" ", ""), wert, "indiv_0"] 
+            lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             #print(hilfe)
