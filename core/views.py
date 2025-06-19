@@ -8170,6 +8170,13 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
     if optionen != "":                                                               
         typ_anf = 1
         typ_end = 9
+        if "nur" in optionen:
+            typ_anf = 10
+            typ_end = 12        
+        elif stufe >= 35 or jg > 10 or "negative" in optionen:
+            typ_end = 12
+        if stufe >= 33 or jg > 10 or "mit" in optionen:
+            typ_end = 12
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ < 3:
@@ -8273,9 +8280,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, "Den Term, den du hier eingegeben hast, kann ich leider nicht berechnen."
         return -1, ""
     else:                                                                            
-        #typ = random.randint(typ_anf, typ_end)
-        typ = random.randint(10,12)
-        typ=10
+        typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8318,6 +8323,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     else:
                         lsg = [format_zahl(erg,0)]
                 variable = [str_zahl, term, gesucht]
+                hilfe_id = 10
+                hilfe = "bei der 'scientific notation' besteht aus einer Zahl größer 0 und kleiner 10 multipliziert mit einer Zehnerpotenz, die die Anzahl der Stellen vor dem Komma angibt, also z.B. 1234=1,2345·10³.<br>Bei kleinen Zahlen gibt ein neagtiver Exponent die Zahlen nach dem Komma an also z.B. 0,012=1,2·10^-3."
         elif typ < 5:                                               # Werte berechnen
             basis, exponent = sub_potenz()
             frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
@@ -8411,10 +8418,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
+                hilfe_id = 12
+                hilfe="Hier darfst du nur solche Ausdrücke addieren, bei denen die Variable genau übereinstimmt, du darfst also z.B nicht 2u und 3u² zusammenfassen."
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
                     frage, lsg, wert  = sub_potenzterm_mal(typ2)
+                hilfe_id = 10
+                hilfe="Du musst einfach nur die Zahlen multiplizieren und die Buchstaben nach dem Alphabet sortieren.<br>(Achte auf die Vorzeichen."
             text = "Fasse zusammen: " if typ == 12 else "Vereinfache diesen Term: "
             text += frage
             frage += "="
