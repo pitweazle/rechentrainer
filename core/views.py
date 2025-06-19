@@ -8194,12 +8194,16 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     return 1, ""
                 else:    
                     return -1, ""
-        elif typ == 7:
+        elif typ in (6,7):
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
-            lsg = lsg[1].replace("falsch","")
-            if eingabe == lsg or eingabe == lsg.replace("^2","²").replace("^3","³"):
-                return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplikation wäre - es handelt sich aber um eine Addition."
+            zahl = re.findall('([0-9])',lsg[1])
+            if typ == 6:
+                eingabe = eingabe.replace("²","^2").replace("³","^3")
+                if zahl[0] in eingabe and "^" in eingabe:
+                    return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplkation wäre - es handelt sich aber um eine Addition."
+            elif typ == 7 and zahl[0] in eingabe and not "^" in eingabe:
+                return -1, "Diese Eingabe wäre richtig, wenn es eine Addition wäre - es handelt sich aber um eine Multiplikation."
             else:
                 return -1, ""
         elif typ in (8,9):
@@ -8359,9 +8363,9 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage +="="
             term = buchstabe + "^" + str(zufall)
             if typ == 7:
-                lsg = [term.replace("^2","²").replace("^3","³"),term]
+                lsg = [term.replace("^2","²").replace("^3","³"), term, "indiv_0"]
             else:
-                lsg = [str(zufall) + buchstabe, "falsch" + term, "indiv_0"]
+                lsg = [str(zufall) + buchstabe,  str(zufall) + buchstabe, "indiv_0"]
         elif typ in (8,9):                                          # aaba  und a+a+b+a vereinfachen
             buchstaben = ["x","y","z","a","b","c"]
             if random.random() < 0.5:
