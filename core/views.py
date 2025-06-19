@@ -8285,6 +8285,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=10
         typ2 = 0
         titel = "Potenzen" 
         variable = ["",]
@@ -8416,20 +8417,22 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ in (10,11,12):
+        elif typ in (10,11,12):                                     # Potenzgesetze 10 mal, 11 aich negative, 12 Plus
             titel = "Potenzgesetze"
             if typ == 12:
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
-                hilfe_id = 12
+                hilfe_id = 120
                 hilfe="Hier darfst du nur solche Ausdrücke addieren, bei denen die Variable genau übereinstimmt, du darfst also z.B nicht 2u und 3u² zusammenfassen."
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
                     frage, lsg, wert  = sub_potenzterm_mal(typ2)
-                hilfe_id = 10
-                hilfe="Du musst einfach nur die Zahlen multiplizieren und die Buchstaben nach dem Alphabet sortieren.<br>(Achte auf die Vorzeichen."
+                if typ == 10:
+                    hilfe_id = 100
+                else:
+                    hilfe_id = 110
             text = "Fasse zusammen: " if typ == 12 else "Vereinfache diesen Term: "
             text += frage
             frage += "="
