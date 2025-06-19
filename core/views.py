@@ -8328,7 +8328,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                         lsg = [format_zahl(erg,0)]
                 variable = [str_zahl, term, gesucht]
                 hilfe_id = 10
-                hilfe = "bei der 'scientific notation' besteht aus einer Zahl größer 0 und kleiner 10 multipliziert mit einer Zehnerpotenz, die die Anzahl der Stellen vor dem Komma angibt, also z.B. 1234=1,2345·10³.<br>Bei kleinen Zahlen gibt ein neagtiver Exponent die Zahlen nach dem Komma an also z.B. 0,012=1,2·10^-3."
+                hilfe = "bei der 'scientific notation' besteht aus einer Kommazahl größer 0 und kleiner 10 multipliziert mit einer Zehnerpotenz, die die Anzahl der Stellen vor dem Komma angibt, also z.B. 1234=1,2345·10³.<br>Bei kleinen Zahlen gibt ein neagtiver Exponent a, um wieviele Stellen das dem Komma nach links verschoben werden muss, also z.B. 0,012=1,2·10^-2."
         elif typ < 5:                                               # Werte berechnen
             basis, exponent = sub_potenz()
             frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
