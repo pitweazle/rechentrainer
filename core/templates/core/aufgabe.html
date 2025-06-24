@@ -129,6 +129,9 @@
                         <a href="{% url 'main' kategorie.slug  %}">nächste Aufgabe</a> 
                     </button>
                 {% else %}
+                    {% if "potenzen" in parameter.object %}
+                        {% include 'core/potenzen.html'%}
+                    {% endif %}
                     {{message_unten}}
                     {% if parameter.popup %}
                         <a href="#" id="openPopup"><br>{{parameter.popup}}</a>
