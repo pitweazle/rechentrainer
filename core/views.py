@@ -8058,12 +8058,11 @@ def sub_potenz():
         exponent= 2
     return basis, exponent
 
-def sub_potenzterm_mal(typ2):
+def sub_potenzterm_mal(typ2, summen = [0,]*3):
     faktor = wert = 1
     frage = lsg = ""
     variablen = ["a","b","c","zahl","zahl"]
-    summen = [0,]*3
-    if typ2 < 3:                                        # nur Buchstaben
+    if typ2 != 3:                                        # nur Buchstaben
         variablen = variablen[:3]
     exponenten = [1,2,3]
     if typ2 < 3:
@@ -8084,18 +8083,20 @@ def sub_potenzterm_mal(typ2):
             frage +=str(zahl) + "·"
         else:
             exponent = random.choice(exponenten)
+            if typ2 == 4:
+                exponent *= -1
             summen[zuza] += exponent
             if typ2 == 3:
                 koeff = 0
                 while koeff == 0:
                     koeff = random.randint(-2,3)
                 faktor *= koeff
-            if exponent == 1:
-                str_exponent = ""
-            elif exponent == 2:
+            if abs(exponent) == 2:
                 str_exponent = "²"
-            elif exponent == 3:
+            elif abs(exponent) == 3:
                 str_exponent = "³"
+            else:
+                str_exponent = ""
             if typ2 == 3:
                 teil="("+str(koeff)+variable+str_exponent+")·"
                 teil = teil.replace("(1","(").replace("(-1","(-")
@@ -8116,7 +8117,7 @@ def sub_potenzterm_mal(typ2):
     if faktor != 1 and faktor != 0:
         lsg = " " + str(faktor) + " " + lsg
         lsg = lsg.replace("-1","-")
-    return frage, lsg, wert
+    return frage, lsg, wert, faktor, summen
 
 def sub_potenzterm_plus():
     if random.random() < 0.5:    
@@ -8285,8 +8286,10 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=13
         typ2 = 0
-        titel = "Potenzen" 
+        titel = "Potenzen"
+        parameter = {'name':'normal'} 
         variable = ["",]
         pro_text = frage = einheit = anmerkung = hilfe = ""
         erg = None
@@ -8427,7 +8430,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
-                    frage, lsg, wert  = sub_potenzterm_mal(typ2)
+                    frage, lsg, wert, faktor, summen  = sub_potenzterm_mal(typ2)
                 if typ == 10:
                     hilfe_id = 100
                 else:
@@ -8437,10 +8440,33 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage += "="
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
+        elif typ == 13:
+            text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x^-2 schreiben. Wende diese Regel auf den untenstehenden Bruch an und fasse zusammen:"
+            parameter['object']='potenzen'
+            zaehler, lsg, wert, faktor, summen  = sub_potenzterm_mal(1,[0,]*3)
+            parameter['zaehler'] = zaehler
+            nenner, lsg, wert, divisor, summen  = sub_potenzterm_mal(4, summen)
+            faktor = faktor/divisor
+            parameter['nenner'] = nenner
+            frage = lsg = ""
+            wert = 1
+            variablen = ["a","b","c"]
+            n = 0
+            while n < len(summen):
+                if summen[n] != 0:
+                    lsg += variablen[n] + "^" + str(summen[n]) + " "
+                    wert *= (ord(variablen[n])-90)**summen[n]
+                n +=1
+            lsg = lsg.replace("^1","")
+            wert *= faktor
+            if faktor != 1:
+                lsg = str(faktor) + lsg
+            anmerkung = lsg
+            print(anmerkung)
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             #print(hilfe)
-        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
