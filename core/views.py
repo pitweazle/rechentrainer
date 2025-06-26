@@ -8229,24 +8229,28 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""               
             return -1, ""
-        elif typ in (10,11,12):
+        elif typ in (10,11,12,13):
             eingabe2 = eingabe.replace("^2","²").replace("^3","³")
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
             elif "*" in eingabe:
                 return 0, "Lass das '*' weg."
+            elif "·" in eingabe:
+                return 0, "Lass das '·' weg."
+            elif typ == 13 and "/" in eingabe:
+                return 0, "Mithilfe der negativen Exponenten sollst du den Term ohne Bruch schreiben."
             elif "^1" in eingabe:
                 return 0, "Lass das '^1' weg."
             elif eingabe[0] == "+":
                 return 0, "'+' am Anfang kannst du weglassen."
             elif "(" in eingabe:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
-            elif typ in (10,11):
+            elif typ in (10,11,13):
                 if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
                     return 0,  "Du musst die Zahl nach vorne schreiben."
                 elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1 and eingabe.count("x")>1 or eingabe.count("y")>1 or eingabe.count("z")>1:
-                    return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."            
+                    return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."
             if typ == 12:
                 if "a" in eingabe or "b" in eingabe or "c" in eingabe :
                     liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
@@ -8286,7 +8290,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=13
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8441,7 +8444,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
         elif typ == 13:
-            text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x^-2 schreiben. Wende diese Regel auf den untenstehenden Bruch an und fasse zusammen:"
+            text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
+            anmerkung = "Für 1/x musst du x^-1 schreiben."
             parameter['object']='potenzen'
             zaehler, lsg, wert, faktor, summen  = sub_potenzterm_mal(1,[0,]*3)
             parameter['zaehler'] = zaehler
@@ -8457,12 +8461,12 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     lsg += variablen[n] + "^" + str(summen[n]) + " "
                     wert *= (ord(variablen[n])-90)**summen[n]
                 n +=1
-            lsg = lsg.replace("^1","")
             wert *= faktor
+            lsg = lsg.replace("^1","")
+            lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
+            print(lsg)
             if faktor != 1:
                 lsg = str(faktor) + lsg
-            anmerkung = lsg
-            print(anmerkung)
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             #print(hilfe)
