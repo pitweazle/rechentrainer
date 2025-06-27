@@ -8151,7 +8151,6 @@ def sub_potenzterm_plus():
             else:
                 frage += str(koeff) + variable + "+"
         n += 1
-    #print(frage.count(variablen[2])<2 , frage.count(variablen[3])<2 , frage.count(variablen[4])<2 , frage.count(variablen[5])<2 , frage.count(variablen[6])<2 , frage.count(variablen[7])<2 , frage.count(variablen[8])<2 , frage.count(variablen[9])<2 , frage.count(variablen[10])<2)
     summen[1] += summen[0]
     n = 1
     while n < len(summen):
@@ -8257,7 +8256,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 else:
                     liste = ["x+","x²","x³","y+","y²","y³","z+","z²","z³"]
                 for s in liste:
-                    #print(s, eingabe2.count(s))
                     if eingabe2.count(s) > 1:
                         text = "'" + s + "' darf höchstens einmal vorkommen."
                         return -1, text.replace("+","")
@@ -8290,6 +8288,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ = 14
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8446,7 +8445,9 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
         elif typ == 13:
-            text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
+            titel = "Negative Exponenten"
+            text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x<sup>-2</sup> bzw. x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
+            protext = ""
             anmerkung = "Für 1/x musst du x^-1 schreiben."
             parameter['object']='potenzen'
             zaehler, lsg, wert, faktor, summen  = sub_potenzterm_mal(1,[0,]*3)
@@ -8466,14 +8467,28 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             wert *= faktor
             lsg = lsg.replace("^1","")
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
-            print(lsg)
             if faktor != 1:
                 lsg = str(faktor) + lsg
             hilfe_id = 130
             hilfe = "Du musst hier die Exponenten gleicher Variablen im Zähler addieren und die im Nenner davon subtrahieren. Denke dran, dass dabei x auch als x^1 geschrieben werden könnte und x im Nenner zu x^-1 wird."
-        if hilfe_id != 0:
-            hilfe = hilfe.format(*variable)
-            #print(hilfe)
+        elif typ == 14:
+            titel = "Potenzieren von Potenzen"
+            klammer = random.randint(2,3)
+            exp1 = random.randint(1,3)
+            exp2 = random.randint(1,3)
+            abs1 = random.randint(1,4)
+            abs2 = random.randint(1,4)
+            term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
+            frage = term.replace("1","")
+            text = "Klammere aus: " + frage
+            frage += "="
+            if exp1 == exp2:
+                lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
+            else:
+                lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer)
+            #lsgterm = lsgterm.replace("^","<sup><small>").replace("°","</sup></small>").replace("1","")
+            lsg = [lsgterm.replace("^","<sup><small>").replace("°","</sup></small>").replace("1",""),lsgterm.replace("°","").replace("^1","")]
+            anmerkung = lsg
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
