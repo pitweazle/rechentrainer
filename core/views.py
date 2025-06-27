@@ -8400,6 +8400,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                         lsg += [lsgterm3, "buchstabe" + lsgterm4]
                     else:
                         lsg += [lsgterm4, "buchstabe" + lsgterm3]
+                hilfe_id = 90
+                hilfe = "Du musst i der Multiplikation die Exponenten gleicher Variablen einfach nur addieren und dran denken, dass dabei x auch als x^1 geschrieben werden könnte."
             else:
                 zeichen = "+"
                 term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
@@ -8467,6 +8469,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             print(lsg)
             if faktor != 1:
                 lsg = str(faktor) + lsg
+            hilfe_id = 130
+            hilfe = "Du musst hier die Exponenten gleicher Variablen im Zähler addieren und die im Nenner davon subtrahieren. Denke dran, dass dabei x auch als x^1 geschrieben werden könnte und x im Nenner zu x^-1 wird."
         if hilfe_id != 0:
             hilfe = hilfe.format(*variable)
             #print(hilfe)
