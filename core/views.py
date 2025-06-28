@@ -4803,7 +4803,7 @@ def term_bereinigen(term, typ):
     elif typ == 2:
         erlaubt = erlaubt[:22]
     for e in erlaubt[:8]:
-        if e+e in term:
+        if e+e in term :
             rueckmeldung = 'Anstelle von "{}" schreibt man "{}²".<br>'.format(e+e,e)
     for t in term:
         if t not in erlaubt:
@@ -4823,7 +4823,7 @@ def term_bereinigen(term, typ):
     for t in teile:
         if (re.search(r'[\d]²',t)):
             return 0, "{} musst du ausrechnen.".format(t)
-        if not (re.search(r'1[\d]',t)) and (re.search(r'1[\D]',t)) and "1" in t:
+        if not (re.search(r'1[\d]',t)) and (re.search(r'1[\D]',t)) and "1" and not "1)" in t:
             teile[n] = teile[n].replace("1","")
             t = t.replace("1","")
             rueckmeldung += '<br>Die "1" lässt man hier weg und schreibt nur "{}"<br>'.format(t)
@@ -4938,6 +4938,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
     elif eingabe != "": 
         loe = (lsg[0])
         if typ in [2,3,4,5,6,7,8]:
+            eingabe=eingabe.replace("^2","²")
             eingabe, rueckmeldung = (term_bereinigen(eingabe, typ))          # richtig wenn Eingabeterm bereinigt
             if eingabe == loe:
                 return 1, rueckmeldung
@@ -5371,6 +5372,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                     lsg = [text, (text+text).replace("²",""),"indiv_0"]
                 text = frage
             text = "Wende die binomischen Formeln an:<br>" + text
+        print(lsg)
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8174,12 +8176,12 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             typ_anf = 10
             typ_end = 12        
         elif stufe >= 35 or jg > 10 or "negative" in optionen:
-            typ_end = 12
+            typ_end = 14
         if stufe >= 33 or jg > 10 or "mit" in optionen:
-            typ_end = 12
+            typ_end = 13
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
-        if typ < 3:
+        if typ == 1:
             if "*" not in eingabe:
                 return 0, "'*10^' muss in deiner Antwort vorkommen."
             else:
@@ -8194,23 +8196,23 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     return 1, ""
                 else:    
                     return -1, ""
-        elif typ in (6,7):
+        elif typ in (5,6):
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
             zahl = re.findall('([0-9])',lsg[1])
-            if typ == 6:
+            if typ == 5:
                 eingabe = eingabe.replace("²","^2").replace("³","^3")
                 if zahl[0] in eingabe and "^" in eingabe:
                     return -1, "Diese Eingabe wäre richtig, wenn es eine Multiplkation wäre - es handelt sich aber um eine Addition."
-            elif typ == 7 and zahl[0] in eingabe and not "^" in eingabe:
+            elif typ == 6 and zahl[0] in eingabe and not "^" in eingabe:
                 return -1, "Diese Eingabe wäre richtig, wenn es eine Addition wäre - es handelt sich aber um eine Multiplikation."
             else:
                 return -1, ""
-        elif typ in (8,9):
+        elif typ in (7,8):
             eingabe = eingabe.replace(" ","")
             if "*" in eingabe:
                 return 0, "Lasse das '*' Zeichen zwischen der Zahl und der Variablen weg."
-            if typ == 9:
+            if typ == 8:
                 if "^1" in eingabe:
                     return 0, "'^1' kann man weglassen"
                 eingabe = eingabe.replace("²","^2").replace("³","^3")
@@ -8228,7 +8230,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""               
             return -1, ""
-        elif typ in (10,11,12,13):
+        elif typ in (10,11,13):
             eingabe2 = eingabe.replace("^2","²").replace("^3","³")
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
@@ -8245,12 +8247,12 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, "'+' am Anfang kannst du weglassen."
             elif "(" in eingabe:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
-            elif typ in (10,11,13):
+            elif typ in (10,13):
                 if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
                     return 0,  "Du musst die Zahl nach vorne schreiben."
                 elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1 and eingabe.count("x")>1 or eingabe.count("y")>1 or eingabe.count("z")>1:
                     return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."
-            if typ == 12:
+            if typ == 11:
                 if "a" in eingabe or "b" in eingabe or "c" in eingabe :
                     liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
                 else:
@@ -8288,7 +8290,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ = 14
+        typ=10
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8296,7 +8298,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         pro_text = frage = einheit = anmerkung = hilfe = ""
         erg = None
         hilfe_id = 0
-        if typ < 3:                                                 # Exponentialdarstellung
+        if typ == 1:                                                # Exponentialdarstellung
                 typ2 = random.randint(1,4)
                 titel = "scientific notation"
                 koeff = random.randint(1,999)
@@ -8334,14 +8336,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 variable = [str_zahl, term, gesucht]
                 hilfe_id = 10
                 hilfe = "bei der 'scientific notation' besteht aus einer Kommazahl größer 0 und kleiner 10 multipliziert mit einer Zehnerpotenz, die die Anzahl der Stellen vor dem Komma angibt, also z.B. 1234=1,2345·10³.<br>Bei kleinen Zahlen gibt ein neagtiver Exponent a, um wieviele Stellen das dem Komma nach links verschoben werden muss, also z.B. 0,012=1,2·10^-2."
-        elif typ < 5:                                               # Werte berechnen
+        elif typ in (2,3):                                          # Werte berechnen
             basis, exponent = sub_potenz()
             frage = "{}^{}".format(basis,exponent).replace("^2","²").replace("^3","³")
             text = "Berechne " + frage
             frage +="="
             erg = basis**exponent
             lsg = [str(erg)]
-        elif typ == 5:                                              # Zahl als Potenz
+        elif typ == 4:                                              # Zahl als Potenz
             frage = "{}="
             text = "Schreibe {} als Potenz zweier natürlicher Zahlen"
             pro_text = "{} als Potenz"
@@ -8353,8 +8355,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             variable = [pot[zufall]]
             term = "{}^{}".format(bas[zufall],expo[zufall])
             lsg = [term.replace("^2","²").replace("^3","³"),term]            
-        elif typ in (6,7):                                          # x+x+x und x*x*x vereinfachen
-            if typ == 7:
+        elif typ in (5,6):                                          # x+x+x und x*x*x vereinfachen
+            if typ == 6:
                 zeichen = "·"
             else:
                 zeichen = "+"
@@ -8367,11 +8369,11 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache: " + frage
             frage +="="
             term = buchstabe + "^" + str(zufall)
-            if typ == 7:
+            if typ == 6:
                 lsg = [term.replace("^2","²").replace("^3","³"), term, "indiv_0"]
             else:
                 lsg = [str(zufall) + buchstabe,  str(zufall) + buchstabe, "indiv_0"]
-        elif typ in (8,9):                                          # aaba  und a+a+b+a vereinfachen
+        elif typ in (7,8):                                          # aaba  und a+a+b+a vereinfachen
             buchstaben = ["x","y","z","a","b","c"]
             if random.random() < 0.5:
                 buchstaben = buchstaben[:3]
@@ -8384,7 +8386,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             while zaehler1 + zaehler2 > 8 or zaehler1 + zaehler2 == 2:
                 zaehler1 = random.randint(1,5)
                 zaehler2 = random.randint(1,5)
-            if typ == 9:    
+            if typ == 8:    
                 term = zaehler1*[variable1+" " ] + zaehler2*[variable2+" "]
                 lsgterm1 = (variable1 + "^" + str(zaehler1) + variable2 + "^" + str(zaehler2)).replace("^1","")
                 lsgterm2 = (variable2 + "^" + str(zaehler2) + variable1 + "^" + str(zaehler1)).replace("^1","")
@@ -8423,9 +8425,9 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ in (10,11,12):                                     # Potenzgesetze 10 mal, 11 aich negative, 12 Plus
+        elif typ in (10,11):                                        # Potenzgesetze 10 mal auch negative, 11 Plus
             titel = "Potenzgesetze"
-            if typ == 12:
+            if typ == 11:
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
@@ -8439,11 +8441,30 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     hilfe_id = 100
                 else:
                     hilfe_id = 110
-            text = "Fasse zusammen: " if typ == 12 else "Vereinfache diesen Term: "
+            text = "Fasse zusammen: " if typ == 11 else "Vereinfache diesen Term: "
             text += frage
             frage += "="
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
+        elif typ == 12:
+            titel = "Potenzieren von Potenzen"
+            klammer = random.randint(2,3)
+            exp1 = random.randint(1,3)
+            exp2 = random.randint(1,3)
+            abs1 = random.randint(1,4)
+            abs2 = random.randint(1,4)
+            wert = abs1*abs2*3**(exp1*klammer)*4**(exp1*klammer)
+            term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
+            frage = term.replace("1","")
+            text = "Klammere aus: " + frage
+            frage += "="
+            if exp1 == exp2:
+                lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
+            else:
+                lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
+            lsg = [lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1",""), lsgterm.replace("°","").replace("^1",""), wert, "indiv_0"]
+            
+            anmerkung = lsg
         elif typ == 13:
             titel = "Negative Exponenten"
             text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x<sup>-2</sup> bzw. x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
@@ -8471,24 +8492,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = str(faktor) + lsg
             hilfe_id = 130
             hilfe = "Du musst hier die Exponenten gleicher Variablen im Zähler addieren und die im Nenner davon subtrahieren. Denke dran, dass dabei x auch als x^1 geschrieben werden könnte und x im Nenner zu x^-1 wird."
-        elif typ == 14:
-            titel = "Potenzieren von Potenzen"
-            klammer = random.randint(2,3)
-            exp1 = random.randint(1,3)
-            exp2 = random.randint(1,3)
-            abs1 = random.randint(1,4)
-            abs2 = random.randint(1,4)
-            term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
-            frage = term.replace("1","")
-            text = "Klammere aus: " + frage
-            frage += "="
-            if exp1 == exp2:
-                lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
-            else:
-                lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer)
-            #lsgterm = lsgterm.replace("^","<sup><small>").replace("°","</sup></small>").replace("1","")
-            lsg = [lsgterm.replace("^","<sup><small>").replace("°","</sup></small>").replace("1",""),lsgterm.replace("°","").replace("^1","")]
-            anmerkung = lsg
+
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -9224,7 +9228,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                     punkte += 2*10**(n)
             return punkte, rueckmeldung
         else:
-            eingabe=eingabe.replace("^2","²")
+            #eingabe=eingabe.replace("^2","²")
             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
             if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
                 parser = Parser()
