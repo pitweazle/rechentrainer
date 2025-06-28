@@ -8113,7 +8113,7 @@ def sub_potenzterm_mal(typ2, summen = [0,]*3):
     while n < len(summen):
         if summen[n] > 0:
             lsg += variablen[n] + "^" + str(summen[n]) + " "
-            wert *= (ord(variablen[n])-90)**summen[n]
+            wert *= (ord(variablen[n])-94)**summen[n]
         n +=1
     lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³")  
     if faktor != 1 and faktor != 0:
@@ -8124,10 +8124,10 @@ def sub_potenzterm_mal(typ2, summen = [0,]*3):
 def sub_potenzterm_plus():
     if random.random() < 0.5:    
         variablen = ["zahl","zahl","a ","a²","a³","b ","b²","b³","c ","c²","c³"]
-        abzgl = 90
+        abzgl = 94
     else:
         variablen = ["zahl","zahl","x ","x²","x³","y ","y²","y³","z ","z²","z³"]
-        abzgl = 102
+        abzgl = 117
     summen = [0,]*11
     frage = lsg = ""
     wert = 0
@@ -8167,6 +8167,14 @@ def sub_potenzterm_plus():
     lsg = lsg.replace(" +", "+")
     lsg = lsg[:-1]
     return frage, lsg, wert
+
+def sub_zeichenzuviel(eingabe):
+    nachricht = ""
+    zeichen = ["*","·","^1"]
+    for z in zeichen:
+        if z in eingabe:
+            nachricht = "Lass das " + z + "weg"
+    return nachricht
 
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -8230,22 +8238,19 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 return -1, ""               
             return -1, ""
-        elif typ in (10,11,13):
+        else:
             eingabe2 = eingabe.replace("^2","²").replace("^3","³")
             eingabe = eingabe.replace("²","^2").replace("³","^3").replace(" ","")
             if eingabe == lsg[1]:
                 return 1, ""
-            elif "*" in eingabe:
-                return 0, "Lass das '*' weg."
-            elif "·" in eingabe:
-                return 0, "Lass das '·' weg."
-            elif typ == 13 and "/" in eingabe:
-                return 0, "Mithilfe der negativen Exponenten sollst du den Term ohne Bruch schreiben."
-            elif "^1" in eingabe:
-                return 0, "Lass das '^1' weg."
+            nachricht = sub_zeichenzuviel(eingabe)
+            if nachricht != "":
+                return 0, nachricht
             elif eingabe[0] == "+":
                 return 0, "'+' am Anfang kannst du weglassen."
-            elif "(" in eingabe:
+            elif typ == 13 and "/" in eingabe:
+                return 0, "Mithilfe der negativen Exponenten sollst du den Term ohne Bruch schreiben."
+            elif "(" in eingabe and typ != 12:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
             elif typ in (10,13):
                 if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
@@ -8261,19 +8266,22 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     if eingabe2.count(s) > 1:
                         text = "'" + s + "' darf höchstens einmal vorkommen."
                         return -1, text.replace("+","")
-            term = eingabe
+            if typ == 12:
+                if not "(" in eingabe:
+                    return 0, "Du sollst ausklammern - hier fehlt eine Klammer." 
+            term = eingabe 
             if "a" in eingabe or "b" in eingabe or "c" in eingabe :
                 buchstabenliste = ["a","b","c"]
-                abzgl = 90
+                abzgl = 94
             else:
                 buchstabenliste = ["x","y","z"]
-                abzgl = 102
+                abzgl = 117
             try:
                 for s in buchstabenliste:
                     term = term.replace(s, "*"+str(ord(s)-abzgl))
                 if term[0] == "*":
                     term = term[1:]
-                term = term.replace("+*","+")
+                term = term.replace("+*","+").replace("(*","(").replace("(","*(")  
                 parser = Parser()
                 wert = (parser.evaluate(term,{}))
                 if wert*-1 == lsg[3]:
@@ -8283,14 +8291,14 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                         return 1, ""
                     else:
                         return 0, "Den Term kann man noch kürzer zusammenfassen."
-                    # else:
-                    #     return -1, ""
+                else:
+                    return -1, ""
             except:
                 return 0, "Den Term, den du hier eingegeben hast, kann ich leider nicht berechnen."
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=10
+        typ=12
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8448,22 +8456,25 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
         elif typ == 12:
             titel = "Potenzieren von Potenzen"
+            typ2 = random.randint(1,4)
             klammer = random.randint(2,3)
             exp1 = random.randint(1,3)
             exp2 = random.randint(1,3)
             abs1 = random.randint(1,4)
             abs2 = random.randint(1,4)
-            wert = abs1*abs2*3**(exp1*klammer)*4**(exp1*klammer)
-            term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
-            frage = term.replace("1","")
-            text = "Klammere aus: " + frage
+            wert = abs1*abs2*(3**(exp1)*4**(exp2))**klammer
+            typ2=1
+            if typ2 == 1:
+                term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
+                frage = term.replace("1","")
+                text = "Klammere aus: " + frage
+                if exp1 == exp2:
+                    lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
+                else:
+                    lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
+                lsgterm = lsgterm.replace("1(","(")
+                lsg = [lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1",""), lsgterm.replace("^2","²").replace("^3","³").replace("°","").replace("^1",""), lsgterm.replace("°","").replace("^1",""), wert, "indiv_0"]
             frage += "="
-            if exp1 == exp2:
-                lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
-            else:
-                lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
-            lsg = [lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1",""), lsgterm.replace("°","").replace("^1",""), wert, "indiv_0"]
-            
             anmerkung = lsg
         elif typ == 13:
             titel = "Negative Exponenten"
@@ -8483,7 +8494,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             while n < len(summen):
                 if summen[n] != 0:
                     lsg += variablen[n] + "^" + str(summen[n]) + " "
-                    wert *= (ord(variablen[n])-90)**summen[n]
+                    wert *= (ord(variablen[n])-94)**summen[n]
                 n +=1
             wert *= faktor
             lsg = lsg.replace("^1","")
