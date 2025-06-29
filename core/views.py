@@ -8179,14 +8179,14 @@ def sub_zeichenzuviel(eingabe):
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
-        typ_end = 9
+        typ_end = 8
         if "nur" in optionen:
-            typ_anf = 10
-            typ_end = 12        
+            typ_anf = 9
+            typ_end = 13        
         elif stufe >= 35 or jg > 10 or "negative" in optionen:
-            typ_end = 14
-        if stufe >= 33 or jg > 10 or "mit" in optionen:
             typ_end = 13
+        elif stufe >= 33 or jg > 10 or "mit" in optionen:
+            typ_end = 12
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ == 1:
@@ -8266,7 +8266,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     if eingabe2.count(s) > 1:
                         text = "'" + s + "' darf höchstens einmal vorkommen."
                         return -1, text.replace("+","")
-            if typ == 12:
+            if typ == 12 and typ2 >2:
                 if not "(" in eingabe:
                     return 0, "Du sollst ausklammern - hier fehlt eine Klammer." 
             term = eingabe 
@@ -8298,7 +8298,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=12
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8456,26 +8455,55 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
         elif typ == 12:
             titel = "Potenzieren von Potenzen"
-            typ2 = random.randint(1,4)
+            typ2 = random.randint(1,3)
             klammer = random.randint(2,3)
-            exp1 = random.randint(1,3)
-            exp2 = random.randint(1,3)
-            abs1 = random.randint(1,4)
-            abs2 = random.randint(1,4)
-            wert = abs1*abs2*(3**(exp1)*4**(exp2))**klammer
-            typ2=1
+            if typ2 < 3:
+                exp1 = exp2 = 1
+                while exp1 == exp2:
+                    exp1 = random.randint(1,3)
+                    exp2 = random.randint(1,3)
+                    abs1 = random.randint(2,4)
+                    abs2 = 1
+            else:
+                exp1 = random.randint(1,3)
+                exp2 = random.randint(1,3)
+                abs2 = random.randint(1,4)
+                abs1 = random.randint(1,4)
+            if typ2 == 2:
+                wert = (abs1*3**exp1*4**exp2)**klammer
+                lsgabs = abs1**2
+            else:
+                wert = abs1*abs2*(3**exp1*4**exp2)**klammer
+                lsgabs = abs1*abs2
+            term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
+            if exp1 == exp2:
+                lsgterm = str(abs1) + "(xy)^" + str(exp1*klammer) + "°"
+            else:
+                lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
+            lsgterm = lsgterm.replace("1(","(")
+            lsgterm1 = lsgterm.replace("^2","²").replace("^3","³").replace("°","").replace("^1","")
+            lsgterm3 = str(lsgabs) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>y<sup><small>" + str(exp2*klammer) + "</sup></small>"
+            lsgterm4 = str(lsgabs) + "x^" + str(exp1*klammer) + "y^" + str(exp2*klammer)
+            lsgterm5 = lsgterm4.replace("^2","²").replace("^3","³")
             if typ2 == 1:
-                term = str(abs1) + "x<sup><small>" + str(exp1*klammer) + "</sup></small>" + str(abs2) + "y<sup><small>" + str(exp2*klammer) + "</sup></small>"          
+                text = "Löse die Klammer auf: " + frage
+                frage = lsgterm1
+                lsg = [lsgterm3, lsgterm4, lsgterm5, wert, "indiv_0"]
+            elif typ2 == 2:
+                text = "Löse die Klammer auf: " + frage
+                term = "(" + str(abs1) + "x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
+                frage = term.replace("^2","²").replace("^3","³").replace("°","").replace("^1","")
+                text = "Löse die Klammer auf: " + frage
+                lsg = [lsgterm3, lsgterm4, lsgterm5, wert, "indiv_0"]
+            else:
                 frage = term.replace("1","")
                 text = "Klammere aus: " + frage
-                if exp1 == exp2:
-                    lsgterm = str(abs1*abs2) + "(xy)^" + str(exp1*klammer) + "°"
-                else:
-                    lsgterm = str(abs1*abs2) + "(x^" + str(exp1) + "°" + "y^" + str(exp2) + "°)^" + str(klammer) +"°"
-                lsgterm = lsgterm.replace("1(","(")
-                lsg = [lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1",""), lsgterm.replace("^2","²").replace("^3","³").replace("°","").replace("^1",""), lsgterm.replace("°","").replace("^1",""), wert, "indiv_0"]
+                lsgterm0 = lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1","")
+                lsgterm2 = lsgterm.replace("°","").replace("^1","")
+                lsg = [lsgterm0, lsgterm1, lsgterm2, wert, "indiv_0"]
             frage += "="
-            anmerkung = lsg
+            hilfe_id = 120
+            hilfe = "Potenzen werden potenziert, indem man ihre Exponenetn multipliziert."
         elif typ == 13:
             titel = "Negative Exponenten"
             text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x<sup>-2</sup> bzw. x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
