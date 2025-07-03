@@ -8408,8 +8408,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                         lsg += [lsgterm3, "buchstabe" + lsgterm4]
                     else:
                         lsg += [lsgterm4, "buchstabe" + lsgterm3]
-                hilfe_id = 90
-                hilfe = "Du musst i der Multiplikation die Exponenten gleicher Variablen einfach nur addieren und dran denken, dass dabei x auch als x^1 geschrieben werden könnte."
+                hilfe_id = 80
+                hilfe = "Du musst bei der Multiplikation die Exponenten gleicher Variablen einfach nur addieren und dran denken, dass dabei x auch als x^1 geschrieben werden könnte."
             else:
                 zeichen = "+"
                 term = zaehler1*[variable1+"+" ] + zaehler2*[variable2+"+"]
@@ -8438,16 +8438,13 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
-                hilfe_id = 120
+                hilfe_id = 110
                 hilfe="Hier darfst du nur solche Ausdrücke addieren, bei denen die Variable genau übereinstimmt, du darfst also z.B nicht 2u und 3u² zusammenfassen."
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
                     frage, lsg, wert, faktor, summen  = sub_potenzterm_mal(typ2)
-                if typ == 10:
-                    hilfe_id = 100
-                else:
-                    hilfe_id = 110
+                hilfe_id = 100
             text = "Fasse zusammen: " if typ == 11 else "Vereinfache diesen Term: "
             text += frage
             frage += "="
@@ -8503,7 +8500,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = [lsgterm0, lsgterm1, lsgterm2, wert, "indiv_0"]
             frage += "="
             hilfe_id = 120
-            hilfe = "Potenzen werden potenziert, indem man ihre Exponenetn multipliziert."
+            hilfe = "Potenzen werden potenziert, indem man ihre Exponenten multipliziert."
         elif typ == 13:
             titel = "Negative Exponenten"
             text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x<sup>-2</sup> bzw. x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
