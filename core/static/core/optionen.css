@@ -2,8 +2,7 @@ h2{
   text-align: center; 
 }
 
-ul {
-  list-style: none;
+form{
   margin: 2rem auto;
   width: 90%;
   max-width: 30rem;
@@ -13,9 +12,26 @@ ul {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  height: 8rem;
+  gap: 10px;
   background-color: #eeeeee;
+  gap: 10px;
+
+  input {
+    width: 20%;
   }
+
+  label {
+    font-weight: larger;
+    font-weight: bold;
+  }
+}
+
+ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
   
 
   

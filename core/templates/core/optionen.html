@@ -15,12 +15,10 @@
 {% block content %}
 
 <h2> {{ note }} </h2>
-<h2>{{ kategorie.name }}</h2>
-<ul>    
+<h2>{{ kategorie.name }}</h2>    
 <form action="{% url 'optionen' kategorie.slug %}" method="Post">
     {% csrf_token %}
     {{auswahl_form}}
     <input type="submit" value="weiter">
 </form>
-</ul>
 {% endblock %}
