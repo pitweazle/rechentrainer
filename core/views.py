@@ -5372,7 +5372,6 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2
                     lsg = [text, (text+text).replace("²",""),"indiv_0"]
                 text = frage
             text = "Wende die binomischen Formeln an:<br>" + text
-        print(lsg)
         return typ, typ2, titel, text, pro_text, frage+"=", variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -6611,7 +6610,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         elif typ in (13,14):                            # Rechnen mit irrationalen Zahlen
             titel = "Rechnen mit irrationalen Zahlen"
             typ2 = random.randint(1,5)
-            typ2=5
             if typ2 == 1:                       # Produkt aus 2 Wuzeln
                 zahl1 = random.randint(1,15)
                 for zahl2 in range (2,25):
@@ -8060,7 +8058,7 @@ def sub_potenz():
         exponent= 2
     return basis, exponent
 
-def sub_potenzterm_mal(typ2, summen = [0,]*3):
+def sub_potenzterm_mal(typ2, summen = [0,]*5):
     faktor = wert = 1
     frage = lsg = ""
     variablen = ["a","b","c","zahl","zahl"]
@@ -8115,7 +8113,7 @@ def sub_potenzterm_mal(typ2, summen = [0,]*3):
             lsg += variablen[n] + "^" + str(summen[n]) + " "
             wert *= (ord(variablen[n])-94)**summen[n]
         n +=1
-    lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³")  
+    lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³") 
     if faktor != 1 and faktor != 0:
         lsg = " " + str(faktor) + " " + lsg
         lsg = lsg.replace("-1","-")
@@ -8182,11 +8180,11 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         typ_end = 8
         if "nur" in optionen:
             typ_anf = 9
-            typ_end = 13        
+            typ_end = 12        
         elif stufe >= 35 or jg > 10 or "negative" in optionen:
-            typ_end = 13
-        elif stufe >= 33 or jg > 10 or "mit" in optionen:
             typ_end = 12
+        elif stufe >= 33 or jg > 10 or "mit" in optionen:
+            typ_end = 11
         return typ_anf, typ_end
     elif eingabe != "":                                                                                                         
         if typ == 1:
@@ -8248,16 +8246,16 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, nachricht
             elif eingabe[0] == "+":
                 return 0, "'+' am Anfang kannst du weglassen."
-            elif typ == 13 and "/" in eingabe:
+            elif typ == 12 and "/" in eingabe:                          # negative Exponente
                 return 0, "Mithilfe der negativen Exponenten sollst du den Term ohne Bruch schreiben."
-            elif "(" in eingabe and typ != 12:
+            elif "(" in eingabe and typ != 11:
                 return 0, "Das ist prima, dass du hier auch Klammern benutzen kannst, gib das Ergebnis bitte ohne Klammern ein."            
-            elif typ in (10,13):
+            elif typ in (9,12):
                 if (lsg[1][0]).isdigit() and (not (eingabe[0]).isdigit() and not (eingabe[1]).isdigit()):
                     return 0,  "Du musst die Zahl nach vorne schreiben."
                 elif eingabe.count("a")>1 or eingabe.count("b")>1 or eingabe.count("c")>1 and eingabe.count("x")>1 or eingabe.count("y")>1 or eingabe.count("z")>1:
                     return 0, "Jeder Buchstaben darf im Term nur einmal vorkommen."
-            if typ == 11:
+            if typ == 10:
                 if "a" in eingabe or "b" in eingabe or "c" in eingabe :
                     liste = ["a+","a²","a³","b+","b²","b³","c+","c²","c³"]
                 else:
@@ -8266,7 +8264,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     if eingabe2.count(s) > 1:
                         text = "'" + s + "' darf höchstens einmal vorkommen."
                         return -1, text.replace("+","")
-            if typ == 12 and typ2 >2:
+            if typ == 11 and typ2 >2:
                 if not "(" in eingabe:
                     return 0, "Du sollst ausklammern - hier fehlt eine Klammer." 
             term = eingabe 
@@ -8298,6 +8296,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        #typ=12
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8432,9 +8431,9 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ in (10,11):                                        # Potenzgesetze 10 mal auch negative, 11 Plus
+        elif typ in (9,10):                                        # Potenzgesetze 10 mal auch negative, 11 Plus
             titel = "Potenzgesetze"
-            if typ == 11:
+            if typ == 10:
                 frage = "++++++"
                 while frage.count("+")>5:
                     frage, lsg, wert  = sub_potenzterm_plus()
@@ -8443,14 +8442,15 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 typ2 = random.randint(1,3)
                 while frage.count("a")<2 and frage.count("b")<2 and frage.count("c")<2:
-                    frage, lsg, wert, faktor, summen  = sub_potenzterm_mal(typ2)
+                    summen = [0,]*5
+                    frage, lsg, wert, faktor, summen  = sub_potenzterm_mal(typ2, summen)
                 hilfe_id = 100
-            text = "Fasse zusammen: " if typ == 11 else "Vereinfache diesen Term: "
+            text = "Fasse zusammen: " if typ == 10 else "Vereinfache diesen Term: "
             text += frage
             frage += "="
             pro_text = frage + "="
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
-        elif typ == 12:
+        elif typ == 11:                                             # Potenzen potenzieren
             titel = "Potenzieren von Potenzen"
             typ2 = random.randint(1,3)
             klammer = random.randint(2,3)
@@ -8501,7 +8501,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage += "="
             hilfe_id = 120
             hilfe = "Potenzen werden potenziert, indem man ihre Exponenten multipliziert."
-        elif typ == 13:
+        elif typ == 12:                                             # negative Exponenten
             titel = "Negative Exponenten"
             text = "Anstelle eines Bruches mit einer Potenz im Nenner wie z.B: 1/x² kann man auch x<sup>-2</sup> bzw. x^-2 schreiben. Wende diese Regel auf den untenstehenden Term an und fasse zusammen:"
             protext = ""
@@ -8526,6 +8526,8 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             lsg = [lsg, lsg.replace(" ", ""), lsg.replace(" ", "").replace("²","^2").replace("³","^3"), wert, "indiv_0"]
             if faktor != 1:
                 lsg = str(faktor) + lsg
+            if lsg == "":
+                lsg = "1"
             hilfe_id = 130
             hilfe = "Du musst hier die Exponenten gleicher Variablen im Zähler addieren und die im Nenner davon subtrahieren. Denke dran, dass dabei x auch als x^1 geschrieben werden könnte und x im Nenner zu x^-1 wird."
 
@@ -9180,8 +9182,12 @@ def loesung(req, zaehler_id, protokoll_id):
             text = protokoll.loesung[0]
     except:
         text = protokoll.loesung
-    messages.info(req, f'Lösung: {text}') 
-    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = eingabe,
+    messages.info(req, f'Lösung: {text}')
+    if protokoll.kategorie.zeile == 33 and protokoll.typ == 12:
+        text = "Entferne den Nenner und fasse zusammen:" +"<br>" + "(" + protokoll.parameter["zaehler"]+ ") / ("+ protokoll.parameter["nenner"] + ")"
+    else:
+        text = protokoll.text 
+    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = text, frage = protokoll.frage, eingabe = eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung")
     return render(req, 'core/aufgabe.html', context)
 
@@ -9366,6 +9372,7 @@ def main(req, slug):
                         tabelle = 5
                 #wenn Eingabe richtig:
                 if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
+                    #print("Cheat", protokoll.lsg)
                     if tabelle > 0:                  # alle_katEingaben in der Tabelle richtig
                         rueckmeldung = "Alle Werte waren richtig."
                         zaehler.richtig_of += tabelle
