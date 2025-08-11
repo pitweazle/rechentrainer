@@ -8296,7 +8296,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=12
+        #typ=12
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -9183,7 +9183,11 @@ def loesung(req, zaehler_id, protokoll_id):
     except:
         text = protokoll.loesung
     messages.info(req, f'Lösung: {text}') 
-    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = protokoll.text, frage = protokoll.frage, eingabe = eingabe,
+    if protokoll.kategorie.zeile == 33 and protokoll.typ == 12:
+        text = protokoll.pro_text
+    else:
+        text = protokoll.text
+    context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = text, frage = protokoll.frage, eingabe = eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung")
     return render(req, 'core/aufgabe.html', context)
 
