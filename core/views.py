@@ -9182,11 +9182,11 @@ def loesung(req, zaehler_id, protokoll_id):
             text = protokoll.loesung[0]
     except:
         text = protokoll.loesung
-    messages.info(req, f'Lösung: {text}') 
+    messages.info(req, f'Lösung: {text}')
     if protokoll.kategorie.zeile == 33 and protokoll.typ == 12:
         text = protokoll.pro_text
     else:
-        text = protokoll.text
+        text = protokoll.text 
     context = dict(lsg = True, kategorie = protokoll.kategorie, typ = protokoll.typ, titel = protokoll.titel, aufgnr = zaehler.aufgnr, text = text, frage = protokoll.frage, eingabe = eingabe,
         message_unten = protokoll.anmerkung,  zaehler_id = zaehler.id, protokoll_id = protokoll.id, parameter = protokoll.parameter, hinweis = "Lösung")
     return render(req, 'core/aufgabe.html', context)
