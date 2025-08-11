@@ -80,6 +80,8 @@
                     {% for message in messages %}
                         {% if 'leider falsch' in message.message %}
                             <p class = "rot">{{ message }}</p>
+                        {% elif 'gemerkt' in message.message %}
+                            <p class = "rot">{{ message }}</p>
                         {% elif 'halb' in message.message %}
                             <p class = "gelb">{{ message }}</p>
                         {% elif 'dreimal'  in message.message %}

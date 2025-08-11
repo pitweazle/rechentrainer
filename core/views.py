@@ -9308,6 +9308,7 @@ def main(req, slug):
         kategorie = get_object_or_404(Kategorie, slug = slug)
         profil = get_profil(req.user)
         bis_loeschen = "-"
+        cheat = False
         titel = text = frage = ""
         if req.method == 'POST':
             protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
@@ -9371,7 +9372,8 @@ def main(req, slug):
                         tabelle = 5
                 #wenn Eingabe richtig:
                 if (wertung > 0 and tabelle == 0) or (richtig == tabelle and tabelle > 0) :
-                    #print("Cheat", protokoll.lsg)
+                    if protokoll.lsg:
+                        cheat = True
                     if tabelle > 0:                  # alle_katEingaben in der Tabelle richtig
                         rueckmeldung = "Alle Werte waren richtig."
                         zaehler.richtig_of += tabelle
@@ -9394,7 +9396,13 @@ def main(req, slug):
                         zaehler.lsg_zaehler = 0
                         zaehler.hilfe_zaehler = 0
                         zaehler.abbr_zaehler = 0
-                    protokoll.richtig = richtig                        
+                    if cheat:
+                        protokoll.falsch = 2
+                        protokoll.wertung = "f"
+                        zaehler.fehler_zaehler += 2
+                        protokoll.eingabe = "Betrug"
+                    else:
+                        protokoll.richtig                      
                     protokoll.save()
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
@@ -9419,7 +9427,10 @@ def main(req, slug):
                         zaehler.letzte = timezone.now()
                         zaehler.save()
                         return redirect('uebersicht')
-                    messages.info(req, f'{rueckmeldung}')# {msg}')
+                    if cheat:
+                        messages.warning(req, f'Das habe ich gemerkt!<br>Du hast geschummelt, die Eingabe stimmt zwar, die Aufgabe wird aber als Doppelfehler gewertet!')
+                    else:
+                        messages.info(req, f'{rueckmeldung}')
                     return redirect('main', slug)
                 #wenn Aufgabe falsch:
                 else: 
