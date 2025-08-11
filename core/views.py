@@ -8296,7 +8296,6 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         return -1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        #typ=12
         typ2 = 0
         titel = "Potenzen"
         parameter = {'name':'normal'} 
@@ -8431,7 +8430,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Vereinfache diesen Term: " + frage
             pro_text = "Vereinfache:" + frage
             frage += "="
-        elif typ in (9,10):                                        # Potenzgesetze 10 mal auch negative, 11 Plus
+        elif typ in (9,10):                                         # Potenzgesetze 10 mal auch negative, 11 Plus
             titel = "Potenzgesetze"
             if typ == 10:
                 frage = "++++++"
@@ -8495,7 +8494,7 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 frage = term.replace("1","")
                 text = "Klammere aus: " + frage
-                lsgterm0 = lsgterm.replace("^1","<sup><small>").replace("°","</sup></small>").replace("^1","")
+                lsgterm0 = lsgterm.replace("^1","").replace("^","<sup><small>").replace("°","</sup></small>")
                 lsgterm2 = lsgterm.replace("°","").replace("^1","")
                 lsg = [lsgterm0, lsgterm1, lsgterm2, wert, "indiv_0"]
             frage += "="
