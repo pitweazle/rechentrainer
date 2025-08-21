@@ -9282,8 +9282,10 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
+                print(loe,eingabe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
+                        print("richtig")
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                             punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
@@ -9402,7 +9404,7 @@ def main(req, slug):
                         zaehler.fehler_zaehler += 2
                         protokoll.eingabe = "Betrug"
                     else:
-                        protokoll.richtig                      
+                        protokoll.richtig = richtig                      
                     protokoll.save()
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
