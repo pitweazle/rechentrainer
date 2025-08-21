@@ -1083,24 +1083,16 @@ def account_ohne_profil(req):
 def datum_suchen(req):
     if not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-    monat = (datetime.now().month)
-    jahr = (datetime.now().year)
-    print(datetime.now())
-    #liste = Profil.objects.filter(user__username = "franz")
-    liste = Profil.objects.all()
     protokoll = Protokoll.objects.all()
     n=0
-    for profil in liste:
-        protokoll = Protokoll.objects.filter(profil = profil, start__gt = datetime(2025,1,1) , sj = 2425, hj = 2 )
-        #print(profil, ": ", protokoll.count())
-        #for eintrag in protokoll:
-        if protokoll.count() > 0:
-            n+=1
-            erstes = protokoll.first()
-            print(profil, ": ", erstes.start)
-            profil.halbjahr_ab = erstes.start
-            profil.save()
-        nachricht = str(n) + " Daten eingetragen"
+    protokoll = Protokoll.objects.filter(start__gt = date(2025,8,11),wertung = "r",richtig=0 )
+    wieviele = protokoll.count()
+    print("wieviele", wieviele)
+    for eintrag in protokoll:
+        eintrag.richtig = 1
+        n+=1
+        eintrag.save()
+    nachricht = str(n) + " Daten eingetragen"
     return HttpResponse(nachricht)
 
 def reparatur(req):
