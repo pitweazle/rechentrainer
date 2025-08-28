@@ -6828,7 +6828,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             a, b, c, p = sub_dreiecksseiten(q, h)
         if typ >= 10:                                           # pythagoräische Zahlentripel
             p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreische Zahlen kennen &#128521;"
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
             parameter['popup_text'] = "popups/pythagoras.html"
             if stufe%2 == 1:
                 typ2 = random.randint(0,5)
@@ -6864,6 +6864,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             x0 = (350 - c*scale)/2
             scale = 25
             titel = "Kathetensatz"
+            einheit = "cm"
             anmerkung = "Wenn du das Ergebnis nicht im Kopf ausrechnen kannst, kannst du hier einfach die Rechnung wie in einen Tascherechner eingeben."
             anmerkung += "<br>Für '²' kannst du auch '^2' schreiben"
             koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
@@ -6884,8 +6885,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = b**2/c
-                parameter['c']= "c="+str(c)+"mm"
-                parameter['b']= "b="+str(b)+"mm"
+                parameter['c']= "c="+str(c)+"cm"
+                parameter['b']= "b="+str(b)+"cm"
                 frage = "q="
                 lsg = ["q="+str(b)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]
             elif typ2 == 2:
@@ -6896,9 +6897,9 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = a**2/c
-                parameter['c']= "c="+str(c)+"mm"
-                parameter['a']= "a="+str(a)+"mm"
-                parameter['b']= "b="+str(b)+"mm"
+                parameter['c']= "c="+str(c)+"cm"
+                parameter['a']= "a="+str(a)+"cm"
+                parameter['b']= "b="+str(b)+"cm"
                 frage = "p="
                 lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]            
             elif typ2 == 3:
@@ -6909,8 +6910,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = a**2/q
-                parameter['p']= "p="+str(p)+"mm"
-                parameter['a']= "a="+str(a)+"mm"
+                parameter['p']= "p="+str(p)+"cm"
+                parameter['a']= "a="+str(a)+"cm"
                 frage = "c="
                 lsg = ["c="+str(a)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
             elif typ2 == 4:
@@ -6921,8 +6922,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = b**2/q
-                parameter['q']= "q="+str(q)+"mm"
-                parameter['b']= "b="+str(b)+"mm"
+                parameter['q']= "q="+str(q)+"cm"
+                parameter['b']= "b="+str(b)+"cm"
                 frage = "c="
                 lsg = ["c="+str(b)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
             elif typ2 == 5:
@@ -6934,8 +6935,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = a**2/p
                 wert = wert - p
-                parameter['a']= "a="+str(a)+"mm"
-                parameter['p']= "p="+str(p)+"mm"
+                parameter['a']= "a="+str(a)+"cm"
+                parameter['p']= "p="+str(p)+"cm"
                 frage = "q="
                 lsg = ["q="+str(a)+"²/"+str(p)+"-"+str(a)+"="+format_zahl(wert,1), wert,"indiv_2"]
         elif typ == 3:                                          # Höhensatz anwenden
