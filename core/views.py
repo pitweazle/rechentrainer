@@ -6957,39 +6957,47 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 frage = "q="
                 lsg = ["q="+str(a)+"²/"+str(p)+"-"+str(a)+"="+format_zahl(wert,1), wert,"indiv_2"]
         elif typ == 3:                                          # Höhensatz anwenden
-            x0 = (350 - c*scale)/2
-            scale = 25
             parameter['punkt']= "X"
             titel = "Höhensatz"
             anmerkung = "Wenn du das Ergebnis nicht im Kopf ausrechnen kannst, kannst du hier einfach die Rechnung wie in einen Tascherechner eingeben."
             anmerkung += "<br>Für '²' kannst du auch '^2' schreiben"
-            koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
-            parameter.update(koordinaten)
-            werte = {'h': "h", 'a': "a", 'b': "b", 'c': "c", 'p': "p", 'q': "q", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
-            parameter.update(werte)
             hilfe_id = 30
             hilfe = "Hier musst du den Höhensatz kennen: <br>h²=p·q"
             typ2 = random.randint(1,2)
             if typ2 == 1:                                       # q aus Höhensatz
                 text="Berechne den Hypothenusenabschnitt q"
-                a, b, c, p = sub_dreiecksseiten(q, h)
-                wert = h**2/p
-                parameter['h']= "h="+str(h)+"cm"
-                parameter['p']= "p="+str(p)+"cm"
+                wert = 1/7
+                while (wert*100)%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(2,6)
+                    h = random.randint(4,6)
+                    a, b, c, p = sub_dreiecksseiten(q, h)
+                    wert = h**2/p
+                teilen = str(wert).split('.')
+                nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "q="
-                lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
             elif typ2 == 2:                                       # p aus Höhensatz
                 text="Berechne den Hypothenusenabschnitt p"     
                 wert = 1/7
-                while wert*10%1 > 0:                    # keine periodischen Werte
-                    q = random.randint(5,7)
-                    h = random.randint(4,5)
-                    a, b, c, p = sub_dreiecksseiten(q, h)
+                while wert*100%1 > 0:                    # keine periodischen Werte
+                    q = random.randint(2,6)
+                    h = random.randint(4,6)
                     wert = h**2/q
-                parameter['h']= "h="+str(h)+"cm"
-                parameter['q']= "q="+str(q)+"cm"
+                a, b, c, p = sub_dreiecksseiten(q, h)
+                teilen = str(wert).split('.')
+                nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "p="
-                lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
+            scale = 200/c
+            x0 = (350 - c*scale)/2
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
+            parameter.update(koordinaten)
+            werte = {'h': "h"+str(h)+"cm", 'a': "a", 'b': "b", 'c': "c", 'p': "p", 'q': "q", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(werte)
+            if typ2 ==1:
+                parameter['p']= "p="+str(p)+"cm"
+            else:
+                parameter['q']= "q="+str(q)+"cm"
         elif typ == 4:                                          # Dreiecksfläche Hypo und Höhe
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
@@ -9301,7 +9309,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
             if lsg[-1] == 'indiv_2':                # nur für prozentrechnung und Quader - hier wird der Wert eines Terms berechnet
                 parser = Parser()
                 try:
-                    zahl=round(parser.parse(eingabe.replace(",",".").replace(":","/")).evaluate({}),3)
+                    zahl=round(parser.parse(eingabe.replace(",",".").replace("²","^2").replace(":","/")).evaluate({}),3)
                     if round(zahl,3) == round((lsg[1]),3):
                         return 1, ""
                     else:
@@ -9309,10 +9317,8 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
-                print(loe,eingabe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
-                        print("richtig")
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
                             protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
                             punkte, rueckmeldung = aufgaben(protokoll.kategorie.zeile, eingabe=eingabe, lsg=lsg, typ =protokoll.typ, typ2 =protokoll.typ2)
