@@ -6771,7 +6771,7 @@ def sub_hypo_unten(x0, scale, q, p, h):
 def sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h):
     rand = 20
     radius = 25
-    a,b,c,p,q,h = map(lambda x:x*scale, (a,b,c,p,q,h))
+    a, b, c, p, q, h = (x * scale for x in (a, b, c, p, q, h))
     parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
     phi = math.atan(h/q)
     punktwinkel = (phi-math.pi/4)
