@@ -6747,7 +6747,7 @@ def sub_hypo_oben(g, h, typ2 = 0, scale = 22, x0 = 80, t = 0):
 
     return parameter
 
-def sub_hypo_unten(x0, scale, q, p, h , a = 0, b = 0, c = 0, alpha = "", beta = "", gamma = ""):
+def sub_hypo_unten(x0, scale, q, p, h):
     rand = 20
     radius = 25
     p = p * scale
@@ -6756,6 +6756,23 @@ def sub_hypo_unten(x0, scale, q, p, h , a = 0, b = 0, c = 0, alpha = "", beta = 
     c = p+q
     parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
     #if punkt:
+    phi = math.atan(h/q)
+    punktwinkel = (phi-math.pi/4)
+    c_sx = q - radius * math.cos(phi)
+    c_sy = radius * math.sin(phi)
+    c_ex = q + radius * math.sin(phi)
+    c_ey = radius * math.cos(phi)
+    punkt_x = q + radius/2 * math.sin(punktwinkel)
+    punkt_y = radius/2 * math.cos(punktwinkel) 
+    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
+    parameter.update(rechter_winkel)
+    return parameter
+
+def sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h):
+    rand = 20
+    radius = 25
+    a,b,c,p,q,h = map(lambda x:x*scale, (a,b,c,p,q,h))
+    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
     phi = math.atan(h/q)
     punktwinkel = (phi-math.pi/4)
     c_sx = q - radius * math.cos(phi)
@@ -6813,7 +6830,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=5
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6995,12 +7011,21 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
             einheit = "cm²"
+            seiten = [[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13]]
+            zuza = random.randint(0,5)
+            a=seiten[zuza][0]
+            b=seiten[zuza][1]
+            c=seiten[zuza][2]
+            scale = 200 / c
+            p = (a**2/c)
+            q = (b**2/c)
+            h = math.sqrt(p*q)
             erg = round((a*b/2),1)
             if erg%1 == 0:
                 lsg = [format_zahl(erg,0) + "cm²"]
             else:
                 lsg = [format_zahl(erg,1) + "cm²"]
-            koordinaten = sub_hypo_unten(x0, scale, q, p, h, a, b, c) 
+            koordinaten = sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h) 
             parameter.update(koordinaten)
             werte = {'a': str(a) + "cm", 'b': str(b) + "cm",'c': str(c) + "cm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
                         'dx': x0 + p * scale}
