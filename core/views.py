@@ -6813,6 +6813,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=5
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6957,8 +6958,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 text="Berechne den Hypothenusenabschnitt q"
                 a, b, c, p = sub_dreiecksseiten(q, h)
                 wert = h**2/p
-                parameter['h']= "h="+str(h)+"mm"
-                parameter['p']= "p="+str(p)+"mm"
+                parameter['h']= "h="+str(h)+"cm"
+                parameter['p']= "p="+str(p)+"cm"
                 frage = "q="
                 lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
             elif typ2 == 2:                                       # p aus Höhensatz
@@ -6969,23 +6970,23 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = h**2/q
-                parameter['h']= "h="+str(h)+"mm"
-                parameter['q']= "q="+str(q)+"mm"
+                parameter['h']= "h="+str(h)+"cm"
+                parameter['q']= "q="+str(q)+"cm"
                 frage = "p="
                 lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
         elif typ == 4:                                          # Dreiecksfläche Hypo und Höhe
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
-            einheit = "mm²"
+            einheit = "cm²"
             erg = round((c*h/2),1)
             if erg%1 == 0:
-                lsg = [format_zahl(erg,0) + "mm²"]
+                lsg = [format_zahl(erg,0) + "cm²"]
             else:
-                lsg = [format_zahl(erg,1) + "mm²"]
+                lsg = [format_zahl(erg,1) + "cm²"]
             koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
             parameter.update(koordinaten)
-            werte = {'c': "c=" + format_zahl(c,0) + "mm", 'h': "h=" + str(h) +"mm"}
+            werte = {'c': "c=" + format_zahl(c,0) + "cm", 'h': "h=" + str(h) +"cm"}
             parameter.update(werte)
             hilfe_id = 40
             hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
@@ -6993,15 +6994,15 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
-            einheit = "mm²"
+            einheit = "cm²"
             erg = round((a*b/2),1)
             if erg%1 == 0:
-                lsg = [format_zahl(erg,0) + "mm²"]
+                lsg = [format_zahl(erg,0) + "cm²"]
             else:
-                lsg = [format_zahl(erg,1) + "mm²"]
+                lsg = [format_zahl(erg,1) + "cm²"]
             koordinaten = sub_hypo_unten(x0, scale, q, p, h, a, b, c) 
             parameter.update(koordinaten)
-            werte = {'a': str(a) + "mm", 'b': str(b) + "mm",'c': str(c) + "mm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
+            werte = {'a': str(a) + "cm", 'b': str(b) + "cm",'c': str(c) + "cm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
                         'dx': x0 + p * scale}
             parameter.update(werte) 
             hilfe_id = 50
@@ -7010,7 +7011,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
-            einheit = "mm²"
+            einheit = "cm²"
             typ2 = random.randint(0,1)
             g = random.randint(5,7)
             h = random.randint(4,5)
@@ -7020,9 +7021,9 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             erg = (g*h/2)
             lsg = ["A=g·h="+str(g)+"·"+str(h)+"/2="+format_zahl(erg,1)]
             if typ2 == 0:
-                werte = {'m': "c=" + str(g) + "mm", 'n': "a=" + format_zahl(hypo,0) + "mm", 'o': "b=" + str(h) +"mm"}
+                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + format_zahl(hypo,0) + "cm", 'o': "b=" + str(h) +"cm"}
             else:
-                werte = {'m': "c=" + str(g) + "mm", 'n': "a=" + str(h) + "mm", 'o': "b=" + format_zahl(hypo,0) +"mm"}
+                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + str(h) + "cm", 'o': "b=" + format_zahl(hypo,0) +"cm"}
             parameter.update(werte)
             hilfe_id = 40
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
