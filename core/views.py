@@ -2683,7 +2683,7 @@ def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
                     largeArcFlag = largeArcFlag)  
         return koordinaten
 
-def winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
     rad_start = math.radians(startwinkel)
     rad = math.radians(winkel)
     if id == 0:
@@ -2958,7 +2958,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 text = "Wie groß ist der Winkel {}?"
                 frage = "{}≙"
                 einheit = "°"
-            koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
+            koordinaten = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
             parameter.update(koordinaten)
         elif typ == 5:                                                  # Winkel an Dreieck und Viereck
             if stufe%2 == 1:
@@ -3008,10 +3008,10 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 erg = alfa
                 lsg = ["360/"+str(ecken)+"="+str(erg)]  
                 parameter.update({'object': 'n-eck', 'n_eck': ecken, 'rotate': rotate,}) 
-                koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, bogen_radius, alfa, startwinkel, "red", "", 100)  
+                koordinaten_dreieck = sub_winkel_koordinaten(0, center_x, center_y, bogen_radius, alfa, startwinkel, "red", "", 100)  
                 parameter.update(koordinaten_dreieck)
                 if typ2 == 4:                                               # Winkel außen
-                    koordinaten_aussen = winkel_koordinaten(2, koordinaten_dreieck['schenkel_1_x'], koordinaten_dreieck['schenkel_1_y'], bogen_radius, beta, 270, "red", "", 100)  
+                    koordinaten_aussen = sub_winkel_koordinaten(2, koordinaten_dreieck['schenkel_1_x'], koordinaten_dreieck['schenkel_1_y'], bogen_radius, beta, 270, "red", "", 100)  
                     parameter.update(koordinaten_aussen)
                     parameter.update({'color1': "red", 'color': color})
                     erg = beta
@@ -3075,9 +3075,9 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 symbol2 = "β"
                 color2 = color
                 text = " Diese beiden Winkel sind gleich groß - wie heißt so ein Winkelpaar?"
-            koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
+            koordinaten = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
             parameter.update(koordinaten) 
-            koo_winkel = winkel_koordinaten(2, center_x, center_y, bogen_radius, winkel, startwinkel2, color2, symbol2)  
+            koo_winkel = sub_winkel_koordinaten(2, center_x, center_y, bogen_radius, winkel, startwinkel2, color2, symbol2)  
             parameter.update(koo_winkel) 
             koo_ecken = linien_koordinaten(90-winkel, startwinkel, id2)                                                                                      # die Drehung der Parallelen'
             parameter.update(koo_ecken)
@@ -3093,7 +3093,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             y_schieb = 50  
             hilfe_id = 71 
         if typ <= 4:
-            koordinaten = winkel_koordinaten(0, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
+            koordinaten = sub_winkel_koordinaten(0, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
             parameter.update(koordinaten) 
         elif typ != 6: 
             if typ2 in (1,2) or typ == 7 :                               # Winkel alfa und beta  
@@ -3115,26 +3115,26 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 # Winkel Alfa:
                 center_x = (koordinaten ["ax"])
                 center_y = (koordinaten ["ay"]) 
-                koordinaten_alfa = winkel_koordinaten(2, center_x, center_y, bogen_radius, alfa, 180-alfa, color[0], winkel_text[0], 100)  
+                koordinaten_alfa = sub_winkel_koordinaten(2, center_x, center_y, bogen_radius, alfa, 180-alfa, color[0], winkel_text[0], 100)  
                 parameter.update(koordinaten_alfa)
 
                 # Winkel Beta:
                 center_x = (koordinaten ["bx"])
                 center_y = (koordinaten ["by"])
-                koordinaten_beta = winkel_koordinaten(1, center_x, center_y, bogen_radius, beta, 0, color[1], winkel_text[1], 100)  
+                koordinaten_beta = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, beta, 0, color[1], winkel_text[1], 100)  
                 parameter.update(koordinaten_beta)
 
             if typ2 in (1,2):                                            # Winkel Gamma und delta
                 # Winkel Gamma:
                 center_x = (koordinaten ["cx"])
                 center_y = (koordinaten ["cy"]) 
-                koordinaten_gamma = winkel_koordinaten(3, center_x, center_y, bogen_radius, gamma,  270-(90-beta), color[2], winkel_text[2], 100)  
+                koordinaten_gamma = sub_winkel_koordinaten(3, center_x, center_y, bogen_radius, gamma,  270-(90-beta), color[2], winkel_text[2], 100)  
                 parameter.update(koordinaten_gamma)
 
                 # Winkel Delta:
                 center_x = (koordinaten ["dx"])
                 center_y = (koordinaten ["dy"]) 
-                koordinaten_delta = winkel_koordinaten(4, center_x, center_y, bogen_radius, delta+(90-alfa), 180+(90-delta), color[3], winkel_text[3], 100)  
+                koordinaten_delta = sub_winkel_koordinaten(4, center_x, center_y, bogen_radius, delta+(90-alfa), 180+(90-delta), color[3], winkel_text[3], 100)  
                 parameter.update(koordinaten_delta) 
 
             if typ == 7:                                                 # Thaleskreis
@@ -5577,7 +5577,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 alfa = int(360/nenner)
                 startwinkel = 90-alfa/2
                 parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
-                koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+                koordinaten_dreieck = sub_winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
                 parameter.update(koordinaten_dreieck)
             text += experiment + "<br>um ein Laplace Experiment?"
             lsg.append("indiv_0")                 
