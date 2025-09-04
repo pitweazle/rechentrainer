@@ -6834,7 +6834,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=15
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
