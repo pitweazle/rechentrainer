@@ -5824,7 +5824,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             alfa = int(360/nenner)
             startwinkel = 90-alfa/2
             parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
-            koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+            koordinaten_dreieck =sub_winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
             parameter.update(koordinaten_dreieck)
         elif typ == 10:                                 # Urne
             farben_liste = ['white','red','yellow','blue','white','white','white','red','red','yellow',]
@@ -6834,6 +6834,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=15
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -7069,7 +7070,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + str(h) + "cm", 'o': "b=" + format_zahl(hypo,0) +"cm"}
             parameter.update(werte)
             hilfe_id = 40
-        elif typ < 10 or typ == 15:                                          # Benennung von Hypotenuse und Kathete
+        elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
             schieb = random.randint(-1,2)
             if schieb < 0:                          # c häufiger als Hpotenuse
@@ -7128,16 +7129,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
                 hilfe_id = 90
                 hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
-            else:
-                titel = "Trigonometrie"
-                text = "Welche Seite ist die Gegenkathete in Bezug auf den gelben Winkel?"
-                frage = "Gegenkathete:"
-                hilfe="Die Gegenkathete ist die Seite, die dem Winkel gegenüber liegt." 
-                print(koordinaten)
-                winkel = winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 20, 45, 0, color = "None", symbol = "45°", schenkel = 0, scheitel = False)
-                print(winkel)
-                # koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
-                parameter.update(winkel)
         elif typ == 10:                                         # rechtwinklig oder nicht?           
             titel = "rechtwinklig oder nicht?"
             frage = "j/n="
@@ -7275,6 +7266,18 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Welche Seite ist die Gegenkathete in Bezug auf den gelben Winkel?"
             frage = "Gegenkathete:"
             hilfe="Die Gegenkathete ist die Seite, die dem Winkel gegenüber liegt."
+            parameter = {'name': 'svg/dreiecke.svg', 'object': 'trigonometrie', 'box_breite': 350,  'box_hoehe': 200}
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+            parameter.update(koordinaten)
+            benennungen =  {'A': "A", 'B': "B", 'C': "C",
+                            'a': "a", 'b': "b", 'c': "c",
+                            'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(benennungen)
+            winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, 45, 180-45, color = "yellow", symbol = "45°", schenkel = 1, scheitel = False)
+            print(winkel)
+            #koordinaten =sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
+            parameter.update(winkel)
+            
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
