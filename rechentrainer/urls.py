@@ -1,10 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
 from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("core.urls")),
+
+    # Apps
+    path('accounts/', include('accounts.urls')),
+    path('duell/', include('duell.urls')),
+    path('medien/', include('medien.urls')),
+    #path('onlineduell/', include('onlineduell.urls')),  # falls diese App eigene URLs bekommt
+    path('', include('core.urls')),  # Catch-All / Home-Funktion am Ende
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
