@@ -7,9 +7,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Apps
-    path('accounts/', include('accounts.urls')),
-    path('duell/', include('duell.urls')),
-    path('medien/', include('medien.urls')),
+    path('', include('accounts.urls')),
+    path('', include('duell.urls')),
+    path('', include('medien.urls')),
     #path('onlineduell/', include('onlineduell.urls')),  # falls diese App eigene URLs bekommt
     path('', include('core.urls')),  # Catch-All / Home-Funktion am Ende
 
