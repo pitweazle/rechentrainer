@@ -101,7 +101,7 @@ def quote_farbe(richtig, falsch, ungenuegend=1/3):
     except :
         return None
 
-def check_hj(user, request):
+def check_hj(user, req):
     """Überprüft Halbjahr und Profil, gibt entweder Redirect oder 'OK' zurück"""
     if not user.is_authenticated:
         return redirect('anmelden')
@@ -120,8 +120,8 @@ def check_hj(user, request):
                 zeilen.append((account, profil, gesamt.count()))
             except Profil.DoesNotExist:
                 zeilen.append((account, None, ""))
-        logout(request)
-        return render(request, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
+        logout(req)
+        return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
 
     heute = datetime.now()
     if heute.month in (1, 7) and sub_note_anzeigen(profil):
