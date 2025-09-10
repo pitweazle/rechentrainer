@@ -1,4 +1,4 @@
-import math, decimal,  random, re
+import math, decimal, random, re
 
 from fractions import Fraction
 from math import gcd
@@ -20,11 +20,14 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
+from .services import soll_berechnung, bewertung_kat, bewertung_hj
+
 from .utilities import format_zahl, zahl_wort, MathFormatter, ggt, lcm, trenner 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
 from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
 from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
 from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_zeichenzuviel
+
 from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
 from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten 
 from .geometrie import sub_segment, winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
@@ -7425,109 +7428,6 @@ def kategorien(req):
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
 
-def durchschnitt_aufgaben(profil, kategorie):
-    #if alle:
-    protokoll = Protokoll.objects.filter(profil=profil)
-    # else:
-    #     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-    zaehler = Zaehler.objects.filter(profil=profil)
-    temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
-    richtig_gesamt = temp if temp else  0
-    anzahl = zaehler.filter(sj = profil.sj, hj = profil.hj).count()                             # Anzahl der, in diesem Hj bearbeiteten Kategorien                                                       
-    zaehler = zaehler.filter(kategorie = kategorie).first()
-    fehler_ab = zaehler.fehler_ab
-    protokoll = protokoll.filter(kategorie = kategorie, start__gt=fehler_ab)
-    temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
-    fehler_kat = temp if temp else  0
-    richtig_gesamt = temp if temp else  0
-    if anzahl == 0:
-        durchschnitt = 0
-    else:
-        durchschnitt = int(richtig_gesamt/anzahl)
-    return durchschnitt, richtig_gesamt, fehler_kat
-
-def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
-    d0 = date(sj//100+2000,7,24)
-    d1 = date.today()
-    delta = d1 - d0
-    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]           # weniger Aufgaben am Anfang und keine in den Ferien - maximal 1600 (siehe unten)
-    aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,17,18,19,20,21,22,23, 24,25, 26]   
-    schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
-    if schulwoche < 0: 
-        schulwoche = 0  
-    # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
-    # profil_gruppe = profil.gruppe
-    # if profil_gruppe:
-    #     startdatum = profil.gruppe.erstellt_am
-    # else:
-    #     startdatum = profil.user.date_joined
-    if hj == 2:
-        zweites_hj = (sj%100+2000)
-        d2 = date(zweites_hj,1,24)
-        delta2 = d1 - d2
-        woche_halbjahr =  delta2.days//7                                                        # wird benötigt um auszurechnen, wieviele Aufgaben gerechnet werden sollten
-        try:
-            spaeter = ((startdatum.date()-d2).days)//7
-        except:
-            spaeter = ((startdatum-d2).days)//7
-    else:
-        woche_halbjahr = schulwoche
-        try:
-            spaeter = (startdatum.date() - d0).days//7 
-        except:       
-            spaeter = (startdatum - d0).days//7
-    if spaeter >= woche_halbjahr:
-        spaeter = 0
-    if spaeter < 0:
-        spaeter = 0
-    if woche_halbjahr <= 0:
-        woche_halbjahr = 0
-        spaeter = 0
-    try:
-        if hj == 2:
-            soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
-        else:
-            soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
-    except:
-        soll_hj = 1
-    soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
-    if soll_hj > 1600:
-        soll_hj = 1600
-    pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
-    pflicht_kat = pflicht_kat.count()
-    if pflicht_kat > 0:
-        soll_kat = int(soll_hj/pflicht_kat)
-    else:
-        soll_kat = 0                 
-    if soll_kat < 10:
-        soll_kat = 10
-    return schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat
-
-def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
-    prozent_kat = 0 if soll_kat == 0 else richtig/soll_kat*100
-    if prozent_kat > 50:
-        prozent_kat = (prozent_kat+(richtig-falsch-lsg-abbr)/richtig*100)/2
-    if prozent_kat > 110:
-        prozent_kat = 110
-    if prozent_kat < 0:
-        prozent_kat = 0
-    prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
-    return prozent_farbe, prozent_kat 
-
-def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):                            # Bewertung + Note für das Halbjahr
-    prozent_summe = int(prozent_summe/pflicht_kat)                              # addiert alle Prozentwerte und bildet den Durchschnitt (aus)
-    prozent_summe_farbe = quote_farbe(prozent_summe,100-prozent_summe,0.5)
-    note = 6 if prozent_summe < 25 else 7-((prozent_summe-stufe%2*5)//15)       # für E-Kurs 1,2,3,4,5 bei 95,80,65,50% für G-Kurs entsprechende Note mit 5% weniger
-    str_note = str(note)
-    plusminus = (prozent_summe+3-stufe%2*5)%15                                  # + oder - bei 3% mehr oder weniger
-    if plusminus in range (3,6):
-        str_note = str(note)+"-"
-    if plusminus in range (0,3):
-        str_note = str(note)+"+"
-    if note > 4 and keine5:
-         str_note = '-'
-    return prozent_summe_farbe, prozent_summe, str_note 
-
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
     gibtes = Profil.objects.filter(user_id = req.user.id).count()
@@ -8330,18 +8230,18 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            # letztes_protokoll = (
-            #     Protokoll.objects.filter(profil=profil)
-            #     .order_by("-start")
-            #     .first()
-            # )
-            # if letztes_protokoll:
-            #     datum_letzte_aufgabe = letztes_protokoll.start.date()
-            #     if datum_letzte_aufgabe != date.today():
-            #         # Nur wenn ein neuer Tag, check_hj aufrufen
-            #         hj_result = check_hj(req)
-            #         if isinstance(hj_result, HttpResponse):
-            #             return hj_result                  
+            letztes_protokoll = (
+                Protokoll.objects.filter(profil=profil)
+                .order_by("-start")
+                .first()
+            )
+            if letztes_protokoll:
+                datum_letzte_aufgabe = letztes_protokoll.start.date()
+                if datum_letzte_aufgabe != date.today():
+                    # Nur wenn ein neuer Tag, check_hj aufrufen
+                    hj_result = check_hj(req)
+                    if isinstance(hj_result, HttpResponse):
+                        return hj_result                  
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
