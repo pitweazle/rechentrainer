@@ -4,6 +4,8 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),  # Startseite Accounts
 
+    path("uebersicht/<int:profil_id>/", views.uebersicht, name="uebersicht"),
+
     # Anmeldung & Registrierung
     path("anmelden/", views.anmelden, name="anmelden"),
     path("registrieren/", views.registrieren, name="registrieren"),

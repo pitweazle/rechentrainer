@@ -20,14 +20,13 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
+from .services import format_zahl
+
 from django.db.models import Sum, F,  Max
-from accounts.views import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
+from accounts.views import quote_farbe
+from accounts.services import check_hj, name_hj, name_next_hj,  sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-def format_zahl(wert, stellen=2, trailing_zeros=True):
-    text = f"{wert:.{stellen}f}".replace(".", ",")
-    return text.rstrip(",0") if not trailing_zeros and "," in text else text
-
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1
@@ -9565,6 +9564,19 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
+            letztes_protokoll = (
+                Protokoll.objects.filter(profil=profil)
+                .order_by("-start")
+                .first()
+            )
+
+            if letztes_protokoll:
+                datum_letzte_aufgabe = letztes_protokoll.start.date()
+                if datum_letzte_aufgabe != date.today():
+                    # Nur wenn ein neuer Tag, check_hj aufrufen
+                    hj_result = check_hj(req)
+                    if isinstance(hj_result, HttpResponse):
+                        return hj_result                  
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
