@@ -1,16 +1,29 @@
-from datetime import datetime
+from datetime import datetime, date
 from django.utils import timezone
 
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Profil
-from django.contrib.auth.models import User
 
 from core.models import Protokoll, Zaehler
 
+# Standardmäßig wird das echte Datum genommen.
+# Für Tests kannst du TEST_DATE setzen.
+#TEST_DATE = None  
+TEST_DATE = date(2026, 1,1)
+
+def get_today():
+    """Gibt das aktuelle Datum zurück, oder ein Testdatum, wenn gesetzt."""
+    return TEST_DATE or date.today()
+
+def get_now():
+    """Gibt die aktuelle Uhrzeit zurück, oder ein Testdatum mit Uhrzeit, wenn gesetzt."""
+    return TEST_DATE or datetime.now()
+
 def name_hj():
-    heute = datetime.today()
+    heute = get_today()
     jahr = heute.year
     sj = jahr%100*100+jahr%100+1
     if heute.month in range(1,8):
@@ -22,7 +35,7 @@ def name_hj():
     return sj, hj           
 
 def name_next_hj():
-    heute = datetime.today()
+    heute = get_today()
     jahr = heute.year
     sj = jahr%100*100+jahr%100+1
     if heute.month == 1:
@@ -34,6 +47,69 @@ def name_next_hj():
         hj = 2
     return sj, hj      
 
+def check_hj(req):
+    """Überprüft Halbjahr und Profil, gibt entweder Redirect, Render oder 'OK' zurück"""
+    if not req.user.is_authenticated:
+        return redirect('anmelden')
+
+    email = req.user.email
+    try:
+        profil = req.user.profil
+    except Profil.DoesNotExist:
+        # Fallback für doppelte Accounts
+        zeilen = []
+        doppelte_accounts = User.objects.filter(email=email, email__contains="@")
+        for account in doppelte_accounts:
+            try:
+                profil = Profil.objects.get(profil=account)
+                gesamt = Protokoll.objects.filter(profil=profil)
+                zeilen.append((account, profil, gesamt.count()))
+            except Profil.DoesNotExist:
+                zeilen.append((account, None, ""))
+        logout(req)
+        return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
+
+    heute = get_today()
+
+    # Halbjahres-/Schuljahreswechsel prüfen
+    if heute.month in (1, 7) and sub_note_anzeigen(profil):
+        next_sj, next_hj = name_next_hj()
+        if profil.hj == next_hj and profil.sj == next_sj:
+            # User arbeitet schon im nächsten Halbjahr
+            return redirect('uebersicht')
+
+        sj, hj = name_hj()
+        if profil.hj != hj or profil.sj != sj:
+            # User arbeitet noch im alten Halbjahr/Jahr
+            return redirect('wiederanmeldung')
+
+        # Voreinstellungen prüfen
+        profil.voreinst.setdefault("frage_hj", 0)
+        profil.voreinst.setdefault("no_hj", False)
+
+        if heute.day > profil.voreinst["frage_hj"] and not profil.voreinst["no_hj"]:
+            # Frage stellen, ob neues Halbjahr begonnen werden soll
+            monat, wechsel = ("Juli", "Februar") if heute.month == 1 else ("Januar", "August")
+            context = {'monat': monat, 'wechsel': wechsel}
+            return render(req, 'naechstes_halbjahr.html', context)
+
+        # Alles im Lot → keine Frage, kein Wechsel
+        return "OK"
+
+    # Kein Halbjahreswechsel aktuell → nur prüfen, ob Profil im richtigen Jahr/HJ ist
+    sj, hj = name_hj()
+    if profil.hj == hj and profil.sj == sj:
+        return "OK"
+    else:
+        if sub_note_anzeigen(profil):
+            return redirect('neues_halbjahr')
+        else:
+            profil.hj = hj
+            profil.sj = sj
+            profil.save()
+            sub_daten_loeschen(req)
+            return "OK"
+        
 def sub_note_anzeigen(profil):
     if (profil.gruppe):
         note_anzeigen = True if profil.gruppe.note_anzeigen else False
@@ -101,58 +177,3 @@ def quote_farbe(richtig, falsch, ungenuegend=1/3):
     except :
         return None
 
-def check_hj(user, req):
-    """Überprüft Halbjahr und Profil, gibt entweder Redirect oder 'OK' zurück"""
-    if not user.is_authenticated:
-        return redirect('anmelden')
-
-    email = user.email
-    try:
-        profil = user.profil
-    except Profil.DoesNotExist:
-        # Fallback für doppelte Accounts
-        zeilen = []
-        doppelte_accounts = User.objects.filter(email=email, email__contains="@")
-        for account in doppelte_accounts:
-            try:
-                profil = Profil.objects.get(profil=account)
-                gesamt = Protokoll.objects.filter(profil=profil)
-                zeilen.append((account, profil, gesamt.count()))
-            except Profil.DoesNotExist:
-                zeilen.append((account, None, ""))
-        logout(req)
-        return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
-
-    heute = datetime.now()
-    if heute.month in (1, 7) and sub_note_anzeigen(profil):
-        next_sj, next_hj = name_next_hj()
-        if profil.hj == next_hj and profil.sj == next_sj:
-            return redirect('uebersicht')
-        sj, hj = name_hj()
-        if profil.hj != hj or profil.sj != sj:
-            return redirect('wiederanmeldung')
-        try:
-            if heute.day > profil.voreinst.setdefault("frage_hj", 0) and not profil.voreinst.setdefault("no_hj", False):
-                test = False  # nur Dummy, kann ggf. entfernt werden
-        except:
-            profil.voreinst["frage_hj"] = 0
-            profil.voreinst["no_hj"] = False
-            profil.save()
-        if heute.day > profil.voreinst.get("frage_hj", 0) and not profil.voreinst.get("no_hj", False):
-            monat, wechsel = ("Juli", "Februar") if heute.month == 1 else ("Januar", "August")
-            context = {'monat': monat, 'wechsel': wechsel}
-            return render(request, 'naechstes_halbjahr.html', context)
-        return redirect('uebersicht')
-    else:
-        sj, hj = name_hj()
-        if profil.hj == hj and profil.sj == sj:
-            return "OK"
-        else:
-            if sub_note_anzeigen(profil):
-                return redirect('neues_halbjahr')
-            else:
-                profil.hj = hj
-                profil.sj = sj
-                profil.save()
-                sub_daten_loeschen(request)
-    return redirect('uebersicht')

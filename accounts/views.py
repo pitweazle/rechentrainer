@@ -14,6 +14,7 @@ from django.db.models import Max, Sum, Count, F, Q
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
+
 from .models import Profil, Schule, Lerngruppe, Geloescht
 from .services import check_hj, name_hj, name_next_hj, quote_farbe
 
@@ -123,14 +124,14 @@ def uebersicht(request, profil_id):
     profil = get_object_or_404(Profil, id=profil_id)
     return render(request, "accounts/uebersicht.html", {"profil": profil})
 
-def hj_pruefen(request):
-    result = check_hj(request.user, request)
-    # result ist entweder 'OK' oder ein Redirect/Render-Objekt
-    if result == "OK":
-        # ggf. hier weiter verarbeiten oder einfach nur "OK" zurückgeben
-        return redirect('uebersicht')  # z.B. Weiterleitung zur Übersicht
-    else:
-        return result
+# def hj_pruefen(request):
+#     result = check_hj(request.user, request)
+#     # result ist entweder 'OK' oder ein Redirect/Render-Objekt
+#     if result == "OK":
+#         # ggf. hier weiter verarbeiten oder einfach nur "OK" zurückgeben
+#         return redirect('uebersicht')  # z.B. Weiterleitung zur Übersicht
+#     else:
+#         return result
 
 def naechstes_halbjahr(req):
     if req.method == 'POST':
