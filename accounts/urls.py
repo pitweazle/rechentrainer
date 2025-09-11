@@ -13,7 +13,7 @@ urlpatterns = [
     path("account_loeschen/", views.account_loeschen, name="account_loeschen"),
 
     # Halbjahres-Operationen
-    path("hj_pruefen/", views.hj_pruefen, name="hj_pruefen"),
+    #path("hj_pruefen/", views.hj_pruefen, name="hj_pruefen"),
     path("neues_halbjahr/", views.neues_halbjahr, name="neues_halbjahr"),
     path("doch_neues_halbjahr/", views.doch_neues_halbjahr, name='doch_neues_halbjahr'),
     path("naechstes_halbjahr/", views.naechstes_halbjahr, name="naechstes_halbjahr"),
