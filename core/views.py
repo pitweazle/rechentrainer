@@ -8237,13 +8237,11 @@ def main(req, slug):
             )
             if letztes_protokoll:
                 datum_letzte_aufgabe = letztes_protokoll.start.date()
-                print(datum_letzte_aufgabe)
                 if datum_letzte_aufgabe != get_today():
                     # Nur wenn ein neuer Tag, check_hj aufrufen
                     hj_result = check_hj(req)
                     if isinstance(hj_result, HttpResponse):
                         return hj_result
-                print(hj_result)                  
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)

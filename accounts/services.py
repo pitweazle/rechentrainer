@@ -12,7 +12,7 @@ from core.models import Protokoll, Zaehler
 # Standardmäßig wird das echte Datum genommen.
 # Für Tests kannst du TEST_DATE setzen.
 #TEST_DATE = None  
-TEST_DATE = date(2026, 1,1)
+TEST_DATE = date(2026, 8,7)
 
 def get_today():
     """Gibt das aktuelle Datum zurück, oder ein Testdatum, wenn gesetzt."""
@@ -138,32 +138,48 @@ def stufe_aus_jg(jg, kurs="E"):
     return stufe
 
 def sub_daten_loeschen(req):
-    profil = get_object_or_404(Profil, user = req.user)
+    profil = get_object_or_404(Profil, user=req.user)
+    # Reset Voreinstellungen
     profil.voreinst["no_hj"] = False
     profil.voreinst["frage_hj"] = 0
-    for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
-        zaehler.fehler_zaehler = 0  
-        zaehler.lsg_zaehler = 0  
-        zaehler.hilfe_zaehler = 0  
-        zaehler.abbr_zaehler = 0 
-        zaehler.bonus = 0 
+    # Zähler zurücksetzen
+    for zaehler in Zaehler.objects.filter(profil_id=profil.id):
+        zaehler.fehler_zaehler = 0
+        zaehler.lsg_zaehler = 0
+        zaehler.hilfe_zaehler = 0
+        zaehler.abbr_zaehler = 0
+        zaehler.bonus = 0
         zaehler.save()
+    halbjahr = None
+    jahrgang = profil.jg
+    klasse = profil.klasse
     if profil.hj == 2:
+        # Halbjahreswechsel
         halbjahr = "Halbjahr"
         profil.halbjahr_ab = timezone.now()
         profil.save()
     else:
+        # Schuljahreswechsel
         halbjahr = "Schuljahr"
         profil.schuljahr_ab = timezone.now()
         if profil.jg < 13:
+            # Klasse hochzählen (nur Vorschlag!)
             if str(profil.jg) in profil.klasse:
-                profil.klasse = profil.klasse.replace(str(profil.jg), str(profil.jg+1),1)
-            profil.jg +=1
+                klasse = profil.klasse.replace(str(profil.jg), str(profil.jg + 1), 1)
+            # Jahrgang + Stufe anpassen (nur intern, nicht im Template veränderbar)
+            profil.jg += 1
             neue_stufe = stufe_aus_jg(profil.jg, profil.kurs)
             if neue_stufe > profil.stufe:
                 profil.stufe = neue_stufe
+        profil.klasse = klasse
         profil.save()
-        return halbjahr
+        jahrgang = profil.jg
+    # Rückgabe für Template
+    return {
+        "halbjahr": halbjahr,
+        "jahrgang": jahrgang,
+        "klasse": klasse,
+    }
 
 def quote_farbe(richtig, falsch, ungenuegend=1/3):
     try:

@@ -16,7 +16,7 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
 
 from .models import Profil, Schule, Lerngruppe, Geloescht
-from .services import check_hj, name_hj, name_next_hj, quote_farbe
+from .services import check_hj, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
@@ -124,15 +124,6 @@ def uebersicht(request, profil_id):
     profil = get_object_or_404(Profil, id=profil_id)
     return render(request, "accounts/uebersicht.html", {"profil": profil})
 
-# def hj_pruefen(request):
-#     result = check_hj(request.user, request)
-#     # result ist entweder 'OK' oder ein Redirect/Render-Objekt
-#     if result == "OK":
-#         # ggf. hier weiter verarbeiten oder einfach nur "OK" zurückgeben
-#         return redirect('uebersicht')  # z.B. Weiterleitung zur Übersicht
-#     else:
-#         return result
-
 def naechstes_halbjahr(req):
     if req.method == 'POST':
         neues_halbjahr = req.POST.get('neu', 'nein')
@@ -166,16 +157,13 @@ def naechstes_halbjahr(req):
     return redirect('index')
 
 def doch_neues_halbjahr(req):
-    profil = get_object_or_404(Profil, user = req.user)
+    profil = get_object_or_404(Profil, user=req.user)
     sj, hj = name_next_hj()
     profil.hj = hj
     profil.sj = sj
-    profil.save() 
-    if profil.hj == 2:
-        halbjahr = "Halbjahr"
-    else:
-        halbjahr = "Schuljahr" 
-    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})   
+    profil.save()
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_halbjahr.html', context)
 
 def neues_halbjahr(req):
     profil = get_object_or_404(Profil, user = req.user)
@@ -183,17 +171,17 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)
-    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_halbjahr.html', context)
 
 def wiederanmeldung(req):
-    profil = get_object_or_404(Profil, user = req.user)
+    profil = get_object_or_404(Profil, user=req.user)
     sj, hj = name_hj()
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req, profil)    
-    return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_schuljahr.html', context)
 
 # für Schüler
 def profil(req):
