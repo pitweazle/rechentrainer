@@ -6801,8 +6801,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        if stufe%2 > 0:
-            typ_end += 1
+        # if stufe%2 > 0:
+        #     typ_end += 1
         if jg > 9 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
@@ -6834,7 +6834,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=15
+        typ=9
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -7058,7 +7058,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage = "A="
             einheit = "cm²"
             typ2 = random.randint(0,1)
-
             hypo = math.sqrt(g**2+h**2)
             koordinaten = sub_hypo_oben(g, h, typ2)                 
             parameter.update(koordinaten)
@@ -7069,6 +7068,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             else:
                 werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + str(h) + "cm", 'o': "b=" + format_zahl(hypo,0) +"cm"}
             parameter.update(werte)
+            print(g**2,h**2,g**2+h**2,hypo**2)            
             hilfe_id = 40
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
@@ -7119,14 +7119,17 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 typ3 = random.randint(0,3)
                 gesucht = seiten[typ3]
                 text += gesucht + "²=?"
+                
                 frage = gesucht + "²="
                 if gesucht == bst[schieb]:
-                    lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"]
+                    lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"] 
+                    lsg = [gesucht + "²=" + lsg[0], lsg[0], lsg[0].replace("²", "^2"), lsg[1].replace("²", "^2")] 
                 else:
                     seiten.remove(gesucht)
                     seiten.remove(bst[schieb])
                     lsg = [bst[schieb] + "²-" + seiten[0] + "²"]
-                lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
+                    lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
+                print(lsg)
                 hilfe_id = 90
                 hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
         elif typ == 10:                                         # rechtwinklig oder nicht?           
