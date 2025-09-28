@@ -6713,10 +6713,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 hilfe_id = 152
                 hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
                 hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
-        print("Hilfe: ", hilfe_id)
-        if hilfe_id != 0:
-            hilfe = hilfe.format(*variable)
-            print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
     
 def sub_hypo_oben(g, h, typ2 = 0, scale = 22, x0 = 80, t = 0):
@@ -6797,12 +6793,30 @@ def sub_dreiecksseiten(q, h):
     p=round(p)
     return a, b, c, p
 
+def sub_py_tripel(stufe):
+    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
+    if stufe%2 == 1:
+        typ2 = random.randint(0,7)
+    else:
+        typ2 = random.randint(0,4)
+    a = p_zahlen[typ2][1]
+    b = p_zahlen[typ2][2]
+    c = p_zahlen[typ2][0]
+    if c < 1:
+        einheit = "dm"
+    else:
+        einheit = "cm"
+    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
+    scale = 200/c
+    p = (a**2/c)
+    q = (b**2/c)
+    h = math.sqrt(p*q)
+    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
+
 def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        # if stufe%2 > 0:
-        #     typ_end += 1
         if jg > 9 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
@@ -6814,17 +6828,21 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, lsg[0][:3] + " steht schon da"
             else:
                 return -1, ""
-        elif typ == 8:
+        elif typ in (7,8):
             if eingabe.upper() == lsg[0].upper():
                 return 0, "Achte auf Groß- und Kleinschreibung!" 
-            elif (lsg[0] == "Hypotenuse" and ("Hypothenuse") in eingabe): 
+            elif (lsg[0] == "Hypotenuse" and ("ypothenuse") in eingabe): 
                 return 0, "Hypotenuse schreibt man ohne 'th'"
-            elif (lsg[0] == "Kathete" and ("katete") in eingabe):
+            elif (lsg[0] == "Kathete" and ("atete") in eingabe):
                 return 0, "Kathete schreibt man mit 'th'"
             elif (lsg[0] == "Hypotenuse" and ("nuse") in eingabe) or (lsg[0] == "Kathete" and ("ete") in eingabe):
                 return 0, "Achte auf die richtige Schreibweise"
             else:
                 return -1, ""       
+        elif typ == 9:
+            if "²" in eingabe and "^" in eingabe:
+                return 0, "Bitte schreibe entweder '^2' oder '²'"
+            return -1, ""
         elif typ == 10:
             if eingabe.lower() == lsg[0] or eingabe.lower() == lsg[1]:
                 return 1, ""
@@ -6834,7 +6852,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=9
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6845,37 +6862,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         x0 = 80
         scale = 22
         # Seiten festlegen:
-        if typ == 5:                                            # pythagoräische Zahlentripel
-            seiten = [[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13]]
-            zuza = random.randint(0,5)
-            a=seiten[zuza][0]
-            b=seiten[zuza][1]
-            c=seiten[zuza][2]
-            scale = 200 / c
-            p = (a**2/c)
-            q = (b**2/c)
-            h = math.sqrt(p*q)
-        elif typ == 6:                                          # nur g und h
-            g = random.randint(5,7)
-            h = random.randint(4,5)
-        elif typ < 10 or typ > 14:                              # nur q und h
+        if typ < 5:                                             # nur q und h
             q = random.randint(5,7)
             h = random.randint(4,5)
             a, b, c, p = sub_dreiecksseiten(q, h)
-        elif typ < 15:                                          # pythagoräische Zahlentripel
-            p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
-            parameter['popup_text'] = "popups/pythagoras.html"
-            if stufe%2 == 1:
-                typ2 = random.randint(0,7)
-            else:
-                typ2 = random.randint(0,4)
-            if typ == 13 and typ2 == 2:
-                typ2 = 5
-            a = p_zahlen[typ2][1]
-            b = p_zahlen[typ2][2]
-            c = p_zahlen[typ2][0]
-            scale = 200/c
+        else:                                                   # Seiten aus pythagoräischen Zahlentripel
+            a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
         # Aufgaben:
         if typ == 1:                                            # Kathetensatz und Höhensatz angeben
             titel = "Kathetensatz"
@@ -6936,7 +6928,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = a**2/c
                 parameter['c']= "c="+str(c)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
-                parameter['b']= "b="+str(b)+"cm"
+                #parameter['b']= "b="+str(b)+"cm"
                 frage = "p="
                 lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]            
             elif typ2 == 3:
@@ -6946,7 +6938,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     q = random.randint(5,7)
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
-                    wert = a**2/q
+                    print("wert",a,p,a**2/q)
+                    wert = a**2/p
                 parameter['p']= "p="+str(p)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
                 frage = "c="
@@ -7038,16 +7031,17 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
-            einheit = "cm²"
-
-            erg = round((a*b/2),1)
-            if erg%1 == 0:
-                lsg = [format_zahl(erg,0) + "cm²"]
+            if c < 1:
+                einheit = "dm"
+                erg = round((a*b/2),2)
+                lsg = [format_zahl(erg,2) + einheit + "²"]
             else:
-                lsg = [format_zahl(erg,1) + "cm²"]
+                einheit = "cm"
+                erg = round((a*b/2),1)
+                lsg = [format_zahl(erg,0) + einheit + "²"]
             koordinaten = sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h) 
             parameter.update(koordinaten)
-            werte = {'a': str(a) + "cm", 'b': str(b) + "cm",'c': str(c) + "cm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
+            werte = {'a': str_a + einheit, 'b': str_b + einheit,'c': str_c + einheit, 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
                         'dx': x0 + p * scale}
             parameter.update(werte) 
             hilfe_id = 50
@@ -7056,19 +7050,18 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
             frage = "A="
-            einheit = "cm²"
-            typ2 = random.randint(0,1)
-            hypo = math.sqrt(g**2+h**2)
-            koordinaten = sub_hypo_oben(g, h, typ2)                 
+            koordinaten = sub_hypo_oben(a, b, typ2, scale)                 
             parameter.update(koordinaten)
-            erg = (g*h/2)
-            lsg = ["A=g·h="+str(g)+"·"+str(h)+"/2="+format_zahl(erg,1)]
-            if typ2 == 0:
-                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + format_zahl(hypo,0) + "cm", 'o': "b=" + str(h) +"cm"}
+            erg = (a*b/2)
+            if c < 1:
+                format_zahl(erg,2)
+                str_erg = format_zahl(erg,2)
             else:
-                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + str(h) + "cm", 'o': "b=" + format_zahl(hypo,0) +"cm"}
+                format_zahl(erg,1)
+                str_erg = format_zahl(erg,0)
+            lsg = ["A=g·h="+str_a+"·"+str_b +"/2="+str_erg]
+            werte = {'m': "c=" + str_a + einheit, 'n': "a=" + str_c + einheit, 'o': "b=" + str_b + einheit}
             parameter.update(werte)
-            print(g**2,h**2,g**2+h**2,hypo**2)            
             hilfe_id = 40
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
@@ -7090,6 +7083,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 benennungen =  {'A': bst[2+schieb].upper(), 'B': bst[3+schieb].upper(), 'C': bst[4+schieb].upper(),
                                 'm': bst[1+schieb], 'n': bst[2+schieb], 'o': bst[3+schieb],}              
             else:                                   # Hypotenuse unten
+                #a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit = sub_py_tripel(stufe)
                 koordinaten = sub_hypo_unten(x0, scale, q, p, h)             
                 benennungen =  {'A': bst[1+schieb].upper(), 'B': bst[2+schieb].upper(), 'C': bst[3+schieb].upper(),
                                 'a': bst[1+schieb], 'b': bst[2+schieb], 'c': bst[3+schieb],
@@ -7119,7 +7113,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 typ3 = random.randint(0,3)
                 gesucht = seiten[typ3]
                 text += gesucht + "²=?"
-                
                 frage = gesucht + "²="
                 if gesucht == bst[schieb]:
                     lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"] 
@@ -7129,39 +7122,39 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     seiten.remove(bst[schieb])
                     lsg = [bst[schieb] + "²-" + seiten[0] + "²"]
                     lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
-                print(lsg)
+                lsg.append("indiv_0")
                 hilfe_id = 90
                 hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
-        elif typ == 10:                                         # rechtwinklig oder nicht?           
+        elif typ == 10:                             # rechtwinklig oder nicht?           
             titel = "rechtwinklig oder nicht?"
             frage = "j/n="
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
+            parameter['popup_text'] = "popups/pythagoras.html"
             typ3 = random.randint(1,2)
             if typ3 == 1:                                           # Hypotenuse unten
                 text = "Das Dreieck sieht rechtwinklig aus.<br>Überprüfe mithilfe des Satzes von Pythagoras, ob es auch wirklich rechtwinkig ist.<br>Ist es rechtwinklig (ja/nein)?"
-                q = b**2/c
-                p = c - q
-                h = math.sqrt(p*q)
                 koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
                 parameter.update(koordinaten)
-                werte = {'a': str(a).replace(".",","), 'b': str(b).replace(".",","),'c': str(c).replace(".",","),
+                werte = {'a': str_a, 'b': str_b,'c': str_c,
                         'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
             else:                                                   # Hypotenuse oben
                 text = "Um zu überprüfen, ob dieses Rechteck rechtwinklig ist, kann man den Satz des Pythagoras anwenden.<br>Ist es rechtwinklig (ja/nein)?"
-                scale = 180/a
+                #scale = 180/a
                 koordinaten = sub_hypo_oben(a, b, 0, scale) 
                 parameter.update(koordinaten) 
-                werte = {'m': str(a).replace(".",","), 'n': str(c).replace(".",","), 'o': str(b).replace(".",","),
+                werte = {'m': str_a, 'n': str_c, 'o': str_b,
                         'dx': parameter['bx']} 
                 ecken =  {'A': " ", 'B': " ", 'C': " ",}
                 parameter.update(ecken)              
             if random.random() > 0.5:
                 lsg = ["j", "ja", "indiv_0"]
             else:
-                c +=p_zahlen[typ2][3]
+                c +=nichtrw
+                str_c = str(c).replace(".",",")
                 if typ3 != 1:
-                    werte['n']= str(c).replace(".",",")
+                    werte['n']= str_c
                 else:
-                    werte['c']= str(c).replace(".",",")
+                    werte['c']= str_c
                 lsg = ["n", "nein", "indiv_0"]
             parameter.update(werte)
             parameter['kein_winkel'] = True
@@ -7169,9 +7162,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             hilfe = "Wenn das Quadrat der langen Seite genauso groß ist wie die Summe der Quadrate der kürzeren Seiten, so ist das Dreieck rechtwinklig - ansonsten nicht.<br>(Es genügt hier auch nur die jeweils letzten Stellen der Quadrate zu überprüfen.)"
         elif typ < 13:                                          # Berechnung der Seiten
             titel = "Satz des Pythagoras"
-            str_a = str(a).replace(".",",")+"cm"
-            str_b = str(b).replace(".",",")+"cm"
-            str_c = str(c).replace(".",",")+"cm"
             typ3 = random.choice(["a", "b", "c", "c"])
             variable = [typ3]
             text = "wie lang ist die Seite {}?"
@@ -7180,10 +7170,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             anmerkung = "Du brauchst keinen Taschenrechner. Benutze einen Zettel!<br>(Hier musst du die Quadratzahlen bis 15² auswendig wissen.)"
             if c == 2.5:
                 anmerkung += "<br>(2,5² = 6,25)"
-            scale = 200/c
-            q = b**2/c
-            p = c - q
-            h = math.sqrt(p*q)
             koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
             parameter.update(koordinaten)
             if typ3 == "a":                                         # Kathete a
@@ -7237,7 +7223,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 else:
                     parameter['kurs'] = "G"
                     text = "{} ist {}m breit (b), die Höhe des Daches (h) beträgt {}m und die Firsthöhe (f) beträgt {}m.<br>Wie lang ist die Dachfläche l?"
-                    variable = [gebaeude, str(a*2).replace(".",","), str(b).replace(".",","), str(t+b).replace(".",",")]
+                    variable = [gebaeude, str(a*2).replace(".",","), str_b, str(t+b).replace(".",",")]
                     hilfe_id = 132
                     hilfe = "Die waagerechte Kathete der Dreiecke entspricht der Hälfte der Gebäudebreite, die senkrechte Kathete entspricht der Höhe des Daches. Gesucht ist die Hypotenuse."
                 anmerkung = "Du brauchst keinen Taschenrechner, nur den Satz des Pythagoras."
@@ -7277,10 +7263,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                             'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
             parameter.update(benennungen)
             winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, 45, 180-45, color = "yellow", symbol = "45°", schenkel = 1, scheitel = False)
-            print(winkel)
             #koordinaten =sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
             parameter.update(winkel)
-            
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
@@ -9348,6 +9332,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
+                #print(eingabe, loe, eingabe==loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
