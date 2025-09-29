@@ -7043,6 +7043,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             parameter.update(koordinaten)
             werte = {'a': str_a + einheit, 'b': str_b + einheit,'c': str_c + einheit, 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
                         'dx': x0 + p * scale}
+            einheit +="²"
             parameter.update(werte) 
             hilfe_id = 50
             hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
@@ -7061,6 +7062,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 str_erg = format_zahl(erg,0)
             lsg = ["A=g·h="+str_a+"·"+str_b +"/2="+str_erg]
             werte = {'m': "c=" + str_a + einheit, 'n': "a=" + str_c + einheit, 'o': "b=" + str_b + einheit}
+            einheit +="²"
             parameter.update(werte)
             hilfe_id = 40
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
