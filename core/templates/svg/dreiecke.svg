@@ -16,7 +16,7 @@ viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
     <symbol id="bogen" >
       <path d="M {{parameter.center_x}}, {{parameter.center_y}}
           L {{parameter.start_bogen_x}}, {{parameter.start_bogen_y}}
-          A {{parameter.bogen_radius}}, {{parameter.bogen_radius}} 0 {{parameter.largeArcFlag}} 1  {{parameter.end_bogen_x}}, {{parameter.end_bogen_y}}
+          A {{parameter.bogen_radius}}, {{parameter.bogen_radius}} 0 {{parameter.largeArcFlag}} {{parameter.sweepFlag}} {{parameter.end_bogen_x}}, {{parameter.end_bogen_y}}
           Z " 
         />
         <text x="{{parameter.text_x}}" y="{{parameter.text_y|add:5}}" fill="black">{{parameter.symbol}}</text>

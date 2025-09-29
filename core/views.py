@@ -2683,7 +2683,7 @@ def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
                     largeArcFlag = largeArcFlag)  
         return koordinaten
 
-def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False, lire = 1):
     rad_start = math.radians(startwinkel)
     rad = math.radians(winkel)
     if id == 0:
@@ -2752,7 +2752,7 @@ def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, 
         if id == 0:
             bogen_koo = dict(bogen_radius = radius, sweep_flag = 1, largeArcFlag = largeArcFlag, 
                 start_bogen_x = start_x, start_bogen_y = start_y, end_bogen_x = end_x, end_bogen_y =  end_y,
-                text_x = text_x, text_y = text_y, color = color, symbol = symbol,)
+                text_x = text_x, text_y = text_y, color = color, symbol = symbol, sweepFlag = lire)
         if id == 1:
             bogen_koo = dict(bogen_radius_1 = radius, sweep_flag_1 = 1, largeArcFlag_1 = largeArcFlag, 
                 start_bogen_x_1 = start_x, start_bogen_y_1 = start_y, end_bogen_x_1 = end_x, end_bogen_y_1 =  end_y,
@@ -6852,6 +6852,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=15
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -7264,8 +7265,9 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                             'a': "a", 'b': "b", 'c': "c",
                             'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
             parameter.update(benennungen)
-            winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, 45, 180-45, color = "yellow", symbol = "45°", schenkel = 1, scheitel = False)
-            #koordinaten =sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
+            print(c, b, math.acos(b/c)*180/math.pi)
+            winkel = math.acos(b/c)*180/math.pi
+            winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -winkel+2, 180-1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 0)
             parameter.update(winkel)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
