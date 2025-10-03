@@ -6852,7 +6852,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=15
+        typ=16
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6863,10 +6863,26 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         x0 = 80
         scale = 22
         # Seiten festlegen:
-        if typ < 5:                                             # nur q und h
+        if typ > 14:                                            # für Trigonometrie
             q = random.randint(5,7)
             h = random.randint(4,5)
-            a, b, c, p = sub_dreiecksseiten(q, h)
+            titel = "Trigonometrie"
+            parameter = {'name': 'svg/dreiecke.svg', 'object': 'trigonometrie', 'box_breite': 350,  'box_hoehe': 200}
+            p = (h*h/q)
+            c = (p+q)
+            a = (math.sqrt(h**2+p**2))
+            b = (math.sqrt(h**2+q**2))
+            scale = 200/c
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+            parameter.update(koordinaten)
+            benennungen =  {'A': "A", 'B': "B", 'C': "C",
+                            'a': "a", 'b': "b", 'c': "c",
+                            'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(benennungen)
+        elif typ < 5:                                           # nur q und h
+            q = random.randint(5,7)
+            h = random.randint(4,5)
+            a, b, c, p = sub_dreiecksseiten(q, h)        
         else:                                                   # Seiten aus pythagoräischen Zahlentripel
             a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
         # Aufgaben:
@@ -7253,22 +7269,26 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
-        else:
-            titel = "Trigonometrie"
-            text = "Welche Seite ist die Gegenkathete in Bezug auf den gelben Winkel?"
-            frage = "Gegenkathete:"
-            hilfe="Die Gegenkathete ist die Seite, die dem Winkel gegenüber liegt."
-            parameter = {'name': 'svg/dreiecke.svg', 'object': 'trigonometrie', 'box_breite': 350,  'box_hoehe': 200}
-            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
-            parameter.update(koordinaten)
-            benennungen =  {'A': "A", 'B': "B", 'C': "C",
-                            'a': "a", 'b': "b", 'c': "c",
-                            'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
-            parameter.update(benennungen)
-            print(c, b, math.acos(b/c)*180/math.pi)
-            winkel = math.acos(b/c)*180/math.pi
-            winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -winkel+2, 180-1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 0)
+        elif typ < 17:
+            typ2 = random.randint(1,4)
+            text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
+            if typ2%2 == 0:
+                variable = ["Gegenkathete"]
+                hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
+            else:
+                variable = ["Ankathete"]
+                hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."                    
+            if typ2 < 3: 
+                winkel = math.acos(b/c)*180/math.pi
+                winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 0)
+            else:
+                winkel = math.acos(a/c)*180/math.pi
+                winkel = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 1)
+            liste = ["b","a","a","b"]
+            lsg = [liste[typ2-1]]  
+            frage = "{}:".format(*variable)
             parameter.update(winkel)
+            print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
