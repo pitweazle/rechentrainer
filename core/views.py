@@ -28,6 +28,39 @@ def format_zahl(wert, stellen=2, trailing_zeros=True):
     text = f"{wert:.{stellen}f}".replace(".", ",")
     return text.rstrip(",0") if not trailing_zeros and "," in text else text
 
+# def format_zahl(wert, stellen=2, trailing_zeros=True):
+#     """
+#     Formatiert eine Zahl im deutschen Format (Komma statt Punkt).
+
+#     Features:
+#     - Akzeptiert float, int oder str mit '.' oder ','.
+#     - Rundet korrekt (z. B. 2.9999 → "3").
+#     - Entfernt überflüssige Nullen, falls gewünscht.
+#     - Gibt Originaltext zurück, falls keine Zahl erkannt wird.
+#     """
+
+#     # 🔹 1. Eingabe in float umwandeln, wenn möglich
+#     if isinstance(wert, str):
+#         wert = wert.strip().replace(",", ".")
+#         try:
+#             wert = float(wert)
+#         except ValueError:
+#             return wert  # kein gültiger Zahlenwert → Originaltext
+
+#     # 🔹 2. Rundung und Formatierung
+#     gerundet = round(wert, stellen)
+#     text = f"{gerundet:.{stellen}f}".replace(".", ",")
+
+#     # 🔹 3. Überflüssige Nullen und Komma entfernen (optional)
+#     if not trailing_zeros:
+#         text = text.rstrip("0").rstrip(",")
+
+#     # 🔹 4. Sonderfall: z. B. 3,00 → 3 (wenn alles hinterm Komma wegfällt)
+#     if "," in text and text.endswith(","):
+#         text = text[:-1]
+
+#     return text
+
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1
@@ -6820,7 +6853,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         if jg > 9 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
-    elif eingabe != "":                                                                                                         
+    elif eingabe != "":
         if typ == 1:
             if not "*" in eingabe:
                 return 0, "Du musst '*' für die Multiplikation ergänzen."
@@ -6848,15 +6881,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 1, ""
             else:
                 return -1, "" 
-        elif typ in (17,18):
+        elif typ > 16:
             if "°" in eingabe:
                 return 0, "Das Gradzeichen ° musst du weglassen."
             if "(" in eingabe:
                 return 0, "Bitte keine Klammer eingeben."
             if "," in eingabe:
                 nachkomma = len(eingabe.split(",")[1])
-                print(lsg[3],eingabe, nachkomma)
-                if eingabe == format_zahl(lsg[3],nachkomma):
+                if eingabe == format_zahl(lsg[1],nachkomma):
                     return 1, "<br>Du solltest aber eigentlich nicht die Lösung eingeben sondern die Rechnung."
                 else:
                     return -1, ""
@@ -6866,7 +6898,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=17
+        typ=20
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -7306,17 +7338,50 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 frage = "{}:".format(*variable)
                 liste = ["b","a","a","b"]
                 lsg = [liste[typ2-1]]  
-            elif typ < 19:
+            elif typ > 16:                                      # Seiten berechnen
+                if typ == 17:                               # Ankathete aus Winkel und Hypotenuse
+                    parameter["c"] = str_c
+                    if typ2%2 == 0:
+                        variable = ["a"]
+                    else:
+                        variable = ["b"]            
+                    wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
+                    lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
+                    hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
+                elif typ == 18:                             # Gegenkathete aus Winkel und Hypotenuse
+                    parameter["c"] = str_c
+                    if typ2%2 == 0:
+                        variable = ["b"]
+                    else:
+                        variable = ["a"]            
+                    wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
+                    lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
+                    hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
+                elif typ == 19:                             # Hypotenuse aus Winkel und Gegenkathete
+                    variable = "c"
+                    if typ2%2 == 0:
+                        parameter["a"] = str_a
+                        wert = round(a,0)/math.sin(math.radians(round(winkel,0)))
+                        lsg = [str_a + "/sin" + str_winkel, wert, str_a + ":sin" + str_winkel, "indiv_0"]
+                    else:
+                        parameter["b"] = str_b
+                        wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
+                        lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
+                    hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
+                elif typ == 20:                             # Hypotenuse aus Winkel und Ankathete
+                    variable = "c"
+                    if typ2%2 == 0:
+                        parameter["b"] = str_b
+                        wert = round(b,0)/math.cos(math.radians(round(winkel,0)))
+                        lsg = [str_b + "/cos" + str_winkel, wert, str_b + ":cos" + str_winkel, "indiv_0"]
+                    else:
+                        parameter["a"] = str_a
+                        wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
+                        lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
+                    hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
                 text = "Wie berechnet man die Seite {}?"
-                parameter["c"] = str_c
-                if typ2%2 == 0:
-                    variable = ["a"]
-                else:
-                    variable = ["b"]            
                 frage = "{}=".format(*variable)
-                wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
-                hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
-                lsg = [str_c + "sin" + str_winkel, str_c + "*sin" + str_winkel, "sin" + str_winkel + "*" + str_c, wert, "indiv_0"]
+
             print(lsg)
             # print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
