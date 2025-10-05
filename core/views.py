@@ -6848,11 +6848,25 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 1, ""
             else:
                 return -1, "" 
+        elif typ in (17,18):
+            if "°" in eingabe:
+                return 0, "Das Gradzeichen ° musst du weglassen."
+            if "(" in eingabe:
+                return 0, "Bitte keine Klammer eingeben."
+            if "," in eingabe:
+                nachkomma = len(eingabe.split(",")[1])
+                print(lsg[3],eingabe, nachkomma)
+                if eingabe == format_zahl(lsg[3],nachkomma):
+                    return 1, "<br>Du solltest aber eigentlich nicht die Lösung eingeben sondern die Rechnung."
+                else:
+                    return -1, ""
+            else:
+                return -1, ""             
         else:
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=16
+        typ=17
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6872,6 +6886,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             c = (p+q)
             a = (math.sqrt(h**2+p**2))
             b = (math.sqrt(h**2+q**2))
+            str_a,str_b, str_c = (format_zahl(x,0) for x in (a, b, c))
             scale = 200/c
             koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
             parameter.update(koordinaten)
@@ -7144,7 +7159,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg.append("indiv_0")
                 hilfe_id = 90
                 hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
-        elif typ == 10:                             # rechtwinklig oder nicht?           
+        elif typ == 10:                                         # rechtwinklig oder nicht?           
             titel = "rechtwinklig oder nicht?"
             frage = "j/n="
             parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
@@ -7269,26 +7284,41 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
-        elif typ < 17:
+        else:                                                   # Trigonometrie
             typ2 = random.randint(1,4)
-            text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
-            if typ2%2 == 0:
-                variable = ["Gegenkathete"]
-                hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
-            else:
-                variable = ["Ankathete"]
-                hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."                    
-            if typ2 < 3: 
+            if typ2%2 == 0:                                     # zeichnet Alfa
                 winkel = math.acos(b/c)*180/math.pi
-                winkel = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 0)
-            else:
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 0)
+            else:                                               # zeichnet Beta
                 winkel = math.acos(a/c)*180/math.pi
-                winkel = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = format_zahl(winkel,0) + "°", schenkel = 1, scheitel = False, lire = 1)
-            liste = ["b","a","a","b"]
-            lsg = [liste[typ2-1]]  
-            frage = "{}:".format(*variable)
-            parameter.update(winkel)
-            print(hilfe.format(*variable))
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
+            parameter.update(winkel_zeichnen)
+            if typ < 17:                                        # Welches ist An/Gegenkathete?
+                text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
+                if typ2< 3:
+                    variable = ["Gegenkathete"]
+                    hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
+                else:
+                    variable = ["Ankathete"]
+                    hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."
+                frage = "{}:".format(*variable)
+                liste = ["b","a","a","b"]
+                lsg = [liste[typ2-1]]  
+            elif typ < 19:
+                text = "Wie berechnet man die Seite {}?"
+                parameter["c"] = str_c
+                if typ2%2 == 0:
+                    variable = ["a"]
+                else:
+                    variable = ["b"]            
+                frage = "{}=".format(*variable)
+                wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
+                hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
+                lsg = [str_c + "sin" + str_winkel, str_c + "*sin" + str_winkel, "sin" + str_winkel + "*" + str_c, wert, "indiv_0"]
+            print(lsg)
+            # print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
