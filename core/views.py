@@ -6850,7 +6850,13 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        if jg > 9 or "Kathete" in optionen:
+        if jg > 9 or stufe >= 45 or "Winkel" in optionen:
+            typ_anf = 1
+            typ_end = 20        
+        if jg > 9 or stufe >= 45 or "Trigonometrie" in optionen:
+            typ_anf = 1
+            typ_end = 20
+        if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
     elif eingabe != "":
@@ -6898,7 +6904,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=20
+        typ=17
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6908,8 +6914,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         erg = None 
         x0 = 80
         scale = 22
-        # Seiten festlegen:
-        if typ > 14:                                            # für Trigonometrie
+        # Seiten festlegen
+        if typ < 5:                                             # nur q und h
+            q = random.randint(5,7)
+            h = random.randint(4,5)
+            a, b, c, p = sub_dreiecksseiten(q, h)        
+        elif typ < 15:                                          # Seiten aus pythagoräischen Zahlentripel
+            a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
+        elif typ > 14:                                          # für Trigonometrie
             q = random.randint(5,7)
             h = random.randint(4,5)
             titel = "Trigonometrie"
@@ -6926,12 +6938,17 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                             'a': "a", 'b': "b", 'c': "c",
                             'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
             parameter.update(benennungen)
-        elif typ < 5:                                           # nur q und h
-            q = random.randint(5,7)
-            h = random.randint(4,5)
-            a, b, c, p = sub_dreiecksseiten(q, h)        
-        else:                                                   # Seiten aus pythagoräischen Zahlentripel
-            a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
+            typ2 = random.randint(1,4)
+            if typ2%2 == 0:                                     # zeichnet Alfa
+                winkel = math.acos(b/c)*180/math.pi
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 0)
+            else:                                               # zeichnet Beta
+                winkel = math.acos(a/c)*180/math.pi
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
+            parameter.update(winkel_zeichnen)
+            text = "Wie berechnet man die Seite {}?"
         # Aufgaben:
         if typ == 1:                                            # Kathetensatz und Höhensatz angeben
             titel = "Kathetensatz"
@@ -7316,74 +7333,62 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
-        else:                                                   # Trigonometrie
-            typ2 = random.randint(1,4)
-            if typ2%2 == 0:                                     # zeichnet Alfa
-                winkel = math.acos(b/c)*180/math.pi
-                str_winkel = format_zahl(winkel,0)
-                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 0)
-            else:                                               # zeichnet Beta
-                winkel = math.acos(a/c)*180/math.pi
-                str_winkel = format_zahl(winkel,0)
-                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
-            parameter.update(winkel_zeichnen)
-            if typ < 17:                                        # Welches ist An/Gegenkathete?
-                text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
-                if typ2< 3:
-                    variable = ["Gegenkathete"]
-                    hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
-                else:
-                    variable = ["Ankathete"]
-                    hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."
-                frage = "{}:".format(*variable)
-                liste = ["b","a","a","b"]
-                lsg = [liste[typ2-1]]  
-            elif typ > 16:                                      # Seiten berechnen
-                if typ == 17:                               # Ankathete aus Winkel und Hypotenuse
-                    parameter["c"] = str_c
-                    if typ2%2 == 0:
-                        variable = ["a"]
-                    else:
-                        variable = ["b"]            
-                    wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
-                    lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
-                    hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
-                elif typ == 18:                             # Gegenkathete aus Winkel und Hypotenuse
-                    parameter["c"] = str_c
-                    if typ2%2 == 0:
-                        variable = ["b"]
-                    else:
-                        variable = ["a"]            
-                    wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
-                    lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
-                    hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
-                elif typ == 19:                             # Hypotenuse aus Winkel und Gegenkathete
-                    variable = "c"
-                    if typ2%2 == 0:
-                        parameter["a"] = str_a
-                        wert = round(a,0)/math.sin(math.radians(round(winkel,0)))
-                        lsg = [str_a + "/sin" + str_winkel, wert, str_a + ":sin" + str_winkel, "indiv_0"]
-                    else:
-                        parameter["b"] = str_b
-                        wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
-                        lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
-                    hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
-                elif typ == 20:                             # Hypotenuse aus Winkel und Ankathete
-                    variable = "c"
-                    if typ2%2 == 0:
-                        parameter["b"] = str_b
-                        wert = round(b,0)/math.cos(math.radians(round(winkel,0)))
-                        lsg = [str_b + "/cos" + str_winkel, wert, str_b + ":cos" + str_winkel, "indiv_0"]
-                    else:
-                        parameter["a"] = str_a
-                        wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
-                        lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
-                    hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
-                text = "Wie berechnet man die Seite {}?"
-                frage = "{}=".format(*variable)
+        elif typ < 17:                                          # Welches ist An/Gegenkathete?
+            text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
+            if typ2< 3:
+                variable = ["Gegenkathete"]
+                hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
+            else:
+                variable = ["Ankathete"]
+                hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."
+            frage = "{}:".format(*variable)
+            liste = ["b","a","a","b"]
+            lsg = [liste[typ2-1]]  
+        elif typ == 17:                                         # Ankathete aus Winkel und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                variable = ["a"]
+            else:
+                variable = ["b"]            
+            wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
+            lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
+            hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
+        elif typ == 18:                                         # Gegenkathete aus Winkel und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                variable = ["b"]
+            else:
+                variable = ["a"]            
+            wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
+            lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
+            hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
+        elif typ == 19:                                         # Hypotenuse aus Winkel und Gegenkathete
+            variable = "c"
+            if typ2%2 == 0:
+                parameter["a"] = str_a
+                wert = round(a,0)/math.sin(math.radians(round(winkel,0)))
+                lsg = [str_a + "/sin" + str_winkel, wert, str_a + ":sin" + str_winkel, "indiv_0"]
+            else:
+                parameter["b"] = str_b
+                wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
+                lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
+            hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
+        elif typ == 20:                             # Hypotenuse aus Winkel und Ankathete
+            variable = "c"
+            if typ2%2 == 0:
+                parameter["b"] = str_b
+                wert = round(b,0)/math.cos(math.radians(round(winkel,0)))
+                lsg = [str_b + "/cos" + str_winkel, wert, str_b + ":cos" + str_winkel, "indiv_0"]
+            else:
+                parameter["a"] = str_a
+                wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
+                lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
+            hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
 
-            print(lsg)
-            # print(hilfe.format(*variable))
+        if typ > 16:
+            frage = "{}=".format(*variable)
+        print(lsg)
+        # print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
