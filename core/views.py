@@ -6850,12 +6850,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        if jg > 9 or stufe >= 45 or "Winkel" in optionen:
+        if jg > 10 or stufe >= 43 or "Winkel" in optionen:
             typ_anf = 1
-            typ_end = 20        
-        if jg > 9 or stufe >= 45 or "Trigonometrie" in optionen:
+            typ_end = 24        
+        if jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
             typ_anf = 1
-            typ_end = 20
+            typ_end = 24
         if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
@@ -6890,8 +6890,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ > 16:
             if "°" in eingabe:
                 return 0, "Das Gradzeichen ° musst du weglassen."
-            if "(" in eingabe:
-                return 0, "Bitte keine Klammer eingeben."
+            if ":" in eingabe:
+                return 0, "Bitte benutze für die Division das '/' Zeichen."
+            if "cot" in eingabe:
+                return 0, "Den Kotangens (cot) kann ich nicht berechnen."
+            if any(b in eingabe for b in ["S", "C", "T"]):
+                return 0, "Schreibe 'sin', 'cos' bzw. 'tan' klein."
             if "," in eingabe:
                 nachkomma = len(eingabe.split(",")[1])
                 if eingabe == format_zahl(lsg[1],nachkomma):
@@ -6899,12 +6903,21 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 else:
                     return -1, ""
             else:
-                return -1, ""             
+                if typ <= 24:
+                    if "(" in eingabe:
+                        return 0, "Bitte keine Klammer eingeben."
+                    else:
+                        return -1, ""
+                else:
+                    if "/" in eingabe and not "(" in eingabe:
+                        return 0, "Da fehlt eine Klammer um den Quotienten."
+                    else:
+                        return -1, ""
         else:
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=17
+        typ=24
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6949,6 +6962,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
             parameter.update(winkel_zeichnen)
             text = "Wie berechnet man die Seite {}?"
+        if typ > 24:
+            parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/arcsin.html"  
+        elif typ > 17:
+            parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/sin.html"
         # Aufgaben:
         if typ == 1:                                            # Kathetensatz und Höhensatz angeben
             titel = "Kathetensatz"
@@ -7344,7 +7363,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             frage = "{}:".format(*variable)
             liste = ["b","a","a","b"]
             lsg = [liste[typ2-1]]  
-        elif typ == 17:                                         # Ankathete aus Winkel und Hypotenuse
+        elif typ < 19:                                          # Gegenkathete aus Winkel und Hypotenuse
             parameter["c"] = str_c
             if typ2%2 == 0:
                 variable = ["a"]
@@ -7353,7 +7372,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
             lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
             hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
-        elif typ == 18:                                         # Gegenkathete aus Winkel und Hypotenuse
+        elif typ < 21:                                          # Ankathete aus Winkel und Hypotenuse
             parameter["c"] = str_c
             if typ2%2 == 0:
                 variable = ["b"]
@@ -7362,7 +7381,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
             lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
             hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
-        elif typ == 19:                                         # Hypotenuse aus Winkel und Gegenkathete
+        elif typ == 21:                                         # Hypotenuse aus Winkel und Gegenkathete
             variable = "c"
             if typ2%2 == 0:
                 parameter["a"] = str_a
@@ -7373,7 +7392,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
                 lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
             hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
-        elif typ == 20:                             # Hypotenuse aus Winkel und Ankathete
+        elif typ == 22:                                         # Hypotenuse aus Winkel und Ankathete
             variable = "c"
             if typ2%2 == 0:
                 parameter["b"] = str_b
@@ -7384,11 +7403,34 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
                 lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
             hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
-
+        elif typ == 23:                                         # Gegenkathete aus Winkel und Ankathete
+            if typ2%2 == 0:
+                variable = "a"
+                parameter["b"] = str_b
+                wert = round(b,0)*math.tan(math.radians(round(winkel,0)))
+                lsg = [str_b + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_b, str_b + "*tan" + str_winkel, "indiv_0"]
+            else:
+                variable = "b"
+                parameter["a"] = str_a
+                wert = round(a,0)*math.tan(math.radians(round(winkel,0)))
+                lsg = [str_a + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_a, str_b + "*tan" + str_winkel, "indiv_0"]
+            hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
+        elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
+            if typ2%2 == 0:
+                variable = "b"
+                parameter["a"] = str_a
+                wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
+                lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+            else:
+                variable = "a"
+                parameter["b"] = str_b
+                wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
+                lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
+            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens"  
         if typ > 16:
             frage = "{}=".format(*variable)
         print(lsg)
-        # print(hilfe.format(*variable))
+        print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
