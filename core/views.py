@@ -6852,7 +6852,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         typ_end = 14
         if jg > 10 or stufe >= 43 or "Winkel" in optionen:
             typ_anf = 1
-            typ_end = 24        
+            typ_end = 27        
         if jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
             typ_anf = 1
             typ_end = 24
@@ -6896,8 +6896,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, "Den Kotangens (cot) kann ich nicht berechnen."
             if any(b in eingabe for b in ["S", "C", "T"]):
                 return 0, "Schreibe 'sin', 'cos' bzw. 'tan' klein."
-            if "," in eingabe:
-                nachkomma = len(eingabe.split(",")[1])
+            if all(funktion not in eingabe for funktion in ["sin", "cos", "tan"]):
+                nachkomma = len(eingabe.split(",")[1]) if "," in eingabe else 0
                 if eingabe == format_zahl(lsg[1],nachkomma):
                     return 1, "<br>Du solltest aber eigentlich nicht die Lösung eingeben sondern die Rechnung."
                 else:
@@ -6917,7 +6917,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=24
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6944,6 +6943,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             a = (math.sqrt(h**2+p**2))
             b = (math.sqrt(h**2+q**2))
             str_a,str_b, str_c = (format_zahl(x,0) for x in (a, b, c))
+            int_a,int_b, int_c = (round(x,0) for x in (a, b, c))
             scale = 200/c
             koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
             parameter.update(koordinaten)
@@ -6954,20 +6954,16 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             typ2 = random.randint(1,4)
             if typ2%2 == 0:                                     # zeichnet Alfa
                 winkel = math.acos(b/c)*180/math.pi
+                #str_winkel = format_zahl(math.acos(round(b,0)/round(c,0))*180/math.pi,0)
                 str_winkel = format_zahl(winkel,0)
                 winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 0)
             else:                                               # zeichnet Beta
                 winkel = math.acos(a/c)*180/math.pi
+                #str_winkel = format_zahl(math.acos(round(a,0)/round(c,0))*180/math.pi,0)
                 str_winkel = format_zahl(winkel,0)
                 winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
             parameter.update(winkel_zeichnen)
-            text = "Wie berechnet man die Seite {}?"
-        if typ > 24:
-            parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
-            parameter['popup_text'] = "popups/arcsin.html"  
-        elif typ > 17:
-            parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
-            parameter['popup_text'] = "popups/sin.html"
+            int_a,int_b, int_c = (round(x,0) for x in (a, b, c))
         # Aufgaben:
         if typ == 1:                                            # Kathetensatz und Höhensatz angeben
             titel = "Kathetensatz"
@@ -7426,9 +7422,73 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter["b"] = str_b
                 wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
                 lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
-            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens"  
-        if typ > 16:
+            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
+        elif typ == 25:                                         # Winkel aus Gegenkathete und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                parameter["a"] = str_a
+                parameter["symbol"] = "α"
+                variable = ["α", "asin"] 
+                lsg = "asin(" + str_a + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(a,0)/round(c,0)))
+                wert2 = (int_a/int_c)
+            else:
+                parameter["b"] = str_b
+                parameter["symbol"] = "β"
+                variable = ["β", "asin"]
+                lsg = "asin(" + str_b + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(b,0)/round(c,0)))
+                wert2 = (int_b/int_c)
+            lsg = [lsg, wert, lsg.replace("asin","sin^-1"), lsg.replace("asin","arcsin"), "indiv_0"]
+            hilfe = "Gegenkathete und Hypotenuse gegeben -> Sinus⁻¹ (oder asin oder arcsin)." 
+        elif typ == 26:                                         # Winkel aus Ankathete und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                parameter["b"] = str_b
+                parameter["symbol"] = "β"
+                variable = ["β", "acos"]
+                lsg = "acos(" + str_b + "/" + str_c + ")" 
+                wert = math.degrees(math.acos(round(b,0)/round(c,0)))
+                wert2 = (int_b/int_c)
+            else:
+                parameter["a"] = str_a
+                parameter["symbol"] = "α"
+                variable = ["α", "acos"] 
+                lsg = "acos(" + str_a + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(a,0)/round(c,0)))
+                wert2 = (int_a/int_c)
+            lsg = [lsg, wert, lsg.replace("acos","cos^-1"), lsg.replace("acos","arccos"), "indiv_0"]
+            hilfe = "Ankathete und Hypotenuse gegeben -> Kosinus⁻¹ (oder acos oder arccos)." 
+        elif typ == 27:                                         # Winkel aus Ankathete und Gegenkathete
+            parameter["a"] = str_a
+            parameter["b"] = str_b            
+            if typ2%2 == 0:
+                parameter["symbol"] = "β"
+                variable = ["β", "atan"]
+                lsg = "atan(" + str_a + "/" + str_b + ")" 
+                wert = math.degrees(math.atan(round(a,0)/round(b,0)))
+                wert2 = (int_a/int_b)
+            else:
+                parameter["symbol"] = "α"
+                variable = ["α", "atan"] 
+                lsg = "atan(" + str_b + "/" + str_a + ")" 
+                wert = math.degrees(math.atan(round(b,0)/round(a,0)))
+                wert2 = (int_b/int_a)
+            hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
+            lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+        if typ > 24:
+            text = "Wie berechnet man den Winkel {}?"
+            parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/arcsin.html"  
+            nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
+            if nachkomma < 4:
+                ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
+                lsg.insert(-1,ergaenzung.replace(".",","))
+        elif typ > 16:
             frage = "{}=".format(*variable)
+            text = "Wie berechnet man die Seite {}?"
+            parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/sin.html"
         print(lsg)
         print(hilfe.format(*variable))
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
