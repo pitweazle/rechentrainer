@@ -9041,7 +9041,7 @@ def uebersicht(req, schueler_id=0):
                 for k in kategorie_werte:
                     zeile = [[],[]] 
                     richtig_kat = k['richtig_sum']
-                    richtig_kat += zaehler_kategorie.bonus
+                    #richtig_kat += zaehler_kategorie.bonus
                     richtig_gesamt += richtig_kat
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
@@ -9151,21 +9151,21 @@ def uebersicht(req, schueler_id=0):
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
-                try:
-                    zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
-                    bonus_kat = zaehler_kat.bonus
-                except:
-                    bonus_kat = 0
-                if bonus_kat > 0:
-                    richtig_kat = bonus_kat
-                    if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
-                        kat_farbe = "gruen"
-                    elif richtig_kat >= 10:
-                        kat_farbe = "gelb"
-                else:
-                    kat_farbe = 'rot' if pflicht else None
-                    prozent_farbe = 'rot' if pflicht and note_anzeigen else None
-                    richtig_kat = '-'
+                # try:
+                #     zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
+                #     bonus_kat = zaehler_kat.bonus
+                # except:
+                #     bonus_kat = 0
+                # if bonus_kat > 0:
+                #richtig_kat = bonus_kat
+                # if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
+                #     kat_farbe = "gruen"
+                # elif richtig_kat >= 10:
+                #     kat_farbe = "gelb"
+                # else:
+                kat_farbe = 'rot' if pflicht else None
+                prozent_farbe = 'rot' if pflicht and note_anzeigen else None
+                richtig_kat = '-'
                 if details == True:
                     werte = (kat_farbe,richtig_kat), *((None,'-'),) * 8,
                     breite = "breit"
@@ -9199,12 +9199,12 @@ def uebersicht(req, schueler_id=0):
                 note = "-"
                 prozent_summe_farbe = None
         else:
-            zaehler_profil = Zaehler.objects.filter(profil = profil)
-            bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-            if bonus_summe != None:
-                richtig_gesamt = bonus_summe 
-            else:
-                richtig_gesamt = 0 
+            # zaehler_profil = Zaehler.objects.filter(profil = profil)
+            # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
+            # if bonus_summe != None:
+            #     richtig_gesamt = bonus_summe 
+            # else:
+            richtig_gesamt = 0 
             falsch_gesamt=zeit_gesamt=abbr_gesamt=lsg_gesamt=hilfe_gesamt=0
             quote = "-"  
             qfarbe = "unset" 
@@ -9278,12 +9278,12 @@ def protokoll(req, schueler_id=0):
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else  0
         zaehler_profil = Zaehler.objects.filter(profil = profil)
-        bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-        if bonus_summe != None:
-            if auswahl in ("Halbjahr", "Schuljahr", "all"):
-                richtig += bonus_summe 
-        else:
-            pass
+        # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
+        # if bonus_summe != None:
+        #     if auswahl in ("Halbjahr", "Schuljahr", "all"):
+        #         richtig += bonus_summe 
+        # else:
+        #     pass
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
         falsch = temp if temp else  0
         abbr = protokoll.filter(abbr=True).count()
