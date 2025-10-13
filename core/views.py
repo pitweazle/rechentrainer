@@ -6930,7 +6930,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         if typ < 5:                                             # nur q und h
             q = random.randint(5,7)
             h = random.randint(4,5)
-            a, b, c, p = sub_dreiecksseiten(q, h)        
+            a, b, c, p = sub_dreiecksseiten(q, h) 
         elif typ < 15:                                          # Seiten aus pythagoräischen Zahlentripel
             a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
         elif typ > 14:                                          # für Trigonometrie
@@ -6974,15 +6974,18 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             typ2 = random.randint(1,4)
             if typ2 == 1:
                 text="Ergänze den Kathetensatz für die Seite a:"
+                pro_text = "Kathetensatz für a"
                 frage = "a²="
                 lsg = ["a²=p·c","p*c","c*p","a²=c*p","indiv_0"]
             elif typ2 == 2:
                 text="Ergänze den Kathetensatz für die Seite b:"
+                pro_text = "Kathetensatz für b"
                 frage = "b²="
                 lsg = ["b²=q·c","q*c","q*q","b²=c*q","indiv_0"]
             else:
                 titel = "Höhensatz"
                 text = "Wie lautet der Höhensatz?"
+                pro_text = "Höhensatz"
                 frage = "h²="  
                 lsg = ["h²=p·q","q*p","p*q","indiv_0"]
         elif typ == 2:                                          # Kathetensatz anwenden
@@ -7012,8 +7015,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = b**2/c
                 parameter['c']= "c="+str(c)+"cm"
                 parameter['b']= "b="+str(b)+"cm"
+                pro_text = "b={}, c={}, q=?".format(str(b), str(c))
                 frage = "q="
                 lsg = ["q="+str(b)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 21
+                hilfe = "Die Formel lautet q=b²/c"
             elif typ2 == 2:
                 text="Berechne den Hypothenusenabschnitt p"
                 wert = 1/7
@@ -7024,9 +7030,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = a**2/c
                 parameter['c']= "c="+str(c)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
-                #parameter['b']= "b="+str(b)+"cm"
+                pro_text = "a={}, c={}, p=?".format(str(a), str(c))
                 frage = "p="
-                lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]            
+                lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"] 
+                hilfe_id = 22
+                hilfe = "Die Formel lautet p=a²/c"           
             elif typ2 == 3:
                 text="Berechne die Länge der Hypotenuse c"
                 wert = 1/7
@@ -7038,8 +7046,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = a**2/p
                 parameter['p']= "p="+str(p)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
+                pro_text = "a={}, p={}, c=?".format(str(a), str(p))
                 frage = "c="
                 lsg = ["c="+str(a)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 23
+                hilfe = "Die Formel lautet c=a²/p"
             elif typ2 == 4:
                 text="Berechne die Länge der Hypotenuse c"
                 wert = 1/7
@@ -7050,10 +7061,13 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = b**2/q
                 parameter['q']= "q="+str(q)+"cm"
                 parameter['b']= "b="+str(b)+"cm"
+                pro_text = "b={}, q={}, c=?".format(str(b), str(q))
                 frage = "c="
                 lsg = ["c="+str(b)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 24
+                hilfe = "Die Formel lautet c=b²/q"
             elif typ2 == 5:
-                text="Mithilfe des Kathetensatzes kannst du zunächst die Länge der Hypotenuse und anschließend die Länge von q."
+                text="Mithilfe des Kathetensatzes kannst du zunächst die Länge der Hypotenuse und anschließend die Länge von q berechnen."
                 wert = 1/7
                 while wert*10%1 > 0:                    # keine periodischen Werte
                     q = random.randint(5,7)
@@ -7063,8 +7077,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = wert - p
                 parameter['a']= "a="+str(a)+"cm"
                 parameter['p']= "p="+str(p)+"cm"
+                pro_text = "a={}, c={}, q=?".format(str(a), str(p))
                 frage = "q="
                 lsg = ["q="+str(a)+"²/"+str(p)+"-"+str(a)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 25
+                hilfe = "Die Formeln: c=a²/p und q=c-p"
         elif typ == 3:                                          # Höhensatz anwenden
             parameter['punkt']= "X"
             titel = "Höhensatz"
@@ -7081,10 +7098,13 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,6)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = h**2/p
+                pro_text = "h={}, p={}, q=?".format(str(h), str(p))
                 teilen = str(wert).split('.')
                 nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "q="
                 lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
+                hilfe_id = 31
+                hilfe = "Die Formel lautet: q=h²/p"
             elif typ2 == 2:                                       # p aus Höhensatz
                 text="Berechne den Hypothenusenabschnitt p"     
                 wert = 1/7
@@ -7092,11 +7112,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     q = random.randint(2,6)
                     h = random.randint(4,6)
                     wert = h**2/q
+                pro_text = "h={}, q={}, p=?".format(str(h), str(q))
                 a, b, c, p = sub_dreiecksseiten(q, h)
                 teilen = str(wert).split('.')
                 nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "p="
                 lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
+                hilfe_id = 32
+                hilfe = "Die Formel lautet: p=h²/q"
             scale = 200/c
             x0 = (350 - c*scale)/2
             koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
@@ -7110,6 +7133,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ == 4:                                          # Dreiecksfläche Hypo und Höhe
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "c={}, h={}, A=?".format(format_zahl(c,0),str(h))
             frage = "A="
             einheit = "cm²"
             erg = round((c*h/2),1)
@@ -7122,10 +7146,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             werte = {'c': "c=" + format_zahl(c,0) + "cm", 'h': "h=" + str(h) +"cm"}
             parameter.update(werte)
             hilfe_id = 40
-            hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
+            hilfe = "Das Dreieck ist halb so groß wie das Rechteck ."
         elif typ == 5:                                          # Dreiecksfläche 2 Katheten - Hypotenuse unten
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "a={}, b={}, A=?".format(str_a,str_b)
             frage = "A="
             if c < 1:
                 einheit = "dm"
@@ -7146,6 +7171,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ == 6:                                          # Dreiecksfläche 2 Katheten - Hypotenuse oben
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "a={}, b={}, A=?".format(str_a,str_b)
             frage = "A="
             koordinaten = sub_hypo_oben(a, b, typ2, scale)                 
             parameter.update(koordinaten)
@@ -7160,7 +7186,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             werte = {'m': "c=" + str_a + einheit, 'n': "a=" + str_c + einheit, 'o': "b=" + str_b + einheit}
             einheit +="²"
             parameter.update(werte)
-            hilfe_id = 40
+            hilfe_id = 40        # Hilfe wie typ=4
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
             schieb = random.randint(-1,2)
@@ -7192,8 +7218,10 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Welche Seite ist hier die 'Hypotenuse'?"
                 frage = "Hypotenuse"
                 lsg = [bst[schieb]]
+                pro_text = "Welche Seite ist die Hypotenuse?"
             elif typ == 8:                                        # Benennung von Hypotenuse und Kathete
                 text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Wie nennt man hier die Seite "
+                pro_text = "Benennung der Dreiecksseiten"
                 typ3 = random.choice(["c","a","b","c"])
                 text += typ3
                 frage = typ3 + ":"
@@ -7205,7 +7233,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 hilfe_id = 80
                 hilfe = "Es gibt Tangenten, Katheten, Parabeln, Hypotenusen, Hyperbeln ..."
             elif typ < 10:                                        # Satz des Paythagoras
-                text = "Ergänze den Satz des Pythagoras für dieses Dreieck: "
+                text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
+                pro_text = "Satz des Pythagoras"
                 anmerkung = "<br>Für '²' kannst du auch '^2' schreiben"
                 seiten = ["c","a","b","c","a","b"]
                 typ3 = random.randint(0,3)
@@ -7283,6 +7312,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             werte = {'a': str_a, 'b': str_b, 'c': str_c, 
                     'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}                    
             parameter.update(werte)
+            hilfe_id = 90
         elif typ < 15:                                          # Anwendungsaufgaben
             titel = "Satz des Pythagoras"
             typ2 = random.randint(1,2)
@@ -7352,9 +7382,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
             if typ2< 3:
                 variable = ["Gegenkathete"]
+                hilfe_id = 153
                 hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
             else:
                 variable = ["Ankathete"]
+                hilfe_id = 151
                 hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."
             frage = "{}:".format(*variable)
             liste = ["b","a","a","b"]
@@ -7367,6 +7399,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 variable = ["b"]            
             wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
             lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
+            hilfe_id = 170
             hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
         elif typ < 21:                                          # Ankathete aus Winkel und Hypotenuse
             parameter["c"] = str_c
@@ -7376,6 +7409,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 variable = ["a"]            
             wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
             lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
+            hilfe_id = 190
             hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
         elif typ == 21:                                         # Hypotenuse aus Winkel und Gegenkathete
             variable = "c"
@@ -7387,6 +7421,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter["b"] = str_b
                 wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
                 lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
+            hilfe_id = 210
             hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
         elif typ == 22:                                         # Hypotenuse aus Winkel und Ankathete
             variable = "c"
@@ -7398,6 +7433,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter["a"] = str_a
                 wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
                 lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
+            hilfe_id = 220
             hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
         elif typ == 23:                                         # Gegenkathete aus Winkel und Ankathete
             if typ2%2 == 0:
@@ -7410,6 +7446,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter["a"] = str_a
                 wert = round(a,0)*math.tan(math.radians(round(winkel,0)))
                 lsg = [str_a + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_a, str_b + "*tan" + str_winkel, "indiv_0"]
+            hilfe_id = 230
             hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
         elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
             if typ2%2 == 0:
@@ -7422,6 +7459,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter["b"] = str_b
                 wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
                 lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
+            hilfe = 240
             hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
         elif typ == 25:                                         # Winkel aus Gegenkathete und Hypotenuse
             parameter["c"] = str_c
@@ -7440,6 +7478,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = math.degrees(math.asin(round(b,0)/round(c,0)))
                 wert2 = (int_b/int_c)
             lsg = [lsg, wert, lsg.replace("asin","sin^-1"), lsg.replace("asin","arcsin"), "indiv_0"]
+            hilfe_id = 250
             hilfe = "Gegenkathete und Hypotenuse gegeben -> Sinus⁻¹ (oder asin oder arcsin)." 
         elif typ == 26:                                         # Winkel aus Ankathete und Hypotenuse
             parameter["c"] = str_c
@@ -7458,6 +7497,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = math.degrees(math.asin(round(a,0)/round(c,0)))
                 wert2 = (int_a/int_c)
             lsg = [lsg, wert, lsg.replace("acos","cos^-1"), lsg.replace("acos","arccos"), "indiv_0"]
+            hilfe_id = 260
             hilfe = "Ankathete und Hypotenuse gegeben -> Kosinus⁻¹ (oder acos oder arccos)." 
         elif typ == 27:                                         # Winkel aus Ankathete und Gegenkathete
             parameter["a"] = str_a
@@ -7474,8 +7514,9 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 lsg = "atan(" + str_b + "/" + str_a + ")" 
                 wert = math.degrees(math.atan(round(b,0)/round(a,0)))
                 wert2 = (int_b/int_a)
-            hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
             lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+            hilfe_id = 270
+            hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
         if typ > 24:
             text = "Wie berechnet man den Winkel {}?"
             parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
@@ -7489,8 +7530,9 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             text = "Wie berechnet man die Seite {}?"
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
-        print(lsg)
-        print(hilfe.format(*variable))
+        # print(lsg)
+        # print(hilfe.format(*variable))
+        # print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def sub_kreissegment(scale, x0, Radius, winkel):
