@@ -67,7 +67,6 @@ settings.py
 *.db-journal
 *.sik
 *.bak
-*.json
 staticfiles/
 
 
