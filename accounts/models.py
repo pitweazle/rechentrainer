@@ -74,9 +74,10 @@ class Profil(models.Model):
     halbjahr_ab = models.DateTimeField(null=True, blank=True)
 
     katmax = models.IntegerField(default=0)                                 # die Zeilennummer die höchsten gewählten Aufgabenkategorie
-    voreinst = models.JSONField(blank=True, null=True, default=dict)
-    
     details = models.BooleanField(default = True)
+
+    #voreinst = models.JSONField(blank=True, null=True, default=dict)
+    keine_hj_frage = models.BooleanField(default = False)
 
     def __str__(self):
         return f"Username: {self.user}: ({self.id}) {self.vorname} {self.nachname}, {self.klasse}"

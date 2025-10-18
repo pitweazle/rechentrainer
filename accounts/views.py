@@ -16,7 +16,7 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
 
 from .models import Profil, Schule, Lerngruppe, Geloescht
-from .services import check_hj, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
+from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
@@ -95,9 +95,17 @@ def anmelden(req):
             cookie_loeschen = req.POST.get('cookie_loeschen') 
             if cookie_loeschen == 'on':
                 req.session.set_expiry(0)
+            # if user is not None:
+            #     login(req, user)
+            #     return hj_pruefen(req)
             if user is not None:
                 login(req, user)
-                return hj_pruefen(req)
+                # Halbjahr-Check wie in core/main
+                result = check_hj(req)
+                if isinstance(result, HttpResponse):
+                    return result
+                return redirect('uebersicht')
+
         titel = "Username und/oder Passwort stimmen nicht"
     form = Login_Form()
     context = {'form' : form, 'titel': titel} 
@@ -137,14 +145,11 @@ def naechstes_halbjahr(req):
                 profil.schuljahr_ab = timezone.now()
             else:
                 profil.halbjahr_ab = timezone.now()
-            profil.save()
+            #profil.save()
             halbjahr = sub_daten_loeschen(req)
             return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
         if keinefragen == "on":
-            profil.voreinst["no_hj"] = True
-            profil.voreinst["frage_hj"] = 0
-        else:
-            profil.voreinst["frage_hj"] =  datetime.now().day
+            profil.keine_hj_frage = True
         profil.save()  
         heute = datetime.now()
         if heute.month == 1 or heute.month == 7: 

@@ -11,8 +11,8 @@ from core.models import Protokoll, Zaehler
 
 # Standardmäßig wird das echte Datum genommen.
 # Für Tests kannst du TEST_DATE setzen.
-#TEST_DATE = None  
-TEST_DATE = date(2026, 8,7)
+TEST_DATE = None  
+#TEST_DATE = date(2026, 1,10)
 
 def get_today():
     """Gibt das aktuelle Datum zurück, oder ein Testdatum, wenn gesetzt."""
@@ -20,7 +20,10 @@ def get_today():
 
 def get_now():
     """Gibt die aktuelle Uhrzeit zurück, oder ein Testdatum mit Uhrzeit, wenn gesetzt."""
-    return TEST_DATE or datetime.now()
+    if TEST_DATE:
+        # Wenn TEST_DATE nur ein Datum ist, wandle es in datetime um
+        return datetime.combine(TEST_DATE, datetime.min.time())
+    return datetime.now()
 
 def name_hj():
     heute = get_today()
@@ -79,15 +82,12 @@ def check_hj(req):
             return redirect('uebersicht')
 
         sj, hj = name_hj()
-        if profil.hj != hj or profil.sj != sj:
+        if profil.hj != hj or profil.sj != sj:#
             # User arbeitet noch im alten Halbjahr/Jahr
             return redirect('wiederanmeldung')
 
-        # Voreinstellungen prüfen
-        profil.voreinst.setdefault("frage_hj", 0)
-        profil.voreinst.setdefault("no_hj", False)
-
-        if heute.day > profil.voreinst["frage_hj"] and not profil.voreinst["no_hj"]:
+        #if heute.day > profil.voreinst["frage_hj"] and not profil.voreinst["no_hj"]:
+        if not profil.keine_hj_frage:
             # Frage stellen, ob neues Halbjahr begonnen werden soll
             monat, wechsel = ("Juli", "Februar") if heute.month == 1 else ("Januar", "August")
             context = {'monat': monat, 'wechsel': wechsel}
@@ -140,8 +140,7 @@ def stufe_aus_jg(jg, kurs="E"):
 def sub_daten_loeschen(req):
     profil = get_object_or_404(Profil, user=req.user)
     # Reset Voreinstellungen
-    profil.voreinst["no_hj"] = False
-    profil.voreinst["frage_hj"] = 0
+    profil.keine_hj_frage =  False
     # Zähler zurücksetzen
     for zaehler in Zaehler.objects.filter(profil_id=profil.id):
         zaehler.fehler_zaehler = 0
