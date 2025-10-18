@@ -13,6 +13,15 @@ viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
         <circle cx="{{parameter.x3|add:15}}" cy="{{parameter.y3|add:15}}" r="2" />  
      </g>
 
+    <symbol id="bogen" >
+      <path d="M {{parameter.center_x}}, {{parameter.center_y}}
+          L {{parameter.start_bogen_x}}, {{parameter.start_bogen_y}}
+          A {{parameter.bogen_radius}}, {{parameter.bogen_radius}} 0 {{parameter.largeArcFlag}} {{parameter.sweepFlag}} {{parameter.end_bogen_x}}, {{parameter.end_bogen_y}}
+          Z " 
+        />
+        <text x="{{parameter.text_x}}" y="{{parameter.text_y|add:5}}" fill="black">{{parameter.symbol}}</text>
+      </symbol>
+
      <g id="masz_breite" style="stroke: black; stroke-width: 1">
         <line x1=0    y1=0   x2={{parameter.breite_u}}  y2=0 />
         <line x1=0    y1=0   x2=5   y2=-5 /> 
@@ -149,6 +158,43 @@ viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
     {% if parameter.o or parameter.h%}
         <text x="{{parameter.ox|add:-15}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.o}}</text>
     {% endif %}
+
+    <!--erzeugt einen Winkelbogen bei C-->
+    {% if not parameter.kein_winkel%}
+        <circle cx="{{parameter.punkt_x}}" cy="{{parameter.punkt_y}}" r="1"  fill="black" stroke = "black"/>
+        <path d="
+        M {{parameter.cx}}, {{parameter.cy}}
+        L {{parameter.c_sx}} {{parameter.c_sy}}        
+        A 30 30 0 0 0 {{parameter.c_ex}} {{parameter.c_ey}}
+        Z />
+        "
+        stroke="black" 
+        stroke-width="0.5"
+        fill="none"
+    {% endif %}
+
+{% elif parameter.object == "trigonometrie" %}
+    <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.bx}},{{parameter.by}} {{parameter.cx}},{{parameter.cy}}"  style="stroke:black;stroke-width:1;fill: #C0FFFF"/>
+
+    <!--Benennung der Ecken:-->
+        <text x="{{parameter.ax|add:-15}}" y="{{parameter.ay|add:10}}" >A</text>
+        <text x="{{parameter.bx|add:5}}" y="{{parameter.by|add:10}}" >B</text>
+        <text x="{{parameter.cx|add:-5}}" y="{{parameter.cy|add:-5}}" >C</text>
+
+    <!--hier die Benennung der Seiten des Dreiecks mit der Hypotenuse unten-->
+    {% if parameter.a %}
+        <text x="{{parameter.amx|add:15}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.a}}</text>
+    {% endif %}
+    {% if parameter.b %}
+        <text x="{{parameter.bmx|add:-25}}" y="{{parameter.my|add:5}}" class = "masze">{{parameter.b}}</text>
+    {% endif %}
+    {% if parameter.c or parameter.h%}
+        <text x="{{parameter.mx|add:0}}" y="{{parameter.ay|add:15}}" class = "masze">{{parameter.c}}</text>
+    {% endif %}
+
+    <use href="#bogen" fill="{{parameter.color}}"/>
+    <line x1="{{parameter.center_x}}" y1="{{parameter.center_y}}" x2="{{parameter.schenkel_1_x}}" y2="{{parameter.schenkel_1_y}}" stroke="black"/> 
+    <line x1="{{parameter.center_x}}" y1="{{parameter.center_y}}" x2="{{parameter.schenkel_2_x}}" y2="{{parameter.schenkel_2_y}}" stroke="black"/> 
 
     <!--erzeugt einen Winkelbogen bei C-->
     {% if not parameter.kein_winkel%}
