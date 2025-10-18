@@ -37,6 +37,39 @@ from accounts.views import quote_farbe
 from accounts.services import get_today, check_hj, name_hj, name_next_hj, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# def format_zahl(wert, stellen=2, trailing_zeros=True):
+#     """
+#     Formatiert eine Zahl im deutschen Format (Komma statt Punkt).
+
+#     Features:
+#     - Akzeptiert float, int oder str mit '.' oder ','.
+#     - Rundet korrekt (z. B. 2.9999 → "3").
+#     - Entfernt überflüssige Nullen, falls gewünscht.
+#     - Gibt Originaltext zurück, falls keine Zahl erkannt wird.
+#     """
+
+#     # 🔹 1. Eingabe in float umwandeln, wenn möglich
+#     if isinstance(wert, str):
+#         wert = wert.strip().replace(",", ".")
+#         try:
+#             wert = float(wert)
+#         except ValueError:
+#             return wert  # kein gültiger Zahlenwert → Originaltext
+
+#     # 🔹 2. Rundung und Formatierung
+#     gerundet = round(wert, stellen)
+#     text = f"{gerundet:.{stellen}f}".replace(".", ",")
+
+#     # 🔹 3. Überflüssige Nullen und Komma entfernen (optional)
+#     if not trailing_zeros:
+#         text = text.rstrip("0").rstrip(",")
+
+#     # 🔹 4. Sonderfall: z. B. 3,00 → 3 (wenn alles hinterm Komma wegfällt)
+#     if "," in text and text.endswith(","):
+#         text = text[:-1]
+
+#     return text
+
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1
@@ -2117,6 +2150,155 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 lsg = format_zahl(erg,erg_stellen)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
+        rad_start = math.radians(startwinkel)
+        rad = math.radians(winkel)        
+        start_x = center_x - radius *  math.cos(rad_start)
+        start_y = center_y - radius *  math.sin(rad_start) 
+        end_x = center_x - radius *  math.cos(rad+rad_start) 
+        end_y = center_y - radius *  math.sin(rad+rad_start)
+        if winkel <=180:
+            largeArcFlag = 0
+        else:
+            largeArcFlag = 1 
+        if id == 2: 
+            koordinaten = dict( 
+                    start_x2 = start_x, start_y2 = start_y, end_x2 = end_x, end_y2 =  end_y, 
+                    largeArcFlag2 = largeArcFlag)
+        elif id == 3: 
+            koordinaten = dict( 
+                    start_x3 = start_x, start_y3 = start_y, end_x3 = end_x, end_y3 =  end_y, 
+                    largeArcFlag3 = largeArcFlag)
+        else: 
+            koordinaten = dict( 
+                    start_x = start_x, start_y = start_y, end_x = end_x, end_y =  end_y, 
+                    largeArcFlag = largeArcFlag)  
+        return koordinaten
+
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False, lire = 1):
+    rad_start = math.radians(startwinkel)
+    rad = math.radians(winkel)
+    if id == 0:
+        koordinaten = dict(center_x = center_x, center_y = center_y, )
+    elif id == 1:
+        koordinaten = dict(center_x_1 = center_x, center_y_1 = center_y, )
+    elif id == 2:
+        koordinaten = dict(center_x_2 = center_x, center_y_2 = center_y, )
+    elif id == 3:
+        koordinaten = dict(center_x_3 = center_x, center_y_3 = center_y, )
+    elif id == 4:
+        koordinaten = dict(center_x_4 = center_x, center_y_4 = center_y, )
+    elif id == 5:
+        koordinaten = dict(center_x_5 = center_x, center_y_5 = center_y, )
+
+    # das sind die Schenkel:
+    if schenkel > 0:
+        x1 = center_x - schenkel *  math.cos(rad_start)
+        y1 = center_y - schenkel *  math.sin(rad_start) 
+        x2 = center_x - schenkel *  math.cos(rad+rad_start) 
+        y2 = center_y - schenkel *  math.sin(rad+rad_start)
+
+        if scheitel == True:
+            x3 = center_x + schenkel *  math.cos(rad_start)
+            y3 = center_y + schenkel *  math.sin(rad_start) 
+            x4 = center_x + schenkel *  math.cos(rad+rad_start) 
+            y4 = center_y + schenkel *  math.sin(rad+rad_start)
+            if id == 0:
+                schenkel_koo = dict(schenkel_1_x = x3, schenkel_1_y = y3, schenkel_2_x = x4, schenkel_2_y = y4) 
+            elif id == 1:
+                schenkel_koo = dict(schenkel_1_x_1 = x3, schenkel_1_y_1 = y3, schenkel_2_x_1 = x4, schenkel_2_y_1 = y4) 
+            elif id == 2:
+                schenkel_koo = dict(schenkel_1_x_2 = x3, schenkel_1_y_2 = y3, schenkel_2_x_2 = x4, schenkel_2_y_2 = y4) 
+            elif id == 3:
+                schenkel_koo = dict(schenkel_1_x_3 = x3, schenkel_1_y_3 = y3, schenkel_2_x_3 = x4, schenkel_2_y_3 = y4)             
+            elif id == 4:
+                schenkel_koo = dict(schenkel_1_x_4 = x3, schenkel_1_y_4 = y3, schenkel_2_x_4 = x4, schenkel_2_y_4 = y4) 
+            elif id == 5:
+                schenkel_koo = dict(schenkel_1_x_5 = x3, schenkel_1_y_5 = y3, schenkel_2_x_5 = x4, schenkel_2_y_5 = y4) 
+        else:
+            if id == 0:
+                schenkel_koo = dict(schenkel_1_x = x1, schenkel_1_y = y1, schenkel_2_x = x2, schenkel_2_y = y2)
+            elif id == 1:
+                schenkel_koo = dict(schenkel_1_x_1 = x1, schenkel_1_y_1 = y1, schenkel_2_x_1 = x2, schenkel_2_y_1 = y2) 
+            elif id == 2:
+                schenkel_koo = dict(schenkel_1_x_2 = x1, schenkel_1_y_2 = y1, schenkel_2_x_2 = x2, schenkel_2_y_2 = y2) 
+            elif id == 3:
+                schenkel_koo = dict(schenkel_1_x_3 = x1, schenkel_1_y_3 = y1, schenkel_2_x_3 = x2, schenkel_2_y_3 = y2) 
+            elif id == 4:
+                schenkel_koo = dict(schenkel_1_x_4 = x1, schenkel_1_y_4 = y1, schenkel_2_x_4 = x2, schenkel_2_y_4 = y2) 
+            elif id == 5:
+                schenkel_koo = dict(schenkel_1_x_5 = x1, schenkel_1_y_5 = y1, schenkel_2_x_5 = x2, schenkel_2_y_5 = y2)      
+        koordinaten.update(schenkel_koo)  
+    # das ist der Bogen mit Text:                
+    if color:
+        start_x = center_x - radius *  math.cos(rad_start)
+        start_y = center_y - radius *  math.sin(rad_start) 
+        end_x = center_x - radius *  math.cos(rad+rad_start) 
+        end_y = center_y - radius *  math.sin(rad+rad_start)
+        if winkel <=180:
+            largeArcFlag = 0
+        else:
+            largeArcFlag = 1
+        text_x = center_x - radius*3/4 *  math.cos(rad/2+rad_start)
+        text_y = center_y - radius/2 *  math.sin(rad/2+rad_start) 
+        if id == 0:
+            bogen_koo = dict(bogen_radius = radius, sweep_flag = 1, largeArcFlag = largeArcFlag, 
+                start_bogen_x = start_x, start_bogen_y = start_y, end_bogen_x = end_x, end_bogen_y =  end_y,
+                text_x = text_x, text_y = text_y, color = color, symbol = symbol, sweepFlag = lire)
+        if id == 1:
+            bogen_koo = dict(bogen_radius_1 = radius, sweep_flag_1 = 1, largeArcFlag_1 = largeArcFlag, 
+                start_bogen_x_1 = start_x, start_bogen_y_1 = start_y, end_bogen_x_1 = end_x, end_bogen_y_1 =  end_y,
+                text_x_1 = text_x, text_y_1 = text_y, color_1 = color, symbol_1 = symbol,)
+        if id == 2:
+            bogen_koo = dict(bogen_radius_2 = radius, sweep_flag_2 = 1, largeArcFlag_2 = largeArcFlag, 
+                start_bogen_x_2 = start_x, start_bogen_y_2 = start_y, end_bogen_x_2 = end_x, end_bogen_y_2 =  end_y,
+                text_x_2 = text_x, text_y_2 = text_y, color_2 = color, symbol_2 = symbol,)
+        if id == 3:
+            bogen_koo = dict(bogen_radius_3 = radius, sweep_flag_3 = 1, largeArcFlag_3 = largeArcFlag, 
+                start_bogen_x_3 = start_x, start_bogen_y_3 = start_y, end_bogen_x_3 = end_x, end_bogen_y_3 =  end_y,
+                text_x_3 = text_x, text_y_3 = text_y, color_3 = color, symbol_3 = symbol,)
+        if id == 4:
+            bogen_koo = dict(bogen_radius_4 = radius, sweep_flag_4 = 1, largeArcFlag_4 = largeArcFlag, 
+                start_bogen_x_4 = start_x, start_bogen_y_4 = start_y, end_bogen_x_4 = end_x, end_bogen_y_4 =  end_y,
+                text_x_4 = text_x, text_y_4 = text_y, color_4 = color, symbol_4 = symbol,)
+        if id == 5:
+            bogen_koo = dict(bogen_radius_5 = radius, sweep_flag_5 = 1, largeArcFlag_5 = largeArcFlag, 
+                start_bogen_x_5 = start_x, start_bogen_y_5 = start_y, end_bogen_x_5 = end_x, end_bogen_y_5 =  end_y,
+                text_x_5 = text_x, text_y_5 = text_y, color_5 = color, symbol_5 = symbol,)
+        koordinaten.update(bogen_koo) 
+    return koordinaten
+
+def linien_koordinaten(dreh, startwinkel, id = 21):
+        schieb_x = math.tan(math.radians(dreh))*50
+        if startwinkel in [0,180]:
+            dreh = -dreh
+            schieb_x = -schieb_x
+        if id == 21:                                                    # Stufenwinkel oben rechts
+            koordinaten = dict(schieb_bx = 150+schieb_x, schieb_by = 0)
+        elif id == 31:                                                  # Stufenwinkel unten rechts
+            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
+        elif id == 41:                                                  # Stufenwinkel unten links
+            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
+        koordinaten1 = dict(dreh = dreh, schieb_ox = schieb_x)
+        koordinaten.update(koordinaten1)  
+        return koordinaten
+
+def viereck(a,y_schieb,alfa,beta,delta=0 ):
+    h = 100
+    delta_1 = delta -90
+    r = a * math.tan(math.radians(delta_1))
+    p = h/math.tan(math.radians(alfa))    
+    q = (h+r)/math.tan(math.radians(beta))
+    ax = (400 - a - p - q)/2    
+    dx = ax + p
+    bx = ax + a + p + q
+    cx = ax + a + p
+    ay = by = h + r +y_schieb
+    dy = y_schieb + r
+    cy = y_schieb    
+    koordinaten = dict(ax=ax, ay=ay, bx=bx, by=by, cx=cx, cy=cy, dx=dx, dy=dy)
+    return koordinaten
+
 def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 2
@@ -2268,7 +2450,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 text = "Wie groß ist der Winkel {}?"
                 frage = "{}≙"
                 einheit = "°"
-            koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
+            koordinaten = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
             parameter.update(koordinaten)
         elif typ == 5:                                                  # Winkel an Dreieck und Viereck
             if stufe%2 == 1:
@@ -2318,10 +2500,10 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 erg = alfa
                 lsg = ["360/"+str(ecken)+"="+str(erg)]  
                 parameter.update({'object': 'n-eck', 'n_eck': ecken, 'rotate': rotate,}) 
-                koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, bogen_radius, alfa, startwinkel, "red", "", 100)  
+                koordinaten_dreieck = sub_winkel_koordinaten(0, center_x, center_y, bogen_radius, alfa, startwinkel, "red", "", 100)  
                 parameter.update(koordinaten_dreieck)
                 if typ2 == 4:                                               # Winkel außen
-                    koordinaten_aussen = winkel_koordinaten(2, koordinaten_dreieck['schenkel_1_x'], koordinaten_dreieck['schenkel_1_y'], bogen_radius, beta, 270, "red", "", 100)  
+                    koordinaten_aussen = sub_winkel_koordinaten(2, koordinaten_dreieck['schenkel_1_x'], koordinaten_dreieck['schenkel_1_y'], bogen_radius, beta, 270, "red", "", 100)  
                     parameter.update(koordinaten_aussen)
                     parameter.update({'color1': "red", 'color': color})
                     erg = beta
@@ -2385,9 +2567,9 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 symbol2 = "β"
                 color2 = color
                 text = " Diese beiden Winkel sind gleich groß - wie heißt so ein Winkelpaar?"
-            koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
+            koordinaten = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
             parameter.update(koordinaten) 
-            koo_winkel = winkel_koordinaten(2, center_x, center_y, bogen_radius, winkel, startwinkel2, color2, symbol2)  
+            koo_winkel = sub_winkel_koordinaten(2, center_x, center_y, bogen_radius, winkel, startwinkel2, color2, symbol2)  
             parameter.update(koo_winkel) 
             koo_ecken = linien_koordinaten(90-winkel, startwinkel, id2)                                                                                      # die Drehung der Parallelen'
             parameter.update(koo_ecken)
@@ -2403,7 +2585,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             y_schieb = 50  
             hilfe_id = 71 
         if typ <= 4:
-            koordinaten = winkel_koordinaten(0, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
+            koordinaten = sub_winkel_koordinaten(0, center_x, center_y, bogen_radius, winkel, startwinkel, color, symbol, 100)
             parameter.update(koordinaten) 
         elif typ != 6: 
             if typ2 in (1,2) or typ == 7 :                               # Winkel alfa und beta  
@@ -2425,26 +2607,26 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
                 # Winkel Alfa:
                 center_x = (koordinaten ["ax"])
                 center_y = (koordinaten ["ay"]) 
-                koordinaten_alfa = winkel_koordinaten(2, center_x, center_y, bogen_radius, alfa, 180-alfa, color[0], winkel_text[0], 100)  
+                koordinaten_alfa = sub_winkel_koordinaten(2, center_x, center_y, bogen_radius, alfa, 180-alfa, color[0], winkel_text[0], 100)  
                 parameter.update(koordinaten_alfa)
 
                 # Winkel Beta:
                 center_x = (koordinaten ["bx"])
                 center_y = (koordinaten ["by"])
-                koordinaten_beta = winkel_koordinaten(1, center_x, center_y, bogen_radius, beta, 0, color[1], winkel_text[1], 100)  
+                koordinaten_beta = sub_winkel_koordinaten(1, center_x, center_y, bogen_radius, beta, 0, color[1], winkel_text[1], 100)  
                 parameter.update(koordinaten_beta)
 
             if typ2 in (1,2):                                            # Winkel Gamma und delta
                 # Winkel Gamma:
                 center_x = (koordinaten ["cx"])
                 center_y = (koordinaten ["cy"]) 
-                koordinaten_gamma = winkel_koordinaten(3, center_x, center_y, bogen_radius, gamma,  270-(90-beta), color[2], winkel_text[2], 100)  
+                koordinaten_gamma = sub_winkel_koordinaten(3, center_x, center_y, bogen_radius, gamma,  270-(90-beta), color[2], winkel_text[2], 100)  
                 parameter.update(koordinaten_gamma)
 
                 # Winkel Delta:
                 center_x = (koordinaten ["dx"])
                 center_y = (koordinaten ["dy"]) 
-                koordinaten_delta = winkel_koordinaten(4, center_x, center_y, bogen_radius, delta+(90-alfa), 180+(90-delta), color[3], winkel_text[3], 100)  
+                koordinaten_delta = sub_winkel_koordinaten(4, center_x, center_y, bogen_radius, delta+(90-alfa), 180+(90-delta), color[3], winkel_text[3], 100)  
                 parameter.update(koordinaten_delta) 
 
             if typ == 7:                                                 # Thaleskreis
@@ -4702,7 +4884,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
                 alfa = int(360/nenner)
                 startwinkel = 90-alfa/2
                 parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
-                koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+                koordinaten_dreieck = sub_winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
                 parameter.update(koordinaten_dreieck)
             text += experiment + "<br>um ein Laplace Experiment?"
             lsg.append("indiv_0")                 
@@ -4949,7 +5131,7 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             alfa = int(360/nenner)
             startwinkel = 90-alfa/2
             parameter.update({'n_eck': nenner, 'rotate': winkel,}) 
-            koordinaten_dreieck = winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
+            koordinaten_dreieck =sub_winkel_koordinaten(0, center_x, center_y, 30, alfa, startwinkel, None, "", 100)  
             parameter.update(koordinaten_dreieck)
         elif typ == 10:                                 # Urne
             farben_liste = ['white','red','yellow','blue','white','white','white','red','red','yellow',]
@@ -5805,22 +5987,42 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 hilfe_id = 152
                 hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
                 hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
-        print("Hilfe: ", hilfe_id)
-        if hilfe_id != 0:
-            hilfe = hilfe.format(*variable)
-            print(hilfe)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+def sub_py_tripel(stufe):
+    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
+    if stufe%2 == 1:
+        typ2 = random.randint(0,7)
+    else:
+        typ2 = random.randint(0,4)
+    a = p_zahlen[typ2][1]
+    b = p_zahlen[typ2][2]
+    c = p_zahlen[typ2][0]
+    if c < 1:
+        einheit = "dm"
+    else:
+        einheit = "cm"
+    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
+    scale = 200/c
+    p = (a**2/c)
+    q = (b**2/c)
+    h = math.sqrt(p*q)
+    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
 
 def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        if stufe%2 > 0:
-            typ_end += 1
-        if jg > 9 or "Kathete" in optionen:
+        if jg > 10 or stufe >= 43 or "Winkel" in optionen:
+            typ_anf = 1
+            typ_end = 27        
+        if jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
+            typ_anf = 1
+            typ_end = 24
+        if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
         return typ_anf, typ_end
-    elif eingabe != "":                                                                                                         
+    elif eingabe != "":
         if typ == 1:
             if not "*" in eingabe:
                 return 0, "Du musst '*' für die Multiplikation ergänzen."
@@ -5828,27 +6030,56 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 return 0, lsg[0][:3] + " steht schon da"
             else:
                 return -1, ""
-        elif typ == 8:
+        elif typ in (7,8):
             if eingabe.upper() == lsg[0].upper():
                 return 0, "Achte auf Groß- und Kleinschreibung!" 
-            elif (lsg[0] == "Hypotenuse" and ("Hypothenuse") in eingabe): 
+            elif (lsg[0] == "Hypotenuse" and ("ypothenuse") in eingabe): 
                 return 0, "Hypotenuse schreibt man ohne 'th'"
-            elif (lsg[0] == "Kathete" and ("katete") in eingabe):
+            elif (lsg[0] == "Kathete" and ("atete") in eingabe):
                 return 0, "Kathete schreibt man mit 'th'"
             elif (lsg[0] == "Hypotenuse" and ("nuse") in eingabe) or (lsg[0] == "Kathete" and ("ete") in eingabe):
                 return 0, "Achte auf die richtige Schreibweise"
             else:
                 return -1, ""       
+        elif typ == 9:
+            if "²" in eingabe and "^" in eingabe:
+                return 0, "Bitte schreibe entweder '^2' oder '²'"
+            return -1, ""
         elif typ == 10:
             if eingabe.lower() == lsg[0] or eingabe.lower() == lsg[1]:
                 return 1, ""
             else:
                 return -1, "" 
+        elif typ > 16:
+            if "°" in eingabe:
+                return 0, "Das Gradzeichen ° musst du weglassen."
+            if ":" in eingabe:
+                return 0, "Bitte benutze für die Division das '/' Zeichen."
+            if "cot" in eingabe:
+                return 0, "Den Kotangens (cot) kann ich nicht berechnen."
+            if any(b in eingabe for b in ["S", "C", "T"]):
+                return 0, "Schreibe 'sin', 'cos' bzw. 'tan' klein."
+            if all(funktion not in eingabe for funktion in ["sin", "cos", "tan"]):
+                nachkomma = len(eingabe.split(",")[1]) if "," in eingabe else 0
+                if eingabe == format_zahl(lsg[1],nachkomma):
+                    return 1, "<br>Du solltest aber eigentlich nicht die Lösung eingeben sondern die Rechnung."
+                else:
+                    return -1, ""
+            else:
+                if typ <= 24:
+                    if "(" in eingabe:
+                        return 0, "Bitte keine Klammer eingeben."
+                    else:
+                        return -1, ""
+                else:
+                    if "/" in eingabe and not "(" in eingabe:
+                        return 0, "Da fehlt eine Klammer um den Quotienten."
+                    else:
+                        return -1, ""
         else:
             return -1, "" 
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=15
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -5858,38 +6089,44 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         erg = None 
         x0 = 80
         scale = 22
-        # Seiten festlegen:
-        if typ == 5:                                            # pythagoräische Zahlentripel
-            seiten = [[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13]]
-            zuza = random.randint(0,5)
-            a=seiten[zuza][0]
-            b=seiten[zuza][1]
-            c=seiten[zuza][2]
-            scale = 200 / c
-            p = (a**2/c)
-            q = (b**2/c)
-            h = math.sqrt(p*q)
-        elif typ == 6:                                          # nur g und h
-            g = random.randint(5,7)
-            h = random.randint(4,5)
-        elif typ < 10 or typ > 14:                              # nur q und h
+        # Seiten festlegen
+        if typ < 5:                                             # nur q und h
             q = random.randint(5,7)
             h = random.randint(4,5)
-            a, b, c, p = sub_dreiecksseiten(q, h)
-        elif typ < 15:                                          # pythagoräische Zahlentripel
-            p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
-            parameter['popup_text'] = "popups/pythagoras.html"
-            if stufe%2 == 1:
-                typ2 = random.randint(0,7)
-            else:
-                typ2 = random.randint(0,4)
-            if typ == 13 and typ2 == 2:
-                typ2 = 5
-            a = p_zahlen[typ2][1]
-            b = p_zahlen[typ2][2]
-            c = p_zahlen[typ2][0]
+            a, b, c, p = sub_dreiecksseiten(q, h) 
+        elif typ < 15:                                          # Seiten aus pythagoräischen Zahlentripel
+            a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, nichtrw = sub_py_tripel(stufe)
+        elif typ > 14:                                          # für Trigonometrie
+            q = random.randint(5,7)
+            h = random.randint(4,5)
+            titel = "Trigonometrie"
+            parameter = {'name': 'svg/dreiecke.svg', 'object': 'trigonometrie', 'box_breite': 350,  'box_hoehe': 200}
+            p = (h*h/q)
+            c = (p+q)
+            a = (math.sqrt(h**2+p**2))
+            b = (math.sqrt(h**2+q**2))
+            str_a,str_b, str_c = (format_zahl(x,0) for x in (a, b, c))
+            int_a,int_b, int_c = (round(x,0) for x in (a, b, c))
             scale = 200/c
+            koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
+            parameter.update(koordinaten)
+            benennungen =  {'A': "A", 'B': "B", 'C': "C",
+                            'a': "a", 'b': "b", 'c': "c",
+                            'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
+            parameter.update(benennungen)
+            typ2 = random.randint(1,4)
+            if typ2%2 == 0:                                     # zeichnet Alfa
+                winkel = math.acos(b/c)*180/math.pi
+                #str_winkel = format_zahl(math.acos(round(b,0)/round(c,0))*180/math.pi,0)
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 50, -(winkel-2), 180-1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 0)
+            else:                                               # zeichnet Beta
+                winkel = math.acos(a/c)*180/math.pi
+                #str_winkel = format_zahl(math.acos(round(a,0)/round(c,0))*180/math.pi,0)
+                str_winkel = format_zahl(winkel,0)
+                winkel_zeichnen = sub_winkel_koordinaten(0, koordinaten['bx'], koordinaten['by'], 50, (winkel-2), 1, color = "yellow", symbol = str_winkel + "°", schenkel = 1, scheitel = False, lire = 1)
+            parameter.update(winkel_zeichnen)
+            int_a,int_b, int_c = (round(x,0) for x in (a, b, c))
         # Aufgaben:
         if typ == 1:                                            # Kathetensatz und Höhensatz angeben
             titel = "Kathetensatz"
@@ -5900,15 +6137,18 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             typ2 = random.randint(1,4)
             if typ2 == 1:
                 text="Ergänze den Kathetensatz für die Seite a:"
+                pro_text = "Kathetensatz für a"
                 frage = "a²="
                 lsg = ["a²=p·c","p*c","c*p","a²=c*p","indiv_0"]
             elif typ2 == 2:
                 text="Ergänze den Kathetensatz für die Seite b:"
+                pro_text = "Kathetensatz für b"
                 frage = "b²="
                 lsg = ["b²=q·c","q*c","q*q","b²=c*q","indiv_0"]
             else:
                 titel = "Höhensatz"
                 text = "Wie lautet der Höhensatz?"
+                pro_text = "Höhensatz"
                 frage = "h²="  
                 lsg = ["h²=p·q","q*p","p*q","indiv_0"]
         elif typ == 2:                                          # Kathetensatz anwenden
@@ -5938,8 +6178,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = b**2/c
                 parameter['c']= "c="+str(c)+"cm"
                 parameter['b']= "b="+str(b)+"cm"
+                pro_text = "b={}, c={}, q=?".format(str(b), str(c))
                 frage = "q="
                 lsg = ["q="+str(b)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 21
+                hilfe = "Die Formel lautet q=b²/c"
             elif typ2 == 2:
                 text="Berechne den Hypothenusenabschnitt p"
                 wert = 1/7
@@ -5950,9 +6193,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = a**2/c
                 parameter['c']= "c="+str(c)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
-                parameter['b']= "b="+str(b)+"cm"
+                pro_text = "a={}, c={}, p=?".format(str(a), str(c))
                 frage = "p="
-                lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"]            
+                lsg = ["p="+str(a)+"²/"+str(c)+"="+format_zahl(wert,1), wert,"indiv_2"] 
+                hilfe_id = 22
+                hilfe = "Die Formel lautet p=a²/c"           
             elif typ2 == 3:
                 text="Berechne die Länge der Hypotenuse c"
                 wert = 1/7
@@ -5960,11 +6205,15 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     q = random.randint(5,7)
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
-                    wert = a**2/q
+                    print("wert",a,p,a**2/q)
+                    wert = a**2/p
                 parameter['p']= "p="+str(p)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
+                pro_text = "a={}, p={}, c=?".format(str(a), str(p))
                 frage = "c="
                 lsg = ["c="+str(a)+"²/"+str(p)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 23
+                hilfe = "Die Formel lautet c=a²/p"
             elif typ2 == 4:
                 text="Berechne die Länge der Hypotenuse c"
                 wert = 1/7
@@ -5975,10 +6224,13 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     wert = b**2/q
                 parameter['q']= "q="+str(q)+"cm"
                 parameter['b']= "b="+str(b)+"cm"
+                pro_text = "b={}, q={}, c=?".format(str(b), str(q))
                 frage = "c="
                 lsg = ["c="+str(b)+"²/"+str(q)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 24
+                hilfe = "Die Formel lautet c=b²/q"
             elif typ2 == 5:
-                text="Mithilfe des Kathetensatzes kannst du zunächst die Länge der Hypotenuse und anschließend die Länge von q."
+                text="Mithilfe des Kathetensatzes kannst du zunächst die Länge der Hypotenuse und anschließend die Länge von q berechnen."
                 wert = 1/7
                 while wert*10%1 > 0:                    # keine periodischen Werte
                     q = random.randint(5,7)
@@ -5988,8 +6240,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 wert = wert - p
                 parameter['a']= "a="+str(a)+"cm"
                 parameter['p']= "p="+str(p)+"cm"
+                pro_text = "a={}, c={}, q=?".format(str(a), str(p))
                 frage = "q="
                 lsg = ["q="+str(a)+"²/"+str(p)+"-"+str(a)+"="+format_zahl(wert,1), wert,"indiv_2"]
+                hilfe_id = 25
+                hilfe = "Die Formeln: c=a²/p und q=c-p"
         elif typ == 3:                                          # Höhensatz anwenden
             parameter['punkt']= "X"
             titel = "Höhensatz"
@@ -6006,10 +6261,13 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     h = random.randint(4,6)
                     a, b, c, p = sub_dreiecksseiten(q, h)
                     wert = h**2/p
+                pro_text = "h={}, p={}, q=?".format(str(h), str(p))
                 teilen = str(wert).split('.')
                 nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "q="
                 lsg = ["q="+str(h)+"²/"+str(p)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
+                hilfe_id = 31
+                hilfe = "Die Formel lautet: q=h²/p"
             elif typ2 == 2:                                       # p aus Höhensatz
                 text="Berechne den Hypothenusenabschnitt p"     
                 wert = 1/7
@@ -6017,11 +6275,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                     q = random.randint(2,6)
                     h = random.randint(4,6)
                     wert = h**2/q
+                pro_text = "h={}, q={}, p=?".format(str(h), str(q))
                 a, b, c, p = sub_dreiecksseiten(q, h)
                 teilen = str(wert).split('.')
                 nachkomma = 0 if teilen[1] == "0" else len(teilen[1])
                 frage = "p="
                 lsg = ["p="+str(h)+"²/"+str(q)+"="+format_zahl(wert,nachkomma), wert,"indiv_2"]
+                hilfe_id = 32
+                hilfe = "Die Formel lautet: p=h²/q"
             scale = 200/c
             x0 = (350 - c*scale)/2
             koordinaten = sub_hypo_unten(x0, scale, q, p, h)                 
@@ -6035,6 +6296,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         elif typ == 4:                                          # Dreiecksfläche Hypo und Höhe
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "c={}, h={}, A=?".format(format_zahl(c,0),str(h))
             frage = "A="
             einheit = "cm²"
             erg = round((c*h/2),1)
@@ -6047,44 +6309,48 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             werte = {'c': "c=" + format_zahl(c,0) + "cm", 'h': "h=" + str(h) +"cm"}
             parameter.update(werte)
             hilfe_id = 40
-            hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
+            hilfe = "Das Dreieck ist halb so groß wie das Rechteck ."
         elif typ == 5:                                          # Dreiecksfläche 2 Katheten - Hypotenuse unten
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "a={}, b={}, A=?".format(str_a,str_b)
             frage = "A="
-            einheit = "cm²"
-
-            erg = round((a*b/2),1)
-            if erg%1 == 0:
-                lsg = [format_zahl(erg,0) + "cm²"]
+            if c < 1:
+                einheit = "dm"
+                erg = round((a*b/2),2)
+                lsg = [format_zahl(erg,2) + einheit + "²"]
             else:
-                lsg = [format_zahl(erg,1) + "cm²"]
+                einheit = "cm"
+                erg = round((a*b/2),1)
+                lsg = [format_zahl(erg,0) + einheit + "²"]
             koordinaten = sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h) 
             parameter.update(koordinaten)
-            werte = {'a': str(a) + "cm", 'b': str(b) + "cm",'c': str(c) + "cm", 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
+            werte = {'a': str_a + einheit, 'b': str_b + einheit,'c': str_c + einheit, 'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale, 
                         'dx': x0 + p * scale}
+            einheit +="²"
             parameter.update(werte) 
             hilfe_id = 50
             hilfe = "Das Rechteck hier unten ist doppelt so groß wie das Dreieck."
         elif typ == 6:                                          # Dreiecksfläche 2 Katheten - Hypotenuse oben
             titel = "Fläche des Dreiecks"
             text = "Berechne die Fläche dieses rechtwinkligen Dreiecks"
+            pro_text = "a={}, b={}, A=?".format(str_a,str_b)
             frage = "A="
-            einheit = "cm²"
-            typ2 = random.randint(0,1)
-
-            hypo = math.sqrt(g**2+h**2)
-            koordinaten = sub_hypo_oben(g, h, typ2)                 
+            koordinaten = sub_hypo_oben(a, b, typ2, scale)                 
             parameter.update(koordinaten)
-            erg = (g*h/2)
-            lsg = ["A=g·h="+str(g)+"·"+str(h)+"/2="+format_zahl(erg,1)]
-            if typ2 == 0:
-                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + format_zahl(hypo,0) + "cm", 'o': "b=" + str(h) +"cm"}
+            erg = (a*b/2)
+            if c < 1:
+                format_zahl(erg,2)
+                str_erg = format_zahl(erg,2)
             else:
-                werte = {'m': "c=" + str(g) + "cm", 'n': "a=" + str(h) + "cm", 'o': "b=" + format_zahl(hypo,0) +"cm"}
+                format_zahl(erg,1)
+                str_erg = format_zahl(erg,0)
+            lsg = ["A=g·h="+str_a+"·"+str_b +"/2="+str_erg]
+            werte = {'m': "c=" + str_a + einheit, 'n': "a=" + str_c + einheit, 'o': "b=" + str_b + einheit}
+            einheit +="²"
             parameter.update(werte)
-            hilfe_id = 40
-        elif typ < 10 or typ == 15:                                          # Benennung von Hypotenuse und Kathete
+            hilfe_id = 40        # Hilfe wie typ=4
+        elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
             schieb = random.randint(-1,2)
             if schieb < 0:                          # c häufiger als Hpotenuse
@@ -6104,6 +6370,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 benennungen =  {'A': bst[2+schieb].upper(), 'B': bst[3+schieb].upper(), 'C': bst[4+schieb].upper(),
                                 'm': bst[1+schieb], 'n': bst[2+schieb], 'o': bst[3+schieb],}              
             else:                                   # Hypotenuse unten
+                #a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit = sub_py_tripel(stufe)
                 koordinaten = sub_hypo_unten(x0, scale, q, p, h)             
                 benennungen =  {'A': bst[1+schieb].upper(), 'B': bst[2+schieb].upper(), 'C': bst[3+schieb].upper(),
                                 'a': bst[1+schieb], 'b': bst[2+schieb], 'c': bst[3+schieb],
@@ -6114,8 +6381,10 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Welche Seite ist hier die 'Hypotenuse'?"
                 frage = "Hypotenuse"
                 lsg = [bst[schieb]]
+                pro_text = "Welche Seite ist die Hypotenuse?"
             elif typ == 8:                                        # Benennung von Hypotenuse und Kathete
                 text = "In rechtwinkligen Dreiecken haben die Seiten spezielle Namen.<br>Wie nennt man hier die Seite "
+                pro_text = "Benennung der Dreiecksseiten"
                 typ3 = random.choice(["c","a","b","c"])
                 text += typ3
                 frage = typ3 + ":"
@@ -6127,7 +6396,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 hilfe_id = 80
                 hilfe = "Es gibt Tangenten, Katheten, Parabeln, Hypotenusen, Hyperbeln ..."
             elif typ < 10:                                        # Satz des Paythagoras
-                text = "Ergänze den Satz des Pythagoras für dieses Dreieck: "
+                text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
+                pro_text = "Satz des Pythagoras"
                 anmerkung = "<br>Für '²' kannst du auch '^2' schreiben"
                 seiten = ["c","a","b","c","a","b"]
                 typ3 = random.randint(0,3)
@@ -6135,54 +6405,46 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 text += gesucht + "²=?"
                 frage = gesucht + "²="
                 if gesucht == bst[schieb]:
-                    lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"]
+                    lsg = [seiten[typ3+1] + "²+" + seiten[typ3+2] + "²", seiten[typ3+2] + "²+" + seiten[typ3+1] + "²"] 
+                    lsg = [gesucht + "²=" + lsg[0], lsg[0], lsg[0].replace("²", "^2"), lsg[1].replace("²", "^2")] 
                 else:
                     seiten.remove(gesucht)
                     seiten.remove(bst[schieb])
                     lsg = [bst[schieb] + "²-" + seiten[0] + "²"]
-                lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
+                    lsg = [gesucht + "²=" + lsg[0]] + lsg + [lsg[0].replace("²", "^2")] 
+                lsg.append("indiv_0")
                 hilfe_id = 90
                 hilfe = "Wenn die Hypotenuse gesucht wird, musst du die Quadrate der beiden Katheten addieren.<br>Wenn eine Kathete gesucht wird, musst du vom Quadrat der Hypotenuse das Quadrat der zweiten Kathete subtrahieren."
-            else:
-                titel = "Trigonometrie"
-                text = "Welche Seite ist die Gegenkathete in Bezug auf den gelben Winkel?"
-                frage = "Gegenkathete:"
-                hilfe="Die Gegenkathete ist die Seite, die dem Winkel gegenüber liegt." 
-                print(koordinaten)
-                winkel = winkel_koordinaten(0, koordinaten['ax'], koordinaten['ay'], 20, 45, 0, color = "None", symbol = "45°", schenkel = 0, scheitel = False)
-                print(winkel)
-                # koordinaten = winkel_koordinaten(1, center_x, center_y, bogen_radius, winkel2, startwinkel2, color2, symbol2, 100, False)
-                parameter.update(winkel)
         elif typ == 10:                                         # rechtwinklig oder nicht?           
             titel = "rechtwinklig oder nicht?"
             frage = "j/n="
+            parameter['popup'] = "Für diese Aufgabe solltest du die pythagoreischen Zahlen kennen &#128521;"
+            parameter['popup_text'] = "popups/pythagoras.html"
             typ3 = random.randint(1,2)
             if typ3 == 1:                                           # Hypotenuse unten
                 text = "Das Dreieck sieht rechtwinklig aus.<br>Überprüfe mithilfe des Satzes von Pythagoras, ob es auch wirklich rechtwinkig ist.<br>Ist es rechtwinklig (ja/nein)?"
-                q = b**2/c
-                p = c - q
-                h = math.sqrt(p*q)
                 koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
                 parameter.update(koordinaten)
-                werte = {'a': str(a).replace(".",","), 'b': str(b).replace(".",","),'c': str(c).replace(".",","),
+                werte = {'a': str_a, 'b': str_b,'c': str_c,
                         'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}
             else:                                                   # Hypotenuse oben
                 text = "Um zu überprüfen, ob dieses Rechteck rechtwinklig ist, kann man den Satz des Pythagoras anwenden.<br>Ist es rechtwinklig (ja/nein)?"
-                scale = 180/a
+                #scale = 180/a
                 koordinaten = sub_hypo_oben(a, b, 0, scale) 
                 parameter.update(koordinaten) 
-                werte = {'m': str(a).replace(".",","), 'n': str(c).replace(".",","), 'o': str(b).replace(".",","),
+                werte = {'m': str_a, 'n': str_c, 'o': str_b,
                         'dx': parameter['bx']} 
                 ecken =  {'A': " ", 'B': " ", 'C': " ",}
                 parameter.update(ecken)              
             if random.random() > 0.5:
                 lsg = ["j", "ja", "indiv_0"]
             else:
-                c +=p_zahlen[typ2][3]
+                c +=nichtrw
+                str_c = str(c).replace(".",",")
                 if typ3 != 1:
-                    werte['n']= str(c).replace(".",",")
+                    werte['n']= str_c
                 else:
-                    werte['c']= str(c).replace(".",",")
+                    werte['c']= str_c
                 lsg = ["n", "nein", "indiv_0"]
             parameter.update(werte)
             parameter['kein_winkel'] = True
@@ -6190,9 +6452,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             hilfe = "Wenn das Quadrat der langen Seite genauso groß ist wie die Summe der Quadrate der kürzeren Seiten, so ist das Dreieck rechtwinklig - ansonsten nicht.<br>(Es genügt hier auch nur die jeweils letzten Stellen der Quadrate zu überprüfen.)"
         elif typ < 13:                                          # Berechnung der Seiten
             titel = "Satz des Pythagoras"
-            str_a = str(a).replace(".",",")+"cm"
-            str_b = str(b).replace(".",",")+"cm"
-            str_c = str(c).replace(".",",")+"cm"
             typ3 = random.choice(["a", "b", "c", "c"])
             variable = [typ3]
             text = "wie lang ist die Seite {}?"
@@ -6201,10 +6460,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             anmerkung = "Du brauchst keinen Taschenrechner. Benutze einen Zettel!<br>(Hier musst du die Quadratzahlen bis 15² auswendig wissen.)"
             if c == 2.5:
                 anmerkung += "<br>(2,5² = 6,25)"
-            scale = 200/c
-            q = b**2/c
-            p = c - q
-            h = math.sqrt(p*q)
             koordinaten = sub_hypo_unten(x0, scale, q, p, h) 
             parameter.update(koordinaten)
             if typ3 == "a":                                         # Kathete a
@@ -6220,6 +6475,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
             werte = {'a': str_a, 'b': str_b, 'c': str_c, 
                     'bmx': x0 + (q/2)*scale, 'amx': x0 + (q + p/2)*scale,}                    
             parameter.update(werte)
+            hilfe_id = 90
         elif typ < 15:                                          # Anwendungsaufgaben
             titel = "Satz des Pythagoras"
             typ2 = random.randint(1,2)
@@ -6258,7 +6514,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 else:
                     parameter['kurs'] = "G"
                     text = "{} ist {}m breit (b), die Höhe des Daches (h) beträgt {}m und die Firsthöhe (f) beträgt {}m.<br>Wie lang ist die Dachfläche l?"
-                    variable = [gebaeude, str(a*2).replace(".",","), str(b).replace(".",","), str(t+b).replace(".",",")]
+                    variable = [gebaeude, str(a*2).replace(".",","), str_b, str(t+b).replace(".",",")]
                     hilfe_id = 132
                     hilfe = "Die waagerechte Kathete der Dreiecke entspricht der Hälfte der Gebäudebreite, die senkrechte Kathete entspricht der Höhe des Daches. Gesucht ist die Hypotenuse."
                 anmerkung = "Du brauchst keinen Taschenrechner, nur den Satz des Pythagoras."
@@ -6285,11 +6541,161 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
                 parameter.update(werte)
                 hilfe_id = 133
                 hilfe = "Die waagerechte Kathete der Dreiecke kannst du ausrechnen, indem du g2 von g1 subtrahierst und das Ergebnis durch halbierst. Gesucht ist die Hypotenuse."
-        else:
-            titel = "Trigonometrie"
-            text = "Welche Seite ist die Gegenkathete in Bezug auf den gelben Winkel?"
-            frage = "Gegenkathete:"
-            hilfe="Die Gegenkathete ist die Seite, die dem Winkel gegenüber liegt."
+        elif typ < 17:                                          # Welches ist An/Gegenkathete?
+            text = "Welche Seite ist die {} in Bezug auf den gelben Winkel?"
+            if typ2< 3:
+                variable = ["Gegenkathete"]
+                hilfe_id = 153
+                hilfe="Die {} ist die Seite, die dem Winkel gegenüber liegt."
+            else:
+                variable = ["Ankathete"]
+                hilfe_id = 151
+                hilfe="Die {} ist der kürzere Schenkel des gelben Winkels."
+            frage = "{}:".format(*variable)
+            liste = ["b","a","a","b"]
+            lsg = [liste[typ2-1]]  
+        elif typ < 19:                                          # Gegenkathete aus Winkel und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                variable = ["a"]
+            else:
+                variable = ["b"]            
+            wert = math.sin(math.radians(round(winkel,0)))*round(c,0)
+            lsg = [str_c + "sin" + str_winkel, wert, "sin" + str_winkel + "*" + str_c, str_c + "*sin" + str_winkel, "indiv_0"]
+            hilfe_id = 170
+            hilfe = "Gegenkathete (gesucht), Hypotenuse (bekannt) -> Sinus"
+        elif typ < 21:                                          # Ankathete aus Winkel und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                variable = ["b"]
+            else:
+                variable = ["a"]            
+            wert = math.cos(math.radians(round(winkel,0)))*round(c,0)
+            lsg = [str_c + "cos" + str_winkel, wert, "cos" + str_winkel + "*" + str_c,  str_c + "*cos" + str_winkel, "indiv_0"]
+            hilfe_id = 190
+            hilfe = "Ankathete (gesucht), Hypotenuse (bekannt) -> Kosinus"
+        elif typ == 21:                                         # Hypotenuse aus Winkel und Gegenkathete
+            variable = "c"
+            if typ2%2 == 0:
+                parameter["a"] = str_a
+                wert = round(a,0)/math.sin(math.radians(round(winkel,0)))
+                lsg = [str_a + "/sin" + str_winkel, wert, str_a + ":sin" + str_winkel, "indiv_0"]
+            else:
+                parameter["b"] = str_b
+                wert = round(b,0)/math.sin(math.radians(round(winkel,0)))
+                lsg = [str_b + "/sin" + str_winkel, wert, str_b + ":sin" + str_winkel, "indiv_0"]
+            hilfe_id = 210
+            hilfe = "Gegenkathete (bekannt), Hypotenuse (gesucht) -> Sinus"
+        elif typ == 22:                                         # Hypotenuse aus Winkel und Ankathete
+            variable = "c"
+            if typ2%2 == 0:
+                parameter["b"] = str_b
+                wert = round(b,0)/math.cos(math.radians(round(winkel,0)))
+                lsg = [str_b + "/cos" + str_winkel, wert, str_b + ":cos" + str_winkel, "indiv_0"]
+            else:
+                parameter["a"] = str_a
+                wert = round(a,0)/math.cos(math.radians(round(winkel,0)))
+                lsg = [str_a + "/cos" + str_winkel, wert, str_a + ":cos" + str_winkel, "indiv_0"]
+            hilfe_id = 220
+            hilfe = "Ankathete (bekannt), Hypotenuse (gesucht) -> Kosinus"                    
+        elif typ == 23:                                         # Gegenkathete aus Winkel und Ankathete
+            if typ2%2 == 0:
+                variable = "a"
+                parameter["b"] = str_b
+                wert = round(b,0)*math.tan(math.radians(round(winkel,0)))
+                lsg = [str_b + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_b, str_b + "*tan" + str_winkel, "indiv_0"]
+            else:
+                variable = "b"
+                parameter["a"] = str_a
+                wert = round(a,0)*math.tan(math.radians(round(winkel,0)))
+                lsg = [str_a + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_a, str_b + "*tan" + str_winkel, "indiv_0"]
+            hilfe_id = 230
+            hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
+        elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
+            if typ2%2 == 0:
+                variable = "b"
+                parameter["a"] = str_a
+                wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
+                lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+            else:
+                variable = "a"
+                parameter["b"] = str_b
+                wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
+                lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
+            hilfe = 240
+            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
+        elif typ == 25:                                         # Winkel aus Gegenkathete und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                parameter["a"] = str_a
+                parameter["symbol"] = "α"
+                variable = ["α", "asin"] 
+                lsg = "asin(" + str_a + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(a,0)/round(c,0)))
+                wert2 = (int_a/int_c)
+            else:
+                parameter["b"] = str_b
+                parameter["symbol"] = "β"
+                variable = ["β", "asin"]
+                lsg = "asin(" + str_b + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(b,0)/round(c,0)))
+                wert2 = (int_b/int_c)
+            lsg = [lsg, wert, lsg.replace("asin","sin^-1"), lsg.replace("asin","arcsin"), "indiv_0"]
+            hilfe_id = 250
+            hilfe = "Gegenkathete und Hypotenuse gegeben -> Sinus⁻¹ (oder asin oder arcsin)." 
+        elif typ == 26:                                         # Winkel aus Ankathete und Hypotenuse
+            parameter["c"] = str_c
+            if typ2%2 == 0:
+                parameter["b"] = str_b
+                parameter["symbol"] = "β"
+                variable = ["β", "acos"]
+                lsg = "acos(" + str_b + "/" + str_c + ")" 
+                wert = math.degrees(math.acos(round(b,0)/round(c,0)))
+                wert2 = (int_b/int_c)
+            else:
+                parameter["a"] = str_a
+                parameter["symbol"] = "α"
+                variable = ["α", "acos"] 
+                lsg = "acos(" + str_a + "/" + str_c + ")" 
+                wert = math.degrees(math.asin(round(a,0)/round(c,0)))
+                wert2 = (int_a/int_c)
+            lsg = [lsg, wert, lsg.replace("acos","cos^-1"), lsg.replace("acos","arccos"), "indiv_0"]
+            hilfe_id = 260
+            hilfe = "Ankathete und Hypotenuse gegeben -> Kosinus⁻¹ (oder acos oder arccos)." 
+        elif typ == 27:                                         # Winkel aus Ankathete und Gegenkathete
+            parameter["a"] = str_a
+            parameter["b"] = str_b            
+            if typ2%2 == 0:
+                parameter["symbol"] = "β"
+                variable = ["β", "atan"]
+                lsg = "atan(" + str_a + "/" + str_b + ")" 
+                wert = math.degrees(math.atan(round(a,0)/round(b,0)))
+                wert2 = (int_a/int_b)
+            else:
+                parameter["symbol"] = "α"
+                variable = ["α", "atan"] 
+                lsg = "atan(" + str_b + "/" + str_a + ")" 
+                wert = math.degrees(math.atan(round(b,0)/round(a,0)))
+                wert2 = (int_b/int_a)
+            lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+            hilfe_id = 270
+            hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
+        if typ > 24:
+            text = "Wie berechnet man den Winkel {}?"
+            parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/arcsin.html"  
+            nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
+            if nachkomma < 4:
+                ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
+                lsg.insert(-1,ergaenzung.replace(".",","))
+        elif typ > 16:
+            frage = "{}=".format(*variable)
+            text = "Wie berechnet man die Seite {}?"
+            parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
+            parameter['popup_text'] = "popups/sin.html"
+        # print(lsg)
+        # print(hilfe.format(*variable))
+        # print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7551,7 +7957,7 @@ def uebersicht(req, schueler_id=0):
                 for k in kategorie_werte:
                     zeile = [[],[]] 
                     richtig_kat = k['richtig_sum']
-                    richtig_kat += zaehler_kategorie.bonus
+                    #richtig_kat += zaehler_kategorie.bonus
                     richtig_gesamt += richtig_kat
                     if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
                         kat_farbe = "gruen"
@@ -7661,21 +8067,21 @@ def uebersicht(req, schueler_id=0):
                     bearbeitet = index
             if index != bearbeitet:
                 # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
-                try:
-                    zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
-                    bonus_kat = zaehler_kat.bonus
-                except:
-                    bonus_kat = 0
-                if bonus_kat > 0:
-                    richtig_kat = bonus_kat
-                    if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
-                        kat_farbe = "gruen"
-                    elif richtig_kat >= 10:
-                        kat_farbe = "gelb"
-                else:
-                    kat_farbe = 'rot' if pflicht else None
-                    prozent_farbe = 'rot' if pflicht and note_anzeigen else None
-                    richtig_kat = '-'
+                # try:
+                #     zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
+                #     bonus_kat = zaehler_kat.bonus
+                # except:
+                #     bonus_kat = 0
+                # if bonus_kat > 0:
+                #richtig_kat = bonus_kat
+                # if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
+                #     kat_farbe = "gruen"
+                # elif richtig_kat >= 10:
+                #     kat_farbe = "gelb"
+                # else:
+                kat_farbe = 'rot' if pflicht else None
+                prozent_farbe = 'rot' if pflicht and note_anzeigen else None
+                richtig_kat = '-'
                 if details == True:
                     werte = (kat_farbe,richtig_kat), *((None,'-'),) * 8,
                     breite = "breit"
@@ -7709,12 +8115,12 @@ def uebersicht(req, schueler_id=0):
                 note = "-"
                 prozent_summe_farbe = None
         else:
-            zaehler_profil = Zaehler.objects.filter(profil = profil)
-            bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-            if bonus_summe != None:
-                richtig_gesamt = bonus_summe 
-            else:
-                richtig_gesamt = 0 
+            # zaehler_profil = Zaehler.objects.filter(profil = profil)
+            # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
+            # if bonus_summe != None:
+            #     richtig_gesamt = bonus_summe 
+            # else:
+            richtig_gesamt = 0 
             falsch_gesamt=zeit_gesamt=abbr_gesamt=lsg_gesamt=hilfe_gesamt=0
             quote = "-"  
             qfarbe = "unset" 
@@ -7788,12 +8194,12 @@ def protokoll(req, schueler_id=0):
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else  0
         zaehler_profil = Zaehler.objects.filter(profil = profil)
-        bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-        if bonus_summe != None:
-            if auswahl in ("Halbjahr", "Schuljahr", "all"):
-                richtig += bonus_summe 
-        else:
-            pass
+        # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
+        # if bonus_summe != None:
+        #     if auswahl in ("Halbjahr", "Schuljahr", "all"):
+        #         richtig += bonus_summe 
+        # else:
+        #     pass
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
         falsch = temp if temp else  0
         abbr = protokoll.filter(abbr=True).count()
@@ -8008,6 +8414,7 @@ def kontrolle(eingabe, wert, lsg, protokoll_id):
                 except:
                     return 0, "Da stimmt was nicht - den Term kann ich nicht berechnen"
             for loe in (lsg):
+                #print(eingabe, loe, eingabe==loe)
                 try:
                     if eingabe.replace(" ","") == loe.replace(" ",""):
                         if lsg[-1] == 'indiv_1':                    #nachdem die Eingabe als richtig bewertet wurde können u.U. Extrapunkte (oder Punktabzüge) geben
