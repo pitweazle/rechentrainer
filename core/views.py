@@ -29,46 +29,12 @@ from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, su
 from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_zeichenzuviel
 
 from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
-from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten 
+from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten, sub_py_tripel 
 from .geometrie import sub_segment, winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
 
 from django.db.models import Sum, F,  Max
 from accounts.views import quote_farbe
 from accounts.services import get_today, check_hj, name_hj, name_next_hj, sub_note_anzeigen
-
-#Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-# def format_zahl(wert, stellen=2, trailing_zeros=True):
-#     """
-#     Formatiert eine Zahl im deutschen Format (Komma statt Punkt).
-
-#     Features:
-#     - Akzeptiert float, int oder str mit '.' oder ','.
-#     - Rundet korrekt (z. B. 2.9999 → "3").
-#     - Entfernt überflüssige Nullen, falls gewünscht.
-#     - Gibt Originaltext zurück, falls keine Zahl erkannt wird.
-#     """
-
-#     # 🔹 1. Eingabe in float umwandeln, wenn möglich
-#     if isinstance(wert, str):
-#         wert = wert.strip().replace(",", ".")
-#         try:
-#             wert = float(wert)
-#         except ValueError:
-#             return wert  # kein gültiger Zahlenwert → Originaltext
-
-#     # 🔹 2. Rundung und Formatierung
-#     gerundet = round(wert, stellen)
-#     text = f"{gerundet:.{stellen}f}".replace(".", ",")
-
-#     # 🔹 3. Überflüssige Nullen und Komma entfernen (optional)
-#     if not trailing_zeros:
-#         text = text.rstrip("0").rstrip(",")
-
-#     # 🔹 4. Sonderfall: z. B. 3,00 → 3 (wenn alles hinterm Komma wegfällt)
-#     if "," in text and text.endswith(","):
-#         text = text[:-1]
-
-#     return text
 
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -2149,155 +2115,6 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 erg = zahl1 / zahl2
                 lsg = format_zahl(erg,erg_stellen)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
-
-def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
-        rad_start = math.radians(startwinkel)
-        rad = math.radians(winkel)        
-        start_x = center_x - radius *  math.cos(rad_start)
-        start_y = center_y - radius *  math.sin(rad_start) 
-        end_x = center_x - radius *  math.cos(rad+rad_start) 
-        end_y = center_y - radius *  math.sin(rad+rad_start)
-        if winkel <=180:
-            largeArcFlag = 0
-        else:
-            largeArcFlag = 1 
-        if id == 2: 
-            koordinaten = dict( 
-                    start_x2 = start_x, start_y2 = start_y, end_x2 = end_x, end_y2 =  end_y, 
-                    largeArcFlag2 = largeArcFlag)
-        elif id == 3: 
-            koordinaten = dict( 
-                    start_x3 = start_x, start_y3 = start_y, end_x3 = end_x, end_y3 =  end_y, 
-                    largeArcFlag3 = largeArcFlag)
-        else: 
-            koordinaten = dict( 
-                    start_x = start_x, start_y = start_y, end_x = end_x, end_y =  end_y, 
-                    largeArcFlag = largeArcFlag)  
-        return koordinaten
-
-def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False, lire = 1):
-    rad_start = math.radians(startwinkel)
-    rad = math.radians(winkel)
-    if id == 0:
-        koordinaten = dict(center_x = center_x, center_y = center_y, )
-    elif id == 1:
-        koordinaten = dict(center_x_1 = center_x, center_y_1 = center_y, )
-    elif id == 2:
-        koordinaten = dict(center_x_2 = center_x, center_y_2 = center_y, )
-    elif id == 3:
-        koordinaten = dict(center_x_3 = center_x, center_y_3 = center_y, )
-    elif id == 4:
-        koordinaten = dict(center_x_4 = center_x, center_y_4 = center_y, )
-    elif id == 5:
-        koordinaten = dict(center_x_5 = center_x, center_y_5 = center_y, )
-
-    # das sind die Schenkel:
-    if schenkel > 0:
-        x1 = center_x - schenkel *  math.cos(rad_start)
-        y1 = center_y - schenkel *  math.sin(rad_start) 
-        x2 = center_x - schenkel *  math.cos(rad+rad_start) 
-        y2 = center_y - schenkel *  math.sin(rad+rad_start)
-
-        if scheitel == True:
-            x3 = center_x + schenkel *  math.cos(rad_start)
-            y3 = center_y + schenkel *  math.sin(rad_start) 
-            x4 = center_x + schenkel *  math.cos(rad+rad_start) 
-            y4 = center_y + schenkel *  math.sin(rad+rad_start)
-            if id == 0:
-                schenkel_koo = dict(schenkel_1_x = x3, schenkel_1_y = y3, schenkel_2_x = x4, schenkel_2_y = y4) 
-            elif id == 1:
-                schenkel_koo = dict(schenkel_1_x_1 = x3, schenkel_1_y_1 = y3, schenkel_2_x_1 = x4, schenkel_2_y_1 = y4) 
-            elif id == 2:
-                schenkel_koo = dict(schenkel_1_x_2 = x3, schenkel_1_y_2 = y3, schenkel_2_x_2 = x4, schenkel_2_y_2 = y4) 
-            elif id == 3:
-                schenkel_koo = dict(schenkel_1_x_3 = x3, schenkel_1_y_3 = y3, schenkel_2_x_3 = x4, schenkel_2_y_3 = y4)             
-            elif id == 4:
-                schenkel_koo = dict(schenkel_1_x_4 = x3, schenkel_1_y_4 = y3, schenkel_2_x_4 = x4, schenkel_2_y_4 = y4) 
-            elif id == 5:
-                schenkel_koo = dict(schenkel_1_x_5 = x3, schenkel_1_y_5 = y3, schenkel_2_x_5 = x4, schenkel_2_y_5 = y4) 
-        else:
-            if id == 0:
-                schenkel_koo = dict(schenkel_1_x = x1, schenkel_1_y = y1, schenkel_2_x = x2, schenkel_2_y = y2)
-            elif id == 1:
-                schenkel_koo = dict(schenkel_1_x_1 = x1, schenkel_1_y_1 = y1, schenkel_2_x_1 = x2, schenkel_2_y_1 = y2) 
-            elif id == 2:
-                schenkel_koo = dict(schenkel_1_x_2 = x1, schenkel_1_y_2 = y1, schenkel_2_x_2 = x2, schenkel_2_y_2 = y2) 
-            elif id == 3:
-                schenkel_koo = dict(schenkel_1_x_3 = x1, schenkel_1_y_3 = y1, schenkel_2_x_3 = x2, schenkel_2_y_3 = y2) 
-            elif id == 4:
-                schenkel_koo = dict(schenkel_1_x_4 = x1, schenkel_1_y_4 = y1, schenkel_2_x_4 = x2, schenkel_2_y_4 = y2) 
-            elif id == 5:
-                schenkel_koo = dict(schenkel_1_x_5 = x1, schenkel_1_y_5 = y1, schenkel_2_x_5 = x2, schenkel_2_y_5 = y2)      
-        koordinaten.update(schenkel_koo)  
-    # das ist der Bogen mit Text:                
-    if color:
-        start_x = center_x - radius *  math.cos(rad_start)
-        start_y = center_y - radius *  math.sin(rad_start) 
-        end_x = center_x - radius *  math.cos(rad+rad_start) 
-        end_y = center_y - radius *  math.sin(rad+rad_start)
-        if winkel <=180:
-            largeArcFlag = 0
-        else:
-            largeArcFlag = 1
-        text_x = center_x - radius*3/4 *  math.cos(rad/2+rad_start)
-        text_y = center_y - radius/2 *  math.sin(rad/2+rad_start) 
-        if id == 0:
-            bogen_koo = dict(bogen_radius = radius, sweep_flag = 1, largeArcFlag = largeArcFlag, 
-                start_bogen_x = start_x, start_bogen_y = start_y, end_bogen_x = end_x, end_bogen_y =  end_y,
-                text_x = text_x, text_y = text_y, color = color, symbol = symbol, sweepFlag = lire)
-        if id == 1:
-            bogen_koo = dict(bogen_radius_1 = radius, sweep_flag_1 = 1, largeArcFlag_1 = largeArcFlag, 
-                start_bogen_x_1 = start_x, start_bogen_y_1 = start_y, end_bogen_x_1 = end_x, end_bogen_y_1 =  end_y,
-                text_x_1 = text_x, text_y_1 = text_y, color_1 = color, symbol_1 = symbol,)
-        if id == 2:
-            bogen_koo = dict(bogen_radius_2 = radius, sweep_flag_2 = 1, largeArcFlag_2 = largeArcFlag, 
-                start_bogen_x_2 = start_x, start_bogen_y_2 = start_y, end_bogen_x_2 = end_x, end_bogen_y_2 =  end_y,
-                text_x_2 = text_x, text_y_2 = text_y, color_2 = color, symbol_2 = symbol,)
-        if id == 3:
-            bogen_koo = dict(bogen_radius_3 = radius, sweep_flag_3 = 1, largeArcFlag_3 = largeArcFlag, 
-                start_bogen_x_3 = start_x, start_bogen_y_3 = start_y, end_bogen_x_3 = end_x, end_bogen_y_3 =  end_y,
-                text_x_3 = text_x, text_y_3 = text_y, color_3 = color, symbol_3 = symbol,)
-        if id == 4:
-            bogen_koo = dict(bogen_radius_4 = radius, sweep_flag_4 = 1, largeArcFlag_4 = largeArcFlag, 
-                start_bogen_x_4 = start_x, start_bogen_y_4 = start_y, end_bogen_x_4 = end_x, end_bogen_y_4 =  end_y,
-                text_x_4 = text_x, text_y_4 = text_y, color_4 = color, symbol_4 = symbol,)
-        if id == 5:
-            bogen_koo = dict(bogen_radius_5 = radius, sweep_flag_5 = 1, largeArcFlag_5 = largeArcFlag, 
-                start_bogen_x_5 = start_x, start_bogen_y_5 = start_y, end_bogen_x_5 = end_x, end_bogen_y_5 =  end_y,
-                text_x_5 = text_x, text_y_5 = text_y, color_5 = color, symbol_5 = symbol,)
-        koordinaten.update(bogen_koo) 
-    return koordinaten
-
-def linien_koordinaten(dreh, startwinkel, id = 21):
-        schieb_x = math.tan(math.radians(dreh))*50
-        if startwinkel in [0,180]:
-            dreh = -dreh
-            schieb_x = -schieb_x
-        if id == 21:                                                    # Stufenwinkel oben rechts
-            koordinaten = dict(schieb_bx = 150+schieb_x, schieb_by = 0)
-        elif id == 31:                                                  # Stufenwinkel unten rechts
-            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
-        elif id == 41:                                                  # Stufenwinkel unten links
-            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
-        koordinaten1 = dict(dreh = dreh, schieb_ox = schieb_x)
-        koordinaten.update(koordinaten1)  
-        return koordinaten
-
-def viereck(a,y_schieb,alfa,beta,delta=0 ):
-    h = 100
-    delta_1 = delta -90
-    r = a * math.tan(math.radians(delta_1))
-    p = h/math.tan(math.radians(alfa))    
-    q = (h+r)/math.tan(math.radians(beta))
-    ax = (400 - a - p - q)/2    
-    dx = ax + p
-    bx = ax + a + p + q
-    cx = ax + a + p
-    ay = by = h + r +y_schieb
-    dy = y_schieb + r
-    cy = y_schieb    
-    koordinaten = dict(ax=ax, ay=ay, bx=bx, by=by, cx=cx, cy=cy, dx=dx, dy=dy)
-    return koordinaten
 
 def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -5989,26 +5806,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
-def sub_py_tripel(stufe):
-    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-    if stufe%2 == 1:
-        typ2 = random.randint(0,7)
-    else:
-        typ2 = random.randint(0,4)
-    a = p_zahlen[typ2][1]
-    b = p_zahlen[typ2][2]
-    c = p_zahlen[typ2][0]
-    if c < 1:
-        einheit = "dm"
-    else:
-        einheit = "cm"
-    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
-    scale = 200/c
-    p = (a**2/c)
-    q = (b**2/c)
-    h = math.sqrt(p*q)
-    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
-
 def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 4
@@ -8649,6 +8446,11 @@ def main(req, slug):
                     hj_result = check_hj(req)
                     if isinstance(hj_result, HttpResponse):
                         return hj_result
+            else:
+                if get_now().month in (1, 7):
+                    hj_result = check_hj(req)
+                    if isinstance(hj_result, HttpResponse):
+                        return hj_result
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
@@ -8663,33 +8465,28 @@ def main(req, slug):
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
                 zaehler.zeit_summe = 0
-                #durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
-                # if richtig_gesamt > 100 and fehler_kat < 1:
-                #     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
-                #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
-            #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
             if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-            if kategorie.slug == "sachaufgaben":
-                try:  
-                    profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
-                except:                                       
-                    profil.voreinst.update({"sachaufg" : random.randint(1,20)})
-                profil.save()
-                typ_anf = profil.voreinst["sachaufg"]
-            else:
-                typ_anf = zaehler.typ_anf            
+            #if kategorie.slug == "sachaufgaben":
+            #     try:  
+            #         profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
+            #     except:                                       
+            #         profil.voreinst.update({"sachaufg" : random.randint(1,20)})
+            #     profil.save()
+            #     typ_anf = profil.voreinst["sachaufg"]
+            # else:
+            typ_anf = zaehler.typ_anf            
             stufe = profil.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
-            if kategorie.slug == "sachaufgaben":
-                profil.voreinst["sachaufg"] = typ
-                profil.save()
+            # if kategorie.slug == "sachaufgaben":
+            #     profil.voreinst["sachaufg"] = typ
+            #     profil.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
                 titel = kategorie.name
@@ -8703,8 +8500,9 @@ def main(req, slug):
             #     pass            # sonst wird ein fehler geworfen da 
             # else:
             frage = frage.format(*variable)
-            #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurücgezählt. 
+            #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurückgezählt. 
             #Falls mittels Browser reset eine neue Aufgabe erzeugt wird, wird dies als Abbrechen gewertet.
+            zaehler.letzter_typ = typ
             zaehler.abbr_zaehler += 1              
             zaehler.save() 
             bis_loeschen = kategorie.eof - zaehler.richtig_of

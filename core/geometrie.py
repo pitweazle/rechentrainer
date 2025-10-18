@@ -594,6 +594,27 @@ def sub_dreiecksseiten(q, h):
     p=round(p)
     return a, b, c, p
 
+def sub_py_tripel(stufe):
+    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
+    if stufe%2 == 1:
+        typ2 = random.randint(0,7)
+    else:
+        typ2 = random.randint(0,4)
+    a = p_zahlen[typ2][1]
+    b = p_zahlen[typ2][2]
+    c = p_zahlen[typ2][0]
+    if c < 1:
+        einheit = "dm"
+    else:
+        einheit = "cm"
+    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
+    scale = 200/c
+    p = (a**2/c)
+    q = (b**2/c)
+    h = math.sqrt(p*q)
+    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
+
+
 # Winkel
 def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
         rad_start = math.radians(startwinkel)
