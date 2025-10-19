@@ -614,7 +614,6 @@ def sub_py_tripel(stufe):
     h = math.sqrt(p*q)
     return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
 
-
 # Winkel
 def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
         rad_start = math.radians(startwinkel)
@@ -641,7 +640,7 @@ def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
                     largeArcFlag = largeArcFlag)  
         return koordinaten
 
-def winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
     rad_start = math.radians(startwinkel)
     rad = math.radians(winkel)
     if id == 0:

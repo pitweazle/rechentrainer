@@ -1,4 +1,4 @@
-import math, decimal, random, re
+import math, decimal, string, random, re
 
 from fractions import Fraction
 from math import gcd
@@ -20,21 +20,13 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
-from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
-
-from .utilities import format_zahl, zahl_wort, MathFormatter, ggt, lcm, trenner 
-from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
-from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
-from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
-from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_zeichenzuviel
-
-from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
-from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten, sub_py_tripel 
-from .geometrie import sub_segment, winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
-
 from django.db.models import Sum, F,  Max
-from accounts.views import quote_farbe
-from accounts.services import get_today, get_now, check_hj, name_hj, name_next_hj, sub_note_anzeigen
+from accounts.views import name_hj, name_next_hj, quote_farbe #, sub_note_anzeigen
+
+#Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+def format_zahl(wert, stellen=2, trailing_zeros=True):
+    text = f"{wert:.{stellen}f}".replace(".", ",")
+    return text.rstrip(",0") if not trailing_zeros and "," in text else text
 
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -350,6 +342,36 @@ def kopfrechnen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
         text = "{} {} {} ="
     return typ, typ2, titel, text, "", text.replace(" ",""), variable, "", "", [lsg], hilfe_id, erg, {'name':'normal'}
 
+class MathFormatter(string.Formatter):
+    def format_field(self, value, format_spec):
+        """ floats are formatted with comma.
+        There is a special format specifier for division with remainder.
+        {:r} only output there is a remainder
+        {:<d>r} output the remainder for division with <d> (e.g. {:15r}).
+        {:<d>c} output the number as a fraction with divisor <d>.
+        """
+        if format_spec.endswith(('r', 'c')):
+            result = format(int(value), 'd')
+            if value % 1:
+                if format_spec == 'r':
+                    result += " + Rest"
+                else:
+                    divisor = int(format_spec[:-1])
+                    rest = round((value % 1) * divisor)
+                    if format_spec.endswith('r'):
+                        result += f" + Rest {rest:d}"
+                    else:
+                        result += f" + {rest:d}/{divisor:d}"
+        else:
+            result = format(value, format_spec)
+            if format_spec.endswith('f') or isinstance(value, float):
+                result = result.replace('.', ',')
+        return result
+
+    def evaluate(self, format_string, **kwargs):
+        text = format_string.split('=')[0].format(**kwargs)
+        return Parser().evaluate(text, {})
+
 def sachaufgaben(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1 
@@ -405,6 +427,44 @@ def sachaufgaben(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 
         else:
             anmerkung=""
         return typ, typ2, titel, text, pro_text, frage, variablen, einheit, anmerkung, lsg,  hilfe_id, ergebnis, {'name':'normal'}
+
+def zahl_wort(zahl):
+    einer = ["", "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn", "zwanzig"]
+    zehner = ["zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig"]
+    if zahl > 99:
+        zahl_hundert = zahl//100
+        zahlwort = einer[zahl_hundert] + "hundert"
+        zahl = zahl%100
+    else:
+        zahlwort = ""
+    if zahl <= 20:
+        zahlwort = zahlwort + einer[zahl]
+    else:
+        zahl_einer = zahl%10
+        zahlwort = zahlwort + einer[zahl_einer]
+        zahl_zehner = zahl//10
+        if zahl_einer != 0:
+            zahlwort = zahlwort + "und" + zehner[zahl_zehner-2]
+        else:
+            zahlwort = zahlwort + zehner[zahl_zehner-2]
+    return zahlwort
+
+def ggt(a,b):
+    if b == 0:
+        return a
+    return ggt(b, a % b)
+
+def lcm(a,b):
+  return (a * b) // math.gcd(a,b)
+
+def trenner(wert):
+    zahl_mill = wert//1000000        
+    zahl_tsnd = wert%1000000//1000
+    zahl_klein = wert%1000 
+    zahl = ""
+    zahl =  "%d %03d %03d"%(zahl_mill, zahl_tsnd, zahl_klein)
+    zahl = zahl.lstrip("0").lstrip(" ").lstrip("0").lstrip(" ").lstrip("0")  
+    return zahl
 
 def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
@@ -968,6 +1028,488 @@ def regeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         elif typ >= 5:
             frage = text.replace(" ", "")
         return typ, typ2, titel, text, "", frage, variable, "", anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
+
+#die drei folgenden Funktionen werden aus 'Geometrie' und aus 'Figuren' aufgerufen und erstellt Grafiken von Figuren:
+def sub_figuren():
+    box_hoehe=350
+    box_breite = 400
+    parameter = {'object': 'viereck'}
+    schieb_x3 = schieb_x4 = schieb_y3 = schieb_y4  = 0
+    typ2 = random.randint(1,6)
+    if typ2 == 1:                                                           #Rechteck
+        anmerkung = "(4 rechte Winkel, je 2 gegenüberliegende Seiten gleich lang)"
+        lsg = ["Rechteck"]
+        seiten = ["a", "b", "a", "b"]
+        breite = random.randint(15,35)*10
+        hoehe = breite
+        while abs(breite-hoehe) <50:
+            hoehe = random.randint(15,25)*10
+    elif typ2 == 2:                                                         #Quadrat
+        anmerkung = "(4 rechte Winkel, alle Seiten gleich lang)"
+        lsg = ["Quadrat"]
+        seiten = ["a", "a", "a", "a"]
+        schieb1 = schieb2 = 0
+        breite = hoehe = random.randint(15,30)*10
+    elif typ2 == 3:                                                         #Parallelogramm
+        anmerkung = "(je 2 gegenüberliegende Seiten sind parallel und gleich lang)"
+        lsg = ["Parallelogramm"]
+        seiten = ["a", "b", "a", "b"]
+        breite = random.randint(15,35)*10
+        hoehe = breite
+        while abs(breite-hoehe) <50:
+            hoehe = random.randint(15,25)*10
+        while abs(schieb_x3) < 20:
+            schieb_x3 = random.randint(-15,15)*10
+        schieb_x4 = schieb_x3
+    elif typ2 == 4:                                                         #Trapez
+        anmerkung = "(nur 2 gegenüberliegende Seiten sind parallel)"
+        lsg = ["Trapez"]
+        seiten = ["a", "b", "c", "d"]
+        schieb = 0 
+        while abs(schieb) < 20 or breite+schieb < 40 or hoehe+schieb < 40 or max(breite, breite+schieb) >300 or max(hoehe, hoehe+schieb) >300:
+            schieb = random.randint(-15,5)*8
+            breite = random.randint(25,35)*8
+            hoehe = random.randint(15,20)*8
+        typ3 = random.randint(1,4)
+        if typ3 == 1:
+            schieb_x3 = schieb
+        elif typ3 == 2:
+            schieb_x4 = schieb
+        elif typ3 == 3:
+            schieb_y3 = schieb
+        else:
+            schieb_y4 = schieb
+        x0 = int((box_breite-max(breite+schieb_x3, breite+schieb_x4))/2)
+        y0 = int((box_hoehe-max(hoehe+schieb_y3, hoehe+schieb_y4))/2)
+        if schieb_x4 == 0:
+            x1 = x0
+        else:
+            x1 = x0 + abs(schieb_x4)
+        x2 = x0 + breite
+        x3 = x2 + schieb_x3
+        x4 = x1 + schieb_x4
+        y1 = y2 = box_hoehe - y0
+        y3 = y1 - hoehe - schieb_y3
+        y4 = y1 - hoehe - schieb_y4
+        ecken_x = [-5,-5,-5,-5]                             #schieb Benennung in x
+        ecken_y = [25,25,-10,-10]                           #schieb Benennung in y
+    elif typ2 == 5:                                                         #Raute
+        anmerkung = "(alle Seiten gleich lang, je 2 sind parallel)"
+        lsg = ["Raute", "Rhombus"]
+        seiten = ["a", "a", "a", "a"]                
+        a = random.randint(25,33)*10
+        breite = hoehe = 0
+        while abs(breite-hoehe)<50:
+            breite = int(a/2)+random.randint(-40,120)
+            hoehe = pow(a**2-breite**2,0.5)
+        y1 = y3 = int((box_hoehe)/2)
+        y2 = y1 + int(hoehe/2)
+        y4 = y1 - int(hoehe/2)                
+        x2 = x4 = int((box_breite)/2)
+        x1 = x2 - int(breite/2)
+        x3 = x2 + int(breite/2)
+        ecken_x = [-20,-5,10,-5]                          #schieb Benennung in x
+        ecken_y = [5,25,5,-10]                            #schieb Benennung in y
+    elif typ2 == 6:                                                         #Drache
+        anmerkung = "(je 2 benachbarte Seiten sind gleich lang)"
+        lsg = ["Drache", "Drachen", "Drachenviereck"]
+        seiten = ["a", "a", "b", "b"]                
+        breite =random.randint(10,14)*10
+        hoehe = random.randint(8,16)*10
+        schieb_y2 = random.randint(5,8)*10
+        y1 = y3 = int((box_hoehe)/2 - schieb_y2/2)
+        y2 = y1 + int(hoehe/2) + schieb_y2
+        y4 = y1 - int(hoehe/2)                
+        x2 = x4 = int((box_breite)/2)
+        x1 = x2 - int(breite/2)
+        x3 = x2 + int(breite/2)
+        ecken_x = [-20,-5,10,-5]                          #schieb Benennung in x
+        ecken_y = [5,25,5,-10]                            #schieb Benennung in y
+    if typ2 < 4:
+        x0 = int((box_breite-breite-(schieb_x3+schieb_x4)/2)/2)
+        y0 = int((box_hoehe - hoehe+abs(schieb_y3+schieb_y4)/2)/2)
+        x1 = x0
+        x2 = x0+breite
+        x3 = x2 + schieb_x3
+        x4 = x1 + schieb_x4
+        y1 = y2 = y0+hoehe
+        y3 = y0 + schieb_y3
+        y4 = y0 + schieb_y4
+        ecken_x = [-5,-5,-5,-5]                             #schieb Benennung in x
+        ecken_y = [25,25,-10,-10]                           #schieb Benennung in y
+    xkoo = [x1, x2, x3, x4, x1]
+    ykoo = [y1, y2, y3, y4, y1]
+    ecken = ["A", "B", "C", "D"]
+    seiten_x = [0,10,0,-20,0]                               #schieb Benennung in x
+    seiten_y = [20,0,-10,0,10]                              #schieb Benennung in y
+    parameter_2 = {'name': 'svg/geometrie.svg', 'box_hoehe': box_hoehe, 'box_breite': box_breite,
+        'x1':x1, 'y1':y1,'x2':x2, 'y2':y2,'x3':x3, 'y3':y3,'x4':x4, 'y4':y4,
+        'ecken': [
+            (xkoo[n]+ecken_x[n], ykoo[n]+ecken_y[n], ecken[n]) for n in (range(0,4))
+        ],
+        'seiten': [
+            ((xkoo[n]+xkoo[n+1])/2+seiten_x[n], (ykoo[n]+ykoo[n+1])/2+seiten_y[n], seiten[n]) for n in range(0,4)
+            ],
+    } 
+    parameter.update(parameter_2)
+    lsg = lsg + ["indiv_0"] 
+    return typ2, anmerkung, lsg, parameter
+
+def sub_dreieck(typ2):
+    breite = random.randint(2,6)
+    hoehe = random.randint(2,6)  
+    if typ2 == 1:
+        x1 = random.randint(4,11-breite)
+        y1 = random.randint(1,11-hoehe) 
+    else:
+        x1 = random.randint(-4,9-breite)
+        y1 = random.randint(-4,9-hoehe) 
+    return x1, y1, breite, hoehe    
+
+def sub_dreiecke(typ):
+    box_hoehe = 350
+    box_breite = 600 
+    anmerkung =""
+    x1 = 100
+    y0 = 30
+    winkel = ""
+    rotate = ""
+    if typ == 10 or typ == 7:                                               #Benennung von Dreiecken
+        typ2 = random.randint(1,5)
+        if typ2 == 1:                                                         #gleichschenkliges Dreieck
+            pro_text = "Dreieck mit zwei gleich langen Seiten?"
+            lsg = ["gleichschenkliges Dreieck","gleichschenkliges", "gleichschenklig"]
+            seiten = ["c", "a", "a"]
+            breite = random.randint(150, 250)
+            seite = breite                
+            while abs(seite-breite) < 40:
+                seite = random.randint(150,250)
+                hoehe = int((seite**2-(int(breite/2))**2)**0.5)
+            x2 = x1 + breite
+            x3 = x1 + int(breite/2)
+            y1 = y2 = y0 + hoehe
+            y3 = y0
+        if typ2 == 2:                                                         #gleichseitiges Dreieck
+            pro_text = "Dreieck mit drei Seiten gleich langen Seiten?"
+            lsg = ["gleichseitiges Dreieck","gleichseitiges", "gleichseitig"]
+            seiten = ["a", "a", "a"]
+            breite = random.randint(150, 250)
+            seite = breite
+            hoehe =int((seite**2-(int(breite/2))**2)**0.5)
+            x2 = x1 + breite
+            x3 = x1 + int(breite/2)
+            y1 = y2 = y0 + hoehe
+            y3 = y0
+        if typ2 == 3:                                                         #rechtwinkliges Dreieck
+            pro_text = "Dreieck mit einem 90° Winkel?"
+            lsg = ["rechtwinkliges Dreieck","rechtwinkliges", "rechtwinklig"]
+            seiten = ["c", "b", "a"]
+            breite = random.randint(150, 250)
+            hoehe = random.randint(100, 200)
+            x2 = x1 + breite
+            y3 = y0
+            typ3 = random.randint(1,3)
+            if typ3 == 1:
+                x3 = x1 
+                y1 = y2 = y0 + hoehe
+                winkel = "A"
+            if typ3 == 2:
+                x3 = x1 + breite
+                y1 = y2 = y0 + hoehe
+                winkel = "B"
+            if typ3 == 3:
+                x2 = x1 + breite
+                x3 = x1
+                y2 = y0
+                winkel = "C"
+                rotate = int(math.atan(hoehe/breite) * 180 / math.pi)
+            y1 = y0 + hoehe
+        if typ2 == 4:                                                         #stumpfwinkliges Dreieck
+            pro_text = "Dreieck, bei dem ein Winkel größer als 90° ist?"
+            lsg = ["stumpfwinkliges Dreieck","stumpfwinkliges", "stumpfwinklig"]
+            seiten = ["c", "a", "b"]
+            x0 = x1
+            breite = random.randint(150, 250)
+            hoehe = random.randint(150, 250)
+            schieb = random.randint(20, 100)
+            typ3 = random.randint(1,3)
+            if typ3 == 1:
+                x1 = x0 + schieb 
+                x2 = x1 + breite
+                x3 = x1 - schieb
+            if typ3 == 2:
+                x2 = x1 + breite
+                x3 = x2 + schieb
+            if typ3 == 3:
+                diff = 0               
+                while diff < 20000:
+                    breite = random.randint(10, 200)
+                    schieb = random.randint(10, 200)
+                    hoehe = random.randint(80, 150)
+                    a = int((breite**2+hoehe**2)**0.5)
+                    b = int((schieb**2+hoehe**2)**0.5)
+                    diff = (breite + schieb)**2 - (a**2 + b**2)
+                x2 = x1 + breite + schieb
+                x3 = x1 + schieb
+            y1 = y2 = y0 + hoehe
+            y3 = y0  
+        if typ2 == 5:                                                         #spitzwinkliges Dreieck
+            pro_text = "Dreieck, bei dem alle Winkel kleiner als 90° sind?"
+            lsg = ["spitzwinkliges Dreieck","spitzwinkliges", "spitzwinklig"]
+            seiten = ["c", "a", "b"]
+            breite = random.randint(150, 250) 
+            hoehe = random.randint(100, 200)
+            schieb = breite
+            while schieb +10 >= breite:
+                schieb = random.randint(20, 100)
+            x2 = x1 + breite
+            x3 = x1 + schieb
+            y1 = y2 = y0 + hoehe
+            y3 = y0    
+        text = "Wie nennt man so ein " + pro_text
+        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
+        hilfe_id = 100
+        frage = "So ein Dreieck heißt:"
+        einheit = "Dreieck"
+        ecken = ["A", "B", "C"]         
+    else:                                                                   #Benennung von Ecken und Seiten'
+        einheit = ""
+        list_start = random.randint(0,2)
+        seiten_liste = ["c", "a", "b", "c", "a", "b"]
+        ecken_liste = ["A", "B", "C", "A", "B", "C"]
+        seiten = seiten_liste[list_start:list_start + 3]
+        ecken = ecken_liste[list_start:list_start + 3]
+        typ3 = random.choice(ecken_liste[:3])                   #Auswahl der gesuchten/gegebenen Ecke
+        typ4 = random.choice(seiten_liste[:3])                                             # """ Seite
+        typ2 = random.randint(1,2)
+        if typ2 == 1:                                           #Seite gesucht
+            buchst = "x"
+            artikel = "die"
+            gesucht = "Seite"
+            frage = "Sie heißt:"
+            hilfe_id = 111
+            ecken = [typ3 if x == typ3 else "" for x in ecken]
+            seiten = ["x" if x == typ4 else "" for x in seiten] 
+            lsg = [typ4]           
+        else:                                                   #Ecke gesucht
+            buchst = "X"
+            artikel = "der"
+            gesucht = "Eckpunkt"
+            frage = "Er heißt:"
+            hilfe_id = 112
+            ecken = ["X" if x == typ3 else "" for x in ecken]
+            seiten = [typ4 if x == typ4 else "" for x in seiten] 
+            lsg = [typ3] 
+        text = "Wie heißt {0} mit {1} gekennzeichnete {2} dieses Dreiecks?".format(artikel,buchst,gesucht)
+        anmerkung = anmerkung + "<br>Achte auf Groß- und Kleinschreibung!</b>"
+        breite = random.randint(150, 250) 
+        hoehe = random.randint(100, 200)
+        schieb = random.randint(20, 100)
+        x2 = x1 + breite
+        x3 = x1 + schieb
+        y1 = y2 = y0 + hoehe
+        y3 = y0      
+    box_hoehe = hoehe + y0*2
+    ecken_x = [-10,-2,-10]                           #schieb Benennung in x
+    ecken_y = [25,25,-10]                            #schieb Benennung in y
+    xkoo = [x1, x2, x3, x1]
+    ykoo = [y1, y2, y3, y1]
+    seiten_x = [-2,10,-20,0]                         #schieb Benennung in x
+    seiten_y = [20,0,0,10]                           #schieb Benennung in y
+    parameter = {'name': 'svg/dreiecke.svg', 'object': 'dreieck', 'winkel': winkel, 'rotate': rotate, 'box_hoehe': box_hoehe, 'box_breite': box_breite, 'breite': breite,
+        'x1':x1, 'y1':y1,'x2':x2, 'y2':y2,'x3':x3, 'y3':y3,
+        'ecken': [
+            (xkoo[n]+ecken_x[n], ykoo[n]+ecken_y[n], ecken[n]) for n in (range(0,3))
+        ],
+        'seiten': [
+            ((xkoo[n]+xkoo[n+1])/2+seiten_x[n], (ykoo[n]+ykoo[n+1])/2+seiten_y[n], seiten[n]) for n in range(0,3)
+            ],
+    } 
+    #lsg = lsg + ["indiv_0"]    
+    return typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter
+
+#diese Funktion wird aus 'geometrie' und 'Körper' aufgerufen - aus "begriffe der Geometrie" mit jeweiligem jg - aus "Quader und Prismen" mit jg=-1 und Maßen:
+def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box_hoehe = 350):
+    box_breite = 400
+    anmerkung =""
+    hilfe_id = 50
+    if jg == -1:
+        typ2 = 6
+        hilfe_id = 0
+    elif jg > 9:
+        typ2 = random.randint(1,8)
+        hilfe_id = 51
+    elif jg < 7:
+        typ2 = random.randint(1,6)            
+    else:
+        typ2 = random.randint(1,5)
+    if typ2 == 1 or typ2 == 2 or typ2 == 4 or typ2 == 6 or typ2 == 7:           #1 Quader, 2 Würfel, 4 Pyramide, 6Prisma, 7Pyramidenstumpf
+        if jg == -1:
+            parameter = {'object': 'prisma'}
+        else:
+            parameter = {'object': 'quader'}
+            breite_u = random.randint(8,15)*5
+        v = w = 0                                                               #v verschiebt die Ecken beim Pyramidenstumpf, w beim Prisma
+        if typ2 == 1:                                                             # Quader
+            lsg = ["Quader"]
+            anmerkung = "Die Kanten sind <u>nicht</u> gleich lang"
+            hoehe = tiefe = breite_u*2
+            while breite_u*2 == hoehe == tiefe:
+                hoehe = random.randint(10,15)*10
+                tiefe = random.randint(10,30)*10
+            breite_o = breite_u
+        elif typ2 == 2:                                                           # Würfel'
+            lsg = ["Würfel", "Wuerfel", "Kubus"]                                                  
+            anmerkung = "Die Kanten sind gleich lang"
+            hoehe = tiefe = breite_u*2
+            breite_o = breite_u
+        elif typ2 == 4:                                                           # Pyramide
+            lsg = ["Pyramide"]
+            anmerkung = ""
+            hoehe = random.randint(10,15)*10
+            tiefe = breite_u*2
+            breite_o = 0
+        elif typ2 == 6:                                                           # Prisma
+            lsg = ["Prisma"]
+            anmerkung = ""
+            if jg != -1:                                                            # Das wird zur Berechnung aus Quader und Prismen aufgerufen
+                breite_o = 0
+                hoehe = random.randint(10,15)*10
+                tiefe = random.randint(10,25)*10
+                w = random.randint(-5,5)*10
+        elif typ2 == 7:                                                           # Pyramidenstumpf
+            lsg = ["Pyramidenstumpf"]
+            anmerkung = ""
+            hoehe = random.randint(10,15)*10
+            tiefe = breite_u*2
+            breite_o = breite_u - random.randint(15,20)
+            v = int((breite_u - breite_o)/8)
+            v = v*int(hoehe/65)
+        box_hoehe = hoehe + (tiefe*0.4) + 10
+        if jg == -1 and typ2 == 6:                                            # geändert
+            box_hoehe += 30
+        y0 = box_hoehe -5#-int((hoehe + int (tiefe*0.4))/2)
+        x0 = int((box_breite - tiefe*0.35)/2)
+        x11 = x0 - breite_u
+        x12 = x0 + breite_u
+        x13 = x0 + breite_o - v + w
+        x14 = x0 - breite_o + v + w
+        x21 = x11 + int(tiefe*0.35)
+        x22 = x12 + int(tiefe*0.35)  
+        x23 = x13 + int(tiefe*0.35)        
+        x24 = x14 + int(tiefe*0.35)
+        y11 = y12 = y0
+        y13 = y14 = y11 - hoehe
+        y21 = y22 = y11 - int(tiefe*0.35) 
+        y23 = y24 = y21 - hoehe
+        if typ2 == 6 and jg != -1:
+            x23 = x23 - 2*v 
+            x24 = x24 - 2*v  
+            y13 = y13 - int(2.7*v)
+            y14 = y14 - int(2.7*v)
+            y23 = y23 + int(2.7*v) 
+            y24 = y24 + int(2.7*v) 
+        if jg == -1 and typ2 == 6:
+            box_hoehe = hoehe + tiefe*0.6 + 50   # geändert
+        elif typ2 == 4:
+            x13 = x14 = x23 = x24 = x0 + int(tiefe*0.175)
+            y13 = y14 = y23 = y24 = y0 - hoehe - int(tiefe*0.35)                
+        parameter_2 = {'name': 'svg/geometrie.svg', 'box_hoehe': box_hoehe, 'box_breite': box_breite,                
+            'x11':x11, 'y11':y11,'x12':x12, 'y12':y12,'x13':x13, 'y13':y13,'x14':x14, 'y14':y14, 
+            'x21':x21, 'y21':y21,'x22':x22, 'y22':y22,'x23':x23, 'y23':y23,'x24':x24, 'y24':y24,                    
+        } 
+        if jg == -1:                                                                # Koordinaten für Beschriftung der Pfeile'
+            xmu = x11 + breite_u*0.75
+            xmo = x24 + breite_o*0.75
+            ym = y22 - hoehe*0.5
+            parameter_3 = {'xmu': xmu, 'xmo': xmo, 'ym': ym}
+            parameter_2.update(parameter_3)
+    elif typ2 == 3 or typ2 == 5 or typ2 == 8:                                   #3 Zylinder, 5 Kegel, 8 Kegelstumpf
+        parameter = {'object': 'zylinder'}
+        anmerkung = ""
+        x0 = int(box_breite/2) 
+        rx_u = random.randint(4,8)*10
+        ry_u = int(rx_u*0.3)
+        x1 = x0 - rx_u
+        x2 = x0 + rx_u
+        hoehe = random.randint(8,15)*10
+        box_hoehe = hoehe + 2*rx_u
+        y0 = box_hoehe -rx_u#- int(hoehe/2)-ry_u 
+        y1 = y0 
+        y2 = y1 - hoehe
+        if typ2 == 3:                                                             #Zylinder
+            lsg = ["Zylinder"]
+            rx_o = rx_u
+            ry_o = int(rx_o*0.3)
+            x4 = x1
+            x3 = x2
+        elif typ2 == 5:                                                           #Kegel
+            lsg = ["Kegel"] 
+            rx_o = 0
+            ry_o = 0
+            x3 = x0
+            x4 = x0
+        elif typ2 == 8:                                                           #Kegelstumpf
+            lsg = ["Kegelstumpf"] 
+            rx_o = rx_u - random.randint(20,30)
+            ry_o = int(rx_o*0.3)
+            x4 = x0 - rx_o
+            x3 = x0 + rx_o  
+        parameter_2 = {'name': 'svg/geometrie.svg', 'box_hoehe': box_hoehe, 'box_breite': box_breite,                 
+            'rx_u': rx_u, 'ry_u': ry_u, 'x1': x1,'x2': x2, 'y1': y1, 'rx_o': rx_o, 'ry_o': ry_o, 'x3': x3,'x4': x4, 'y2': y2, 'x0': x0 }    
+        anmerkung = anmerkung + "<br>Achte auf die korrekte Schreibweise."
+    lsg = lsg + ["indiv_0"]                                                 #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+    parameter.update(parameter_2)
+    return typ2,  hilfe_id, anmerkung, lsg, parameter    
+
+def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20, einteilung=2):
+    parameter = {'name': 'svg/koosys.svg',
+            'box_hoehe' : box_hoehe, 'box_breite' : box_breite,
+            'grid' : grid,
+            'einteilung': einteilung,
+            'y_null': y_null,'x_null': x_null,
+            }
+    if einteilung == -10:
+        x_ende = 0
+        y_ende = +2
+    elif einteilung == 1:
+        x_ende = -1
+        y_ende = -1
+    else:
+        x_ende = 0
+        y_ende = 0        
+    beschriftung = {
+        'xvalues': [
+            (x_null + n*grid*abs(einteilung), n) for n in range(-x_null//(grid)+2, (box_breite-x_null)//(grid*abs(einteilung))+x_ende)
+        ],
+        'yvalues': [
+            (y_null - n*grid*abs(einteilung), n) for n in range(-(box_hoehe-y_null)//(grid)+2, (y_null)//(grid*abs(einteilung))+y_ende)
+        ],
+        }                                  # 'n+1%2*n' anstelle von 'n' würde nur die geraden zahlen anzeigen
+    parameter.update(beschriftung)
+    return parameter
+
+def sub_punkt_pruefen(eingabe, loesung):
+    try:
+        if "(" not in eingabe or not ")" in eingabe:
+                return 0, "Du musst die Koordinaten in Klammern eingeben."
+        elif not (";" in eingabe or "|" in eingabe) :
+            return 0, "Du musst die Koordinaten mit ';' trennen."        
+        else:
+            eingabe=eingabe.replace("(","").replace(")","").replace(",",".")
+            if ";" in eingabe:
+                eingabe=eingabe.split(";")
+            elif "|" in eingabe:
+                eingabe=eingabe.split("|")
+            elif ":" in eingabe:
+                eingabe=eingabe.split(":")
+            zahl=(float(eingabe[0])*10+20)*1000
+            zahl = zahl + float(eingabe[1])*10
+            if zahl == float(loesung):
+                return 1, ""
+        return 0, "" 
+    except:
+        return 0, "Mit deiner Eingabe stimmt etwas nicht."
 
 def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
@@ -2116,6 +2658,155 @@ def kommazahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
                 lsg = format_zahl(erg,erg_stellen)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
+def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
+        rad_start = math.radians(startwinkel)
+        rad = math.radians(winkel)        
+        start_x = center_x - radius *  math.cos(rad_start)
+        start_y = center_y - radius *  math.sin(rad_start) 
+        end_x = center_x - radius *  math.cos(rad+rad_start) 
+        end_y = center_y - radius *  math.sin(rad+rad_start)
+        if winkel <=180:
+            largeArcFlag = 0
+        else:
+            largeArcFlag = 1 
+        if id == 2: 
+            koordinaten = dict( 
+                    start_x2 = start_x, start_y2 = start_y, end_x2 = end_x, end_y2 =  end_y, 
+                    largeArcFlag2 = largeArcFlag)
+        elif id == 3: 
+            koordinaten = dict( 
+                    start_x3 = start_x, start_y3 = start_y, end_x3 = end_x, end_y3 =  end_y, 
+                    largeArcFlag3 = largeArcFlag)
+        else: 
+            koordinaten = dict( 
+                    start_x = start_x, start_y = start_y, end_x = end_x, end_y =  end_y, 
+                    largeArcFlag = largeArcFlag)  
+        return koordinaten
+
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False, lire = 1):
+    rad_start = math.radians(startwinkel)
+    rad = math.radians(winkel)
+    if id == 0:
+        koordinaten = dict(center_x = center_x, center_y = center_y, )
+    elif id == 1:
+        koordinaten = dict(center_x_1 = center_x, center_y_1 = center_y, )
+    elif id == 2:
+        koordinaten = dict(center_x_2 = center_x, center_y_2 = center_y, )
+    elif id == 3:
+        koordinaten = dict(center_x_3 = center_x, center_y_3 = center_y, )
+    elif id == 4:
+        koordinaten = dict(center_x_4 = center_x, center_y_4 = center_y, )
+    elif id == 5:
+        koordinaten = dict(center_x_5 = center_x, center_y_5 = center_y, )
+
+    # das sind die Schenkel:
+    if schenkel > 0:
+        x1 = center_x - schenkel *  math.cos(rad_start)
+        y1 = center_y - schenkel *  math.sin(rad_start) 
+        x2 = center_x - schenkel *  math.cos(rad+rad_start) 
+        y2 = center_y - schenkel *  math.sin(rad+rad_start)
+
+        if scheitel == True:
+            x3 = center_x + schenkel *  math.cos(rad_start)
+            y3 = center_y + schenkel *  math.sin(rad_start) 
+            x4 = center_x + schenkel *  math.cos(rad+rad_start) 
+            y4 = center_y + schenkel *  math.sin(rad+rad_start)
+            if id == 0:
+                schenkel_koo = dict(schenkel_1_x = x3, schenkel_1_y = y3, schenkel_2_x = x4, schenkel_2_y = y4) 
+            elif id == 1:
+                schenkel_koo = dict(schenkel_1_x_1 = x3, schenkel_1_y_1 = y3, schenkel_2_x_1 = x4, schenkel_2_y_1 = y4) 
+            elif id == 2:
+                schenkel_koo = dict(schenkel_1_x_2 = x3, schenkel_1_y_2 = y3, schenkel_2_x_2 = x4, schenkel_2_y_2 = y4) 
+            elif id == 3:
+                schenkel_koo = dict(schenkel_1_x_3 = x3, schenkel_1_y_3 = y3, schenkel_2_x_3 = x4, schenkel_2_y_3 = y4)             
+            elif id == 4:
+                schenkel_koo = dict(schenkel_1_x_4 = x3, schenkel_1_y_4 = y3, schenkel_2_x_4 = x4, schenkel_2_y_4 = y4) 
+            elif id == 5:
+                schenkel_koo = dict(schenkel_1_x_5 = x3, schenkel_1_y_5 = y3, schenkel_2_x_5 = x4, schenkel_2_y_5 = y4) 
+        else:
+            if id == 0:
+                schenkel_koo = dict(schenkel_1_x = x1, schenkel_1_y = y1, schenkel_2_x = x2, schenkel_2_y = y2)
+            elif id == 1:
+                schenkel_koo = dict(schenkel_1_x_1 = x1, schenkel_1_y_1 = y1, schenkel_2_x_1 = x2, schenkel_2_y_1 = y2) 
+            elif id == 2:
+                schenkel_koo = dict(schenkel_1_x_2 = x1, schenkel_1_y_2 = y1, schenkel_2_x_2 = x2, schenkel_2_y_2 = y2) 
+            elif id == 3:
+                schenkel_koo = dict(schenkel_1_x_3 = x1, schenkel_1_y_3 = y1, schenkel_2_x_3 = x2, schenkel_2_y_3 = y2) 
+            elif id == 4:
+                schenkel_koo = dict(schenkel_1_x_4 = x1, schenkel_1_y_4 = y1, schenkel_2_x_4 = x2, schenkel_2_y_4 = y2) 
+            elif id == 5:
+                schenkel_koo = dict(schenkel_1_x_5 = x1, schenkel_1_y_5 = y1, schenkel_2_x_5 = x2, schenkel_2_y_5 = y2)      
+        koordinaten.update(schenkel_koo)  
+    # das ist der Bogen mit Text:                
+    if color:
+        start_x = center_x - radius *  math.cos(rad_start)
+        start_y = center_y - radius *  math.sin(rad_start) 
+        end_x = center_x - radius *  math.cos(rad+rad_start) 
+        end_y = center_y - radius *  math.sin(rad+rad_start)
+        if winkel <=180:
+            largeArcFlag = 0
+        else:
+            largeArcFlag = 1
+        text_x = center_x - radius*3/4 *  math.cos(rad/2+rad_start)
+        text_y = center_y - radius/2 *  math.sin(rad/2+rad_start) 
+        if id == 0:
+            bogen_koo = dict(bogen_radius = radius, sweep_flag = 1, largeArcFlag = largeArcFlag, 
+                start_bogen_x = start_x, start_bogen_y = start_y, end_bogen_x = end_x, end_bogen_y =  end_y,
+                text_x = text_x, text_y = text_y, color = color, symbol = symbol, sweepFlag = lire)
+        if id == 1:
+            bogen_koo = dict(bogen_radius_1 = radius, sweep_flag_1 = 1, largeArcFlag_1 = largeArcFlag, 
+                start_bogen_x_1 = start_x, start_bogen_y_1 = start_y, end_bogen_x_1 = end_x, end_bogen_y_1 =  end_y,
+                text_x_1 = text_x, text_y_1 = text_y, color_1 = color, symbol_1 = symbol,)
+        if id == 2:
+            bogen_koo = dict(bogen_radius_2 = radius, sweep_flag_2 = 1, largeArcFlag_2 = largeArcFlag, 
+                start_bogen_x_2 = start_x, start_bogen_y_2 = start_y, end_bogen_x_2 = end_x, end_bogen_y_2 =  end_y,
+                text_x_2 = text_x, text_y_2 = text_y, color_2 = color, symbol_2 = symbol,)
+        if id == 3:
+            bogen_koo = dict(bogen_radius_3 = radius, sweep_flag_3 = 1, largeArcFlag_3 = largeArcFlag, 
+                start_bogen_x_3 = start_x, start_bogen_y_3 = start_y, end_bogen_x_3 = end_x, end_bogen_y_3 =  end_y,
+                text_x_3 = text_x, text_y_3 = text_y, color_3 = color, symbol_3 = symbol,)
+        if id == 4:
+            bogen_koo = dict(bogen_radius_4 = radius, sweep_flag_4 = 1, largeArcFlag_4 = largeArcFlag, 
+                start_bogen_x_4 = start_x, start_bogen_y_4 = start_y, end_bogen_x_4 = end_x, end_bogen_y_4 =  end_y,
+                text_x_4 = text_x, text_y_4 = text_y, color_4 = color, symbol_4 = symbol,)
+        if id == 5:
+            bogen_koo = dict(bogen_radius_5 = radius, sweep_flag_5 = 1, largeArcFlag_5 = largeArcFlag, 
+                start_bogen_x_5 = start_x, start_bogen_y_5 = start_y, end_bogen_x_5 = end_x, end_bogen_y_5 =  end_y,
+                text_x_5 = text_x, text_y_5 = text_y, color_5 = color, symbol_5 = symbol,)
+        koordinaten.update(bogen_koo) 
+    return koordinaten
+
+def linien_koordinaten(dreh, startwinkel, id = 21):
+        schieb_x = math.tan(math.radians(dreh))*50
+        if startwinkel in [0,180]:
+            dreh = -dreh
+            schieb_x = -schieb_x
+        if id == 21:                                                    # Stufenwinkel oben rechts
+            koordinaten = dict(schieb_bx = 150+schieb_x, schieb_by = 0)
+        elif id == 31:                                                  # Stufenwinkel unten rechts
+            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
+        elif id == 41:                                                  # Stufenwinkel unten links
+            koordinaten = dict(schieb_bx = -schieb_x, schieb_by = 100)
+        koordinaten1 = dict(dreh = dreh, schieb_ox = schieb_x)
+        koordinaten.update(koordinaten1)  
+        return koordinaten
+
+def viereck(a,y_schieb,alfa,beta,delta=0 ):
+    h = 100
+    delta_1 = delta -90
+    r = a * math.tan(math.radians(delta_1))
+    p = h/math.tan(math.radians(alfa))    
+    q = (h+r)/math.tan(math.radians(beta))
+    ax = (400 - a - p - q)/2    
+    dx = ax + p
+    bx = ax + a + p + q
+    cx = ax + a + p
+    ay = by = h + r +y_schieb
+    dy = y_schieb + r
+    cy = y_schieb    
+    koordinaten = dict(ax=ax, ay=ay, bx=bx, by=by, cx=cx, cy=cy, dx=dx, dy=dy)
+    return koordinaten
+
 def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 2
@@ -2597,6 +3288,16 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0,
             parameter = {'name': 'normal'}
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def gemischte_zahl(zaehler, nenner):
+    if zaehler%nenner == 0:                                                             # ganze Zahl
+        term_a = term_b =str(zaehler // nenner) 
+    elif zaehler//nenner != 0:                                                          # gemischte Zahl
+        term_a = str(zaehler // nenner) + " " + str(Fraction(zaehler%nenner,nenner))
+        term_b = str(zaehler // nenner) + "+" + str(Fraction(zaehler%nenner,nenner))
+    else:                                                                               # echter Bruch
+        term_a = term_b  = str(Fraction(zaehler,nenner))
+    return term_a, term_b
+
 def kuerzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -2850,6 +3551,26 @@ def bruch_komma(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0
             bruch = Fraction(zaehler/nenner).limit_denominator()                    #gekürzter Bruch
             lsg = [str(bruch),"indiv_0"]
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+
+def zaehler_faerben(nenner, zaehler, farbe):
+    winkel = []
+    for n in range(nenner):
+        winkel.append((
+            int(n * 360 // nenner),
+            farbe if n < zaehler else None
+        ))
+    return winkel
+  
+def brueche_erzeugen(kgv_max):
+    nenner_1 = nenner_2 = 1
+    while lcm(nenner_1, nenner_2) >= kgv_max or nenner_1 == nenner_2:
+        nenner_1 = random.randint(2,10)
+        nenner_2 = random.randint(2,10)
+    zaehler_1 = random.randint(1, nenner_1-1)
+    zaehler_2 = random.randint(1, nenner_2-1)
+    bruch_1 = Fraction(zaehler_1/nenner_1).limit_denominator()
+    bruch_2 = Fraction(zaehler_2/nenner_2).limit_denominator()
+    return bruch_1, bruch_2
 
 def bruchrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -3924,6 +4645,10 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ
             lsg.append("indiv_2")                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def vorzeichen_zahl(wert, stellen=2, trailing_zeros=True):
+    text = f"{wert:+.{stellen}f}".replace(".", ",")
+    return text.rstrip(",0") if not trailing_zeros and "," in text else text
+
 def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -4046,6 +4771,157 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
         text = "Berechne:<br>" +text
         lsg = [str(erg).replace(".",",")] 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, {'name':'normal'}
+
+def termteil(startbuchstabe, bis, stufe, positiv = False):
+    buchstaben_liste = ["a","b","c","","x","y", "z", "", "u", "v","w",""]
+    koeffizient = 0
+    while koeffizient == 0:
+        if stufe%2 == 1:
+            if positiv:
+                koeffizient = random.randint(1,3)
+            else:
+                koeffizient = random.randint(-4,5)
+        else:
+            if positiv:
+                koeffizient = random.randint(1,3)                     
+            else:
+                koeffizient = random.randint(-2,5)                     
+    naechster_buchstabe = random.randint(0,bis)
+    index = startbuchstabe+naechster_buchstabe
+    buchstabe = buchstaben_liste[index]
+    term = "{}{}".format(koeffizient, buchstabe )
+    if buchstabe != "":
+        term = term.replace("1","")
+    return term, koeffizient, buchstabe, naechster_buchstabe
+
+def term_bereinigen(term, typ):
+    rueckmeldung = ""
+    nicht_erlaubt = []
+    erlaubt = ['a','b','c','x','y','z','u','v','w','1', '2','3','4','5','6','7','8','9','0','+','-','*','^','²','³','(',')']
+    if typ == 4:
+        erlaubt = erlaubt[:25]
+    elif typ == 2:
+        erlaubt = erlaubt[:22]
+    for e in erlaubt[:8]:
+        if e+e in term :
+            rueckmeldung = 'Anstelle von "{}" schreibt man "{}²".<br>'.format(e+e,e)
+    for t in term:
+        if t not in erlaubt:
+            nicht_erlaubt.append("'"+t+"'")
+    if len(nicht_erlaubt) == 1:
+        falsch = ",".join(nicht_erlaubt)
+        rueckmeldung += 'Das Zeichen {} gehört nicht in den Term.'.format(falsch)
+    if len(nicht_erlaubt) > 1:
+        falsch = " und ".join(nicht_erlaubt)
+        rueckmeldung += ' Die Zeichen {} gehören nicht in den Term.'.format(falsch)    
+        return ("", rueckmeldung)
+    # if "1^2" in term or "1²" in term:
+    #     return 0, "1² = 1"
+    term = term.replace("+", " +").replace("-"," -").replace("*","")
+    teile = term.split(' ')
+    n = 0
+    for t in teile:
+        if (re.search(r'[\d]²',t)):
+            return 0, "{} musst du ausrechnen.".format(t)
+        if not (re.search(r'1[\d]',t)) and (re.search(r'1[\D]',t)) and "1" and not "1)" in t:
+            teile[n] = teile[n].replace("1","")
+            t = t.replace("1","")
+            rueckmeldung += '<br>Die "1" lässt man hier weg und schreibt nur "{}"<br>'.format(t)
+        n +=1
+    term = "".join(teile)
+    if typ == 6:
+        if "(" not in term:
+            return 0, "Wo ist die Klammer?"
+        try:
+            teile = term.split("(")
+            klammer = teile[1]                                          # selektiert die klammer
+            klammer = klammer.replace("+", " +").replace("-"," -").replace(")","")
+            klammer = klammer.strip()
+            teile = klammer.split(' ')                                  # teilt den Klammerinhalt
+            for e in erlaubt[:9]:
+                if e in teile[0] and e in teile[1]:
+                    return 0,  '"{}" musst du auch noch ausklammern.'.format(e)
+                else:
+                    teile[0] = teile[0].replace(e,"")
+                    teile[1] = teile[1].replace(e,"")
+            for e in erlaubt[19:]:
+                teile[0] = teile[0].replace(e,"")
+                teile[1] = teile[1].replace(e,"")
+            try:
+                zahl1 = (int(teile[0]))
+                zahl2 = (int(teile[1])) 
+                if gcd(zahl1,zahl2) > 1:
+                        return 0,  'Du musst noch den ggT aus {} und {} ausklammern.'.format(zahl1,zahl2)
+            except:
+                pass
+        except:
+            pass
+    term = term.replace(" ","")
+    if term[:1] == "+":
+        term = term[1:]
+    return(term, rueckmeldung)
+
+def termwert(term):
+    rueckmeldung = ""
+    buchstaben_liste=['a', 'b', 'c', 'x', 'y', 'z', 'u', 'v', 'w']
+    term = term.replace("*","").replace("(", "*(")
+    term = term.replace("²", "^2")
+    for b in buchstaben_liste:
+        term = term.replace(b+b, b+"^2")
+    for s in buchstaben_liste:
+        term = term.replace("-"+s, "-1"+s)
+        term = term.replace("+"+s, "+1"+s)
+        term = term.replace(s,"*"+str(ord(s)))
+    if term[:1] == "*":
+        term = term[1:]
+    term = term.replace("(*","(")
+    parser = Parser()
+    try:
+        wert = parser.parse(term).evaluate({})
+    except:
+        rueckmeldung = "Den Term, den du eingegeben hast, kann ich nicht berechnen."
+        wert = 0
+    return(wert, rueckmeldung)
+
+def sortieren(zahl,buchstaben):
+    erlaubt = ['a','b','c','x','y','z','u','v','w']
+    buchstaben.sort()
+    buchstaben = "".join(buchstaben)
+    for e in erlaubt:
+        if e+e in buchstaben:
+            buchstaben = buchstaben.replace(e+e,e+"²")
+    term = "{:+d}{}".format(zahl,buchstaben)
+    if abs(zahl) == 1 and buchstaben != "":
+        term = term.replace("1","")
+    return term
+
+def sub_wertetabelle(parameter,stufe):
+    zahlen = [0,1,2,-1,0.5]
+    zahlen.append(random.randint(-2,2))                                            # nur für das Duell
+    lsg = [""]
+    absolut = koeffizient = 0
+    while absolut == 0:
+        absolut = random.randint(-4,4)
+    while koeffizient == 0:
+        if stufe%2 == 1:
+            koeffizient = random.randint(-4,4)
+        else:
+            koeffizient = random.randint(1,5)
+    term = "{}x {:+d}".format(str(koeffizient).replace("1",""), absolut)
+    x_werte = {}
+    y_werte = {}
+    y_farbe = {}
+    lsg = []
+    for n in range (0,6):
+        x_werte["x" + str(n)] = zahlen[n]
+        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+        #y_farbe["color" + str(n)] = "leer"
+        lsg.append(str(zahlen[n]*koeffizient+absolut))
+    lsg = [lsg]
+    parameter.update(x_werte)
+    parameter.update(y_werte)
+    parameter.update(y_farbe)
+    return parameter, term, koeffizient, absolut, lsg
 
 def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -5171,6 +6047,39 @@ def wahrscheinlichkeit(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, 
             lsg.append("indiv_0")
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
  
+def sub_funktionsgleichung(typ2):
+    if typ2 == 1:                               # nur ganze Zahlen
+        basis = 1
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-2,3)
+        str_steigung = str(steigung)   
+    elif typ2 == 2:                             
+        absolut_max = 4
+        typ3 = random.randint(1,2)
+        if typ3 == 1:                           # Steigung als Bruch
+            basis = 3
+            steigung = 2/3
+            str_steigung = "2/3"
+        else:                                   # Kommazahlen ( ,5)
+            basis = 4
+            steigung = 3/4
+            str_steigung = "3/4"
+    else:
+        basis = 1                       # die Grundlinie des Steigungsdreiecks
+        absolut_max = 6
+        steigung = 0
+        while steigung == 0:
+            steigung = random.randint(-4,6)/2
+        str_steigung = str(steigung)
+    absolut = random.randint(-4,absolut_max)/2
+    if absolut == 0:
+        gleichung = "{}x".format(str_steigung).replace(".",",").replace(",0","").replace("1x","x")
+    else:
+        gleichung = "{}x{:+1.1f}".format(str_steigung, absolut).replace(".",",").replace(",0","").replace("1x","x")
+    return gleichung, steigung, absolut, basis 
+
 def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -5805,6 +6714,104 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, ty
                 hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
                 hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+    
+def sub_hypo_oben(g, h, typ2 = 0, scale = 22, x0 = 80, t = 0):
+    rand = 25
+    h = h * scale
+    g = g * scale
+    t = t * scale
+    spiegeln = 0
+    if typ2 >= 1:
+        spiegeln = g
+    parameter = {'ax': x0,  'ay': h + rand, 'bx': x0 + g, 'by': h + rand, 'cx': x0 + spiegeln, 'cy': rand, 'mx': x0 + (g/2), 'my': h/2 + rand, }
+    if typ2 == 0:                               # Hypotenuse rechts oben
+        parameter['nx'] = x0 + g/2
+        parameter['ox'] = x0
+    elif typ2 == 1:                             # Hypotenuse links oben
+        parameter['nx'] = x0 + g
+        parameter['ox'] = x0 + g/2
+    elif typ2 == 2:                             # Häuschen mit Dach
+        parameter['axs'] = x0 + g *2
+        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
+        parameter['winkel'] = -math.atan(h/g)*180/math.pi
+        parameter['dy'] = rand + h + t
+    elif typ2 == 3:                             # Trapez
+        parameter['bx'] = parameter['axs'] = x0 + g*2 + t
+        parameter['cx'] = x0 + g + t
+        parameter['dx'] = x0 + g
+        parameter['nx'] = x0 + g +t/2
+        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
+        parameter['winkel'] = -math.atan(h/g)*180/math.pi
+
+        parameter['dy'] = parameter['ay']
+
+    return parameter
+
+def sub_hypo_unten(x0, scale, q, p, h):
+    rand = 20
+    radius = 25
+    p = p * scale
+    q = q * scale
+    h = h * scale
+    c = p+q
+    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
+    #if punkt:
+    phi = math.atan(h/q)
+    punktwinkel = (phi-math.pi/4)
+    c_sx = q - radius * math.cos(phi)
+    c_sy = radius * math.sin(phi)
+    c_ex = q + radius * math.sin(phi)
+    c_ey = radius * math.cos(phi)
+    punkt_x = q + radius/2 * math.sin(punktwinkel)
+    punkt_y = radius/2 * math.cos(punktwinkel) 
+    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
+    parameter.update(rechter_winkel)
+    return parameter
+
+def sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h):
+    rand = 20
+    radius = 25
+    a, b, c, p, q, h = (x * scale for x in (a, b, c, p, q, h))
+    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
+    phi = math.atan(h/q)
+    punktwinkel = (phi-math.pi/4)
+    c_sx = q - radius * math.cos(phi)
+    c_sy = radius * math.sin(phi)
+    c_ex = q + radius * math.sin(phi)
+    c_ey = radius * math.cos(phi)
+    punkt_x = q + radius/2 * math.sin(punktwinkel)
+    punkt_y = radius/2 * math.cos(punktwinkel) 
+    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
+    parameter.update(rechter_winkel)
+    return parameter
+
+def sub_dreiecksseiten(q, h):
+    p = (h*h/q)
+    c = round(p+q)
+    a = round(math.sqrt(h**2+p**2))
+    b = round(math.sqrt(h**2+q**2))
+    p=round(p)
+    return a, b, c, p
+
+def sub_py_tripel(stufe):
+    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
+    if stufe%2 == 1:
+        typ2 = random.randint(0,7)
+    else:
+        typ2 = random.randint(0,4)
+    a = p_zahlen[typ2][1]
+    b = p_zahlen[typ2][2]
+    c = p_zahlen[typ2][0]
+    if c < 1:
+        einheit = "dm"
+    else:
+        einheit = "cm"
+    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
+    scale = 200/c
+    p = (a**2/c)
+    q = (b**2/c)
+    h = math.sqrt(p*q)
+    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
 
 def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -6495,6 +7502,66 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, t
         # print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_kreissegment(scale, x0, Radius, winkel):
+    rand = 30
+    Radius = Radius * scale
+    parameter = {'Radius':Radius, 'winkel': winkel, 'x0': x0,  'y0': Radius + rand, 'mx': x0 +Radius/2, 
+                  's_ax': x0 + Radius,                   's_ay': Radius + rand, 
+                  's_ex': x0 + Radius *math.cos(winkel), 's_ey': Radius + rand - Radius*math.sin(winkel),
+                  'w_ax': x0 + 30,                       'w_ay': Radius + rand, 
+                  'w_ex': x0 + 30 *math.cos(winkel),     'w_ey': Radius + rand - 30*math.sin(winkel),
+                  'w_mx': x0 + 30 *math.cos(winkel/2),   'w_my': Radius + rand - 30*math.sin(winkel/2)
+                  }
+    return parameter
+
+def sub_kreisring(scale, Radius, radius,):
+    rand = 30
+    Radius = Radius * scale
+    radius = radius * scale
+    parameter = {'Radius': Radius, 'radius': radius, 'x': 200, 'y': 100,
+                 'xo': 200 + Radius*math.cos(0.5), 'yo': 100-Radius*math.sin(0.5),
+                 'xu': 200 + radius*math.cos(0.5), 'yu': 100+radius*math.sin(0.5)}
+    return parameter
+
+def sub_restflaeche(scale, x0, seite, radius,):
+    rand = 30
+    seite = seite * scale
+    radius = radius * scale
+    parameter = {'x0': x0, 'y0': rand, 'seite': seite, 'radius': radius, 
+                 'x': x0 + seite/2, 'y': rand + seite/2, 
+                 'xd_a': x0 +seite/2 - radius, 'xd_e': x0 +seite/2 + radius,
+                 'ym': rand + seite}
+    return parameter
+ 
+def sub_zylinder(radius, radius_o, hoehe, typ, fuellhoehe = 0):
+    masz1 = radius
+    masz2 = hoehe
+    if hoehe > radius:
+        scale = 100/hoehe
+    else:
+        scale = 100/radius
+    radius *= scale
+    radius_o *= scale
+    hoehe *= scale
+    hoehe_2 = hoehe - fuellhoehe * scale
+    rand = radius/2 + 100 - hoehe
+    parameter = {'typ': typ, 'ox': 200, 'oy': rand, 'ux': 200, 'uy': rand + hoehe,                      # Kreimittelpunkt oben / unten
+                'lox': 200 - radius_o, 'loy': rand,  'rox': 200 + radius_o, 'roy': rand,                # Bogen oben links / rechts
+                'lux': 200 - radius, 'luy': rand + hoehe, 'rux': 200 + radius, 'ruy': rand + hoehe,     # Bogen unten links / rechts
+                'roa': radius_o, 'rob': radius_o/3,                                                     # Durchmesser oben x / y
+                'rua': radius, 'rub': radius/3,                                                         # Durchmesser unten x / y
+                'my': rand + hoehe/2, 'mx': 200 + (radius+radius_o)/2, 'masz2': masz2}                  # mittlere Hoehe und Beschriftung
+    if typ in (17,18):
+        parameter['masz1'] = masz1*2
+    else:
+        parameter['masz1'] = masz1
+    if typ == 21:
+        fuellstand = {'rlmy': rand + hoehe_2,}                              # Bogen mitte links / rechts}
+        parameter['my'] = rand + hoehe - fuellhoehe/2 * scale
+        parameter.update(fuellstand)
+
+    return parameter
+
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -6897,6 +7964,66 @@ def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
         #hilfe = hilfe.format(*variable)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
+def sub_wertetabelle_quadfu(parameter,stufe):
+    zahlen = [0,1,2,-1]
+    zahlen.append(random.randint(-2,2))                                            # nur für das Duell
+    absolut = koeffizient = 0
+    while absolut == 0:
+        absolut = random.randint(-4,4)
+    koeffizient = random.randint(-4,4)                          # für quadratische Funktionen
+    term = "x²{:+d}x{:+d}".format(koeffizient, absolut).replace("+0x","").replace("+1x","+x").replace("-1x","-x")
+    x_werte = {}
+    y_werte = {}
+    #y_farbe = {}
+    lsg = []
+    for n in range (0,5):
+        x_werte["x" + str(n)] = zahlen[n]
+        y_werte["y" + str(n)] = zahlen[n]*koeffizient+absolut
+        lsg.append(str(zahlen[n]**2+zahlen[n]*koeffizient+absolut))
+    lsg = [lsg]
+    parameter.update(x_werte)
+    parameter.update(y_werte)
+    return parameter, term, koeffizient, absolut, lsg
+
+def sub_parabel(p,q):
+    box_hoehe = 360
+    box_breite = 400
+    grid = 20
+    y_null = box_hoehe-140          # y_Null  Lage der x-Achse
+    x_null = 140                    # x_Null  Lage der y-Achse
+    parameter = sub_koordinatensystem(x_null, y_null)
+    graph = {'object': 'quadfu', 'p':p*40, 'q':-q*40}
+    parameter.update(graph)
+    return parameter     
+
+def sub_2werte_pruefen(eingabe,wert,trenner = ";"):
+    # zahl=(x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+    try:
+        eingabe=eingabe.split(trenner)
+        x1 = float(eingabe[0].replace(",","."))
+        x2 = float(eingabe[1].replace(",","."))
+        if int(x1*10+20)*1000+int(x2*10) == wert:
+            return 1, ""
+        if int(x2*10+20)*1000+int(x1*10) == wert:
+            return 1, ""
+        else:    
+            return -1, "" 
+    except:
+        return 0, "Mit deiner Eingabe stimmt etwas nicht."
+
+def sub_normalform(p,q):
+    #normalform = "x²{:+2.1f}x{:+2.1f}".format(-2*p,p**2+q).replace(".0","").replace("1x","x").replace("-0x","").replace(".",",")
+    m = -2*p
+    n = p**2+q
+    normalform = "x²"
+    if m !=0:
+        normalform += f"{m:+.{2}f}".replace(".0", "").rstrip("0")
+        normalform +="x"
+    if n !=0:    
+        normalform += f"{n:+.{2}f}".replace(".0", "").rstrip("0")
+    normalform = normalform.replace(".", ",").replace("1x", "x").replace(".", ",")
+    return normalform
+
 def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
         typ_anf = 1
@@ -7205,6 +8332,132 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ
             parameter = sub_parabel(p,q)
 
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
+
+def sub_potenz():
+    basis = random.randint(0,13)
+    if basis in (1,2,10):
+        exponent = random.randint(0,5)
+    elif basis in (3,4,5):
+        exponent = random.randint(2,4)
+    else:
+        exponent= 2
+    return basis, exponent
+
+def sub_potenzterm_mal(typ2, summen = [0,]*5):
+    faktor = wert = 1
+    frage = lsg = ""
+    variablen = ["a","b","c","zahl","zahl"]
+    if typ2 != 3:                                        # nur Buchstaben
+        variablen = variablen[:3]
+    exponenten = [1,2,3]
+    if typ2 < 3:
+        von = 3
+        bis = 4
+    else:
+        von = 2
+        bis = 3
+    faktoren = random.randint(von,bis)
+    n = 0
+    while n < faktoren:
+        zuza = random.randint(0,len(variablen)-1)
+        variable = variablen[zuza]
+        if variable == "zahl":
+            zahl = random.randint(2,4)
+            faktor *= zahl
+            wert *=zahl
+            frage +=str(zahl) + "·"
+        else:
+            exponent = random.choice(exponenten)
+            if typ2 == 4:
+                exponent *= -1
+            summen[zuza] += exponent
+            if typ2 == 3:
+                koeff = 0
+                while koeff == 0:
+                    koeff = random.randint(-2,3)
+                faktor *= koeff
+            if abs(exponent) == 2:
+                str_exponent = "²"
+            elif abs(exponent) == 3:
+                str_exponent = "³"
+            else:
+                str_exponent = ""
+            if typ2 == 3:
+                teil="("+str(koeff)+variable+str_exponent+")·"
+                teil = teil.replace("(1","(").replace("(-1","(-")
+                if koeff > 0:
+                    teil = teil.replace("(","").replace(")","")
+                frage += teil
+            else:
+                frage +=variable+str_exponent+"·"
+        n += 1 
+    frage = frage[:-1]
+    n = 0
+    while n < len(summen):
+        if summen[n] > 0:
+            lsg += variablen[n] + "^" + str(summen[n]) + " "
+            wert *= (ord(variablen[n])-94)**summen[n]
+        n +=1
+    lsg = lsg.replace("^1","")#.replace("^2","²").replace("^3","³") 
+    if faktor != 1 and faktor != 0:
+        lsg = " " + str(faktor) + " " + lsg
+        lsg = lsg.replace("-1","-")
+    return frage, lsg, wert, faktor, summen
+
+def sub_potenzterm_plus():
+    if random.random() < 0.5:    
+        variablen = ["zahl","zahl","a ","a²","a³","b ","b²","b³","c ","c²","c³"]
+        abzgl = 94
+    else:
+        variablen = ["zahl","zahl","x ","x²","x³","y ","y²","y³","z ","z²","z³"]
+        abzgl = 117
+    summen = [0,]*11
+    frage = lsg = ""
+    wert = 0
+    n = 0
+    while frage.count(variablen[2])<2 and frage.count(variablen[3])<2 and frage.count(variablen[4])<2 and frage.count(variablen[5])<2 and frage.count(variablen[6])<2 and frage.count(variablen[7])<2 and frage.count(variablen[8])<2 and frage.count(variablen[9])<2 and frage.count(variablen[10])<2:
+        zuza = random.randint(0,10)
+        koeff = random.randint(1,3)
+        variable = variablen[zuza]
+        summen[zuza] += koeff
+        if variable == "zahl":
+            frage += str(koeff) + "+"
+            wert += koeff
+        else:
+            if "²" in variable:
+                zwischenwert = ((ord(variable[0]))-abzgl)**2
+            elif "³" in variable:
+                zwischenwert = ((ord(variable[0]))-abzgl)**3
+            else:
+                zwischenwert = (ord(variable[0]))-abzgl
+            wert += zwischenwert*koeff
+            if koeff == 1:
+                frage += variable + "+"
+            else:
+                frage += str(koeff) + variable + "+"
+        n += 1
+    summen[1] += summen[0]
+    n = 1
+    while n < len(summen):
+        if summen[n] >0:
+            if n == 1:
+                lsg += str(summen[n])+"+"
+            else:
+                lsg += str(summen[n]).replace("1","")+variablen[n]+"+"
+        n +=1
+    frage = frage[:-1]
+    frage = frage.replace(" +","+")
+    lsg = lsg.replace(" +", "+")
+    lsg = lsg[:-1]
+    return frage, lsg, wert
+
+def sub_zeichenzuviel(eingabe):
+    nachricht = ""
+    zeichen = ["*","·","^1"]
+    for z in zeichen:
+        if z in eingabe:
+            nachricht = "Lass das " + z + "weg"
+    return nachricht
 
 def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -7630,6 +8883,109 @@ def kategorien(req):
     Protokoll.objects.filter(eingabe = "").delete()
     kategorie = Kategorie.objects.all().order_by('zeile')
     return render(req, 'core/kategorien.html', {'kategorie': kategorie})
+
+def durchschnitt_aufgaben(profil, kategorie):
+    #if alle:
+    protokoll = Protokoll.objects.filter(profil=profil)
+    # else:
+    #     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+    zaehler = Zaehler.objects.filter(profil=profil)
+    temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
+    richtig_gesamt = temp if temp else  0
+    anzahl = zaehler.filter(sj = profil.sj, hj = profil.hj).count()                             # Anzahl der, in diesem Hj bearbeiteten Kategorien                                                       
+    zaehler = zaehler.filter(kategorie = kategorie).first()
+    fehler_ab = zaehler.fehler_ab
+    protokoll = protokoll.filter(kategorie = kategorie, start__gt=fehler_ab)
+    temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
+    fehler_kat = temp if temp else  0
+    richtig_gesamt = temp if temp else  0
+    if anzahl == 0:
+        durchschnitt = 0
+    else:
+        durchschnitt = int(richtig_gesamt/anzahl)
+    return durchschnitt, richtig_gesamt, fehler_kat
+
+def soll_berechnung(sj, hj, jg, aufgaben_pro_woche, startdatum):
+    d0 = date(sj//100+2000,7,24)
+    d1 = date.today()
+    delta = d1 - d0
+    aufg1hj = [1,1,1,1,2,3,4,5,6,7,8,8,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]           # weniger Aufgaben am Anfang und keine in den Ferien - maximal 1600 (siehe unten)
+    aufg2hj = [1,1,2,3,4,5,6,7,8,9,10,10,10,11,12,13,14,15,16,17,18,19,20,21,22,23, 24,25, 26]   
+    schulwoche = delta.days//7                                                                  # Schulwoche wird benötigt um Anzuzeigen welche Kategorien bearbeitet werden müssen
+    if schulwoche < 0: 
+        schulwoche = 0  
+    # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
+    # profil_gruppe = profil.gruppe
+    # if profil_gruppe:
+    #     startdatum = profil.gruppe.erstellt_am
+    # else:
+    #     startdatum = profil.user.date_joined
+    if hj == 2:
+        zweites_hj = (sj%100+2000)
+        d2 = date(zweites_hj,1,24)
+        delta2 = d1 - d2
+        woche_halbjahr =  delta2.days//7                                                        # wird benötigt um auszurechnen, wieviele Aufgaben gerechnet werden sollten
+        try:
+            spaeter = ((startdatum.date()-d2).days)//7
+        except:
+            spaeter = ((startdatum-d2).days)//7
+    else:
+        woche_halbjahr = schulwoche
+        try:
+            spaeter = (startdatum.date() - d0).days//7 
+        except:       
+            spaeter = (startdatum - d0).days//7
+    if spaeter >= woche_halbjahr:
+        spaeter = 0
+    if spaeter < 0:
+        spaeter = 0
+    if woche_halbjahr <= 0:
+        woche_halbjahr = 0
+        spaeter = 0
+    try:
+        if hj == 2:
+            soll_hj = aufg2hj[woche_halbjahr] - aufg2hj[spaeter]
+        else:
+            soll_hj = aufg1hj[woche_halbjahr] - aufg1hj[spaeter]
+    except:
+        soll_hj = 1
+    soll_hj = int(soll_hj * aufgaben_pro_woche)                                                 # ist die Anzahl der Aufgaben, die in dieser Woche gerechnet worden sein müssten (pro Schulwoche und Jahrgang des Users 10 - also z.B. 70 pro Woche im Jahrgang 7)
+    if soll_hj > 1600:
+        soll_hj = 1600
+    pflicht_kat = Kategorie.objects.filter(start_sw__lte= schulwoche, start_jg = jg) | Kategorie.objects.filter(start_jg__lt = jg)
+    pflicht_kat = pflicht_kat.count()
+    if pflicht_kat > 0:
+        soll_kat = int(soll_hj/pflicht_kat)
+    else:
+        soll_kat = 0                 
+    if soll_kat < 10:
+        soll_kat = 10
+    return schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat
+
+def bewertung_kat(soll_kat, richtig, falsch, lsg, abbr, stufe):
+    prozent_kat = 0 if soll_kat == 0 else richtig/soll_kat*100
+    if prozent_kat > 50:
+        prozent_kat = (prozent_kat+(richtig-falsch-lsg-abbr)/richtig*100)/2
+    if prozent_kat > 110:
+        prozent_kat = 110
+    if prozent_kat < 0:
+        prozent_kat = 0
+    prozent_farbe = quote_farbe(prozent_kat,100-prozent_kat,0.5)
+    return prozent_farbe, prozent_kat 
+
+def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):                            # Bewertung + Note für das Halbjahr
+    prozent_summe = int(prozent_summe/pflicht_kat)                              # addiert alle Prozentwerte und bildet den Durchschnitt (aus)
+    prozent_summe_farbe = quote_farbe(prozent_summe,100-prozent_summe,0.5)
+    note = 6 if prozent_summe < 25 else 7-((prozent_summe-stufe%2*5)//15)       # für E-Kurs 1,2,3,4,5 bei 95,80,65,50% für G-Kurs entsprechende Note mit 5% weniger
+    str_note = str(note)
+    plusminus = (prozent_summe+3-stufe%2*5)%15                                  # + oder - bei 3% mehr oder weniger
+    if plusminus in range (3,6):
+        str_note = str(note)+"-"
+    if plusminus in range (0,3):
+        str_note = str(note)+"+"
+    if note > 4 and keine5:
+         str_note = '-'
+    return prozent_summe_farbe, prozent_summe, str_note 
 
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
@@ -8059,16 +9415,9 @@ def optionen(req, slug):
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
     zaehler.optionen_text = optionen_text
-    ret = aufgaben(kategorie.zeile, jg=profil.jg, stufe=profil.stufe, optionen=zaehler.optionen_text)
-    # dritte Rückgabe optional
-    if len(ret) == 3:
-        typ_anf, typ_end, reihenfolge = ret
-    else:
-        typ_anf, typ_end = ret
-        reihenfolge = None
+    typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
-    zaehler.reihenfolge = reihenfolge
     zaehler.save()
     return redirect('main', slug)
 
@@ -8441,23 +9790,6 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            letztes_protokoll = (
-                Protokoll.objects.filter(profil=profil)
-                .order_by("-start")
-                .first()
-            )
-            if letztes_protokoll:
-                datum_letzte_aufgabe = letztes_protokoll.start.date()
-                if datum_letzte_aufgabe != get_today():
-                    # Nur wenn ein neuer Tag, check_hj aufrufen
-                    hj_result = check_hj(req)
-                    if isinstance(hj_result, HttpResponse):
-                        return hj_result
-            else:
-                if get_now().month in (1, 7):
-                    hj_result = check_hj(req)
-                    if isinstance(hj_result, HttpResponse):
-                        return hj_result
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
@@ -8472,17 +9804,22 @@ def main(req, slug):
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
                 zaehler.zeit_summe = 0
+                #durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
+                # if richtig_gesamt > 100 and fehler_kat < 1:
+                #     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
+                #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
+            #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
             if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
             if kategorie.slug == "sachaufgaben":
                 try:  
-                    profil.letzter_typ += 1
+                    profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
                 except:                                       
-                    profil.letzter_typ = random.randint(1,20)
+                    profil.voreinst.update({"sachaufg" : random.randint(1,20)})
                 profil.save()
-                typ_anf = profil.letzter_typ
+                typ_anf = profil.voreinst["sachaufg"]
             else:
                 typ_anf = zaehler.typ_anf            
             stufe = profil.stufe
@@ -8492,7 +9829,7 @@ def main(req, slug):
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
             if kategorie.slug == "sachaufgaben":
-                profil.letzter_typ = typ
+                profil.voreinst["sachaufg"] = typ
                 profil.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
@@ -8507,9 +9844,8 @@ def main(req, slug):
             #     pass            # sonst wird ein fehler geworfen da 
             # else:
             frage = frage.format(*variable)
-            #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurückgezählt. 
+            #Der "Abbrechen" Zähler wird bei jeder Aufgabe hochgesetzt und nur bei einer Eingabe wieder zurücgezählt. 
             #Falls mittels Browser reset eine neue Aufgabe erzeugt wird, wird dies als Abbrechen gewertet.
-            zaehler.letzter_typ = typ
             zaehler.abbr_zaehler += 1              
             zaehler.save() 
             bis_loeschen = kategorie.eof - zaehler.richtig_of
