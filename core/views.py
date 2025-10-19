@@ -20,7 +20,7 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
-from .services import soll_berechnung, bewertung_kat, bewertung_hj
+from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
 
 from .utilities import format_zahl, zahl_wort, MathFormatter, ggt, lcm, trenner 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
@@ -8059,9 +8059,16 @@ def optionen(req, slug):
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
     zaehler.optionen_text = optionen_text
-    typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
+    ret = aufgaben(kategorie.zeile, jg=profil.jg, stufe=profil.stufe, optionen=zaehler.optionen_text)
+    # dritte Rückgabe optional
+    if len(ret) == 3:
+        typ_anf, typ_end, reihenfolge = ret
+    else:
+        typ_anf, typ_end = ret
+        reihenfolge = None
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
+    zaehler.reihenfolge = reihenfolge
     zaehler.save()
     return redirect('main', slug)
 
@@ -8469,24 +8476,24 @@ def main(req, slug):
             if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-            #if kategorie.slug == "sachaufgaben":
-            #     try:  
-            #         profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
-            #     except:                                       
-            #         profil.voreinst.update({"sachaufg" : random.randint(1,20)})
-            #     profil.save()
-            #     typ_anf = profil.voreinst["sachaufg"]
-            # else:
-            typ_anf = zaehler.typ_anf            
+            if kategorie.slug == "sachaufgaben":
+                try:  
+                    profil.letzter_typ += 1
+                except:                                       
+                    profil.letzter_typ = random.randint(1,20)
+                profil.save()
+                typ_anf = profil.letzter_typ
+            else:
+                typ_anf = zaehler.typ_anf            
             stufe = profil.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, optionen = "") 
-            # if kategorie.slug == "sachaufgaben":
-            #     profil.voreinst["sachaufg"] = typ
-            #     profil.save()
+            if kategorie.slug == "sachaufgaben":
+                profil.letzter_typ = typ
+                profil.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
                 titel = kategorie.name
