@@ -614,7 +614,6 @@ def sub_py_tripel(stufe):
     h = math.sqrt(p*q)
     return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
 
-
 # Winkel
 def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
         rad_start = math.radians(startwinkel)
