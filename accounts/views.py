@@ -594,7 +594,6 @@ def gruppe_uebersicht(req, gruppe_id):
                         fehler.text += str(kat_name)+ ", "
                 else:
                     zaehler = zaehler.first()
-                    richtig_kat += zaehler.bonus
                     richtig_gesamt += richtig_kat
                     if wahl == "aktuelles Halbjahr":
                         falsch_kat = zaehler.fehler_zaehler
@@ -660,7 +659,6 @@ def gruppe_uebersicht(req, gruppe_id):
             richtig_sum = k['richtig_sum']
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
-    # bonus_summe = zaehler_gruppe.aggregate(sum=Sum('bonus'))['sum']
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
     context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'startdatum': Start_Datum, 'enddatum': End_Datum,
