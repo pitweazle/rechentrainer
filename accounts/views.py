@@ -15,34 +15,10 @@ from django.db.models import Max, Sum, Count, F, Q
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
 
-from .models import Schule, Lerngruppe,  Geloescht
+from .models import Profil, Schule, Lerngruppe, Geloescht
+from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
-
-def name_hj():
-    heute = datetime.today()
-    jahr = heute.year
-    sj = jahr%100*100+jahr%100+1
-    if heute.month in range(1,8):
-        sj -= 101
-    if heute.month in range(2,8):    
-        hj = 2
-    else:
-        hj = 1
-    return sj, hj           
-
-def name_next_hj():
-    heute = datetime.today()
-    jahr = heute.year
-    sj = jahr%100*100+jahr%100+1
-    if heute.month == 1:
-        hj = 2
-        sj -=101
-    else:
-        hj = 1
-    if heute.month > 7:
-        hj = 2
-    return sj, hj      
 
 # Dies ist die Startseite:
 def index(req):
@@ -64,25 +40,6 @@ def stufen(req):
     return render(req, 'lehrer/stufen.html', context={'titel': "Was bedeuten die Stufen?",})
 
 # registrieren und anmelden:
-def stufe_aus_jg(jg, kurs="E"):
-    stufe = 0
-    if kurs == "i":
-        stufe = 0
-    else: 
-        if jg < 5:
-            stufe = 1
-        else:
-            if jg > 11:
-                jg = 11
-                kurs = "Y"
-            stufe_liste = [2,4,12,20,26,32,50]
-            if jg > 11:
-                jg = 10
-                kurs = "Y"
-            stufe = stufe_liste[jg-5] 
-            if kurs in ["Y","R","E","B"]:
-                stufe +=1
-    return stufe
 
 def registrieren(req):
     reg_form = Register_Form()
@@ -138,9 +95,17 @@ def anmelden(req):
             cookie_loeschen = req.POST.get('cookie_loeschen') 
             if cookie_loeschen == 'on':
                 req.session.set_expiry(0)
+            # if user is not None:
+            #     login(req, user)
+            #     return hj_pruefen(req)
             if user is not None:
                 login(req, user)
-                return hj_pruefen(req)
+                # Halbjahr-Check wie in core/main
+                result = check_hj(req)
+                if isinstance(result, HttpResponse):
+                    return result
+                return redirect('uebersicht')
+
         titel = "Username und/oder Passwort stimmen nicht"
     form = Login_Form()
     context = {'form' : form, 'titel': titel} 
@@ -163,83 +128,9 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
-def sub_note_anzeigen(profil):
-    if (profil.gruppe):
-        note_anzeigen = True if profil.gruppe.note_anzeigen else False
-    else:
-        note_anzeigen = False
-    return note_anzeigen
-
-def hj_pruefen(req):
-    if req.user.is_authenticated:
-        email = req.user.email
-        try:
-            profil = req.user.profil
-        except:
-            zeilen = []
-            doppelte_accounts = User.objects.filter(email=req.user.email, email__contains = "@")
-            for account in doppelte_accounts:
-                try:
-                    profil = Profil.objects.get(profil = account)
-                    gesamt = Protokoll.objects.filter(profil = profil)
-                    zeilen.append((account, profil, gesamt.count()))
-                except:
-                    zeilen.append((account, None, ""))
-            logout(req)
-            return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
-        heute = datetime.now()
-        # if not sub_note_anzeigen(profil):
-        #     sj, hj = name_hj()
-        #     print(sj,hj)
-        #     if profil.hj == hj and profil.sj == sj:
-        #         pass
-        #     else:
-        #         profil.hj = hj
-        #         profil.sj = sj
-        #         profil.save()
-        # else:
-        if heute.month == 1 or heute.month == 7 and sub_note_anzeigen(profil):  #Frage nach neuem Halbjahr
-            next_sj, next_hj = name_next_hj()
-            if profil.hj == next_hj and profil.sj == next_sj:                   # user arbeitet schon am nächsten Hj
-                return redirect('uebersicht') 
-            else:
-                sj, hj = name_hj()
-                if profil.hj == hj and profil.sj == sj:
-                    pass
-                else:                                                           # user arbeitet nicht im aktuellen Hj = schon ältere Anmeldung
-                    return redirect('wiederanmeldung')  
-                try:
-                    if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                        test = False
-                except:
-                    profil.voreinst["frage_hj"] = 0
-                    profil.voreinstt["no_hj"] = False
-                    profil.save()
-                if heute.day > profil.voreinst.setdefault("frage_hj", 0) and profil.voreinst.setdefault("no_hj", False) != True:
-                    if heute.month == 1:
-                        monat = "Juli"
-                        wechsel = "Februar"
-                    else:
-                        monat = "Januar"
-                        wechsel = "August"
-                    context = {'monat' : monat, 'wechsel': wechsel}
-                    return render(req, 'naechstes_halbjahr.html', context)
-            return redirect('uebersicht')  
-        else:                                                                   #Überprüfung, ob Halbjahr aktuell ist
-            sj, hj = name_hj()
-            if profil.hj == hj and profil.sj == sj:
-                pass  
-            else:                                                               #falls nicht
-                if sub_note_anzeigen(profil):
-                    return redirect('neues_halbjahr')
-                else:
-                    profil.hj = hj
-                    profil.sj = sj
-                    profil.save()
-                    halbjahr = sub_daten_loeschen(req)  
-        return redirect('uebersicht') 
-    else:
-        return redirect('anmelden')  
+# def uebersicht(request, profil_id):
+#     profil = get_object_or_404(Profil, id=profil_id)
+#     return render(request, "core/uebersicht.html", {"profil": profil})
 
 def naechstes_halbjahr(req):
     if req.method == 'POST':
@@ -247,21 +138,40 @@ def naechstes_halbjahr(req):
         keinefragen = req.POST.get('keinefrage') 
         profil = get_object_or_404(Profil, user = req.user)
         if neues_halbjahr.lower() == 'ja':
-            sj, hj = name_next_hj()
+            # Nächste Werte bestimmen
+            sj, hj = name_next_hj()          # gibt "kommendes" Schuljahr + Halbjahr zurück
+            war_hj = getattr(profil, "hj", None)  # bisheriges Halbjahr (falls gebraucht)
+
+            # Ist es ein NEUES SCHULJAHR? (typisch: vorher 2 -> jetzt 1)
+            ist_neues_schuljahr = (hj == 1)
+
+            # Jahrgang nur bei neuem Schuljahr erhöhen
+            if ist_neues_schuljahr:
+                profil.jg = (profil.jg or 0) + 1
+
+            # Profil aktualisieren
             profil.hj = hj
             profil.sj = sj
-            if hj == 1:
+            if ist_neues_schuljahr:
                 profil.schuljahr_ab = timezone.now()
             else:
                 profil.halbjahr_ab = timezone.now()
-            profil.save()
-            halbjahr = sub_daten_loeschen(req)
-            return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
+            profil.save()  # wichtig!
+
+            # Anzeige-Label festlegen (nicht dem Helper überlassen)
+            label = "Schuljahr" if ist_neues_schuljahr else "Halbjahr"
+
+            # Optional: vorhandene Daten aufräumen, aber Ausgabefelder gezielt setzen
+            info = sub_daten_loeschen(req) or {}
+            info.update({
+                "halbjahr": label,            # steuert "Ein neues {{ halbjahr }} hat begonnen"
+                "jahrgang": profil.jg,  # für evtl. Anzeige
+                "klasse": info.get("klasse"), # wenn du das hast/anzeigen willst
+            })
+
+            return render(req, "neues_halbjahr.html", context=info)
         if keinefragen == "on":
-            profil.voreinst["no_hj"] = True
-            profil.voreinst["frage_hj"] = 0
-        else:
-            profil.voreinst["frage_hj"] =  datetime.now().day
+            profil.keine_hj_frage = True
         profil.save()  
         heute = datetime.now()
         if heute.month == 1 or heute.month == 7: 
@@ -274,16 +184,13 @@ def naechstes_halbjahr(req):
     return redirect('index')
 
 def doch_neues_halbjahr(req):
-    profil = get_object_or_404(Profil, user = req.user)
+    profil = get_object_or_404(Profil, user=req.user)
     sj, hj = name_next_hj()
     profil.hj = hj
     profil.sj = sj
-    profil.save() 
-    if profil.hj == 2:
-        halbjahr = "Halbjahr"
-    else:
-        halbjahr = "Schuljahr" 
-    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})   
+    profil.save()
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_halbjahr.html', context)
 
 def neues_halbjahr(req):
     profil = get_object_or_404(Profil, user = req.user)
@@ -291,45 +198,17 @@ def neues_halbjahr(req):
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req)
-    return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_halbjahr.html', context)
 
 def wiederanmeldung(req):
-    profil = get_object_or_404(Profil, user = req.user)
+    profil = get_object_or_404(Profil, user=req.user)
     sj, hj = name_hj()
     profil.hj = hj
     profil.sj = sj
     profil.save()
-    halbjahr = sub_daten_loeschen(req, profil)    
-    return render(req, 'neues_schuljahr.html', context={'halbjahr': halbjahr, "jahrgang": profil.jg, "klasse": profil.klasse})
-
-def sub_daten_loeschen(req):
-    profil = get_object_or_404(Profil, user = req.user)
-    profil.voreinst["no_hj"] = False
-    profil.voreinst["frage_hj"] = 0
-    for zaehler in Zaehler.objects.filter(profil_id = profil.id): 
-        zaehler.fehler_zaehler = 0  
-        zaehler.lsg_zaehler = 0  
-        zaehler.hilfe_zaehler = 0  
-        zaehler.abbr_zaehler = 0 
-        zaehler.bonus = 0 
-        zaehler.save()
-    if profil.hj == 2:
-        halbjahr = "Halbjahr"
-        profil.halbjahr_ab = timezone.now()
-        profil.save()
-    else:
-        halbjahr = "Schuljahr"
-        profil.schuljahr_ab = timezone.now()
-        if profil.jg < 13:
-            if str(profil.jg) in profil.klasse:
-                profil.klasse = profil.klasse.replace(str(profil.jg), str(profil.jg+1),1)
-            profil.jg +=1
-            neue_stufe = stufe_aus_jg(profil.jg, profil.kurs)
-            if neue_stufe > profil.stufe:
-                profil.stufe = neue_stufe
-        profil.save()
-        return halbjahr
+    context = sub_daten_loeschen(req)
+    return render(req, 'neues_schuljahr.html', context)
 
 # für Schüler
 def profil(req):
@@ -588,18 +467,6 @@ def meine_gruppen(req):
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "meine Lerngruppen", 'super': super})
     else:
         return HttpResponse("Zugriff verweigert")
-
-def quote_farbe(richtig, falsch, ungenuegend=1/3):
-    try:
-        quote = falsch / (richtig + falsch)
-        if quote <= 0.1:
-            return "gruen"
-        elif quote <= ungenuegend:
-            return "gelb"
-        else:
-            return "rot"
-    except :
-        return None
 
 def protokoll_zeit_filter(protokoll, auswahl):
     sj, hj = name_hj()
@@ -1106,5 +973,4 @@ def reparatur(req):
     nachricht = str(n) + " Einträge geändert"
     return HttpResponse(nachricht) 
 
-from django.db.models import Sum
-from decimal import Decimal
+

@@ -158,7 +158,10 @@ class Zaehler(models.Model):
     hilfe_zaehler = models.SmallIntegerField(default=0) 
     lsg_zaehler = models.SmallIntegerField(default=0) 
     hinweis = models.CharField(max_length=100, blank=True)
-    bonus = models.SmallIntegerField(default=0)
+    #bonus = models.SmallIntegerField(default=0)
+
+    letzter_typ = models.SmallIntegerField(default=0)
+    reihenfolge = models.JSONField(null=True, blank=True, default=list)
 
     def __str__(self):
         return f"({self.id}, {self.profil}, {self.profil.user}, {self.kategorie}, {self.sj})/{self.hj})"
