@@ -5818,7 +5818,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             typ_end = 24
         if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
-        return typ_anf, typ_end
+        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
+        return typ_anf, typ_end, reihenfolge
     elif eingabe != "":
         if typ == 1:
             if not "*" in eingabe:
@@ -5875,8 +5876,11 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                         return -1, ""
         else:
             return -1, "" 
-    else:                                                                            
-        typ = random.randint(typ_anf, typ_end)
+    else: 
+        if reihenfolge:
+            typ = reihenfolge[aufgnr-1]
+        else:                                                                           
+            typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6002,7 +6006,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                     q = random.randint(5,7)
                     h = random.randint(4,5)
                     a, b, c, p = sub_dreiecksseiten(q, h)
-                    print("wert",a,p,a**2/q)
                     wert = a**2/p
                 parameter['p']= "p="+str(p)+"cm"
                 parameter['a']= "a="+str(a)+"cm"
@@ -6405,7 +6408,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 variable = "b"
                 parameter["a"] = str_a
                 wert = round(a,0)*math.tan(math.radians(round(winkel,0)))
-                lsg = [str_a + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_a, str_b + "*tan" + str_winkel, "indiv_0"]
+                lsg = [str_a + "tan" + str_winkel, wert, "tan" + str_winkel + "*" + str_a, str_a + "*tan" + str_winkel, "indiv_0"]
             hilfe_id = 230
             hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
         elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
@@ -6490,9 +6493,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             text = "Wie berechnet man die Seite {}?"
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
-        # print(lsg)
-        # print(hilfe.format(*variable))
-        # print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -7612,9 +7612,10 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             pass
         #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        if hilfe_id != 0:
-            hilfe = hilfe.format(*variable)
-            #print(hilfe)
+        # print(lsg)
+        #if hilfe_id != 0:
+            # print(hilfe.format(*variable))
+            # print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
 
 #********************************************************************************************************************************************************
@@ -8073,7 +8074,6 @@ def optionen(req, slug):
     else:
         typ_anf, typ_end = ret
         reihenfolge = None
-
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
     zaehler.reihenfolge = reihenfolge

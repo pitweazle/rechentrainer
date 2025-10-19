@@ -112,7 +112,7 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):               
     return prozent_summe_farbe, prozent_summe, str_note 
 import random
 
-def erstelle_reihenfolge(typ_anf: int, typ_end: int, length: int = 10, sort: bool = True):
+def erstelle_reihenfolge(typ_anf: int, typ_end: int, sort: bool = True, length: int = 10):
     typen = list(range(typ_anf, typ_end + 1))
     if not typen:
         return []
