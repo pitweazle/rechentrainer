@@ -128,9 +128,9 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
-def uebersicht(request, profil_id):
-    profil = get_object_or_404(Profil, id=profil_id)
-    return render(request, "accounts/uebersicht.html", {"profil": profil})
+# def uebersicht(request, profil_id):
+#     profil = get_object_or_404(Profil, id=profil_id)
+#     return render(request, "core/uebersicht.html", {"profil": profil})
 
 def naechstes_halbjahr(req):
     if req.method == 'POST':
@@ -138,16 +138,38 @@ def naechstes_halbjahr(req):
         keinefragen = req.POST.get('keinefrage') 
         profil = get_object_or_404(Profil, user = req.user)
         if neues_halbjahr.lower() == 'ja':
-            sj, hj = name_next_hj()
+            # Nächste Werte bestimmen
+            sj, hj = name_next_hj()          # gibt "kommendes" Schuljahr + Halbjahr zurück
+            war_hj = getattr(profil, "hj", None)  # bisheriges Halbjahr (falls gebraucht)
+
+            # Ist es ein NEUES SCHULJAHR? (typisch: vorher 2 -> jetzt 1)
+            ist_neues_schuljahr = (hj == 1)
+
+            # Jahrgang nur bei neuem Schuljahr erhöhen
+            if ist_neues_schuljahr:
+                profil.jg = (profil.jg or 0) + 1
+
+            # Profil aktualisieren
             profil.hj = hj
             profil.sj = sj
-            if hj == 1:
+            if ist_neues_schuljahr:
                 profil.schuljahr_ab = timezone.now()
             else:
                 profil.halbjahr_ab = timezone.now()
-            #profil.save()
-            halbjahr = sub_daten_loeschen(req)
-            return render(req, 'neues_halbjahr.html', context={'halbjahr': halbjahr})
+            profil.save()  # wichtig!
+
+            # Anzeige-Label festlegen (nicht dem Helper überlassen)
+            label = "Schuljahr" if ist_neues_schuljahr else "Halbjahr"
+
+            # Optional: vorhandene Daten aufräumen, aber Ausgabefelder gezielt setzen
+            info = sub_daten_loeschen(req) or {}
+            info.update({
+                "halbjahr": label,            # steuert "Ein neues {{ halbjahr }} hat begonnen"
+                "jahrgang": profil.jg,  # für evtl. Anzeige
+                "klasse": info.get("klasse"), # wenn du das hast/anzeigen willst
+            })
+
+            return render(req, "neues_halbjahr.html", context=info)
         if keinefragen == "on":
             profil.keine_hj_frage = True
         profil.save()  
