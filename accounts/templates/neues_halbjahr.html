@@ -1,13 +1,17 @@
-{% extends 'auswahl.html' %}  
+{% extends 'auswahl.html' %}
 {% block content %}
-    <body>
-        <h2>Ein neues {{halbjahr}} hat angefangen</h2>
-        <p>Deine Aufgaben werden immer nur für ein Schulhalbjahr gewertet. Wenn dein Lehrer/deine Lehrerin es so ausgewählt hat, werden dir auf der Übersichtseite zunächst immer nur die Aufgaben angezigt, die du im aktuellen Halbjahr gerechnet hast.<br></p>
-        <p>Du kannst dir aber jederzeit auch alle Aufgaben anzeigen lassen.</p>
-        {%if Halbjahr == "Schuljahr" %}
-            <p>Ich gebe mal davon aus, dass du versetzt wurdest und habe als neues Schuljahr '{{jahrgang}}' eingetragen und den Namen deiner Klasse in '{{klasse}}' geändert</p>
-            <p>Falls der Klassennamen so nicht stimmt, kannst du ihn unter 'Profil' selbst ändern. Falls das Schuljahr nicht stimmt, kann das nur die Lehrkraft deiner Lerngruppe machen - oder du musst dem Rechentrainer eine Mail schicken.</p>
-        {% endif %}
-        <a href="{% url 'index' %}">weiter</a>
-    </body>
+  <h2>Ein neues {{ halbjahr }} hat begonnen</h2>
+  <p>Deine Aufgaben zählen immer nur für ein Schulhalbjahr. In der Übersicht werden standardmäßig die Aufgaben aus dem aktuellen {{ halbjahr|lower }} angezeigt. Du kannst dir aber jederzeit auch alle Aufgaben anzeigen lassen.</p>
+  {% if halbjahr == "Schuljahr" %}
+    <p>Ich habe angenommen, dass du versetzt wurdest und habe folgendes gesetzt:</p>
+    <ul>
+      <li><b>Neuer Jahrgang:</b> {{ jahrgang }}</li>
+      <li><b>Klassenvorschlag:</b> {{ klasse }}</li>
+    </ul>
+    <p>Falls die Klassenbezeichnung so nicht stimmt, kannst du sie unter <b>Profil</b> selbst ändern.<br>
+       Den <b>Jahrgang</b> kann nur deine Lehrkraft ändern.</p>
+  {% else %}
+    <p>Es ist ein <b>Halbjahreswechsel</b>. Jahrgang und Klassenbezeichnung bleiben unverändert.</p>
+  {% endif %}
+  <p><a href="{% url 'index' %}">weiter</a></p>
 {% endblock %}

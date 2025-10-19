@@ -15,7 +15,7 @@ from django.db.models import Count, Sum
 
 from accounts.models import Profil, Lerngruppe
 from accounts.forms import Register_Form, Profil_Form, Login_Form 
-from accounts.views import stufe_aus_jg, name_hj
+from accounts.services import stufe_aus_jg, name_hj
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler 
 from core.forms import AufgabeFormZahl, AufgabeFormStr
