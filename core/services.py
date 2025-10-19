@@ -127,38 +127,6 @@ def erstelle_reihenfolge(typ_anf: int, typ_end: int, sort: bool = True, length: 
     # 🔹 leichte zuerst, falls sort=True
     if sort:
         reihenfolge.sort()
+    else:
+        random.shuffle(reihenfolge)
     return reihenfolge
-
-def sik_erstelle_reihenfolge(typ_anf: int, typ_end: int, length: int = 15, start_after=None):
-    """
-    Baut eine Sequenz von Typen aus [typ_anf..typ_end] mit:
-      - keinem direkten Duplikat,
-      - Start NICHT == start_after (falls >1 Typ),
-      - zyklischer Wiederholung bis 'length'.
-    """
-    # Normalisieren
-    if typ_anf > typ_end:
-        typ_anf, typ_end = typ_end, typ_anf
-
-    base = list(range(typ_anf, typ_end + 1))
-    if not base:
-        return []
-    if len(base) == 1:
-        return base * length  # nur ein Typ möglich
-
-    # So rotieren, dass der erste nicht start_after ist (wenn möglich)
-    if start_after in base:
-        i = (base.index(start_after) + 1) % len(base)
-        base = base[i:] + base[:i]
-
-    # Auf Länge bringen (einfach ganze Zyklen wiederholen)
-    reps = math.ceil(length / len(base))
-    seq = (base * reps)[:length]
-
-    # Sicherheitsnetz: falls durch externe Änderungen doch mal ein Doppel entsteht
-    for j in range(1, len(seq)):
-        if seq[j] == seq[j-1] and len(base) > 1:
-            # mit nächstem Element tauschen (zyklisch)
-            k = (j + 1) % len(seq)
-            seq[j], seq[k] = seq[k], seq[j]
-    return seq
