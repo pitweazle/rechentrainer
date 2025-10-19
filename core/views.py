@@ -5818,8 +5818,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             typ_end = 24
         if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
-        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end)
-        print(reihenfolge)
         return typ_anf, typ_end
     elif eingabe != "":
         if typ == 1:
