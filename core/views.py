@@ -36,10 +36,6 @@ from django.db.models import Sum, F,  Max
 from accounts.services import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-def format_zahl(wert, stellen=2, trailing_zeros=True):
-    text = f"{wert:.{stellen}f}".replace(".", ",")
-    return text.rstrip(",0") if not trailing_zeros and "," in text else text
-
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
         typ_anf = 1
@@ -2126,7 +2122,8 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
         typ_end = 5
         if "Parallele" in optionen or jg >= 7 or stufe > 7:
             typ_end = 7
-        return typ_anf, typ_end
+        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
+        return typ_anf, typ_end, reihenfolge
     elif eingabe != "":
         if typ in [1,2]:
             wert = int(lsg[0]) 
@@ -2141,7 +2138,10 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             return -1, ""
         return -1, ""
     else: 
-        typ = random.randint(typ_anf, typ_end)
+        if reihenfolge:
+            typ = reihenfolge[aufgnr-1]
+        else:                                                                           
+            typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Winkel" 
         text = ""
@@ -5809,104 +5809,6 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 hilfe="Du musst die {0} in eine möglichst große Quadratzahl und eine zweite Zahl zerlegen. Die zweite Zahl bleibt unter dem Wurzelzeichen, die Wurzel aus der Quadratzahl kommt vor das Wurzelzeichen.<br>"
                 hilfe += "Beispiel 12=2√3 weil 12=4·3 und √4=2 <br>(Die 2 kommt vor das Wurzelzeichen und die 3 bleibt unter dem Wurzelzeichen)."
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
-    
-def sub_hypo_oben(g, h, typ2 = 0, scale = 22, x0 = 80, t = 0):
-    rand = 25
-    h = h * scale
-    g = g * scale
-    t = t * scale
-    spiegeln = 0
-    if typ2 >= 1:
-        spiegeln = g
-    parameter = {'ax': x0,  'ay': h + rand, 'bx': x0 + g, 'by': h + rand, 'cx': x0 + spiegeln, 'cy': rand, 'mx': x0 + (g/2), 'my': h/2 + rand, }
-    if typ2 == 0:                               # Hypotenuse rechts oben
-        parameter['nx'] = x0 + g/2
-        parameter['ox'] = x0
-    elif typ2 == 1:                             # Hypotenuse links oben
-        parameter['nx'] = x0 + g
-        parameter['ox'] = x0 + g/2
-    elif typ2 == 2:                             # Häuschen mit Dach
-        parameter['axs'] = x0 + g *2
-        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
-        parameter['winkel'] = -math.atan(h/g)*180/math.pi
-        parameter['dy'] = rand + h + t
-    elif typ2 == 3:                             # Trapez
-        parameter['bx'] = parameter['axs'] = x0 + g*2 + t
-        parameter['cx'] = x0 + g + t
-        parameter['dx'] = x0 + g
-        parameter['nx'] = x0 + g +t/2
-        parameter['ex'] = x0 + math.sqrt(g**2+h**2)
-        parameter['winkel'] = -math.atan(h/g)*180/math.pi
-
-        parameter['dy'] = parameter['ay']
-
-    return parameter
-
-def sub_hypo_unten(x0, scale, q, p, h):
-    rand = 20
-    radius = 25
-    p = p * scale
-    q = q * scale
-    h = h * scale
-    c = p+q
-    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
-    #if punkt:
-    phi = math.atan(h/q)
-    punktwinkel = (phi-math.pi/4)
-    c_sx = q - radius * math.cos(phi)
-    c_sy = radius * math.sin(phi)
-    c_ex = q + radius * math.sin(phi)
-    c_ey = radius * math.cos(phi)
-    punkt_x = q + radius/2 * math.sin(punktwinkel)
-    punkt_y = radius/2 * math.cos(punktwinkel) 
-    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
-    parameter.update(rechter_winkel)
-    return parameter
-
-def sub_rechtwinklig_hypo_unten(x0, scale, a, b, c, p, q, h):
-    rand = 20
-    radius = 25
-    a, b, c, p, q, h = (x * scale for x in (a, b, c, p, q, h))
-    parameter = {'ax': x0, 'ay': h + rand, 'bx': x0 + c, 'by': h + rand, 'cx': x0 + q, 'cy': rand, 'mx': x0 + (c/2), 'my': h/2 + rand, 'dy': h*2 + rand}
-    phi = math.atan(h/q)
-    punktwinkel = (phi-math.pi/4)
-    c_sx = q - radius * math.cos(phi)
-    c_sy = radius * math.sin(phi)
-    c_ex = q + radius * math.sin(phi)
-    c_ey = radius * math.cos(phi)
-    punkt_x = q + radius/2 * math.sin(punktwinkel)
-    punkt_y = radius/2 * math.cos(punktwinkel) 
-    rechter_winkel = {'c_sx': c_sx + x0, 'c_sy': c_sy + rand, 'c_ex': c_ex + x0, 'c_ey': c_ey + rand, 'punkt_x': punkt_x + x0, 'punkt_y': punkt_y + rand}        
-    parameter.update(rechter_winkel)
-    return parameter
-
-def sub_dreiecksseiten(q, h):
-    p = (h*h/q)
-    c = round(p+q)
-    a = round(math.sqrt(h**2+p**2))
-    b = round(math.sqrt(h**2+q**2))
-    p=round(p)
-    return a, b, c, p
-
-def sub_py_tripel(stufe):
-    p_zahlen = [[5,4,3,1],[10,8,6,-1],[0.5,0.4,0.3,0.1],[5,3,4,1],[10,6,8,-1],[15,12,9,1],[2.5,2.0,1.5,0.1],[13,12,5,1]]
-    if stufe%2 == 1:
-        typ2 = random.randint(0,7)
-    else:
-        typ2 = random.randint(0,4)
-    a = p_zahlen[typ2][1]
-    b = p_zahlen[typ2][2]
-    c = p_zahlen[typ2][0]
-    if c < 1:
-        einheit = "dm"
-    else:
-        einheit = "cm"
-    str_a,str_b, str_c = (str(x).replace(".",",") for x in (a, b, c))
-    scale = 200/c
-    p = (a**2/c)
-    q = (b**2/c)
-    h = math.sqrt(p*q)
-    return a, b, c, str_a, str_b, str_c, h, p, q, scale, einheit, p_zahlen[typ2][3]
 
 def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                               
@@ -8265,14 +8167,12 @@ def optionen(req, slug):
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
     zaehler.optionen_text = optionen_text
-
     ret = aufgaben(
         kategorie.zeile,
         jg=profil.jg,
         stufe=profil.stufe,
         optionen=zaehler.optionen_text
     )
-
     # dritte Rückgabe optional
     if len(ret) == 3:
         typ_anf, typ_end, reihenfolge = ret
@@ -8281,11 +8181,8 @@ def optionen(req, slug):
         reihenfolge = None
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
+    zaehler.reihenfolge = reihenfolge
     zaehler.save()
-    # typ_anf, typ_end = aufgaben(kategorie.zeile, jg = profil.jg, stufe = profil.stufe, optionen = zaehler.optionen_text)
-    # zaehler.typ_anf = typ_anf
-    # zaehler.typ_end = typ_end
-    # zaehler.save()
     return redirect('main', slug)
 
 #Die 10 Aufgaben weden abgebrochen. Dies wird gezählt. Eigentlich wird bei der Erstellung jeweils dieser Zähler hochrechnet und nur wenn eine richtige oder falsche Eingabe erfolgt oder "Lösung anzeigen" 
@@ -8694,7 +8591,8 @@ def main(req, slug):
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
-            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, reihenfolge = zaehler.reihenfolge,optionen = "") 
+            print("Zähler", zaehler.reihenfolge)
+            typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, reihenfolge = zaehler.reihenfolge, optionen = "") 
             # if kategorie.slug == "sachaufgaben":
             #     profil.voreinst["sachaufg"] = typ
             #     profil.save()
