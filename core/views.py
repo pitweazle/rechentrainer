@@ -20,7 +20,7 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
-from .services import soll_berechnung, bewertung_kat, bewertung_hj
+from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
 
 from .utilities import format_zahl, zahl_wort, MathFormatter, ggt, lcm, trenner 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
@@ -30,7 +30,7 @@ from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_
 
 from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
 from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten, sub_py_tripel 
-from .geometrie import sub_segment, winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
+from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
 
 from django.db.models import Sum, F,  Max
 from accounts.views import quote_farbe
@@ -5818,6 +5818,8 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             typ_end = 24
         if jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
+        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end)
+        print(reihenfolge)
         return typ_anf, typ_end
     elif eingabe != "":
         if typ == 1:

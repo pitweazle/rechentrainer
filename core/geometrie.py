@@ -641,7 +641,7 @@ def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
                     largeArcFlag = largeArcFlag)  
         return koordinaten
 
-def winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
     rad_start = math.radians(startwinkel)
     rad = math.radians(winkel)
     if id == 0:
