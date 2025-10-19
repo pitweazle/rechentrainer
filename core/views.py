@@ -34,7 +34,7 @@ from .geometrie import sub_segment, winkel_koordinaten, sub_kreissegment, sub_kr
 
 from django.db.models import Sum, F,  Max
 from accounts.views import quote_farbe
-from accounts.services import get_today, check_hj, name_hj, name_next_hj, sub_note_anzeigen
+from accounts.services import get_today, get_now, check_hj, name_hj, name_next_hj, sub_note_anzeigen
 
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
