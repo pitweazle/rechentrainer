@@ -110,8 +110,26 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):               
     if note > 4 and keine5:
          str_note = '-'
     return prozent_summe_farbe, prozent_summe, str_note 
+import random
 
-def erstelle_reihenfolge(typ_anf: int, typ_end: int, length: int = 15, start_after=None):
+def erstelle_reihenfolge(typ_anf: int, typ_end: int, sort: bool = True, length: int = 10):
+    typen = list(range(typ_anf, typ_end + 1))
+    if not typen:
+        return []
+    anzahl_typen = len(typen)
+    # 🔹 mehr Typen als Aufgaben → zufällige Auswahl
+    if anzahl_typen > length:
+        reihenfolge = random.sample(typen, length)
+    # 🔹 weniger oder gleich viele Typen → wiederholen bis Länge erreicht
+    else:
+        reps = (length + anzahl_typen - 1) // anzahl_typen  # wie oft wiederholen
+        reihenfolge = (typen * reps)[:length]
+    # 🔹 leichte zuerst, falls sort=True
+    if sort:
+        reihenfolge.sort()
+    return reihenfolge
+
+def sik_erstelle_reihenfolge(typ_anf: int, typ_end: int, length: int = 15, start_after=None):
     """
     Baut eine Sequenz von Typen aus [typ_anf..typ_end] mit:
       - keinem direkten Duplikat,

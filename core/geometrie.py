@@ -640,7 +640,7 @@ def sub_segment(center_x, center_y, radius, winkel, id = 0, startwinkel = 90):
                     largeArcFlag = largeArcFlag)  
         return koordinaten
 
-def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False):
+def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, color = "None", symbol = "", schenkel = 0, scheitel = False, lire = 1):
     rad_start = math.radians(startwinkel)
     rad = math.radians(winkel)
     if id == 0:
@@ -709,7 +709,7 @@ def sub_winkel_koordinaten(id, center_x, center_y, radius, winkel, startwinkel, 
         if id == 0:
             bogen_koo = dict(bogen_radius = radius, sweep_flag = 1, largeArcFlag = largeArcFlag, 
                 start_bogen_x = start_x, start_bogen_y = start_y, end_bogen_x = end_x, end_bogen_y =  end_y,
-                text_x = text_x, text_y = text_y, color = color, symbol = symbol,)
+                text_x = text_x, text_y = text_y, color = color, symbol = symbol, sweepFlag = lire)
         if id == 1:
             bogen_koo = dict(bogen_radius_1 = radius, sweep_flag_1 = 1, largeArcFlag_1 = largeArcFlag, 
                 start_bogen_x_1 = start_x, start_bogen_y_1 = start_y, end_bogen_x_1 = end_x, end_bogen_y_1 =  end_y,
