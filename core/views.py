@@ -8591,7 +8591,6 @@ def main(req, slug):
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
-            print("Zähler", zaehler.reihenfolge)
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, reihenfolge = zaehler.reihenfolge, optionen = "") 
             # if kategorie.slug == "sachaufgaben":
             #     profil.voreinst["sachaufg"] = typ
