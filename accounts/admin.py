@@ -15,6 +15,7 @@ class LerngruppeAdmin(admin.ModelAdmin):
     list_filter=(
         ("lehrer", admin.RelatedOnlyFieldListFilter), 
     )
+    ordering = ('-id',)
 
 class ProfilAdmin(admin.ModelAdmin):
     list_filter=('gruppe',  )
