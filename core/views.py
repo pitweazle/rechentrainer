@@ -409,22 +409,28 @@ def sachaufgaben(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihen
 def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":                                                              #hier wird typ_anf und typ_end festgelegt u.u. nach Wahl unter 'Optionen'
         typ_anf = 1
-        if stufe >= 6 or jg >= 7 or "Kommazahlen" in optionen:
+        if stufe >= 20 or jg >= 8 or "negativen" in optionen:
+            typ_end = 12
+            typ_anf = 2
+        elif stufe >= 6 or jg >= 7 or "Kommazahlen" in optionen:
             typ_end = 9
+            typ_anf = 2
         elif stufe >= 10 or jg >= 7 or "Brüchen" in optionen:
             typ_end = 10
-        elif stufe >= 20 or jg >= 8 or "negativen" in optionen:
-            typ_end = 12
         else:
-            typ_end = 5        
-        return typ_anf, typ_end
+            typ_end = 5  
+        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
+        return typ_anf, typ_end, reihenfolge
     elif eingabe != "":
         if typ ==10 and not "/" in eingabe:
             return 0, "Du sollst den angezeigten Wert als Bruch eingeben."
         else:
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
-        typ = random.randint(typ_anf, typ_end+stufe%2)
+        if reihenfolge:
+            typ = reihenfolge[aufgnr-1]
+        else:
+            typ = random.randint(typ_anf, typ_end)
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -462,12 +468,14 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                zahl2 = random.randint(0,3)
                zahl2 = (20-zahl2)%10
                zahl1 = zahl1 + zahl2*10**n
+            if typ_end > 9 and random.random() < 0.3:
+                zahl1 *=-1
             if typ2 == 1:
                 text = "Wie heißt der Nachfolger von {}?" 
                 frage = "Nachfolger="
                 variable = [str(zahl1)]
                 erg = zahl1+1
-                lsg = str(zahl1+1)
+                lsg = [str(erg)]
                 hilfe_id = 1
             else:
                 if zahl1 < 1:
@@ -476,9 +484,9 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 frage = "Vorgänger="
                 variable = [str(zahl1)]
                 erg = zahl1-1
-                lsg = str(zahl1-1)
+                lsg = [str(erg)]
                 hilfe_id = 2
-        elif typ in (3,6,7,8):                                                       #kleiner größer gleich
+        elif typ in (3,6,11,12):                                                     #kleiner größer gleich
             titel = "Kleiner, größer oder gleich"
             zuza1 = random.randint(1,9)
             zuza2 = 1
@@ -495,7 +503,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 random.shuffle(zuza)
                 zahl2 = zuza[0] * 10**n + zahl2  
                 zahl2_str = str(zahl2)
-            if typ in [6,8]:                                      #erzeugt Kommazahlen
+            if typ in [6,12]:                                      #erzeugt Kommazahlen
                 komma = random.randint(0,2)
                 if komma > 0:
                     zahl1_str = str(zahl1)[:komma]+","+str(zahl1)[1:].rstrip("0")
@@ -507,14 +515,14 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 zahl2_str = zahl2_str.rstrip(",") 
                 zahl1=float(zahl1_str.replace(",", "."))
                 zahl2 = float(zahl2_str.replace(",", "."))
-            if typ in [7,8]:                                      #erzeugt negative Zahlen
+            if typ in [11,12]:                                      #erzeugt negative Zahlen
                 zahl1_str = "-" + str(zahl1_str)
                 zahl2_str = "-" + str(zahl2_str)
                 zahl1 = -zahl1
                 zahl2 = -zahl2
             pro_text = "{} ? {}"
             text = 'Kleiner, größer oder gleich?<br>' + pro_text 
-            frage = str(zahl1)
+            frage = str(zahl1).replace(".",",")
             einheit = str(zahl2)
             variable = [zahl1_str, zahl2_str]
             anm = "(Setze das entsprechende Zeichen ein)" 
@@ -528,15 +536,15 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             parameter = {'name':'normal'}                  
         else:                                                                        # 4+5 ganze zahlen, 9+12 Kommazahlen, 10 Brüche, 11+12 negative Zahlen
             titel = "Zahlenstrahl"
-            if typ != 10:
+            if typ != 8:
                 bruch = False
                 if typ == 4 and stufe%2 == 1:
                     eint = 20                       # 10 = 10er, 20 = 5er, 25 = 4er (für Brüche)
                 else:
                     eint = 10
-                exp = random.randint(1,4)
+                exp = random.randint(1,3)
                 z = 10**exp                         #Einteilung der Anzeige 0.1 1, 10, 100 ...
-                if typ > 10:
+                if typ > 8:
                     v = random.randint(3,7)*-1
                 else:
                     v = random.randint(0,8)         #ist die schieb des Nullpunktes
@@ -7579,7 +7587,8 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
         typ_end = 1
         if stufe >= 6 or jg >= 7 or "mit" in optionen:
             typ_end = 2
-        return typ_anf, typ_end
+        reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
+        return typ_anf, typ_end, reihenfolge
     #wenn in Lösungen 'indiv' steht und die eingegebene Lösung in "kontrolle" nicht als richtig bewertet wurde, kann die Lösung hier überprüft werden 
     elif eingabe != "":
         if typ == 1:
@@ -7598,7 +7607,10 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             return 0, "" 
     #hier wird letztendlich die Aufgabe erstellt:
     else:                                                                            
-        typ = random.randint(typ_anf, typ_end)  
+        if reihenfolge:
+            typ = reihenfolge[aufgnr-1]
+        else:                                                                           
+            typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Titel" 
         text = "default{}"
