@@ -534,9 +534,9 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             else:
                 lsg = [str(zahl1) + "=" +  str(zahl2), "="]
             parameter = {'name':'normal'}                  
-        else:                                                                        # 4+5 ganze zahlen, 9+12 Kommazahlen, 10 Brüche, 11+12 negative Zahlen
+        else:                                                                        # 4+5 ganze zahlen, 7+8+9 Kommazahlen, 10 Brüche, 11+12 negative Zahlen
             titel = "Zahlenstrahl"
-            if typ != 8:
+            if typ != 10:
                 bruch = False
                 if typ == 4 and stufe%2 == 1:
                     eint = 20                       # 10 = 10er, 20 = 5er, 25 = 4er (für Brüche)
