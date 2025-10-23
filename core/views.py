@@ -22,7 +22,7 @@ from .models import Profil, Auswahl
 
 from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
 
-from .utilities import format_zahl, zahl_wort, MathFormatter, ggt, lcm, trenner 
+from .utilities import format_zahl, zahlzustring, zahl_wort, MathFormatter, ggt, lcm, trenner 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
 from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
 from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
@@ -413,7 +413,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             typ_end = 12
             typ_anf = 2
         elif stufe >= 6 or jg >= 7 or "Kommazahlen" in optionen:
-            typ_end = 9
+            typ_end = 8
             typ_anf = 2
         elif stufe >= 10 or jg >= 7 or "Brüchen" in optionen:
             typ_end = 10
@@ -436,7 +436,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
         parameter = {'name':'normal'}
-        if typ == 1:                                                                 #Zahlen schreiben
+        if typ == 1:                                                                 # Zahlen schreiben
             titel = "Zahlen schreiben"
             exponent = random.randint(5,7+stufe%2)
             zahl1 = random.randint(10000,10**exponent)
@@ -460,7 +460,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             variable = [text_k]
             lsg = [trenner(zahl1)]
             erg=zahl1
-        elif typ == 2:                                                               #Vorgänger Nachfolger
+        elif typ == 2:                                                               # Vorgänger Nachfolger
             titel = "Vorgänger und Nachfolger"
             typ2 = random.randint(1,2)
             zahl3 = random.randint(2,3+stufe%2)
@@ -487,7 +487,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 erg = zahl1-1
                 lsg = [str(erg)]
                 hilfe_id = 2
-        elif typ in (3,6,11,12):                                                     #kleiner größer gleich 3,6 ganze Zahlen, 11,12 negative - 6 und 12 mit Komma
+        elif typ in (3,6,11,12):                                                     # kleiner größer gleich 3,6 ganze Zahlen, 11,12 negative - 6 und 12 mit Komma
             titel = "Kleiner, größer oder gleich"
             zuza1 = random.randint(1,9)
             zuza2 = 1
@@ -535,12 +535,18 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             else:
                 lsg = [str(zahl1) + "=" +  str(zahl2), "="]
             parameter = {'name':'normal'}                  
-        else:                                                                        # 4+5 ganze zahlen, 7 Kommazahlen, 8 Brüche, 9, 10 negative Zahlen
+        else:                                                                        # 4+5 ganze zahlen, 7+8+9 Kommazahlen, 10 Brüche, 9+10 negative Zahlen
             titel = "Zahlenstrahl"
-            if typ == 8:
+            bruch = False
+            rand = 0
+            eint = 10
+            text = "Auf welche Zahl zeigt der Pfeil{} ?"
+            variable = [""]               
+            frage = "Die Zahl heißt:"
+            if typ == 10:                                                            # Brüche
                 bruch = True
                 typ2 = random.randint(1,4)
-                anf = 0
+                rand = 0
                 z = 1
                 v = 0
                 text_v = 0
@@ -561,6 +567,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                     ganz = typ2
                 bruch = zaehler/nenner+ganz
                 zahl1 = bruch * 100
+                x = int(zahl1)+20
                 hilfe_id = 3
                 erg = None
                 ganz = int(bruch*100//100)
@@ -587,38 +594,76 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 frage = "Der Bruch heißt:"
                 variable = [""]
                 anm = "Schreibe als Bruch (7/9) oder als gemischte Zahl (1 2/7)"
-            else:
-                bruch = False
+            elif typ == 7:                                                           # Kommazahl x,y
+                z = 1                            # Einteilung der Anzeige hier 1
+                v = random.randint(0,15)         #ist die schieb des Nullpunktes
+                text_v = len(str(z))*-3          #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
+                if stufe%2 == 1 and random.random() > 0.5:
+                    zahl1 = 10
+                    while zahl1%10 == 0:
+                        zahl1 = random.randint(1,78)
+                    zahl1 = round(zahl1*5*10**-2,3)
+                else:
+                    zahl1 = 10
+                    while zahl1%10 == 0:
+                        zahl1 = random.randint(1,39)
+                    zahl1 = round(zahl1*10*10**-2,3)
+                x = zahl1*100+20
+                if zahl1*10%1 > 0:
+                    anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
+                    hilfe_id = 71
+                    hilfe = "Die gesuchte Zahl hat zwei Stellen hinter dem Komma (... und die letzte Stelle ist eine 5 :-))"
+                erg = (zahl1+v)
+                lsg = [zahlzustring(erg)]
+            elif typ in (8,9):                                                     # Kommazahlen
+                exp = random.randint(-1,1)
+                exp=0
+                z = 10**exp                         # Einteilung der Anzeige 0.1 1, 10, 100 ...
+                if typ > 9:                         # negative Zahlen
+                    v = random.randint(3,7)*-z
+                else:
+                    v = random.randint(0,8)         #ist die schieb des Nullpunktes
+                text_v = len(str(z))*-3             #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
+                #if stufe%2 == 1 and eint == 10 and z > 10:
+                zahl1 = round(random.randint(1,39)*10**(z-2),3)
+                # else:
+                #     zahl1 = random.randint(1,45)*10**(z-2)
+                x = zahl1*100+20
+        
+                if eint == 10 and zahl1%10 == 5:
+                    anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
+                print(zahl1,"v:",v,"z:",z, (zahl1+v))
+                erg = (zahl1+v)
+                lsg = [format_zahl(erg,1)]
+            else:                                                                  # Ganze Zahlen - 4+5 positiv, 9+10 negativ                                                                     
                 # eint sind die Unterteilungen: 10 = 10er, 20 = 5er, 25 = 4er (für Brüche)
                 if typ == 4 and stufe%2 == 1:       # für E-Kurs keine 10er Einteilung sondern 5er
                     eint = 20                       
-                else:
-                    eint = 10
                 exp = random.randint(1,3)
-                exp=1
                 z = 10**exp                         # Einteilung der Anzeige 0.1 1, 10, 100 ...
                 if typ > 8:                         # negative Zahlen
                     v = random.randint(3,7)*-1
                 else:
                     v = random.randint(0,8)         #ist die schieb des Nullpunktes
                 if typ_end == 5 and v == 0:         #ohne neg Zahlen bei 20 an, sonst bei 0
-                    anf = 20                             
+                    rand = 20                             
                 else:
-                    anf = 0
+                    rand = 0
                 text_v = len(str(z))*-3             #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
                 if stufe%2 == 1 and eint == 10 and z > 10:
                     zahl1 = random.randint(1,90)*5
                 else:
                     zahl1 = random.randint(1,45)*10
-                text = "Auf welche Zahl zeigt der Pfeil{} ?"
-                variable = [""]               
+                x = int(zahl1)+20
                 if eint == 10 and zahl1%10 == 5:
                     anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
-                frage = "Die Zahl heißt:"
                 erg = int((zahl1+v*100)*z/100)
                 lsg = [str(erg)]
-
-            parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': anf, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': int(zahl1)+20, 'bruch':bruch}
+            parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': rand, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': x, 'bruch':bruch}
+        print(lsg)
+        if hilfe_id != 0:
+            print(hilfe.format(*variable))
+            print(typ2, pro_text)
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anm, lsg, hilfe_id, erg, parameter 
 
 def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8231,6 +8276,7 @@ def loesung(req, zaehler_id, protokoll_id):
     zaehler = get_object_or_404(Zaehler, pk = zaehler_id)
     zaehler.richtig_of = 0 
     zaehler.lsg_zaehler += 1
+    zaehler.aufgnr +=1
     zaehler.save()
     protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
     protokoll.eingabe = protokoll.eingabe + " Lsg. "
