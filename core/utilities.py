@@ -11,6 +11,10 @@ def format_zahl(wert, stellen=2, trailing_zeros=True):
     text = f"{wert:.{stellen}f}".replace(".", ",")
     return text.rstrip(",0") if not trailing_zeros and "," in text else text
 
+def zahlzustring(zahl):
+    s = f"{zahl:.3f}".rstrip("0").rstrip(".")
+    return s.replace(".", ",")
+
 def zahl_wort(zahl):
     einer = ["", "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn", "zwanzig"]
     zehner = ["zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig"]
