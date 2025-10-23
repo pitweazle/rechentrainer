@@ -431,7 +431,6 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             typ = reihenfolge[aufgnr-1]
         else:
             typ = random.randint(typ_anf, typ_end)
-        typ=8
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -594,25 +593,27 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 frage = "Der Bruch heißt:"
                 variable = [""]
                 anm = "Schreibe als Bruch (7/9) oder als gemischte Zahl (1 2/7)"
-            elif typ == 7:                                                           # Kommazahl 1 Stelle: x,y
+            elif typ in (7,9):                                                       # Kommazahl 1 Stelle: x,y typ 9 = negativ
                 z = 1                            # Einteilung der Anzeige hier 1
                 v = random.randint(0,15)         #ist die schieb des Nullpunktes
                 text_v = len(str(z))*-3          #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
-                if stufe%2 == 1 and random.random() > 0.5:
+                if stufe%2 == 1 and typ ==7 and random.random() > 0.5:
                     zahl1 = 10
                     while zahl1%10 == 0:
                         zahl1 = random.randint(1,78)
                     zahl1 = round(zahl1*5*10**-2,3)
+                    if zahl1*10%1 > 0:
+                        anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
+                        hilfe_id = 71
+                        hilfe = "Die gesuchte Zahl hat zwei Stellen hinter dem Komma (... und die letzte Stelle ist eine 5 :-))"
                 else:
                     zahl1 = 10
                     while zahl1%10 == 0:
                         zahl1 = random.randint(1,39)
                     zahl1 = round(zahl1*10*10**-2,3)
+                if typ == 9:
+                    v *=-1
                 x = zahl1*100+20
-                if zahl1*10%1 > 0:
-                    anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
-                    hilfe_id = 71
-                    hilfe = "Die gesuchte Zahl hat zwei Stellen hinter dem Komma (... und die letzte Stelle ist eine 5 :-))"
                 erg = (zahl1+v)
                 lsg = [zahlzustring(erg)]
             elif typ == 8:                                                           # Kommazahl 2 Stelle: x,yz  
@@ -628,26 +629,6 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 erg = (zahl1 + v)
                 x = ((erg - v) / z) * Decimal('100') +  Decimal('20')  # erg = zahl1 + v
                 lsg = [zahlzustring(erg)]
-            elif typ == 9:                                                           # negative Kommazahlen
-                exp = random.randint(-1,1)
-                exp=0
-                z = 10**exp                         # Einteilung der Anzeige 0.1 1, 10, 100 ...
-                if typ > 9:                         # negative Zahlen
-                    v = random.randint(3,7)*-z
-                else:
-                    v = random.randint(0,8)         #ist die schieb des Nullpunktes
-                text_v = len(str(z))*-3             #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
-                #if stufe%2 == 1 and eint == 10 and z > 10:
-                zahl1 = round(random.randint(1,39)*10**(z-2),3)
-                # else:
-                #     zahl1 = random.randint(1,45)*10**(z-2)
-                x = zahl1*100+20
-        
-                if eint == 10 and zahl1%10 == 5:
-                    anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
-                print(zahl1,"v:",v,"z:",z, (zahl1+v))
-                erg = (zahl1+v)
-                lsg = [format_zahl(erg,1)]
             else:                                                                    # Ganze Zahlen - 4+5 positiv, 10 negativ                                                                     
                 # eint sind die Unterteilungen: 10 = 10er, 20 = 5er, 25 = 4er (für Brüche)
                 if typ == 4 and stufe%2 == 1:       # für E-Kurs keine 10er Einteilung sondern 5er
