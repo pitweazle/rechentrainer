@@ -431,7 +431,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             typ = reihenfolge[aufgnr-1]
         else:
             typ = random.randint(typ_anf, typ_end)
-        typ=7
+        typ=8
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -594,7 +594,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 frage = "Der Bruch heißt:"
                 variable = [""]
                 anm = "Schreibe als Bruch (7/9) oder als gemischte Zahl (1 2/7)"
-            elif typ == 7:                                                           # Kommazahl x,y
+            elif typ == 7:                                                           # Kommazahl 1 Stelle: x,y
                 z = 1                            # Einteilung der Anzeige hier 1
                 v = random.randint(0,15)         #ist die schieb des Nullpunktes
                 text_v = len(str(z))*-3          #die Verschiebung des Textes (dmit die Zahl in der Mitte unter dem Strich steht)
@@ -615,7 +615,20 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                     hilfe = "Die gesuchte Zahl hat zwei Stellen hinter dem Komma (... und die letzte Stelle ist eine 5 :-))"
                 erg = (zahl1+v)
                 lsg = [zahlzustring(erg)]
-            elif typ in (8,9):                                                     # Kommazahlen
+            elif typ == 8:                                                           # Kommazahl 2 Stelle: x,yz  
+                from decimal import Decimal, ROUND_HALF_UP  # Kommazahl 2 Stellen: x,yz
+                z = Decimal('0.1')                 # Einteilung 0,1
+                # v in 0.1er Schritten als Decimal: 0.0 .. 1.5
+                v = Decimal(random.randint(0, 15)) / Decimal('10')   # statt int/Decimal mischen
+                text_v = len(str(z)) * -3          # Zentrierhilfe wie gehabt
+                # zahl1 in 0.01-Schritten (z.B. 0.01 .. 0.39) und hart auf 2 Nachkommastellen runden
+                zahl1 = 0
+                while zahl1 == 0:
+                    zahl1 = (Decimal(random.randint(1, 39)) / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                erg = (zahl1 + v)
+                x = ((erg - v) / z) * Decimal('100') +  Decimal('20')  # erg = zahl1 + v
+                lsg = [zahlzustring(erg)]
+            elif typ == 9:                                                           # negative Kommazahlen
                 exp = random.randint(-1,1)
                 exp=0
                 z = 10**exp                         # Einteilung der Anzeige 0.1 1, 10, 100 ...
@@ -635,7 +648,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 print(zahl1,"v:",v,"z:",z, (zahl1+v))
                 erg = (zahl1+v)
                 lsg = [format_zahl(erg,1)]
-            else:                                                                  # Ganze Zahlen - 4+5 positiv, 9+10 negativ                                                                     
+            else:                                                                    # Ganze Zahlen - 4+5 positiv, 10 negativ                                                                     
                 # eint sind die Unterteilungen: 10 = 10er, 20 = 5er, 25 = 4er (für Brüche)
                 if typ == 4 and stufe%2 == 1:       # für E-Kurs keine 10er Einteilung sondern 5er
                     eint = 20                       
@@ -659,7 +672,23 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                     anm = "(Du musst genau hinsehen: Der Pfeil steht zwischen zwei Strichen.)"
                 erg = int((zahl1+v*100)*z/100)
                 lsg = [str(erg)]
-            parameter = {'name': 'svg/zahlenstrahl.svg', 'anf': rand, 'eint':eint, 'v': v, 'txt0':  z+(v-1)*z, 'txt1': z+v*z, 'txt2': z+(v+1)*z, 'txt3': z+z*(v+2), 'txt4': z+z*(v+3), 'text_v': text_v, 'x': x, 'bruch':bruch}
+            # v und x bitte als Zahlen (float) ans SVG geben
+            v_svg = float(v)      # v kann bei typ 8 ein Decimal sein → für SVG in float
+            x_svg = float(x)
+            def fmt2(x):
+                # 2 Nachkommastellen, deutsches Komma (nur Labels)
+                return f"{x:.2f}".replace(".", ",")
+            if typ == 8:
+                # z = 0.1, v ist absoluter Startwert: Labels = v, v+z, v+2z, ...
+                # Falls v/z Decimal sind, fürs Formatieren in float umwandeln:
+                zf = float(z)
+                vf = float(v)
+                labels = {'txt0': fmt2(vf + 0 * zf),'txt1': fmt2(vf + 1 * zf), 'txt2': fmt2(vf + 2 * zf), 'txt3': fmt2(vf + 3 * zf), 'txt4': fmt2(vf + 4 * zf),}
+            else:
+                # Alte Logik für typ 6/7 (und ggf. weitere):
+                labels = {'txt0': str(z + (v - 1) * z),'txt1': str(z + v * z),'txt2': str(z + (v + 1) * z),'txt3': str(z + z * (v + 2)),'txt4': str(z + z * (v + 3)),}
+            parameter = {
+                'name': 'svg/zahlenstrahl.svg', 'anf': rand, 'eint': eint, 'v': v_svg, 'x': x_svg, 'text_v': text_v, 'bruch': bruch, **labels}
         print(lsg)
         if hilfe_id != 0:
             print(hilfe.format(*variable))
@@ -7681,7 +7710,10 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
         #if hilfe_id != 0:
             # print(hilfe.format(*variable))
             # print(typ2, pro_text)
-        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, {'name':'normal'}
+        parameter = {'name':'normal'}
+        #print(parameter)
+        # print({k: type(v) for k, v in parameter.items()}) hier kann man (numerische) Einträge in Parameter untersuchen, ob sie "decimal" sind - das wirft einen Fehler
+        return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
 
 #********************************************************************************************************************************************************
 def get_profil(user):
