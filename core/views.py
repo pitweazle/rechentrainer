@@ -427,11 +427,13 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
         else:
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:
+        try:
+            if reihenfolge:
+                typ = reihenfolge[aufgnr-1]
+            else:
+                typ = random.randint(typ_anf, typ_end)
+        except:
             typ = random.randint(typ_anf, typ_end)
-        typ=11
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -500,17 +502,17 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             if typ in [6,12]:                                       #erzeugt Kommazahlen
                 vorkomma = random.randint(0,2)
                 if vorkomma > 0:
-                    zahl1_str = str(zahl1)[:vorkomma]+","+str(zahl1)[1:].rstrip("0")
-                    zahl2_str = str(zahl2)[:vorkomma]+","+str(zahl2)[1:].rstrip("0")
+                    zahl1_str = str(zahl1)[:vorkomma]+","+str(zahl1)[1:]#.rstrip("0")
+                    zahl2_str = str(zahl2)[:vorkomma]+","+str(zahl2)[1:]#.rstrip("0")
                 else:
-                    zahl1_str = "0,"+str(zahl1).rstrip("0")
-                    zahl2_str = "0,"+str(zahl2).rstrip("0")
-                zahl1_str = zahl1_str.rstrip(",")
-                zahl2_str = zahl2_str.rstrip(",") 
+                    zahl1_str = "0,"+str(zahl1)#.rstrip("0")
+                    zahl2_str = "0,"+str(zahl2)#.rstrip("0")
+                #zahl1_str = zahl1_str.rstrip(",")
+                #zahl2_str = zahl2_str.rstrip(",") 
                 zahl1=float(zahl1_str.replace(",", "."))
                 zahl2 = float(zahl2_str.replace(",", "."))
-                print(zahl1_str, zahl2_str)
-                if zahl1 == zahl2 and zahl1%1>0:
+                #print(zahl1_str, zahl2_str, zahl1%1)
+                if zahl1_str == zahl2_str and typ not in (3,11):
                     if random.random() < 0.5:
                         zahl2_str = zahl2_str + "0"
                     else:
