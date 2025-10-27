@@ -83,6 +83,22 @@ def trenner(wert):
     zahl = zahl.lstrip("0").lstrip(" ").lstrip("0").lstrip(" ").lstrip("0")  
     return zahl
 
+def zweizufallszahlen(typ):
+    zuza1 = random.randint(1,9)
+    zuza2 = 1
+    if typ == 3:
+        stellen = random.randint(2,3)
+    else:
+        stellen = random.randint(1,2)
+    zahl1 = zahl2 = zuza1*10**stellen
+    zuza = [0, zuza1, zuza2]
+    for n in 0, stellen-1:
+        random.shuffle(zuza)
+        zahl1 = zuza[0] * 10**n + zahl1
+        random.shuffle(zuza)
+        zahl2 = zuza[0] * 10**n + zahl2  
+    return zahl1, zahl2
+
 # Brüche
 def gemischte_zahl(zaehler, nenner):
     if zaehler%nenner == 0:                                                             # ganze Zahl

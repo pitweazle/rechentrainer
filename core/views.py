@@ -22,7 +22,7 @@ from .models import Profil, Auswahl
 
 from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
 
-from .utilities import format_zahl, zahlzustring, zahl_wort, MathFormatter, ggt, lcm, trenner 
+from .utilities import format_zahl, zahlzustring, zahl_wort, MathFormatter, ggt, lcm, trenner, zweizufallszahlen 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
 from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
 from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
@@ -431,6 +431,7 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             typ = reihenfolge[aufgnr-1]
         else:
             typ = random.randint(typ_anf, typ_end)
+        typ=11
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -488,26 +489,19 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 hilfe_id = 2
         elif typ in (3,6,11,12):                                                     # kleiner größer gleich 3,6 ganze Zahlen, 11,12 negative - 6 und 12 mit Komma
             titel = "Kleiner, größer oder gleich"
-            zuza1 = random.randint(1,9)
-            zuza2 = 1
-            if typ == 3:
-                stellen = random.randint(2,3)
+            if typ in (3,11):
+                zahl1 = zahl2 = 1
+                while zahl1 == zahl2:
+                    zahl1, zahl2 = zweizufallszahlen(typ)
             else:
-                stellen = random.randint(1,2)
-            zahl1 = zahl2 = zuza1*10**stellen
-            zuza = [0, zuza1, zuza2]
-            for n in 0, stellen-1:
-                random.shuffle(zuza)
-                zahl1 = zuza[0] * 10**n + zahl1
-                zahl1_str = str(zahl1)
-                random.shuffle(zuza)
-                zahl2 = zuza[0] * 10**n + zahl2  
-                zahl2_str = str(zahl2)
+                zahl1, zahl2 = zweizufallszahlen(typ)
+            zahl1_str = str(zahl1)
+            zahl2_str = str(zahl2)
             if typ in [6,12]:                                       #erzeugt Kommazahlen
-                komma = random.randint(0,2)
-                if komma > 0:
-                    zahl1_str = str(zahl1)[:komma]+","+str(zahl1)[1:].rstrip("0")
-                    zahl2_str = str(zahl2)[:komma]+","+str(zahl2)[1:].rstrip("0")
+                vorkomma = random.randint(0,2)
+                if vorkomma > 0:
+                    zahl1_str = str(zahl1)[:vorkomma]+","+str(zahl1)[1:].rstrip("0")
+                    zahl2_str = str(zahl2)[:vorkomma]+","+str(zahl2)[1:].rstrip("0")
                 else:
                     zahl1_str = "0,"+str(zahl1).rstrip("0")
                     zahl2_str = "0,"+str(zahl2).rstrip("0")
@@ -515,6 +509,12 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 zahl2_str = zahl2_str.rstrip(",") 
                 zahl1=float(zahl1_str.replace(",", "."))
                 zahl2 = float(zahl2_str.replace(",", "."))
+                print(zahl1_str, zahl2_str)
+                if zahl1 == zahl2 and zahl1%1>0:
+                    if random.random() < 0.5:
+                        zahl2_str = zahl2_str + "0"
+                    else:
+                        zahl1_str = zahl1_str + "0"
             if typ in [11,12]:                                      #erzeugt negative Zahlen
                 zahl1_str = "-" + str(zahl1_str)
                 zahl2_str = "-" + str(zahl2_str)
@@ -522,8 +522,8 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 zahl2 = -zahl2
             pro_text = "{} ? {}"
             text = 'Kleiner, größer oder gleich?<br>' + pro_text 
-            frage = str(zahl1).replace(".",",")
-            einheit = str(zahl2)
+            frage = zahl1_str
+            einheit = zahl2_str
             variable = [zahl1_str, zahl2_str]
             anm = "(Setze das entsprechende Zeichen ein)" 
             erg = None
