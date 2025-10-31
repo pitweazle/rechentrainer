@@ -25,7 +25,7 @@ from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewe
 from .utilities import format_zahl, zahlzustring, zahl_wort, MathFormatter, ggt, lcm, trenner, zweizufallszahlen 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
 from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
-from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
+from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform, sub_wertetabelle_quadfu 
 from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_zeichenzuviel
 
 from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
@@ -684,8 +684,12 @@ def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             else:
                 typ_end = 7
         return typ_anf, typ_end
+    elif eingabe != "":
+        if typ == 9:
+            return 0, "Falsch! Klicke doch mal auf:<br>Klick mich &#128521; So teilt man durch Kommazahlen"
     else:
         typ = random.randint(typ_anf, typ_end)
+        parameter = {'name':'normal'}
         typ2 = 0
         hilfe_id = 0
         #variable = []
@@ -749,10 +753,14 @@ def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 titel = "Geteilt durch: 10, 100, 1000"
             else:
                 titel = "Geteilt durch: 0,1; 0,01"
+                parameter['popup'] = "Klick mich &#128521; So teilt man durch Kommazahlen"
+                parameter['popup_text'] = "popups/kommazahlen_teilen.html"
         if erg%1 == 0:
             erg = int(erg)
-        lsg = str(erg).replace(".", ",")#.rstrip(",") 
-        return typ, typ2, titel, text, "", "{}{}{}", variable, "", "", [lsg], hilfe_id, erg, {'name':'normal'}
+        lsg = [str(erg).replace(".", ",")]#.rstrip(",")
+        if typ == 9:
+            lsg.append("indiv_0")
+        return typ, typ2, titel, text, "", "{}{}{}", variable, "", "", lsg, hilfe_id, erg, parameter
 
 def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -8650,24 +8658,24 @@ def main(req, slug):
             if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-            #if kategorie.slug == "sachaufgaben":
-            #     try:  
-            #         profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
-            #     except:                                       
-            #         profil.voreinst.update({"sachaufg" : random.randint(1,20)})
-            #     profil.save()
-            #     typ_anf = profil.voreinst["sachaufg"]
-            # else:
-            typ_anf = zaehler.typ_anf            
+            if kategorie.slug == "sachaufgaben":
+                 try:  
+                    zaehler.letzter_typ +=1
+                 except:                                       
+                    zaehler.letzter_typ = random.randint(1,20)
+                 zaehler.save()
+                 typ_anf = zaehler.letzter_typ
+            else:
+                typ_anf = zaehler.typ_anf            
             stufe = profil.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, reihenfolge = zaehler.reihenfolge, optionen = "") 
-            # if kategorie.slug == "sachaufgaben":
-            #     profil.voreinst["sachaufg"] = typ
-            #     profil.save()
+            if kategorie.slug == "sachaufgaben":
+                zaehler.letzter_typ = typ
+                zaehler.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
                 titel = kategorie.name
