@@ -25,7 +25,7 @@ from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewe
 from .utilities import format_zahl, zahlzustring, zahl_wort, MathFormatter, ggt, lcm, trenner, zweizufallszahlen 
 from .utilities import gemischte_zahl,zaehler_faerben,brueche_erzeugen 
 from .utilities import vorzeichen_zahl, termteil, term_bereinigen, termwert, sortieren 
-from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform 
+from .utilities import sub_wertetabelle, sub_funktionsgleichung, sub_parabel, sub_2werte_pruefen, sub_normalform, sub_wertetabelle_quadfu 
 from .utilities import sub_potenz, sub_potenzterm_mal, sub_potenzterm_plus, sub_zeichenzuviel
 
 from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punkt_pruefen, linien_koordinaten 
