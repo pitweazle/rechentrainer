@@ -682,8 +682,12 @@ def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             else:
                 typ_end = 7
         return typ_anf, typ_end
+    elif eingabe != "":
+        if typ == 9:
+            return 0, "Falsch! Klicke doch mal auf:<br>Klick mich &#128521; So teilt man durch Kommazahlen"
     else:
         typ = random.randint(typ_anf, typ_end)
+        parameter = {'name':'normal'}
         typ2 = 0
         hilfe_id = 0
         #variable = []
@@ -747,10 +751,14 @@ def zehner(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 titel = "Geteilt durch: 10, 100, 1000"
             else:
                 titel = "Geteilt durch: 0,1; 0,01"
+                parameter['popup'] = "Klick mich &#128521; So teilt man durch Kommazahlen"
+                parameter['popup_text'] = "popups/kommazahlen_teilen.html"
         if erg%1 == 0:
             erg = int(erg)
-        lsg = str(erg).replace(".", ",")#.rstrip(",") 
-        return typ, typ2, titel, text, "", "{}{}{}", variable, "", "", [lsg], hilfe_id, erg, {'name':'normal'}
+        lsg = [str(erg).replace(".", ",")]#.rstrip(",")
+        if typ == 9:
+            lsg.append("indiv_0")
+        return typ, typ2, titel, text, "", "{}{}{}", variable, "", "", lsg, hilfe_id, erg, parameter
 
 def runden(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
