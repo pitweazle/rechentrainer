@@ -5918,7 +5918,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             else:
                 return -1, "" 
         elif typ > 16:
-            if "°" in eingabe:
+            if typ == 24 and typ2 == 3 and "sm" in eingabe:
+                #1000m = 0.539957sm
+                eingabe = eingabe.replace("sm","").replace(",",".")
+                if round(float(eingabe),1) == round(float(lsg[1]*0.000539957),1):
+                    return 2, "<br>Prima! Das gibt einen Extrapunkt"
+                else:
+                    return 0, "Nein, " + eingabe + "sm  ist leider nicht richtig."
+            elif "°" in eingabe:
                 return 0, "Das Gradzeichen ° musst du weglassen."
             if ":" in eingabe:
                 return 0, "Bitte benutze für die Division das '/' Zeichen."
@@ -5946,10 +5953,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
         else:
             return -1, "" 
     else: 
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:                                                                           
+        try:
+            if reihenfolge:
+                typ = reihenfolge[aufgnr-1]
+            else:                                                                           
+                typ = random.randint(typ_anf, typ_end)
+        except:
             typ = random.randint(typ_anf, typ_end)
+        typ=24
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6481,18 +6492,33 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             hilfe_id = 230
             hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
         elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
-            if typ2%2 == 0:
-                variable = "b"
-                parameter["a"] = str_a
-                wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
-                lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+            typ3 = random.randint(1,3)
+            typ3=3
+            if typ3 < 3:
+                if typ2%2 == 0:
+                    variable = "b"
+                    parameter["a"] = str_a
+                    wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
+                    lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+                else:
+                    variable = "a"
+                    parameter["b"] = str_b
+                    wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
+                    lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
             else:
-                variable = "a"
-                parameter["b"] = str_b
-                wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
-                lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
-            hilfe = 240
-            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
+                typ2 = 3
+                titel = "Maritimes"
+                winkel = random.randint(1,3)
+                hoehe = random.randint(40,80)
+                wert = wert = hoehe / math.tan(math.radians(winkel))
+                variable = [hoehe, winkel, (wert)]
+                lsg = [str(hoehe) + "/tan" + str(winkel), wert, wert*0.000539957, "indiv_0"]
+                text = "Im Marinefernglas gibt es Markierungen mit denen man Winkel messen kann. Ein Leuchtturm, dessen Höhe über dem Meeresspiegel laut Seekarte {} m beträgt, erscheint unter einem Winkel von {}°. Wie kann man berechnen, wie weit er entfernt ist?."
+                pro_text = "Marinefernglas: Leuchtturm {}hoch und unter {}°, Entfernung?"
+                text += "<br>(Wenn du die Entfernung in Seemeilen 'sm' angibst, gibt es einen Extrapunkt :)."
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/leuchtturm.jpg', 'breite': 400}
+                hilfe = 240
+                hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
         elif typ == 25:                                         # Winkel aus Gegenkathete und Hypotenuse
             parameter["c"] = str_c
             if typ2%2 == 0:
@@ -6557,11 +6583,12 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             if nachkomma < 4:
                 ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
                 lsg.insert(-1,ergaenzung.replace(".",","))
-        elif typ > 16:
-            frage = "{}=".format(*variable)
-            text = "Wie berechnet man die Seite {}?"
+        if typ > 16: 
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
+            if typ3 != 3:
+                frage = "{}=".format(*variable)
+                text = "Wie berechnet man die Seite {}?"
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
