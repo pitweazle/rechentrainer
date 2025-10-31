@@ -8648,24 +8648,24 @@ def main(req, slug):
             if not zaehler.optionen_text : 
                 return redirect('optionen', slug)
             #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-            #if kategorie.slug == "sachaufgaben":
-            #     try:  
-            #         profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
-            #     except:                                       
-            #         profil.voreinst.update({"sachaufg" : random.randint(1,20)})
-            #     profil.save()
-            #     typ_anf = profil.voreinst["sachaufg"]
-            # else:
-            typ_anf = zaehler.typ_anf            
+            if kategorie.slug == "sachaufgaben":
+                 try:  
+                    zaehler.letzter_typ +=1
+                 except:                                       
+                    zaehler.letzter_typ = random.randint(1,20)
+                 zaehler.save()
+                 typ_anf = zaehler.letzter_typ
+            else:
+                typ_anf = zaehler.typ_anf            
             stufe = profil.stufe
             #unter Umständen gibt es auch spezielle Aufgaben für A-Kurs und Gymnasium - dazu wird hier die Stufe um 0,2 hochgesetzt
             if kategorie.name in ("Prozentrechnung","Bruchteile","Funktionen"):
                 if profil.kurs == "A" or profil.kurs == "Y":
                     stufe = stufe + 0.2
             typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg = profil.jg, stufe = stufe, aufgnr = zaehler.aufgnr, typ_anf = typ_anf, typ_end = zaehler.typ_end, reihenfolge = zaehler.reihenfolge, optionen = "") 
-            # if kategorie.slug == "sachaufgaben":
-            #     profil.voreinst["sachaufg"] = typ
-            #     profil.save()
+            if kategorie.slug == "sachaufgaben":
+                zaehler.letzter_typ = typ
+                zaehler.save()
             #falls kein Titel angegeben wird, wird der Name der Kategorie verwendet:
             if not titel:
                 titel = kategorie.name
