@@ -5960,7 +5960,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 typ = random.randint(typ_anf, typ_end)
         except:
             typ = random.randint(typ_anf, typ_end)
-        typ=24
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -6493,7 +6492,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
         elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
             typ3 = random.randint(1,3)
-            typ3=3
             if typ3 < 3:
                 if typ2%2 == 0:
                     variable = "b"
@@ -6506,14 +6504,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                     wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
                     lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
             else:
-                typ2 = 3
+                typ2 = 3                                    # Anwendungsaufgabe mit Leuchtturm
                 titel = "Maritimes"
                 winkel = random.randint(1,3)
                 hoehe = random.randint(40,80)
                 wert = wert = hoehe / math.tan(math.radians(winkel))
                 variable = [hoehe, winkel, (wert)]
                 lsg = [str(hoehe) + "/tan" + str(winkel), wert, wert*0.000539957, "indiv_0"]
-                text = "Im Marinefernglas gibt es Markierungen mit denen man Winkel messen kann. Ein Leuchtturm, dessen Höhe über dem Meeresspiegel laut Seekarte {} m beträgt, erscheint unter einem Winkel von {}°. Wie kann man berechnen, wie weit er entfernt ist?."
+                text = "Im Marinefernglas gibt es Markierungen, mit denen man Winkel messen kann.<br>Eine Leuchtturmspitze erscheint unter einem Winkel von {1}°. Laut Seekarte hat der Leuchtturm eine Höhe von {0}m über dem Meeresspiegel. Wie kann man berechnen, wie weit er entfernt ist?"
                 pro_text = "Marinefernglas: Leuchtturm {}hoch und unter {}°, Entfernung?"
                 text += "<br>(Wenn du die Entfernung in Seemeilen 'sm' angibst, gibt es einen Extrapunkt :)."
                 parameter = {'name': 'core/grafik.html', 'object': 'grafik/leuchtturm.jpg', 'breite': 400}
