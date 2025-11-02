@@ -36,6 +36,11 @@
                                     <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
                                 </button>
                             </td>
+                            <td>
+                                <button>
+                                    <a href="{% url 'test_erstellen' gruppe.id %}">Test erstellen</a>
+                                </button>
+                            </td>
                             {% if super %}
                                 <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
                             {% endif %}
