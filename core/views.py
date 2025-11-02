@@ -5918,7 +5918,32 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             else:
                 return -1, "" 
         elif typ > 16:
-            if typ == 24 and typ2 == 3 and "sm" in eingabe:
+            if typ == 27 and typ2 ==3:                                      # Aufgabe mit STVO Steigung'
+                if "°" in eingabe:
+                    eingabe = eingabe.replace("°","").replace(",",".")
+                    nachkomma = len(eingabe.split(".")[1]) if "." in eingabe else 0
+                    try:
+                        if round(float(eingabe),nachkomma) == round(float(lsg[-2]),nachkomma):
+                            return 1, ""
+                    except:
+                        return 0, "Leider kann ich deine Eingaben nicht berechnen"
+                elif not ")" in eingabe:
+                    return 0, "Du musst den Wert in Klammern eingeben"
+                elif "asin" in eingabe:
+                    return 0, "Du darfst nicht die tatsächliche Streckenlänge einsetzen, sondern die horizontale (also nicht asin)."
+                elif "atan" in eingabe:
+                    parser = Parser()
+                    eingabe = eingabe.replace(",",".")
+                    try:
+                        wert_eingabe = parser.parse(eingabe).evaluate({})
+                        wert_lsg = parser.parse(lsg[1]).evaluate({})
+                        if wert_eingabe == wert_lsg:
+                            return 1, ""
+                    except:
+                        return 0, "Leider kann ich deine Eingaben nicht berechnen"
+                else:
+                    return -1, ""
+            if typ == 24 and typ2 == 3 and "sm" in eingabe:              # Aufgabe mit Leuchtturm
                 #1000m = 0.539957sm
                 eingabe = eingabe.replace("sm","").replace(",",".")
                 if round(float(eingabe),1) == round(float(lsg[1]*0.000539957),1):
@@ -5964,7 +5989,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
         variable = ["",]
-        pro_text = frage = einheit = anmerkung = hilfe = ""
+        pro_text = text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
         x0 = 80
@@ -6556,35 +6581,54 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             hilfe_id = 260
             hilfe = "Ankathete und Hypotenuse gegeben -> Kosinus⁻¹ (oder acos oder arccos)." 
         elif typ == 27:                                         # Winkel aus Ankathete und Gegenkathete
-            parameter["a"] = str_a
-            parameter["b"] = str_b            
-            if typ2%2 == 0:
-                parameter["symbol"] = "β"
-                variable = ["β", "atan"]
-                lsg = "atan(" + str_a + "/" + str_b + ")" 
+            typ3 = random.randint(1,3)
+            if typ3 < 3:
+                parameter["a"] = str_a
+                parameter["b"] = str_b            
+                if typ2%2 == 0:
+                    parameter["symbol"] = "β"
+                    variable = ["β", "atan"]
+                    lsg = "atan(" + str_a + "/" + str_b + ")" 
+                    wert = math.degrees(math.atan(round(a,0)/round(b,0)))
+                    wert2 = (int_a/int_b)
+                else:
+                    parameter["symbol"] = "α"
+                    variable = ["α", "atan"] 
+                    lsg = "atan(" + str_b + "/" + str_a + ")" 
+                    wert = math.degrees(math.atan(round(b,0)/round(a,0)))
+                    wert2 = (int_b/int_a)
+                lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+            else:
+                typ2 = 3
+                titel = "Steigungswinkel"
+                text = "In den Bergen findet man am Straßenrand solche Schilder, die die Steigung in Prozent anzeigen.<br>Wie kann man die angezeigte Steigung von {}% in den zugehörigen Steigungswinkel umrechnen?"
+                pro_text = "{}% Steigung = Steigungswinkel?"
+                steigung = random.randint(5,12)
+                variable = [steigung]
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/steigung.jpg', 'breite': 300, 'steigung': steigung}
+                anmerkung ="Du kannst dir einfach zwei Werte für die (horizontale!) Streckenlänge und resultierende Höhe überlegen."
+                b = 100
+                a = steigung
+                lsg = "atan(" + str(a) + "/" + str(b) + ")"
                 wert = math.degrees(math.atan(round(a,0)/round(b,0)))
                 wert2 = (int_a/int_b)
-            else:
-                parameter["symbol"] = "α"
-                variable = ["α", "atan"] 
-                lsg = "atan(" + str_b + "/" + str_a + ")" 
-                wert = math.degrees(math.atan(round(b,0)/round(a,0)))
-                wert2 = (int_b/int_a)
-            lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+                lsg = [lsg + "=" + str(round(wert,1)) + "°", lsg, wert, "indiv_0"]
+                #print(lsg)
             hilfe_id = 270
             hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
         if typ > 24:
-            text = "Wie berechnet man den Winkel {}?"
             parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
-            parameter['popup_text'] = "popups/arcsin.html"  
-            nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
-            if nachkomma < 4:
-                ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
-                lsg.insert(-1,ergaenzung.replace(".",","))
+            parameter['popup_text'] = "popups/arcsin.html"
+            if titel != "Maritimes":  
+                text = "Wie berechnet man den Winkel {}?"
+                nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
+                if nachkomma < 4:
+                    ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
+                    lsg.insert(-1,ergaenzung.replace(".",","))
         if typ > 16: 
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
-            if typ3 != 3:
+            if titel != "Steigungswinkel":
                 frage = "{}=".format(*variable)
                 text = "Wie berechnet man die Seite {}?"
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter

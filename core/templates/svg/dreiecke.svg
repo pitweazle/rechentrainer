@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg"
-version=1.1"
-viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
+version="1.1"
+viewBox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
 <defs>
     <g id="dreieck">
         <polygon points="{{parameter.x1}},{{parameter.y1}} {{parameter.x2}},{{parameter.y2}} {{parameter.x3}},{{parameter.y3}}"  style="stroke:black;stroke-width:1;fill: #E0FFFF"/>
@@ -264,22 +264,6 @@ viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
     {% if parameter.hilfe == 133 %}
         <polygon points="{{parameter.ax}},{{parameter.ay}} {{parameter.dx}},{{parameter.by}} {{parameter.dx}},{{parameter.cy}}"  style="stroke:black;stroke-width:0.5;fill: #C0FFFF"/>
     {% endif %}
-{% elif parameter.object == "steigung" %}
-    <div style="position: relative; width: 400px;">
-        <img src="/static/images/steigungsschild_400px.jpg"
-            alt="Steigung"
-            style="width:100%; height:auto;">
-        <div style="
-            position: absolute;
-            top: 42%;
-            left: 47%;
-            transform: rotate(-20deg);
-            font-size: 34px;
-            font-weight: bold;
-            color: black;">
-            {{ steigung }}%
-        </div>
-    </div>
 <!--für die Dreiecke aus den Kategorien der Geometrie-->
 {% else %} 
     {% if parameter.winkel == "C" %} 
