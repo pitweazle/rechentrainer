@@ -5887,13 +5887,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
+        print("Stufe: ",stufe)
         if jg > 10 or stufe >= 43 or "Winkel" in optionen:
             typ_anf = 1
             typ_end = 27        
-        if jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
+        elif jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
             typ_anf = 1
             typ_end = 24
-        if jg > 9 or stufe >= 33 or "Kathete" in optionen:
+        elif jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
         reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
         return typ_anf, typ_end, reihenfolge
@@ -5993,6 +5994,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 typ = random.randint(typ_anf, typ_end)
         except:
             typ = random.randint(typ_anf, typ_end)
+        print(reihenfolge, typ_end)
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
