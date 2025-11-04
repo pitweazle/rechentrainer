@@ -304,9 +304,8 @@ def bestenliste(req):
             protokoll = Protokoll.objects.filter(profil__gruppe=g)
             summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
             summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
-            if summe>0:
-                print(g, soll_hj, int(summe/mitglieder))
-
+            #if summe>0:
+                #print(g, soll_hj, int(summe/mitglieder))
             protokoll = protokoll.filter(sj = sj)
             # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
             # sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
@@ -511,7 +510,6 @@ def gruppe_uebersicht(req, gruppe_id):
     if req.method == 'POST':
         start_datum = Start_Datum(req.POST)
         end_datum = End_Datum(req.POST)
-        #print("Ende: ", end_datum)
         auswahl = form_filter(req.POST)
         filter = auswahl.fields['auswahl'].choices
         auswahl_liste = dict(filter)
@@ -546,7 +544,7 @@ def gruppe_uebersicht(req, gruppe_id):
         kategorie_fehler = [(0)] * (katmax_max+1) 
         gesamtzeit = timedelta()
         if gruppe.name != "keine Gruppe":
-            schueler_liste = Profil.objects.filter(gruppe__name=gruppe.name).order_by("vorname") 
+            schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("vorname")
         else:
             schueler_liste = Profil.objects.filter(gruppe=None).order_by("profil__vorname") 
         aufgaben_der_schueler = []
