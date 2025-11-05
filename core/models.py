@@ -58,7 +58,7 @@ class Auswahl(models.Model):
         verbose_name_plural = 'Auswahl'
 
 class Hilfe(models.Model):
-    kategorie = models.ForeignKey(Kategorie, on_delete=models.CASCADE, related_name="hilfe")
+    kategorie = models.ForeignKey(Kategorie, on_delete=models.CASCADE, related_name="hilfen", related_query_name="hilfe")
     hilfe_id = models.SmallIntegerField(default=0)
     text = models.TextField(blank=True)
     def __str__(self):
