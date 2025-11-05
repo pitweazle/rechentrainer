@@ -24,7 +24,7 @@ class Schule(models.Model):
         verbose_name_plural = 'Schulen'
     
 class Lerngruppe(models.Model):
-    lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='gruppe')
+    lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='lerngruppen',related_query_name='lerngruppe',)
     name = models.CharField(max_length=15)
     erstellt_am = models.DateField(auto_now_add=True)
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
@@ -61,7 +61,7 @@ class Profil(models.Model):
     # diese Felder werden erst ausgefüllt, wenn ein Schüler seine Lerngruppe wählt
     schule = models.ForeignKey(Schule, related_name='schule1', null= True, blank=True, on_delete = models.SET_NULL)
     zweite_schule = models.ForeignKey(Schule, related_name='schule2',null= True, blank=True, on_delete = models.SET_NULL)
-    gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.SET_NULL, related_name='gruppe')
+    gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.SET_NULL, related_name='profile')
 
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     kurs= models.CharField(max_length=1, choices=wahl_kurs.choices, default=wahl_kurs.E_KURS,)

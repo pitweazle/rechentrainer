@@ -9,7 +9,7 @@ class Duellant(models.Model):
         ("C", "C")
     )
     profil = models.OneToOneField(Profil, related_name='duellprofil', on_delete=models.CASCADE, null=True)
-    gruppe = models.ForeignKey(Lerngruppe, verbose_name='Lerngruppe', related_name='duellant', on_delete=models.CASCADE, null=True)
+    gruppe = models.ForeignKey(Lerngruppe, verbose_name='Lerngruppe', related_name='duellanten', related_query_name='duellant', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100)
     liga = models.CharField(max_length=1, choices=LIGAWAHL, default="A")
     platz = models.SmallIntegerField(null=True, blank=True)
@@ -25,10 +25,10 @@ class Duellant(models.Model):
         return f"{self.id} {self.name} - {self.gruppe} "
     
 class Duell(models.Model):
-    protokoll = models.ForeignKey(Protokoll, related_name='duellprotokoll', on_delete=models.CASCADE)
-    gruppe = models.ForeignKey(Lerngruppe, related_name='duellgruppe', on_delete=models.CASCADE)
-    duellant_1 = models.ForeignKey(Duellant, related_name='duellant_1', null = True, on_delete=models.SET_NULL)
-    duellant_2 = models.ForeignKey(Duellant, related_name='duellant_2', null = True, on_delete=models.SET_NULL)
+    protokoll = models.ForeignKey(Protokoll, related_name='duelle',related_query_name='duell', on_delete=models.CASCADE)
+    gruppe = models.ForeignKey(Lerngruppe, related_name='duelle', related_query_name='duell', on_delete=models.CASCADE)
+    duellant_1 = models.ForeignKey(Duellant, related_name='duelle_als_1', related_query_name='duell_als_1', null = True, on_delete=models.SET_NULL)
+    duellant_2 = models.ForeignKey(Duellant, related_name='duelle_als_2', related_query_name='duell_als_2', null = True, on_delete=models.SET_NULL)
 
     def __str__(self):      
         return f"{self.gruppe}: {self.duellant_1} vs {self.duellant_2}"
@@ -38,7 +38,7 @@ class Duell(models.Model):
         verbose_name_plural = 'Duelle'
 
 class Duell_Protokoll(models.Model):
-    duell = models.ForeignKey(Duell, related_name='duellprotokoll', on_delete=models.CASCADE)
+    duell = models.ForeignKey(Duell, related_name='duellprotokolle', related_query_name='duellprotokoll',  on_delete=models.CASCADE)
     duellant_nr = models.SmallIntegerField(default=0)
     eingabe = models.CharField(max_length=20, blank=True)
     punkte = models.DecimalField(max_digits=2, decimal_places=1, default=0)
