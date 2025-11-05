@@ -24,7 +24,7 @@ class Schule(models.Model):
         verbose_name_plural = 'Schulen'
     
 class Lerngruppe(models.Model):
-    lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='lerngruppen',related_query_name='lerngruppe',)
+    lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='lerngruppen')
     name = models.CharField(max_length=15)
     erstellt_am = models.DateField(auto_now_add=True)
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])

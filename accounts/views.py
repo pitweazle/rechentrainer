@@ -546,7 +546,7 @@ def gruppe_uebersicht(req, gruppe_id):
         if gruppe.name != "keine Gruppe":
             schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("vorname")
         else:
-            schueler_liste = Profil.objects.filter(gruppe=None).order_by("profil__vorname") 
+            schueler_liste = (Profil.objects.filter(gruppe__isnull=True).order_by("vorname"))
         aufgaben_der_schueler = []
         for profil in schueler_liste:
             richtig_profil = falsch_profil = 0

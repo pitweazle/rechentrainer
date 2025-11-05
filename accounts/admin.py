@@ -4,6 +4,21 @@ from django.contrib.auth.admin import UserAdmin
 
 from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht
 
+class GruppeFilter(admin.SimpleListFilter):
+    title = 'Lerngruppe'
+    parameter_name = 'gruppe'
+
+    def lookups(self, request, model_admin):
+        # Passe 'name' an, falls deine Lerngruppe anders heißt
+        return [(g.pk, getattr(g, 'name', str(g))) for g in Lerngruppe.objects.all()]
+
+    def queryset(self, request, queryset):
+        gid = self.value()
+        if gid:
+            return queryset.filter(profil__gruppe_id=gid)
+        return queryset
+
+
 class OrtAdmin(admin.ModelAdmin):
     ordering = ['plz',]
 
@@ -30,20 +45,22 @@ class ProfilAdmin(admin.ModelAdmin):
 
 class BenutzerAdmin(UserAdmin):
     list_display = ('id', 'username', 'profil_nachname', 'profil_vorname', 'profil_gruppe', 'date_joined', 'last_login')
-    ordering = ['-date_joined',]
-    list_filter = ['groups', 'gruppe']
-    
+    ordering = ['-date_joined']
+    list_filter = ('groups', GruppeFilter)   # ✅ statt 'gruppe'
+    list_select_related = ('profil', 'profil__gruppe')  # Performance
+
     def profil_vorname(self, obj):
-        return obj.profil.vorname
+        return getattr(obj.profil, 'vorname', '')  # failsafe
     profil_vorname.short_description = "Vorname"
 
     def profil_nachname(self, obj):
-        return obj.profil.nachname
+        return getattr(obj.profil, 'nachname', '')
     profil_nachname.short_description = "Nachname"
 
     def profil_gruppe(self, obj):
-        return obj.profil.gruppe
-    profil_nachname.short_description = "Lerngruppe"
+        return getattr(obj.profil, 'gruppe', None)
+    profil_gruppe.short_description = "Lerngruppe"   # ⚠️ hier war zuvor ein Tippfehler
+
 
 class GeloeschtAdmin(admin.ModelAdmin):
     search_fields = ['benutzername']
