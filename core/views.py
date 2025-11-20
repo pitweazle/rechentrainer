@@ -5768,7 +5768,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 anzahl = random.randint(2,5)
                 variable = [anzahl, seite*seite*(anzahl)]
                 schieb_positionen = list(range(0,anzahl*30,30))
-                text = "Unten siehst du ein Rechteck. Er besteht aus mehreren Quadraten. Das Rechteck hat eine Fläche von {1}cm³. Welche Seitenlänge haben die Quadrate jeweils?"
+                text = "Unten siehst du ein Rechteck. Er besteht aus mehreren Quadraten. Das Rechteck hat eine Fläche von {1}cm². Welche Seitenlänge haben die Quadrate jeweils?"
                 hilfe_id = 120
                 hilfe = "Das sind {} Quadrate. Du musst zunächst die Fläche eines Quadrates ausrechnen.<br>Anschließend musst du die Wurzel ziehen." 
                 parameter = {'name': 'svg/geometrie.svg', 'object': 'quadrate', 'schieb': schieb_positionen,} 
