@@ -1962,7 +1962,8 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             else:
                 text = "Berechne {4} eines {5} mit a={0}{2}"
                 pro_text = "{5}: a={0}{2}, {4}=?" 
-            lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
+            lsg_text = "{} {}{}".format(erg, einheit_aufg, exp)
+            lsg = [lsg_text, lsg_text.replace("²","^2")]
             parameter = {'name':'normal'}
         elif typ == 10:                             # Benennung am Dreieck
             titel = "Benennungen am Dreieck"
@@ -2073,7 +2074,8 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             variable = [str(zahl1), str(zahl2), str(schieb), einheit_aufg, exp, gesucht, figur]
             text = "Berechne {5} dieses {6}" 
             pro_text = "{6}: a={0}{3}, b={1}{3}, {5}=?"  
-            lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
+            lsg_text = "{} {}{}".format(erg, einheit_aufg, exp)
+            lsg = [lsg_text, lsg_text.replace("²","^2")]
             parameter = {'name': 'svg/geometrie.svg', 'object': 'figur', 'box_hoehe': box_hoehe, 'box_breite': box_breite, 'hoehe': hoehe*20,
                     'x1':x1, 'y1':y1,'x2':x2, 'y2':y2,'x3':x3, 'y3':y3,'x4':x4, 'y4':y4,
                     'seiten': [
@@ -5770,7 +5772,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 anzahl = random.randint(2,5)
                 variable = [anzahl, seite*seite*(anzahl)]
                 schieb_positionen = list(range(0,anzahl*30,30))
-                text = "Unten siehst du ein Rechteck. Er besteht aus mehreren Quadraten. Das Rechteck hat eine Fläche von {1}cm³. Welche Seitenlänge haben die Quadrate jeweils?"
+                text = "Unten siehst du ein Rechteck. Er besteht aus mehreren Quadraten. Das Rechteck hat eine Fläche von {1}cm². Welche Seitenlänge haben die Quadrate jeweils?"
                 hilfe_id = 120
                 hilfe = "Das sind {} Quadrate. Du musst zunächst die Fläche eines Quadrates ausrechnen.<br>Anschließend musst du die Wurzel ziehen." 
                 parameter = {'name': 'svg/geometrie.svg', 'object': 'quadrate', 'schieb': schieb_positionen,} 
