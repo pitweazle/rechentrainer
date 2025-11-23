@@ -18,6 +18,9 @@ from core.forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeF
 from .models import Test, TestEinstellung
 from .forms import TestErstellenForm, TestNameForm
 
+def test_how_to(req):
+    return render(req, "tests/test_how_to.html",)
+
 # ---------- Schritt 1: Kategorien + Optionen erfassen ----------
 def test_erstellen(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
@@ -114,7 +117,6 @@ def test_benennen(req, gruppe_id):
                         typ_anf=typ_anf,
                         typ_end=typ_end,
                         reihenfolge=reihenfolge,
-                        schwierigkeit=schwierigkeit,
                     )
                 del req.session["test_draft"]
                 return redirect("gruppe_uebersicht", gruppe_id=gruppe.id)
@@ -766,14 +768,14 @@ def test_uebersicht(req, test_id):
     # Schüler der Lerngruppe
     schueler_liste = (
         Profil.objects
-        .filter(lerngruppe=gruppe)
+        .filter(gruppe=gruppe)
         .order_by("nachname", "vorname")
     )
     # Protokolle nur zu diesem Test (erkennbar an hilfe_id = test.proto_marker)
     protos = (
         Protokoll.objects
         .filter(
-            profil__lerngruppe=gruppe,
+            profil__gruppe=gruppe,
             hilfe_id=test.proto_marker,
             kategorie_id__in=kat_ids,
         )

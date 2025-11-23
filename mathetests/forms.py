@@ -44,7 +44,8 @@ class TestNameForm(forms.Form):
     schwierigkeit = forms.ChoiceField(
         label="Schwierigkeit",
         choices=wahl_kurs.choices,
-        widget=forms.Select
+        widget=forms.Select,
+        initial=wahl_kurs.E_KURS,
     )
 
 
