@@ -22,7 +22,7 @@ class TestAdmin(admin.ModelAdmin):
 
     fieldsets = [
         (None, {
-            'fields': ['gruppe', 'name', 'aktiv'],
+            'fields': ['gruppe', 'name', 'schwierigkeit', 'aktiv'],
         }),
         ('weitere Infos', {
             'fields': ['proto_marker', 'created_at'],
