@@ -1,0 +1,42 @@
+.protokoll-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.protokoll-table th,
+.protokoll-table td {
+    overflow: visible !important;   /* nichts wegschneiden */
+    white-space: nowrap;            /* Text nicht umbrechen */
+}
+
+.meta-table {
+  width: 100%;
+  max-width: 600px;
+  border-collapse: collapse;
+  margin-bottom: 1.5em;
+}
+.meta-table th {
+  text-align: left;
+  width: 180px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #f4f4f4;
+}
+.meta-table td {
+  padding: 4px 8px;
+}
+.note {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: darkgreen;
+}
+@media print {
+  .meta-table th { background: #eee !important; }
+  h2 { text-align: center; margin-bottom: 1em; }
+}
+
+.print-button {
+  margin: 10px 0 20px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}

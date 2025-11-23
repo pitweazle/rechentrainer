@@ -1,0 +1,40 @@
+.container {
+    max-width: 800px;
+}
+
+table td, table th {
+    text-align: left !important;
+    padding: 6px 10px;
+}
+
+.lehrer-header td,
+.gruppe-header td {
+    font-weight: bold;
+    background: #f4f4f4;
+}
+
+.link-lerngruppe {
+    color: green;
+    font-weight: bold;
+}
+
+.link-duell {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+.link-test {
+    color: blue;
+    font-weight: bold;
+}
+
+.link-neu {
+    color: red;
+    font-weight: bold;
+}
+
+.link-temp {
+    color: orange;
+    font-weight: bold;
+}
+

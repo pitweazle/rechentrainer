@@ -14,8 +14,8 @@
     <div class="navbar">
         <a href="{% url 'index' %}">&#8962 Home</a>
         <a>{{titel}}</a>
-        <a href="{% url 'duell_how_to' %}">Neu: Das Rechenduell</a>
-        <a href="{% url 'duell_uebersicht' gruppe_id %}">Zum Rechenduell</a> 
+        {% comment %} <a href="{% url 'duell_how_to' %}">Neu: Das Rechenduell</a>  {% endcomment %}
+        <a href="{% url 'duell_uebersicht' gruppe_id %}">Zum Rechenduell</a>
         <div class="dropdown">
             <button class="dropbtn"> 
                 Daten ändern
@@ -37,7 +37,6 @@
         {% csrf_token %}
         <h2 style= "text-align: left;"> 
             {% if "individuelle Auswahl" in wahl %}
-
                 <button type="button">
                     {{startdatum}}
                 </button type="button">

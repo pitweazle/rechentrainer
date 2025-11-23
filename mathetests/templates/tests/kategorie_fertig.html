@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 2rem auto;">
+  <div style="background:white; padding: 1.5rem 2rem; border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,.15);">
+    {% autoescape off %}
+    <div class="message">
+      {% for message in messages %}
+        {% if 'leider falsch' in message.message %}
+          <p class="rot">{{ message|safe }}</p>
+        {% elif 'war richtig!' in message.message %}
+          <p class="gruen">{{ message|safe }}</p>
+        {% else %}
+          <p class="gelb">{{ message|safe }}</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endautoescape %}
+
+    <h2 style="text-align:center; margin-top:1rem;">
+      Kategorie abgeschlossen: {{ kategorie.name }}
+    </h2>
+
+    <p><b>Soll:</b> {{ soll }}</p>
+    <p><b>Richtig:</b> {{ richtig }}</p>
+    <p><b>Falsch:</b> {{ falsch }}</p>
+    <p><b>Abgebrochen:</b> {{ abbr }}</p>
+    <p><b>Lösung angezeigt:</b> {{ lsg }}</p>
+
+    <p style="margin-top:1.5rem;">
+      <a href="{% url 'test_anzeigen' test.id profil.id %}">Weiter</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

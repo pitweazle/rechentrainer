@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'tests/test_uebersicht.css' %}">
+{% endblock %}
+
+
+{% block content %}
+  {% include "tests/test_header.html" %}
+
+  <div class="container">
+    <h1>Testübersicht – {{ test.name }}</h1>
+
+      {% if user.is_authenticated and user == gruppe.lehrer %}
+        <form method="post" action="{% url 'test_toggle_aktiv' test.id %}" class="no-print" style="display:inline;">
+          {% csrf_token %}
+          {% if test.aktiv %}
+            <button type="submit" name="action" value="stop" class="btn btn-warning btn-sm">
+              ⏹ Test beenden
+            </button>
+          {% else %}
+            <button type="submit" name="action" value="start" class="btn btn-success btn-sm">
+              ▶ Test aktivieren
+            </button>
+          {% endif %}
+        <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
+            🖨️ Übersicht drucken
+        </button>
+        <button type="submit" name="action" value="start" class="btn btn-success btn-sm">
+          <a href="{% url 'test_loeschen' test.id %}" class="btn btn-danger btn-sm">Test löschen</a>
+        </button>
+
+      </form>
+    {% endif %}
+
+<div class="header-row">
+  <div>
+    <p>
+      Lerngruppe: {{ gruppe.name }} (Jg {{ gruppe.jg }})<br>
+      Lehrer: {{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}
+    </p>
+  </div>
+
+  <div class="noten-box">
+    {% if not test.aktiv %}
+      <h3>Notenspiegel</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>&#8960;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ noten_spiegel.1 }}</td>
+            <td>{{ noten_spiegel.2 }}</td>
+            <td>{{ noten_spiegel.3 }}</td>
+            <td>{{ noten_spiegel.4 }}</td>
+            <td>{{ noten_spiegel.5 }}</td>
+            <td>{{ noten_spiegel.6 }}</td>
+            <td>{{ noten_durchschnitt|floatformat:1 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+</div>
+      
+
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="th-name">Schüler/in</th>
+          <th class="th-gesamt">Gesamt</th>
+                {% for e in einstellungen %}
+                    <th>
+                        <div class="rotated-th"; style="{{e.kategorie.farbe}}; height:230px;">
+                            <span class="rotated-th__label">
+                                {{e.kategorie.name}}
+                            </span>
+                        </div>
+                    </th>
+                {%endfor%}
+          <th>Σ richtig</th>
+          <th>Σ falsch</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>
+              <a href="{% url 'test_anzeigen' test.id row.profil.id %}"> 
+                {{ row.profil.vorname }} {{ row.profil.nachname }}
+              </a>
+            </td>
+
+            {# neue Gesamt-Spalte: erledigt / richtig / falsch / Note #}
+            <td>
+              erledigt:<br>
+              richtig: <br>
+              falsch: <br>
+
+            </td>
+
+            {# pro Kategorie nur noch Zahlen, ohne Labels #}
+            {% for k in row.kategorien %}
+              <td>
+                {{ k.erledigt }}/{{ k.soll }}<br>
+                {{ k.richtig }}<br>
+                {{ k.falsch }}
+              </td>
+            {% endfor %}
+
+            <td>{{ row.sum_richtig }}</td>
+            <td>{{ row.sum_falsch }}</td>
+            <td>{{ row.note|default:"-" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{{ einstellungen|length|add:'4' }}">
+              Keine Schüler in dieser Lerngruppe.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>
+      <a href="{% url 'meine_gruppen' %}">zurück zu „meine Lerngruppen“</a>
+    </p>
+  </div>
+
+<style>
+@page {
+    size: A4 landscape;
+    margin: 10mm;   /* oder 0 für absolut keinen Rand */
+}
+
+@media print {
+    .no-print, header, footer { display: none !important; }
+    body { margin: 0 !important; padding: 0 !important; }
+}
+</style>
+
+
+
+{% endblock %}
+
+
+

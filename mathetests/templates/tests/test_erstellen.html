@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'tests/test_erstellen.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% include 'includes/header.html' %}
+
+  <div class="container container--narrow">
+    <h1>Test erstellen – {{ gruppe.name }}</h1>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="table-wrap">
+        <table class="table test-table">
+          <thead>
+            <tr>
+              <th>Nr.</th>
+              <th>Kategorie</th>
+              <th>Anzahl</th>
+              <th>Auswahl (max. 5)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for kat, feld_anz, feld_opts in zeilen %}
+              <tr style="{{ kat.farbe }}">
+                <td>{{ kat.zeile }}</td>
+                <td>{{ kat.name }}</td>
+                <td>{{ feld_anz }}</td>
+                <td>
+                  {% if feld_opts %}
+                    <div class="opts-inline">{{ feld_opts }}</div>
+                  {% else %}–{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Weiter</button>
+    </form>
+  </div>
+
+  {% include 'includes/footer.html' %}
+{% endblock %}
