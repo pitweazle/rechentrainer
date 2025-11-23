@@ -57,6 +57,10 @@ def test_erstellen(req, gruppe_id):
     })
 
 # ---------- Schritt 2: Test benennen & speichern ----------
+from .forms import TestNameForm
+from .models import Test, TestEinstellung
+from core.models import Kategorie, Auswahl
+
 def test_benennen(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     draft = req.session.get("test_draft")
@@ -66,39 +70,41 @@ def test_benennen(req, gruppe_id):
         form = TestNameForm(req.POST)
         if form.is_valid():
             name = form.cleaned_data["name"]
-            note_modus = form.cleaned_data["note_modus"] 
+            note_modus = form.cleaned_data["note_modus"]
+            schwierigkeit = form.cleaned_data["schwierigkeit"]
             with transaction.atomic():
-                test = Test.objects.create(gruppe=gruppe, name=name)
-                # 👉 HIER KOMMT DEIN BLOCK HIN
+                test = Test.objects.create(
+                    gruppe=gruppe,
+                    name=name,
+                    note_streng=(note_modus == "normal"),
+                    schwierigkeit=schwierigkeit,
+                )
+                jg = getattr(gruppe, "jg", 0)
+                stufe = kurs_to_stufe(schwierigkeit)
                 for pos in draft["positionen"]:
                     kat = Kategorie.objects.get(pk=pos["kat_id"])
-                    # Optionen-Text oder "keine"
                     if pos["auswahl_ids"]:
-                        texts = Auswahl.objects.filter(pk__in=pos["auswahl_ids"]).values_list("text", flat=True)
+                        texts = (Auswahl.objects
+                                 .filter(pk__in=pos["auswahl_ids"])
+                                 .values_list("text", flat=True))
                         optionen_text = ", ".join(texts)
                     else:
                         optionen_text = "keine"
-                    jg = getattr(gruppe, "jg", 0)
-                    stufe = getattr(gruppe, "stufe", 0)
-                    # Berechnung direkt über mathe.aufgaben()
                     ret = aufgaben(
                         kategorie_id=kat.id,
                         jg=jg,
                         stufe=stufe,
-                        optionen=optionen_text
+                        optionen=optionen_text,
                     )
-
                     if not isinstance(ret, tuple):
-                        # Fallback: gar nichts geliefert -> neutrale Defaults
                         typ_anf, typ_end, reihenfolge = 0, 0, None
                     else:
                         if len(ret) == 3:
                             typ_anf, typ_end, reihenfolge = ret
                         elif len(ret) == 2:
                             typ_anf, typ_end = ret
-                            reihenfolge = None   # optional nicht vorhanden
+                            reihenfolge = None
                         else:
-                            # Sicherheits-Fallback
                             typ_anf, typ_end, reihenfolge = 0, 0, None
                     TestEinstellung.objects.create(
                         test=test,
@@ -108,8 +114,8 @@ def test_benennen(req, gruppe_id):
                         typ_anf=typ_anf,
                         typ_end=typ_end,
                         reihenfolge=reihenfolge,
+                        schwierigkeit=schwierigkeit,
                     )
-                # nach dem Speichern: Session löschen + Rücksprung
                 del req.session["test_draft"]
                 return redirect("gruppe_uebersicht", gruppe_id=gruppe.id)
     else:
@@ -616,11 +622,19 @@ def test(req, slug):
     typ_end = einstellung.typ_end
     reihenfolge = einstellung.reihenfolge or None
     # ---------------- Aufgabe erzeugen ----------------
+    # Stufe aus Test / TestEinstellung ableiten
+    schwierigkeit = getattr(einstellung, "schwierigkeit", None) or test.schwierigkeit
+    stufe = kurs_to_stufe(schwierigkeit)
+    # Sonderfall: zusätzliche Aufgaben für Gymnasium / A-Kurs
+    if kategorie.name in ("Prozentrechnung", "Bruchteile", "Funktionen") and schwierigkeit in ("A", "Y"):
+        stufe += 0.2
+    # Jahrgang lieber aus der Gruppe nehmen (alle in der Lerngruppe gleich)
+    jg = getattr(test.gruppe, "jg", profil.jg)
     typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, \
     lsg, hilfe_id, ergebnis, parameter = aufgaben(
         kategorie.zeile,
-        jg=profil.jg,
-        stufe=profil.stufe,
+        jg=jg,
+        stufe=stufe,
         aufgnr=aufgnr,
         typ_anf=typ_anf,
         typ_end=typ_end,
@@ -893,6 +907,13 @@ def test_toggle_aktiv(req, test_id):
     test.save(update_fields=["aktiv"])
     # zurück zur Lehrer-Übersicht
     return redirect("test_uebersicht_lehrer", test_id=test.id)
+
+def kurs_to_stufe(kurs: str) -> int:
+    if kurs in ("Y", "R", "E", "A", "B"):
+        return 2
+    if kurs in ("H", "G", "C"):
+        return 1
+    return 0  # S oder i
 
 def berechne_note(prozent, streng):
     """
