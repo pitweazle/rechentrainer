@@ -1,68 +1,125 @@
-<!DOCTYPE html>
+{% extends "layout.html" %}
 {% load static %}
 
-<html lang="de">
-    <head>       
-        <title>Rechentrainer von Peter Doll</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-        <link rel="stylesheet" href="{% static 'auswahl.css' %}">
-        {% block css_files %}
-        {% endblock %}
-    </head>
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'accounts/meine_gruppen.css' %}">
+{% endblock %}
 
-    <header>
-        <div class="navbar">
-            {% comment %} <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a> {% endcomment %}
-            <a href="{% url 'index' %}">&#8962 Home</a>
-            <a>{{titel}}</a>
-        </div> 
-    </header>
+{% block content %}
+    {% include "lehrer/gruppe_header.html" %}
 
-    <body>
-        <container>
-            <head>
-                <style>body{min-width: 450px;}</style>    
-            </head>
-        
-            <body>
-                <table>
-                    {% for gruppe in gruppen %}
-                        <tr>
-                            <td align="left">{{ gruppe.name }}</td>
-                            <td>
-                                <button>
-                                    <a href="{% url 'gruppe_uebersicht' gruppe.id %}">anzeigen</a>
-                                </button>
-                            </td>
-                            {% if super %}
-                                <td align="left">{{ gruppe.lehrer.profil.nachname }}</td>
-                            {% endif %}
-                            {% if gruppe.temp %}
-                                <td>temp</td>
-                            {% endif %}
-                        </tr>
-                    {% empty %}
-                        <strong>Es sind noch keine Lerngruppen vorhanden.</strong>
-                    {% endfor %}
-                    <tr>
-                        <td colspan="2", align="left">
-                            <button>
-                                <a href="{% url 'neue_gruppe' %}">neue Lerngruppe anlegen</a>
-                            </button>
+    <div class="container">
+        <h2>{{ titel }}</h2>
+
+        <table class="table">
+            <thead>
+                <tr>
+                {% if is_super %}
+                    <th>Lehrkraft</th>
+                {% endif %}
+                <th>Mathegruppe</th>
+                <th>Typ</th>
+                <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in gruppen %}
+                    {# --- Lehrer-Überschrift nur für Superuser --- #}
+                    {% if is_super %}
+                    {% ifchanged g.lehrer_id %}
+                        <tr class="lehrer-header">
+                        <td colspan="4">
+                            <strong>{{ g.lehrer.profil.vorname }} {{ g.lehrer.profil.nachname }}</strong>
                         </td>
-                    <tr></tr>
-                    <tr>
-                        <td colspan="2", align="left">
-                            <button>
-                                <a href="{% url 'gruppe_temp' %}">temporäre Gruppe für Duell anlegen</a>
-                            </button>
+                        </tr>
+                    {% endifchanged %}
+                    {% endif %}
+
+                    {# --- Überschrift der Mathegruppe (Name + Jg) --- #}
+                    {% ifchanged g.lehrer_id g.name %}
+                    <tr class="gruppe-header">
+                        {% if is_super %}
+                        <td></td>
+                        {% endif %}
+                        <td colspan="{% if is_super %}4{% else %}5{% endif %}">
+                        <strong>{{ g.name }} (Jg {{ g.jg }})</strong>
                         </td>
                     </tr>
-                </table>
-            </body>
-        </container>
-    </body>
-</html>
+                    {% endifchanged %}
 
+                    {# --- Zeile für diese Mathegruppe (Haupt- oder Duellgruppe) --- #}
+                    <tr>
+                    {% if is_super %}
+                        <td></td>
+                    {% endif %}
+                    <td></td>  {# Mathegruppe-Spalte bleibt leer, steht ja in der Überschrift #}
+                    <td>
+                        {% if not g.temp %}
+                            Mathegruppe
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not g.temp %} 
+                            <button onclick="location.href='{% url 'gruppe_uebersicht' g.id %}'" class="link-lerngruppe">anzeigen</button>
+                        {% endif %}
+                    </td>
+                    </tr>
+                    {# --- Tests zu dieser Mathegruppe als eigene Zeilen --- #}
+                    {% for t in g.tests.all %}
+                    <tr>
+                        {% if is_super %}
+                        <td></td>
+                        {% endif %}
+                        <td></td>
+                        <td>
+                            {{ t.name }}{% if t.active %} (aktiv){% endif %}
+                        </td>
+                        <td>
+                            <button onclick="location.href='{% url 'test_uebersicht_lehrer' t.id %}'" class="link-test">Auswertung</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr><td>
+                        <td>Rechenduell {{ g.name}}</td>
+                        <td><button onclick="location.href='{% url 'duell_uebersicht' g.id %}'" class="link-duell">anzeigen</button>
+                    </td></td></tr>
+                    {% if not g.temp %}
+                        <td><td><td>
+                            <button>
+                                <a href="{% url 'test_erstellen' g.id %}" class="link-test">(neuen) Test erstellen</a>
+                            </button>
+                        </td></td></td>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                    <td >Keine Lerngruppen vorhanden.</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td>
+                        <button onclick="location.href='{% url 'neue_gruppe' %}'" class="link-neu">neue Lerngruppe anlegen</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button onclick="location.href='{% url 'gruppe_temp' %}'" class="link-temp">Temporäre Gruppe für Duell anlegen (On the fly)</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <h4>Legende:</h4>
+    <div class="legende">
+        <table>
+            <tr><td><span class="leg-farbe link-neu">NEU</span> Neue Lerngruppe</td><td>Hier kann eine neue Lerngruppe angelegt werden, bei der sich die Schülerinnen und Schüler anmelden können.</td></tr>
+            <tr><td><span class="leg-farbe link-lerngruppe">LG</span> Lerngruppe</td><td>Hier können die Arbeitsergebnisse der Lerngruppe eingesehen werden.</td></tr>
+            <tr><td><span class="leg-farbe link-test">TE</span> Testgruppe</td><td>Hier kann ein Test für die Lerngruppe erstellt werden.</td></tr>
+            <tr><td><span class="leg-farbe link-duell">DU</span> Duell</td><td>Hier wird das Matheduell der Lerngruppe aufgerufen bzw. erstellt.</td></tr>
+            <tr><td><span class="leg-farbe link-temp">TEMP</span>Temp Duell</td><td>Hier kann eine Duellgruppe "on the fly" angelegt werden. Z.B. für eine Vertretungsstunde.</td></tr>
+        </table>
+    </div>        
+    </div>
+
+
+
+{% endblock %}

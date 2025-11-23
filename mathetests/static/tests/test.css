@@ -1,0 +1,87 @@
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.noten-box table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.noten-box th,
+.noten-box td {
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);  /* leicht grau */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-box {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+.modal-box button {
+  margin-top: 1rem;
+}
+
+  .zeugnis-box {
+    border: 2px solid #444;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    background-color: #fafafa;
+  }
+
+  .zeugnis-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .zeugnis-grid .left {
+    flex: 1;
+  }
+
+  .zeugnis-grid .right {
+    flex: 0 0 50%;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .note-big {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  .signature-block p {
+    margin: 1.2rem 0;
+  }
+
+  @media print {
+    .zeugnis-box {
+      page-break-inside: avoid;
+    }
+  }
+
+.signature-block .sig-spacer {
+    margin-top: 100px;    /* Abstand frei wählbar */
+}
