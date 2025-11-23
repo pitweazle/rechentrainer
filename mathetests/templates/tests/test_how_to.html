@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>Lernkontrollen mit dem Rechentrainer</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Lernkontrollen mit dem Rechentrainer</a>
+    </div>
+</header>
+<div class="container">
+        <video width="640" height="540" controls autoplay>
+            <source src="{% static "medien/film_test.mp4" %}"  type="video/mp4"></source>
+        </video>
+        <ul>
+            <li>Mit dem Rechentrainer können Lernkontrollen durchführt werden.</li>
+            <li>    Zunächst muss eine Lerngruppe angelegt werden und alle Schülerinnen und Schüler müssen sich in dieser Lerngruppe anmelden.</li>
+            <li>Als nächstes muss man einen Test anlegen:
+                <img src="{% static 'medien/test_anlegen_1.jpg' %}" alt="How to Test 1" style="width: 100%; max-width: 600px; height: auto;"></li> 
+            <li>Als nächstes erscheint eine Seite auf der man den Test erstellen kann. Das sieht so aus:
+                <img src="{% static 'medien/test_anlegen_2.jpg' %}" alt="How to Test 2" style="width: 100%; max-width: 600px; height: auto;">
+                Hier können aus allen Kategorien bis zu 10 Aufgaben ausgewählt werden und welche Optionen dabei erfüllt werden müssen.</li> 
+            </li>Nach dem Anklicken von "weiter" muss man dem Test einen Namen geben (unter dem die Schülerinnen und Schüler in später auswählen). Weiterhin muss festgelegt werden, wie streng der Test benotet werden soll und welcher Schwierigkeitsgrad gewünscht wird:
+                <img src="{% static 'medien/test_anlegen_3.jpg' %}" alt="How to Test 2" style="width: 100%; max-width: 600px; height: auto;"></li>
+            <li>Nach dem Klick auf "Speichern" finden die Mitglieder der Lerngruppe den Test unter "meine Tests":#8962
+
+                Zum Testtermin öffnen die Schülerinnen und Schüler ihre jeweilige Vorlage und bearbeiten diese. Da die Aufgaben mit Zufallszahlen erzeugt werden, kann nicht beim Nachbarn/der Nachbarin abgeschrieben werden.
+                Zu jeder Zeit wird die bisher erreichte Note angezeigt.<br>
+                Am Ende der Bearbeitungszeit werden die Ergebnisse für alle Schülerinnen und Schüler in einer Datei ordentlich dargestellt, die Tests müssen nur noch ausgedruckt und von der Lehrkraft unterschrieben werden.<br> 
+            </li> 
+            <li>Speziell für SchuB Klassen gibt es auch die Möglichkeit, Lernstandserhebungen durchzuführen. Hier sind typische Aufgaben schon vorgegeben (Diese Auswahl kann von der Lehrkraft natürlich geändert werden.).<br>
+                Am Ende wird das Ergebnis nicht als Note, sondern als Prozentwert für die einzelnen Lernfelder ausgegeben.<br>
+                <li>Hier gibt es eine Beschreibung: <a href="{% static 'medien/handbuch.pdf' %}#LSE">Lernstandserhebung</a>. </li>
+            <li>Für diese Lernkontrollen benötigt man die Desktopversion des Rechentrainers. Bei der Nutzung von Smartphone und Tablets kann nicht kontrolliert werden kann, ob die Taschenrechnerfunktion benutzt wird.</li>
+            <li>Auf den genutzten PCs muss OpenOffice bzw. LibreOffice installiert sein und dort müssen Makros zugelassen sein.</li>
+            <li>Den Rechentrainer für PCs kann hier heruntergeladen werden: <a href="{% url 'download_rechentrainer' %}">zum Download</a>.</li>
+            <li>Die Installationsanweisung gibt es als <a href="{% static 'medien/installieren.pdf' %}">Text</a> 
+                und als <a href="{% url 'installation_film' %}">Film</a>.</li>                
+            <li>Hier wird erklärt, wie man Tests mit dem Rechentrainer erstellen und durchführen kann: <a href="{% static 'medien/handbuch.pdf' %}#Test">Handbuch für Lehrer</a>.</li>
+            <li>Und <a href="{% static 'medien/rechenduell.ods' %}">hier</a> kann auch das im Handbuch beschriebene Rechenduell heruntergeladen werden.<br>
+            Dieses macht den Schülerinnen und Schülern viel Spaß!<br>
+            Auch für das Rechenduell gibt es <a href="{% static 'medien/rechenduell.pdf' %}">eine Gebrauchsanweisung</li>
+        </ul>
+</div>
+{% endblock %}
+</html>

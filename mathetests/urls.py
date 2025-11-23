@@ -5,6 +5,8 @@ urlpatterns = [
     path("test_erstellen/<int:gruppe_id>/", views.test_erstellen, name="test_erstellen"),
     path("test_benennen/<int:gruppe_id>/", views.test_benennen, name="test_benennen"),
     path("test_anzeigen/<int:test_id>/<int:profil_id>/", views.test_anzeigen, name="test_anzeigen"),
+    path("test_how_to/", views.test_how_to, name="test_how_to"),
+
 
     path('test/<slug:slug>/', views.test, name='test'),
     path("test/<int:test_id>/uebersicht/", views.test_uebersicht, name="test_uebersicht_lehrer"),
