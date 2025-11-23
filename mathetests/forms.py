@@ -1,5 +1,6 @@
 from django import forms
 
+from accounts.models import wahl_kurs
 from core.models import Auswahl
 
 class TestErstellenForm(forms.Form):
@@ -38,6 +39,12 @@ class TestNameForm(forms.Form):
         widget=forms.RadioSelect,
         initial="normal",
         label="Notensystem"
+    )
+
+    schwierigkeit = forms.ChoiceField(
+        label="Schwierigkeit",
+        choices=wahl_kurs.choices,
+        widget=forms.Select
     )
 
 

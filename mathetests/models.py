@@ -2,13 +2,17 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 
-from accounts.models import Lerngruppe
+from accounts.models import Lerngruppe, wahl_kurs
 
 from core.models import Kategorie
 
 class Test(models.Model):
     gruppe = models.ForeignKey(Lerngruppe, on_delete=models.CASCADE, related_name="tests")
     name = models.CharField(max_length=200, unique=True)
+    schwierigkeit = models.CharField(
+        max_length=1,
+        choices=wahl_kurs.choices,
+        default=wahl_kurs.E_KURS,)
     note_streng = models.BooleanField(default=True)
     proto_marker = models.PositiveIntegerField(
         validators=[MinValueValidator(1000)],
