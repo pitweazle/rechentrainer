@@ -427,11 +427,13 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
         else:
             return 0, "" 
     else:                                                                           # hier wird die Aufgabe erstellt:
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:
+        try:
+            if reihenfolge:
+                typ = reihenfolge[aufgnr-1]
+            else:
+                typ = random.randint(typ_anf, typ_end)
+        except:
             typ = random.randint(typ_anf, typ_end)
-        typ=11
         typ2 = 0 
         hilfe_id = 0
         anm = einheit = pro_text = ""    
@@ -500,17 +502,17 @@ def zahlen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             if typ in [6,12]:                                       #erzeugt Kommazahlen
                 vorkomma = random.randint(0,2)
                 if vorkomma > 0:
-                    zahl1_str = str(zahl1)[:vorkomma]+","+str(zahl1)[1:].rstrip("0")
-                    zahl2_str = str(zahl2)[:vorkomma]+","+str(zahl2)[1:].rstrip("0")
+                    zahl1_str = str(zahl1)[:vorkomma]+","+str(zahl1)[1:]#.rstrip("0")
+                    zahl2_str = str(zahl2)[:vorkomma]+","+str(zahl2)[1:]#.rstrip("0")
                 else:
-                    zahl1_str = "0,"+str(zahl1).rstrip("0")
-                    zahl2_str = "0,"+str(zahl2).rstrip("0")
-                zahl1_str = zahl1_str.rstrip(",")
-                zahl2_str = zahl2_str.rstrip(",") 
+                    zahl1_str = "0,"+str(zahl1)#.rstrip("0")
+                    zahl2_str = "0,"+str(zahl2)#.rstrip("0")
+                #zahl1_str = zahl1_str.rstrip(",")
+                #zahl2_str = zahl2_str.rstrip(",") 
                 zahl1=float(zahl1_str.replace(",", "."))
                 zahl2 = float(zahl2_str.replace(",", "."))
-                print(zahl1_str, zahl2_str)
-                if zahl1 == zahl2 and zahl1%1>0:
+                #print(zahl1_str, zahl2_str, zahl1%1)
+                if zahl1_str == zahl2_str and typ not in (3,11):
                     if random.random() < 0.5:
                         zahl2_str = zahl2_str + "0"
                     else:
@@ -1960,7 +1962,8 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             else:
                 text = "Berechne {4} eines {5} mit a={0}{2}"
                 pro_text = "{5}: a={0}{2}, {4}=?" 
-            lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
+            lsg_text = "{} {}{}".format(erg, einheit_aufg, exp)
+            lsg = [lsg_text, lsg_text.replace("²","^2")]
             parameter = {'name':'normal'}
         elif typ == 10:                             # Benennung am Dreieck
             titel = "Benennungen am Dreieck"
@@ -2071,7 +2074,8 @@ def figuren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             variable = [str(zahl1), str(zahl2), str(schieb), einheit_aufg, exp, gesucht, figur]
             text = "Berechne {5} dieses {6}" 
             pro_text = "{6}: a={0}{3}, b={1}{3}, {5}=?"  
-            lsg = ["{} {}{}".format(erg, einheit_aufg, exp)]
+            lsg_text = "{} {}{}".format(erg, einheit_aufg, exp)
+            lsg = [lsg_text, lsg_text.replace("²","^2")]
             parameter = {'name': 'svg/geometrie.svg', 'object': 'figur', 'box_hoehe': box_hoehe, 'box_breite': box_breite, 'hoehe': hoehe*20,
                     'x1':x1, 'y1':y1,'x2':x2, 'y2':y2,'x3':x3, 'y3':y3,'x4':x4, 'y4':y4,
                     'seiten': [
@@ -2209,10 +2213,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             return -1, ""
         return -1, ""
     else: 
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:                                                                           
-            typ = random.randint(typ_anf, typ_end)
+        typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Winkel" 
         text = ""
@@ -5885,13 +5886,14 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
+        print("Stufe: ",stufe)
         if jg > 10 or stufe >= 43 or "Winkel" in optionen:
             typ_anf = 1
             typ_end = 27        
-        if jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
+        elif jg > 10 or stufe >= 41 or "Trigonometrie" in optionen:
             typ_anf = 1
             typ_end = 24
-        if jg > 9 or stufe >= 33 or "Kathete" in optionen:
+        elif jg > 9 or stufe >= 33 or "Kathete" in optionen:
             typ_anf = 1
         reihenfolge = erstelle_reihenfolge(typ_anf, typ_end, False)
         return typ_anf, typ_end, reihenfolge
@@ -5924,7 +5926,39 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             else:
                 return -1, "" 
         elif typ > 16:
-            if "°" in eingabe:
+            if typ == 27 and typ2 ==3:                                      # Aufgabe mit STVO Steigung'
+                if "°" in eingabe:
+                    eingabe = eingabe.replace("°","").replace(",",".")
+                    nachkomma = len(eingabe.split(".")[1]) if "." in eingabe else 0
+                    try:
+                        if round(float(eingabe),nachkomma) == round(float(lsg[-2]),nachkomma):
+                            return 1, ""
+                    except:
+                        return 0, "Leider kann ich deine Eingaben nicht berechnen"
+                elif not ")" in eingabe:
+                    return 0, "Du musst den Wert in Klammern eingeben"
+                elif "asin" in eingabe:
+                    return 0, "Du darfst nicht die tatsächliche Streckenlänge einsetzen, sondern die horizontale (also nicht asin)."
+                elif "atan" in eingabe:
+                    parser = Parser()
+                    eingabe = eingabe.replace(",",".")
+                    try:
+                        wert_eingabe = parser.parse(eingabe).evaluate({})
+                        wert_lsg = parser.parse(lsg[1]).evaluate({})
+                        if wert_eingabe == wert_lsg:
+                            return 1, ""
+                    except:
+                        return 0, "Leider kann ich deine Eingaben nicht berechnen"
+                else:
+                    return -1, ""
+            if typ == 24 and typ2 == 3 and "sm" in eingabe:              # Aufgabe mit Leuchtturm
+                #1000m = 0.539957sm
+                eingabe = eingabe.replace("sm","").replace(",",".")
+                if round(float(eingabe),1) == round(float(lsg[1]*0.000539957),1):
+                    return 2, "<br>Prima! Das gibt einen Extrapunkt"
+                else:
+                    return 0, "Nein, " + eingabe + "sm  ist leider nicht richtig."
+            elif "°" in eingabe:
                 return 0, "Das Gradzeichen ° musst du weglassen."
             if ":" in eingabe:
                 return 0, "Bitte benutze für die Division das '/' Zeichen."
@@ -5952,15 +5986,19 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
         else:
             return -1, "" 
     else: 
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:                                                                           
+        try:
+            if reihenfolge:
+                typ = reihenfolge[aufgnr-1]
+            else:                                                                           
+                typ = random.randint(typ_anf, typ_end)
+        except:
             typ = random.randint(typ_anf, typ_end)
+        print(reihenfolge, typ_end)
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
         variable = ["",]
-        pro_text = frage = einheit = anmerkung = hilfe = ""
+        pro_text = text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
         x0 = 80
@@ -6487,18 +6525,32 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             hilfe_id = 230
             hilfe = "Gegenkathete (gesucht), Ankathete (gegeben) -> Tangens"   
         elif typ == 24:                                         # Ankathete aus Winkel und Gegenkathete
-            if typ2%2 == 0:
-                variable = "b"
-                parameter["a"] = str_a
-                wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
-                lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+            typ3 = random.randint(1,3)
+            if typ3 < 3:
+                if typ2%2 == 0:
+                    variable = "b"
+                    parameter["a"] = str_a
+                    wert = round(a,0)/math.tan(math.radians(round(winkel,0)))
+                    lsg = [str_a + "/tan" + str_winkel, wert,  "indiv_0"]
+                else:
+                    variable = "a"
+                    parameter["b"] = str_b
+                    wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
+                    lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
             else:
-                variable = "a"
-                parameter["b"] = str_b
-                wert = round(b,0)/math.tan(math.radians(round(winkel,0)))
-                lsg = [str_b + "/tan" + str_winkel, wert,  "indiv_0"]
-            hilfe = 240
-            hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
+                typ2 = 3                                    # Anwendungsaufgabe mit Leuchtturm
+                titel = "Maritimes"
+                winkel = random.randint(1,3)
+                hoehe = random.randint(40,80)
+                wert = wert = hoehe / math.tan(math.radians(winkel))
+                variable = [hoehe, winkel, (wert)]
+                lsg = [str(hoehe) + "/tan" + str(winkel), wert, wert*0.000539957, "indiv_0"]
+                text = "Im Marinefernglas gibt es Markierungen, mit denen man Winkel messen kann.<br>Eine Leuchtturmspitze erscheint unter einem Winkel von {1}°. Laut Seekarte hat der Leuchtturm eine Höhe von {0}m über dem Meeresspiegel. Wie kann man berechnen, wie weit er entfernt ist?"
+                pro_text = "Marinefernglas: Leuchtturm {}hoch und unter {}°, Entfernung?"
+                text += "<br>(Wenn du die Entfernung in Seemeilen 'sm' angibst, gibt es einen Extrapunkt :)."
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/leuchtturm.jpg', 'breite': 400}
+                hilfe = 240
+                hilfe = "Gegenkathete (gegeben), Ankathete (gesucht) -> Tangens" 
         elif typ == 25:                                         # Winkel aus Gegenkathete und Hypotenuse
             parameter["c"] = str_c
             if typ2%2 == 0:
@@ -6538,36 +6590,56 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             hilfe_id = 260
             hilfe = "Ankathete und Hypotenuse gegeben -> Kosinus⁻¹ (oder acos oder arccos)." 
         elif typ == 27:                                         # Winkel aus Ankathete und Gegenkathete
-            parameter["a"] = str_a
-            parameter["b"] = str_b            
-            if typ2%2 == 0:
-                parameter["symbol"] = "β"
-                variable = ["β", "atan"]
-                lsg = "atan(" + str_a + "/" + str_b + ")" 
+            typ3 = random.randint(1,3)
+            if typ3 < 3:
+                parameter["a"] = str_a
+                parameter["b"] = str_b            
+                if typ2%2 == 0:
+                    parameter["symbol"] = "β"
+                    variable = ["β", "atan"]
+                    lsg = "atan(" + str_a + "/" + str_b + ")" 
+                    wert = math.degrees(math.atan(round(a,0)/round(b,0)))
+                    wert2 = (int_a/int_b)
+                else:
+                    parameter["symbol"] = "α"
+                    variable = ["α", "atan"] 
+                    lsg = "atan(" + str_b + "/" + str_a + ")" 
+                    wert = math.degrees(math.atan(round(b,0)/round(a,0)))
+                    wert2 = (int_b/int_a)
+                lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+            else:
+                typ2 = 3
+                titel = "Steigungswinkel"
+                text = "In den Bergen findet man am Straßenrand solche Schilder, die die Steigung in Prozent anzeigen.<br>Wie kann man die angezeigte Steigung von {}% in den zugehörigen Steigungswinkel umrechnen?"
+                pro_text = "{}% Steigung = Steigungswinkel?"
+                steigung = random.randint(5,12)
+                variable = [steigung]
+                parameter = {'name': 'core/grafik.html', 'object': 'grafik/steigung.jpg', 'breite': 300, 'steigung': steigung}
+                anmerkung ="Du kannst dir einfach zwei Werte für die (horizontale!) Streckenlänge und resultierende Höhe überlegen."
+                b = 100
+                a = steigung
+                lsg = "atan(" + str(a) + "/" + str(b) + ")"
                 wert = math.degrees(math.atan(round(a,0)/round(b,0)))
                 wert2 = (int_a/int_b)
-            else:
-                parameter["symbol"] = "α"
-                variable = ["α", "atan"] 
-                lsg = "atan(" + str_b + "/" + str_a + ")" 
-                wert = math.degrees(math.atan(round(b,0)/round(a,0)))
-                wert2 = (int_b/int_a)
-            lsg = [lsg, wert, lsg.replace("atan","tan^-1"), lsg.replace("atan","arctan"), "indiv_0"]
+                lsg = [lsg + "=" + str(round(wert,1)) + "°", lsg, wert, "indiv_0"]
+                #print(lsg)
             hilfe_id = 270
             hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
         if typ > 24:
-            text = "Wie berechnet man den Winkel {}?"
             parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
-            parameter['popup_text'] = "popups/arcsin.html"  
-            nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
-            if nachkomma < 4:
-                ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
-                lsg.insert(-1,ergaenzung.replace(".",","))
-        elif typ > 16:
-            frage = "{}=".format(*variable)
-            text = "Wie berechnet man die Seite {}?"
+            parameter['popup_text'] = "popups/arcsin.html"
+            if titel != "Maritimes":  
+                text = "Wie berechnet man den Winkel {}?"
+                nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
+                if nachkomma < 4:
+                    ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
+                    lsg.insert(-1,ergaenzung.replace(".",","))
+        if typ > 16: 
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
+            if titel != "Steigungswinkel":
+                frage = "{}=".format(*variable)
+                text = "Wie berechnet man die Seite {}?"
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def kreise(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):

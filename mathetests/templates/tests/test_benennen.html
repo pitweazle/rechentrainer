@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block content %}
+  {% include "includes/header.html" %}
+  <div class="container container--narrow">
+    <h1>Test benennen – {{ gruppe.name }}</h1>
+    <form method="post">
+      {% csrf_token %}
+
+      <p>
+        <label for="{{ form.name.id_for_label }}">Name</label><br>
+        {{ form.name }}
+      </p>
+
+      <p><b>Notensystem auswählen:</b><br>
+          {{ form.note_modus }}
+      </p>
+
+      <p><b>Schulform/Leistungskurs:</b><br>
+          {{ form.schwierigkeit }}
+      </p>
+
+      <button type="submit" class="btn btn-primary">Speichern</button>
+    </form>
+
+  </div>
+  {% include "includes/footer.html" %}
+{% endblock %}

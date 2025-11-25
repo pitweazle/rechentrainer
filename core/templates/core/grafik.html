@@ -1,2 +1,36 @@
 {% load static %}
-<img src="{% static parameter.object %}" height="200" width={{parameter.breite}} alt="Grafik" style="display: block; margin: auto;  ">
+
+<div
+  style="
+    /* Größe/Responsivität */
+    --w: {{ parameter.breite }}px;
+    width: var(--w);
+    max-width: 90vw;
+
+    /* Bildfläche */
+    position: relative;
+    aspect-ratio: 400/267;           /* Seitenverhältnis deiner Grafik */
+    background: url('{% static parameter.object %}') center/cover no-repeat;
+
+    /* Zentrierung */
+    margin: 0 auto;
+  "
+>
+  {% if parameter.object == 'grafik/steigung.jpg' %}
+    <div
+      style="
+        position: absolute;
+        top: 28.5%;
+        left: 45%;
+        transform: rotate(-25deg);
+        font: 700 21px/1 Arial, Helvetica, sans-serif;
+        color: #000;
+        text-shadow: 0 0 2px #fff;  /* bessere Lesbarkeit */
+        z-index: 1;                 /* sicher über dem Hintergrund */
+        pointer-events: none;
+      "
+    >
+      {{ parameter.steigung }}%
+    </div>
+  {% endif %}
+</div>

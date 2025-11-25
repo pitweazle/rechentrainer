@@ -20,6 +20,8 @@ from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
+from mathetests.models import Test
+
 # Dies ist die Startseite:
 def index(req):
     if 'duell' in req.session:
@@ -28,7 +30,14 @@ def index(req):
     anz_lehrer = User.objects.filter(groups__name="Lehrer").count()
     anz_aufg = Protokoll.objects.count()
     lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
-    return render(req, 'index.html', context= {'lehrer': lehrer, 'anz_angemeldet': anz_angemeldet, 'anz_lehrer': anz_lehrer, 'anz_aufg': anz_aufg})
+    tests = []
+    if req.user.is_authenticated:
+        profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
+        if profil and profil.gruppe_id:
+            tests = Test.objects.all().order_by("-created_at")
+    else:
+        profil = None
+    return render(req, "index.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_aufg, "tests": tests, })
 
 def datenschutz(req):
     return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})

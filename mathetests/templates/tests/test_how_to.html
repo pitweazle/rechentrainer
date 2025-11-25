@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}   
+{% load static %}
+{% block css_files %}
+  <link rel="stylesheet" href="{% static 'accounts/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<body>
+
+<head>       
+    <title>Lernkontrollen mit dem Rechentrainer</title>
+</head>
+<header>
+    <div class="navbar">
+        <a href="{% url 'index' %}">&#8962 Home</a>
+        <a>Lernkontrollen mit dem Rechentrainer</a>
+    </div>
+</header>
+<div class="container">
+        <video width="640" height="540" controls autoplay>
+            <source src="{% static "medien/film_test.mp4" %}"  type="video/mp4"></source>
+        </video>
+        <h2 style="text-align: center;">
+            Mit dem Rechentrainer können Lernkontrollen durchgeführt werden
+        </h2>
+        <ol>
+            <li>Vorbedingung: Um zu verhindern, dass die Schülerinnen und Schüler den Rechner oder das Internet benutzen, müsste ein PC-Raum zur Verfügung stehen, der entweder
+                <p>-eine Testumgebung zur Verfügung stellt. das heißt, man kann alle Funktionen außer dem Zugang zu 'www.rechentrainer.app' sperren,</p>
+                <p>- eine Möglichkeit, alle Bildschirme zu überwachen,</p>
+                <p>- oder die Mögpchkeit, alle Monitore zu sehen.</p>
+                <p>(Oder die Lehrkraft, kann darauf vertrauen, dass niemand schummelt.)</p>
+            </li>
+            <li>Zunächst muss eine Lerngruppe angelegt sein, in der alle Schülerinnen und Schüler angemeldet sind.</li>
+            <li>Dann muss man ein Test angelegt werden:
+                <img src="{% static 'grafik/test_anlegen_1.jpg' %}" alt="How to Test 1" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;"></li> 
+            <li>Als nächstes erscheint eine Seite, auf der man den Test erstellen kann. Das sieht so aus:
+                <img src="{% static 'grafik/test_anlegen_2.jpg' %}" alt="How to Test 2" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;">
+                <br>Hier können aus allen Kategorien bis zu 10 Aufgaben ausgewählt, und die Optionen die dabei erfüllt werden müssen, bestimmt werden.</li> 
+            </li>Nach dem Anklicken von 'weiter' muss man dem Test einen Namen geben (unter dem die Schülerinnen und Schüler in später auswählen). Weiterhin muss festgelegt werden, wie streng der Test benotet werden soll und welcher Schwierigkeitsgrad gewünscht wird:
+                <img src="{% static 'grafik/test_anlegen_3.jpg' %}" alt="How to Test 3" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;"></li>
+            <li>Nach dem Klick auf "Speichern" finden die Mitglieder der Lerngruppe den Test unter "meine Tests":
+                <img src="{% static 'grafik/test_anlegen_4.jpg' %}" alt="How to Test 4" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;">
+                <p>Beim 'Test 2. Halbjahr' steht 'aktiv', das heißt, dass dieser Test bearbeitet werden kann.</p></li>
+            <li>Zum Testtermin aktiviert die Lehrkraft den Test:
+                <img src="{% static 'grafik/test_anlegen_5.jpg' %}" alt="How to Test 5" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;">
+                <br>... erst dann können die Schülerinnen und Schüler den Test bearbeiten. 
+                <br>(Wenn die Seite bei ihnen schon geöffnet ist, müssen sie die Seite neu laden, mit F5, STRG+R oder dem 'Aktualisieren' Zeichen ↻)</li>
+            <li>Am Ende der Bearbeitungszeit klickt die Lehrkraft auf 'Test beenden':
+                <img src="{% static 'grafik/test_anlegen_6.jpg' %}" alt="How to Test 6" style="width: 100%; max-width: 500px; height: auto; border: 2px solid red;">
+                <br>... der Test kann nicht mehr bearbeitet werden. Die Noten werden berechnet und ein Notenspiegel erstellt und die Übersicht kann ausgedruckt werden:
+                <img src="{% static 'grafik/test_anlegen_7.jpg' %}" alt="How to Test 7" style="width: 100%; border: 2px solid red;">
+                <br>Ein Klick auf den Namen eines Schülers/einer Schülerin öffnet die jeweilige Schülerseite. Sie kann nur von der Lehrkraft ausgedruckt werden.
+                <br>(Auch hier müssen die Schülerinnen und Schüler wahrscheinlich die Seite aktualisieren, damit ihre Note angezeigt wird):
+                <img src="{% static 'grafik/test_anlegen_8.jpg' %}" alt="How to Test 8" style="width: 100%; border: 2px solid red;">
+            </li>
+            <li>Noch einige Anmerkungen:
+                <br>- Wie man an diesem Beispiel sehen kann, entspricht die Anzahl der richtig gelösten Aufgaben nicht immer der dazugehörigen Punktezahl. Bei einigen Aufgaben gibt es Extrapunkte - 
+                 zB. fürs Kürzen, Umwandeln in gemischte Zahlen oder das Zusammenfassen von Termen
+                <br>- Die angezeigetn Noten werden nicht gespeichert, sie werden beim Aufruf der Seite jeweils berechnet (Datenschutz).
+                <br>- Die Tests werden nach einem Jahr automatisch gelöscht (Datenschutz). Die bearbeiteten Aufgaben stehen aber weiterhin im Protokoll der jeweiligen Schülerinnen und Schüler.
+                <br>- Die im Filmclip oben gezeigte Lernkontrolle wurde mit der Desktopversion des Rechentrainers durchgeführt - siehe 'Und noch eine Anmerkung':
+            </li>
+            <li>Und noch eine Anmerkung:
+                <br>- Speziell für SchuB Klassen gibt es auch die Möglichkeit, Lernstandserhebungen durchzuführen. Hier sind typische Aufgaben schon vorgegeben (Diese Auswahl kann von der Lehrkraft natürlich geändert werden.).<br>
+                Am Ende wird das Ergebnis nicht als Note, sondern als Prozentwert für die einzelnen Lernfelder ausgegeben.
+                <br>- Hier gibt es eine Beschreibung: <a href="{% static 'medien/handbuch.pdf' %}#LSE">Lernstandserhebung</a>.
+                <br>- Für diese Lernkontrollen benötigt man die Desktopversion des Rechentrainers.
+                <br>- Auf den genutzten PCs muss OpenOffice bzw. LibreOffice installiert sein und dort müssen Makros zugelassen sein.
+                <br>- Den Rechentrainer für PCs kann hier heruntergeladen werden: <a href="{% url 'download_rechentrainer' %}">zum Download</a>.
+                <br>- Die Installationsanweisung gibt es als <a href="{% static 'medien/installieren.pdf' %}">Text</a> 
+                <br>- und als <a href="{% url 'installation_film' %}">Film</a>.
+                <br>.... wenn Bedarf besteht, werden ich versuchen, auch diese Lernstandserhebung in die rechentrainer.app zu integrieren.
+            </li>                
+        </ol>
+</div>
+{% endblock %}
+</html>

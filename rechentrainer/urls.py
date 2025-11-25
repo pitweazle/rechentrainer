@@ -8,6 +8,7 @@ urlpatterns = [
 
     # Apps
     path('', include('accounts.urls')),
+    path('', include('mathetests.urls')),
     path('', include('duell.urls')),
     path('', include('medien.urls')),
     #path('onlineduell/', include('onlineduell.urls')),  # falls diese App eigene URLs bekommt

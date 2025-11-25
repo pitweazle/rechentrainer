@@ -1,0 +1,8 @@
+<h2>Test löschen</h2>
+<p>Möchtest du den Test <b>{{ test.name }}</b> wirklich löschen?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Ja, löschen</button>
+    <a href="{% url 'test_uebersicht_lehrer' test.id %}" class="btn btn-secondary">Abbrechen</a>
+</form>
