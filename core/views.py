@@ -2213,10 +2213,7 @@ def winkel(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
             return -1, ""
         return -1, ""
     else: 
-        if reihenfolge:
-            typ = reihenfolge[aufgnr-1]
-        else:                                                                           
-            typ = random.randint(typ_anf, typ_end)
+        typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Winkel" 
         text = ""
