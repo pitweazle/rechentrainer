@@ -2,22 +2,21 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht
 
 class GruppeFilter(admin.SimpleListFilter):
     title = 'Lerngruppe'
     parameter_name = 'gruppe'
-
     def lookups(self, request, model_admin):
         # Passe 'name' an, falls deine Lerngruppe anders heißt
         return [(g.pk, getattr(g, 'name', str(g))) for g in Lerngruppe.objects.all()]
-
     def queryset(self, request, queryset):
         gid = self.value()
         if gid:
             return queryset.filter(profil__gruppe_id=gid)
         return queryset
-
 
 class OrtAdmin(admin.ModelAdmin):
     ordering = ['plz',]
@@ -50,17 +49,25 @@ class BenutzerAdmin(UserAdmin):
     list_select_related = ('profil', 'profil__gruppe')  # Performance
 
     def profil_vorname(self, obj):
-        return getattr(obj.profil, 'vorname', '')  # failsafe
+        try:
+            return obj.profil.vorname
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return ""
     profil_vorname.short_description = "Vorname"
 
     def profil_nachname(self, obj):
-        return getattr(obj.profil, 'nachname', '')
+        try:
+            return obj.profil.nachname
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return ""
     profil_nachname.short_description = "Nachname"
 
     def profil_gruppe(self, obj):
-        return getattr(obj.profil, 'gruppe', None)
-    profil_gruppe.short_description = "Lerngruppe"   # ⚠️ hier war zuvor ein Tippfehler
-
+        try:
+            return obj.profil.gruppe
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return None
+    profil_gruppe.short_description = "Mathegruppe"
 
 class GeloeschtAdmin(admin.ModelAdmin):
     search_fields = ['benutzername']

@@ -1,0 +1,217 @@
+{% load static %}
+{% load l10n %}
+
+<html lang="de">
+  <head>
+    <title>Rechentrainer von Peter Doll</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+
+    <style>
+      .popup {
+        display: none;
+        position: fixed;
+        top: 20%;
+        left: 20%;
+        transform: translate(-10%, -10%);
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        z-index: 1000;
+      }
+      .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+      .popup-close {
+        cursor: pointer;
+        color: black;
+        font-weight: bold;
+        float: right;
+      }
+    </style>
+  </head>
+
+  {% block css_files %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+    <style>
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+    </style>
+  {% endblock %}
+
+  <body>
+    <div class="container">
+      {% block content %}
+      <div class="oben">
+        <div class="navbar">
+          {% if user.is_authenticated %}
+            <p>{{ user.profil.vorname }} {{ user.profil.nachname }}
+            {% if user.profil.klasse == "lehrer" %}
+              </p>
+            {% else %}
+              , {{ user.profil.klasse }}</p>
+            {% endif %}
+          {% else %}
+            <p>Du bist nicht eingeloggt</p>
+            <a href="{% url 'anmelden' %}">Log In</a>
+          {% endif %}
+        </div>
+
+        {% autoescape off %}
+        <div class="message">
+          {% for message in messages %}
+            {% if 'leider falsch' in message.message %}
+              <p class="rot">{{ message }}</p>
+            {% elif 'gemerkt' in message.message %}
+              <p class="rot">{{ message }}</p>
+            {% elif 'halb' in message.message %}
+              <p class="gelb">{{ message }}</p>
+            {% elif 'dreimal' in message.message %}
+              <p class="rot">{{ message }}</p>
+            {% elif 'war richtig!' in message.message %}
+              <p class="gruen">{{ message }}</p>
+            {% else %}
+              <p class="gelb">{{ message }}</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <h2>{{ titel }}</h2>
+
+        {# Aufgabennummer: im Test immer x / soll #}
+        <h3>Aufgabe {{ aufgnr }}{% if soll %} / {{ soll }}{% endif %}</h3>
+
+        {% if parameter.strich %}
+          {{ parameter.koeffizient }}&radic;
+          <span style="vertical-align: 0.3em;">{{ parameter.strich }}</span>
+          <span style="{{ parameter.laenge }}"> {{ text }}</span>
+        {% else %}
+          {{ text }}
+        {% endif %}
+        </h3>
+      </div>
+
+      <div class="mitte">
+        <p>
+        {% localize off %}
+          {% if parameter.name != "normal" and not "tab" in parameter.name %}
+            {% include parameter.name %}
+          {% endif %}
+        {% endlocalize %}
+        </p>
+      </div>
+
+      <div class="unten">
+        {% comment %} FALL 2: Lösungsansicht (auch für Wertetabellen) {% endcomment %}
+        {% if lsg %}
+          {% if "tab" in parameter.name %}
+            {# Wertetabelle mit Lösung #}
+            {% include 'mathe/wertetabelle_lsg.html' %}
+          {% endif %}
+
+          {% if eingabe %}
+            <p class="rot"><b>Deine Eingabe: {{ eingabe }}</b></p>
+          {% endif %}
+
+          <button type="button">
+            <a href="{% url 'test' kategorie.slug %}?test={{ test_id }}">nächste Aufgabe</a>
+          </button>
+
+        {% comment %} FALL 3: normale Aufgabe (mit/ohne Tabelle) {% endcomment %}
+        {% else %}
+
+          {% if "potenzen" in parameter.object %}
+            {% include 'mathe/potenzen.html' %}
+          {% endif %}
+
+          {{ message_unten }}
+
+          {% if parameter.popup %}
+            <a href="#" id="openPopup"><br>{{ parameter.popup }}</a>
+
+            <div class="popup-overlay" id="popupOverlay"></div>
+            <div class="popup" id="popup">
+              {% include parameter.popup_text %}
+            </div>
+            <script>
+              document.getElementById("openPopup").addEventListener("click", function (event) {
+                event.preventDefault();
+                document.getElementById("popupOverlay").style.display = "block";
+                document.getElementById("popup").style.display = "block";
+              });
+              document.getElementById("closePopup").addEventListener("click", function () {
+                document.getElementById("popupOverlay").style.display = "none";
+                document.getElementById("popup").style.display = "none";
+              });
+              document.getElementById("popupOverlay").addEventListener("click", function () {
+                document.getElementById("popupOverlay").style.display = "none";
+                document.getElementById("popup").style.display = "none";
+              });
+            </script>
+          {% endif %}
+
+          {# Formular #}
+          {% if "tab" in parameter.name %}
+            <form
+              action="{% url 'test' kategorie.slug %}?test={{ test_id }}"
+              method="post"
+              onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="protokoll_id" value="{{ protokoll_id }}">
+              <input type="hidden" name="zaehler_id" value="{{ zaehler_id }}">
+
+              {% include 'mathe/wertetabelle.html' %}
+
+              <input type="submit" value="Prüfen">
+            </form>
+          {% else %}
+            <form
+              action="{% url 'test' kategorie.slug %}?test={{ test_id }}"
+              method="post"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="protokoll_id" value="{{ protokoll_id }}">
+              <input type="hidden" name="zaehler_id" value="{{ zaehler_id }}">
+              <fieldset>
+                {{ frage }}
+                {{ form.eingabe }}
+                {{ einheit }}
+                <input type="submit" value="Prüfen">
+              </fieldset>
+            </form>
+          {% endif %}
+
+          <nav>
+            <button type="button">
+              <a href="{% url 'test_loesung' zaehler_id protokoll_id %}?test={{ test_id }}">Lösung</a>
+            </button>
+            <button type="button">
+              <a href="{% url 'test_abbrechen' zaehler_id test_id %}">Abbrechen</a>
+            </button>
+          </nav>
+
+        {% endif %}
+      </div>
+
+
+      {% endautoescape %}
+      {% endblock %}
+    </div>
+  </body>
+</html>

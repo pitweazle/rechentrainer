@@ -44,7 +44,7 @@
 
 {% block css_files %}
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
+    <link rel="stylesheet" href="{% static 'mathe/aufgabe.css' %}">
     <style>
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -114,9 +114,9 @@
             <div class="unten">
                 {% if "tab" in parameter.name %}
                     {% if lsg %}
-                        {% include 'core/wertetabelle_lsg.html'%}
+                        {% include 'mathe/wertetabelle_lsg.html'%}
                     {% else %}
-                        {% include 'core/wertetabelle.html'%}
+                        {% include 'mathe/wertetabelle.html'%}
                     {% endif %}
                 {% endif %}
                 {% if 'dreimal' in message_unten %}
@@ -132,7 +132,7 @@
                     </button>
                 {% else %}
                     {% if "potenzen" in parameter.object %}
-                        {% include 'core/potenzen.html'%}
+                        {% include 'mathe/potenzen.html'%}
                     {% endif %}
                     {{message_unten}}
                     {% if parameter.popup %}
@@ -193,7 +193,7 @@
                         </button>
                     </nav>
                     {% if duell %}
-                        {% include 'core/duell.html'%}
+                        {% include 'mathe/duell.html'%}
                     {% else %}
                         {% if bis_loeschen > 0 %}
                             Fehler löschen: noch {{bis_loeschen}} Aufgaben

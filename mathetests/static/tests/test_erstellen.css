@@ -1,0 +1,38 @@
+
+  /* Zentrierter, schmalerer Container für alle Seiten */
+.container {
+  max-width: 700px;
+  padding-bottom: 5rem; 
+}
+
+  
+  /* Falls Tabellenstyling zentriert: hier absichern */
+  td { text-align: left; }
+
+  /* Wrapper für die Checkboxen – gilt für beide Render-Varianten */
+  .opts-inline { margin: 0; padding: 0; }
+
+  /* Variante A: Django rendert als <ul><li>… */
+  .opts-inline ul { 
+    list-style: none; 
+    margin: 0; 
+    padding: 0; 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 0.75rem;
+  }
+  .opts-inline ul li { 
+    margin: 0; 
+    padding: 0;
+  }
+
+  /* Variante B: manche Themes/Helper rendern <div><label><input>… */
+  .opts-inline label { 
+    display: inline-flex; 
+    align-items: center; 
+    margin-right: 1rem; 
+    margin-bottom: 0.25rem;
+  }
+  .opts-inline input[type="checkbox"] { 
+    margin-right: 0.35rem; 
+  }

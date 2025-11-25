@@ -1,0 +1,24 @@
+{% load static %}
+<header>
+    <div class="navbar">
+            <a href="{% url 'index' %}">&#8962 Home</a>
+        <div class="dropdown">
+            <button class="dropbtn"> 
+                {% if user.is_authenticated %}
+                    Hallo {{ user.username }}
+                {% else %}
+                    <a href="{% url 'anmelden' %}">Anmelden</a>
+                {% endif %}
+            </button>
+            {% if user.is_authenticated %}
+                <div class="dropdown-content">
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <a><input type="submit"  value= "abmelden"></a>
+                    </form>
+                </div>
+            {% endif %}
+        </div>  
+    </div> 
+</header>
+
