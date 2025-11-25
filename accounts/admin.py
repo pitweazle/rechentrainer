@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht
 
 class OrtAdmin(admin.ModelAdmin):
@@ -34,16 +36,25 @@ class BenutzerAdmin(UserAdmin):
     list_filter = ['groups', 'gruppe']
     
     def profil_vorname(self, obj):
-        return obj.profil.vorname
+        try:
+            return obj.profil.vorname
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return ""
     profil_vorname.short_description = "Vorname"
 
     def profil_nachname(self, obj):
-        return obj.profil.nachname
+        try:
+            return obj.profil.nachname
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return ""
     profil_nachname.short_description = "Nachname"
 
     def profil_gruppe(self, obj):
-        return obj.profil.gruppe
-    profil_nachname.short_description = "Lerngruppe"
+        try:
+            return obj.profil.gruppe
+        except (Profil.DoesNotExist, ObjectDoesNotExist):
+            return None
+    profil_gruppe.short_description = "Mathegruppe"
 
 class GeloeschtAdmin(admin.ModelAdmin):
     search_fields = ['benutzername']

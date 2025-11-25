@@ -128,12 +128,12 @@ def test_benennen(req, gruppe_id):
 def test_anzeigen(req, test_id, profil_id):
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
-    profil = Profil.objects.filter(id=profil_id).select_related("lerngruppe").first()
+    profil = Profil.objects.filter(id=profil_id).select_related("gruppe").first()
     user_profil = getattr(req.user, "profil", None)
     # --- Zugriff prüfen ---
     if not (user_profil == profil or req.user == gruppe.lehrer or req.user.is_superuser):
         return HttpResponse("Zugriff verweigert")
-    if not profil or profil.lerngruppe_id != gruppe.id:
+    if not profil or profil.gruppe_id != gruppe.id:
         return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
     # --- Testeinstellungen ---
     einstellungen = (
@@ -264,7 +264,7 @@ def test_anzeigen(req, test_id, profil_id):
         noten_spiegel_s = {1:0,2:0,3:0,4:0,5:0,6:0}
         noten_summe = 0
         noten_anzahl = 0
-        for sch in Profil.objects.filter(lerngruppe=gruppe):
+        for sch in Profil.objects.filter(gruppe=gruppe):
             # alle protokolle dieses Schülers zu diesem Test
             prot_s = Protokoll.objects.filter(
                 profil=sch, hilfe_id=test.proto_marker
@@ -348,7 +348,7 @@ def test(req, slug):
         return redirect("index")
     test = get_object_or_404(Test, pk=test_id)
     # Gruppenzugehörigkeit prüfen
-    if profil.lerngruppe_id != test.gruppe_id:
+    if profil.gruppe_id != test.gruppe_id:
         return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
     # Einstellungen für diese Kategorie
     cheat = False

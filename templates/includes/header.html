@@ -4,8 +4,20 @@
             <a href="{% url 'index' %}">&#8962 Home</a>
             <a href="{% url 'uebersicht' %}">Aufgaben</a>
             <a href="{% url 'protokoll' %}">Protokoll</a>
+
             {% if lehrer %}
-            <a href="{% url 'meine_gruppen' %}">meine Lerngruppen</a>
+                <a href="{% url 'meine_gruppen' %}">meine Lerngruppen</a>
+            {% else %}
+                {% if tests %}
+                    <div class="dropdown">
+                        <span>Hier sind deine Tests</span>
+                        <div class="dropdown-content">
+                                {% for t in tests %}
+                                    <p><a href="{% url 'test_anzeigen' t.id profil.id %}">{{ t.name }} {% if t.aktiv %} (aktiv){% endif %}</a></p>
+                                {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             {% endif %}
 
         <div class="dropdown">
