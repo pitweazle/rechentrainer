@@ -10,11 +10,10 @@
 
     <div class="container">
         <h2>{{ titel }}</h2>
-
         <table class="table">
             <thead>
                 <tr>
-                {% if is_super %}
+                {% if super %}
                     <th>Lehrkraft</th>
                 {% endif %}
                 <th>Mathegruppe</th>
@@ -25,7 +24,7 @@
             <tbody>
                 {% for g in gruppen %}
                     {# --- Lehrer-Überschrift nur für Superuser --- #}
-                    {% if is_super %}
+                    {% if super %}
                     {% ifchanged g.lehrer_id %}
                         <tr class="lehrer-header">
                         <td colspan="4">
@@ -38,18 +37,17 @@
                     {# --- Überschrift der Mathegruppe (Name + Jg) --- #}
                     {% ifchanged g.lehrer_id g.name %}
                     <tr class="gruppe-header">
-                        {% if is_super %}
+                        {% if super %}
                         <td></td>
                         {% endif %}
-                        <td colspan="{% if is_super %}4{% else %}5{% endif %}">
+                        <td colspan="{% if super %}4{% else %}5{% endif %}">
                         <strong>{{ g.name }} (Jg {{ g.jg }})</strong>
                         </td>
                     </tr>
                     {% endifchanged %}
-
                     {# --- Zeile für diese Mathegruppe (Haupt- oder Duellgruppe) --- #}
                     <tr>
-                    {% if is_super %}
+                    {% if super %}
                         <td></td>
                     {% endif %}
                     <td></td>  {# Mathegruppe-Spalte bleibt leer, steht ja in der Überschrift #}
@@ -67,7 +65,7 @@
                     {# --- Tests zu dieser Mathegruppe als eigene Zeilen --- #}
                     {% for t in g.tests.all %}
                     <tr>
-                        {% if is_super %}
+                        {% if super %}
                         <td></td>
                         {% endif %}
                         <td></td>
@@ -80,10 +78,16 @@
                     </tr>
                     {% endfor %}
                     <tr><td>
+                        {% if super %}
+                            <td></td>
+                        {% endif %}
                         <td>Rechenduell {{ g.name}}</td>
                         <td><button onclick="location.href='{% url 'duell_uebersicht' g.id %}'" class="link-duell">anzeigen</button>
                     </td></td></tr>
                     {% if not g.temp %}
+                        {% if super %}
+                            <td></td>
+                        {% endif %}
                         <td><td><td>
                             <button>
                                 <a href="{% url 'test_erstellen' g.id %}" class="link-test">(neuen) Test erstellen</a>
