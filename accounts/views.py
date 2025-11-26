@@ -1,6 +1,9 @@
 from datetime import date, datetime, timedelta, time
 from decimal import Decimal
 
+import json
+from pathlib import Path
+
 from django.utils import timezone
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -28,7 +31,14 @@ def index(req):
         del req.session['duell']
     anz_angemeldet = Profil.objects.count()
     anz_lehrer = User.objects.filter(groups__name="Lehrer").count()
-    anz_aufg = Protokoll.objects.count()
+    anz_aktuell = Protokoll.objects.count()
+    # gelöschte Aufgaben aus JSON
+    counter_file = Path(__file__).resolve().parent.parent / "core" / "zaehler_geloeschte_aufgaben.json"
+    data = json.loads(counter_file.read_text())
+    anz_geloescht = data.get("anzahl", 0)
+
+    # Gesamtzahl
+    anz_gesamt = anz_aktuell + anz_geloescht
     lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
     tests = []
     if req.user.is_authenticated:
@@ -37,7 +47,7 @@ def index(req):
             tests = Test.objects.all().order_by("-created_at")
     else:
         profil = None
-    return render(req, "index.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_aufg, "tests": tests, })
+    return render(req, "index.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_gesamt, "tests": tests, })
 
 def datenschutz(req):
     return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})
