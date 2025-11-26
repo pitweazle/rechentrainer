@@ -2,6 +2,7 @@ from django.db import models
 from django import forms
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Ort(models.Model):
     name = models.CharField(max_length=50)
@@ -89,10 +90,10 @@ class Profil(models.Model):
 class Geloescht(models.Model):
     benutzername = models.CharField(max_length=25, blank=True)
     text = models.CharField(max_length=200)
+    erstellt_am = models.DateTimeField(default=timezone.now)
     class Meta:
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
- 
     def __str__(self):
         return f"{self.benutzername}: {self.text}"
    
