@@ -5700,7 +5700,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 erg = wurzeln[zufall]
                 lsg = [str(erg).replace(".",",")]
             titel = "Quadratwurzeln"
-            anmerkung = "(Wenn die Wurzel eine irrationale Zahl ist, must du 'irrational' schreiben)"			
+            anmerkung = "(Wenn die Wurzel eine irrationale Zahl ist, musst du 'irrational' schreiben)"			
             text = "Was ist die Quadratwurzel aus {}?"
             frage = "√{}="
             hilfe_id = 75
