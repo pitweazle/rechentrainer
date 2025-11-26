@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.http import HttpResponse, FileResponse, Http404
+from django.conf import settings
 
 from django.db.models import Max, Sum, Count, F, Q
 
@@ -33,11 +34,13 @@ def index(req):
     anz_lehrer = User.objects.filter(groups__name="Lehrer").count()
     anz_aktuell = Protokoll.objects.count()
     # gelöschte Aufgaben aus JSON
-    counter_file = Path(__file__).resolve().parent.parent / "core" / "zaehler_geloeschte_aufgaben.json"
-    data = json.loads(counter_file.read_text())
-    anz_geloescht = data.get("anzahl", 0)
+    counter_file = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
+    try:
+        data = json.loads(counter_file.read_text())
+        anz_geloescht = data.get("anzahl", 0)
+    except FileNotFoundError:
+        anz_geloescht = 0
 
-    # Gesamtzahl
     anz_gesamt = anz_aktuell + anz_geloescht
     lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
     tests = []

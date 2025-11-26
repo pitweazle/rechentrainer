@@ -1,3 +1,6 @@
+# Ausnahmen – diese Datei soll getrackt werden
+!core/zaehler_geloeschte_aufgaben.json
+
 # Byte-compiled / optimized / DLL files #
 __pycache__/
 *.py[cod]

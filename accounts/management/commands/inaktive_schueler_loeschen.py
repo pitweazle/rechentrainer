@@ -3,6 +3,7 @@ from datetime import timedelta, date
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User, Group
+from django.conf import settings
 
 from accounts.models import Profil, Geloescht
 from core.models import Protokoll
@@ -29,13 +30,7 @@ beginn_letztes_sj = date(beginn_aktuelles_sj.year - 1, 8, 1)
 beginn_vorletztes_sj = date(beginn_aktuelles_sj.year - 2, 8, 1)
 
 # JSON-Zähler für gelöschte Aufgaben
-COUNTER_FILE = (
-    Path(__file__)
-    .resolve()
-    .parents[3]
-    / "core"
-    / "zaehler_geloeschte_aufgaben.json"
-)
+COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
 if not COUNTER_FILE.exists():
     COUNTER_FILE.write_text(json.dumps({"anzahl": 0}))
