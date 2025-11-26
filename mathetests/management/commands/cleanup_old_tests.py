@@ -24,14 +24,10 @@ class Command(BaseCommand):
         for test in alte_tests:
             lehrer = getattr(test.gruppe, "lehrer", None)
             benutzername = lehrer.username if lehrer else ""
-
             text = f"Test '{test.name}' aus Gruppe '{test.gruppe.name}' gelöscht (älter als 1 Jahr)."
-
             Geloescht.objects.create(
                 benutzername=benutzername,
                 text=text,
             )
-
             test.delete()
-
             self.stdout.write(f"Gelöscht: {text}")
