@@ -465,7 +465,9 @@ def aufgaben_loeschen(req, lehrer_id):
         return HttpResponse("Zugriff verweigert")
 
 def meine_gruppen(req):
-    if User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
+    if not User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists():
+        return HttpResponse("Zugriff verweigert")  
+    else:      
         if req.user.is_superuser:
             gruppen = Lerngruppe.objects.all().order_by("lehrer__profil__nachname")
             super = True
@@ -473,8 +475,6 @@ def meine_gruppen(req):
             gruppen = Lerngruppe.objects.filter(lehrer=req.user)
             super = None
         return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "meine Lerngruppen", 'super': super})
-    else:
-        return HttpResponse("Zugriff verweigert")
 
 def protokoll_zeit_filter(protokoll, auswahl):
     sj, hj = name_hj()
@@ -887,95 +887,4 @@ def suchen(req, gruppe_id=None):
         return render(req, 'admin/suchen.html', context)
     else:
         return HttpResponse("Zugriff verweigert")
-
-# Hier unten sind einige Routinen, die direkt aus dem Browser aufgerufen werden 
-def karteileichen(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    #auswahl = User.objects.filter(date_joined__lt=date(2023,8,1), date_joined = last_login)
-    auswahl = User.objects.filter(last_login__lt = date(2023,8,1))
-    auswahl = auswahl.exclude(username = "super")
-    print(auswahl)
-    #auswahl = User.objects.all()
-    n=0 
-    m=0
-    nachricht = ""  
-    for a in auswahl:
-        #if (a.date_joined.date() ) == ((a.last_login.date() )):
-            profil = Profil.objects.filter(user = a).first()
-            geloescht, created = Geloescht.objects.get_or_create(benutzername = str(a))
-            n +=1
-            nachricht = str(a)
-            if profil == None:
-                nachricht += " hat kein Profil und"
-            else:
-                aufgaben = Protokoll.objects.filter(profil=profil).count()
-                m += aufgaben
-                nachricht += ": " +profil.vorname + " " + profil.nachname+ " hat"
-            nachricht += " sich zuletzt am "+ str(a.last_login.date())+ " angemeldet - Account wurde gelöscht"
-            print(nachricht)
-            geloescht.text += nachricht
-            #geloescht.user = None
-            #geloescht.save()
-            #a.groups.clear()
-            #a.delete()
-    nachricht = str(n) + " Accounts mit " + str(m) + " Aufgaben gelöscht"
-    return HttpResponse(nachricht)
-
-def account_pruefen(id):
-    nachricht = ""
-    user = User.objects.filter(id = id).first()
-    if user == None:
-        nachricht = "Ein Account mit der ID {} existiert nicht".format(id)
-    else:
-        profil = Profil.objects.filter(user = user).first()
-        if profil == None:
-            nachricht = "Ein Profil mit der ID {} existiert nicht".format(id)
-    return user, nachricht
-
-def account_ohne_profil(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    alle = User.objects.all().order_by("benutzername")
-    n=0
-    for einer in alle:
-        profil = Profil.objects.filter(user=einer)
-        if profil.count() == 0 and einer.id != 29:
-            n +=1
-            heute = date.today()
-            nachricht = 'Das Userprofil id {} mit dem Account "{}" wurde am {} von {} {} gelöscht, da kein Profil zugeordnet war.'.format(einer.id, einer, heute, req.user.profil.vorname, req.user.profil.nachname)
-            geloescht, created = Geloescht.objects.get_or_create(benutzername = str(einer))
-            geloescht.text += nachricht
-            geloescht.save()
-            einer.groups.clear()
-            einer.delete()
-    text = str(n) + " Accounts gelöscht"
-    return HttpResponse(text)
-
-def datum_suchen(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    protokoll = Protokoll.objects.all()
-    n=0
-    protokoll = Protokoll.objects.filter(start__gt = date(2025,8,11),wertung = "r",richtig=0 )
-    wieviele = protokoll.count()
-    print("wieviele", wieviele)
-    for eintrag in protokoll:
-        eintrag.richtig = 1
-        n+=1
-        eintrag.save()
-    nachricht = str(n) + " Daten eingetragen"
-    return HttpResponse(nachricht)
-
-def reparatur(req):
-    if not req.user.is_superuser:
-        return HttpResponse("Zugriff verweigert")
-    geloescht = Geloescht.objects.all()
-    n=0
-    for eintrag in geloescht:
-        eintrag.save()
-        n +=1
-    nachricht = str(n) + " Einträge geändert"
-    return HttpResponse(nachricht) 
-
 

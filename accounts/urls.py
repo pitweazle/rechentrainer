@@ -42,10 +42,6 @@ urlpatterns = [
     #path("suchen/", views.suchen, name="suchen"),
     path("datenschutz/", views.datenschutz, name="datenschutz"),
     path("stimmen/", views.stimmen, name="stimmen"),
-    path("karteileichen/", views.karteileichen),
-    path("account_ohne_profil/", views.account_ohne_profil),
-    path("reparatur/", views.reparatur),
-    path("datum_suchen/", views.datum_suchen),
     path("bestenliste/", views.bestenliste, name="bestenliste"),
     path("statistik/", views.statistik, name="statistik"),
 
