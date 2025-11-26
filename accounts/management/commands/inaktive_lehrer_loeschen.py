@@ -5,19 +5,12 @@ import json
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
+from django.conf import settings
 
 from accounts.models import Profil, Lerngruppe, Geloescht
 from core.models import Protokoll
 
-
-# JSON-Zähler wie beim Schüler-Cleanup
-COUNTER_FILE = (
-    Path(__file__)
-    .resolve()
-    .parents[3]   # Projektroot
-    / "core"
-    / "zaehler_geloeschte_aufgaben.json"
-)
+COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
 if not COUNTER_FILE.exists():
     COUNTER_FILE.write_text(json.dumps({"anzahl": 0}))
