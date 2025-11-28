@@ -2,12 +2,6 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    # Apps einbinden
-    path('', include("accounts.urls")),
-    path('', include("duell.urls")),
-    path('', include("medien.urls")),
-
-    # Core Views – spezifisch
     path('kategorien/', views.kategorien, name='kategorien'),
     path('uebersicht/', views.uebersicht, name='uebersicht'),
     path('uebersicht/<int:schueler_id>/', views.uebersicht, name='schueler_uebersicht'),
