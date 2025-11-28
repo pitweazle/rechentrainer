@@ -121,7 +121,7 @@
         {% if lsg %}
           {% if "tab" in parameter.name %}
             {# Wertetabelle mit Lösung #}
-            {% include 'mathe/wertetabelle_lsg.html' %}
+            {% include 'core/wertetabelle_lsg.html' %}
           {% endif %}
 
           {% if eingabe %}
@@ -176,7 +176,7 @@
               <input type="hidden" name="protokoll_id" value="{{ protokoll_id }}">
               <input type="hidden" name="zaehler_id" value="{{ zaehler_id }}">
 
-              {% include 'mathe/wertetabelle.html' %}
+              {% include 'core/wertetabelle.html' %}
 
               <input type="submit" value="Prüfen">
             </form>
