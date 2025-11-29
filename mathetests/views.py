@@ -10,6 +10,11 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+#from django.http import FileResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
+
 from accounts.models import Profil, Lerngruppe
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler
 from core.views import get_profil, aufgaben, kontrolle
@@ -60,10 +65,6 @@ def test_erstellen(req, gruppe_id):
     })
 
 # ---------- Schritt 2: Test benennen & speichern ----------
-from .forms import TestNameForm
-from .models import Test, TestEinstellung
-from core.models import Kategorie, Auswahl
-
 def test_benennen(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     draft = req.session.get("test_draft")
@@ -125,16 +126,18 @@ def test_benennen(req, gruppe_id):
     return render(req, "tests/test_benennen.html", {"gruppe": gruppe, "form": form})
 
 # ---------- Schritt 3: Test anzeigen ----------
-def test_anzeigen(req, test_id, profil_id):
+def _build_test_context(req, test_id, profil_id):
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
     profil = Profil.objects.filter(id=profil_id).select_related("gruppe").first()
     user_profil = getattr(req.user, "profil", None)
+
     # --- Zugriff prüfen ---
     if not (user_profil == profil or req.user == gruppe.lehrer or req.user.is_superuser):
-        return HttpResponse("Zugriff verweigert")
+        return None, HttpResponse("Zugriff verweigert")
     if not profil or profil.gruppe_id != gruppe.id:
-        return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
+        return None, render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
+
     # --- Testeinstellungen ---
     einstellungen = (
         TestEinstellung.objects
@@ -142,7 +145,7 @@ def test_anzeigen(req, test_id, profil_id):
         .select_related("kategorie")
         .order_by("kategorie__zeile")
     )
-    # --- Summen pro Kategorie (für Tabelle oben) ---
+
     # --- Summen pro Kategorie (für Tabelle oben) ---
     kat_stats = (
         Protokoll.objects
@@ -210,6 +213,7 @@ def test_anzeigen(req, test_id, profil_id):
         "abbr":     sum(z["abbr"]      for z in zeilen),
         "lsg":      sum(z["lsg"]       for z in zeilen),
     }
+
     # --- ausführliches Protokoll (Liste unten) ---
     prot = (
         Protokoll.objects
@@ -221,6 +225,7 @@ def test_anzeigen(req, test_id, profil_id):
         test_datum = prot.order_by("start").first().start.date()
     else:
         test_datum = None
+
     # ==== Gesamt-Auswertung (Punkte / Quote / nicht gemacht) ====
     prots = prot  # nur Alias
     agg = prots.aggregate(
@@ -233,12 +238,15 @@ def test_anzeigen(req, test_id, profil_id):
     falsch_punkte_roh = Decimal(agg["falsch_sum"] or 0)
     abbr_cnt = agg["abbr_sum"] or 0
     lsg_cnt = agg["lsg_sum"] or 0
+
     # Aufgaben-Zählung (nur wirklich gerechnete Aufgaben)
     prots_relevant = prots.filter(abbr=False, lsg=False)
     aufg_richtig = prots_relevant.filter(richtig__gt=0).count()
     aufg_falsch = prots_relevant.filter(richtig=0, falsch__gt=0).count()
+
     total_soll = sum(e.anzahl or 0 for e in einstellungen)
     aufg_offen = max(total_soll - (aufg_richtig + aufg_falsch), 0)
+
     # Fehler-Punkte (falsch + Abbr/Lsg + nicht gemacht)
     fehler_punkte = (
         falsch_punkte_roh
@@ -250,14 +258,15 @@ def test_anzeigen(req, test_id, profil_id):
         quote = round((richtig_punkte / max_punkte) * 100, 1)
     else:
         quote = 0
+
     # Note nur, wenn Test nicht aktiv ist UND es überhaupt Protokolle gibt
     if (not test.aktiv) and prot.exists():
         note, zusatz = berechne_note(quote, test.note_streng)
-        note = str(note)+zusatz
+        note = str(note) + zusatz
     else:
         note = None
+
     # ===== Notenspiegel für die Schülerseite =====
-    # nur berechnen, wenn der Test beendet ist
     noten_spiegel_s = None
     noten_durchschnitt_s = None
     if not test.aktiv:
@@ -265,7 +274,6 @@ def test_anzeigen(req, test_id, profil_id):
         noten_summe = 0
         noten_anzahl = 0
         for sch in Profil.objects.filter(gruppe=gruppe):
-            # alle protokolle dieses Schülers zu diesem Test
             prot_s = Protokoll.objects.filter(
                 profil=sch, hilfe_id=test.proto_marker
             )
@@ -281,11 +289,11 @@ def test_anzeigen(req, test_id, profil_id):
             f_p = Decimal(agg_s["fsum"] or 0)
             ab = agg_s["ab"] or 0
             lg = agg_s["lg"] or 0
-            # erledigte Aufgaben
+
             erledigt_s = prot_s.filter(abbr=False, lsg=False)
             r_a = erledigt_s.filter(richtig__gt=0).count()
             f_a = erledigt_s.filter(richtig=0, falsch__gt=0).count()
-            # soll
+
             total_soll_s = sum(e.anzahl for e in einstellungen)
             offen_s = max(total_soll_s - (r_a + f_a), 0)
             fehler_s = f_p + Decimal("0.5") * Decimal(ab + lg) + Decimal(offen_s)
@@ -294,7 +302,7 @@ def test_anzeigen(req, test_id, profil_id):
                 continue
             quote_s = (r_p / max_p_s) * 100
             note_s, zusatz = berechne_note(quote_s, test.note_streng)
-            # → Eintragen
+
             noten_spiegel_s[note_s] += 1
             noten_summe += note_s
             noten_anzahl += 1
@@ -309,12 +317,10 @@ def test_anzeigen(req, test_id, profil_id):
         "prot": prot,
         "test_datum": test_datum,
 
-        # Aufgaben-Zählung
         "aufg_richtig": aufg_richtig,
         "aufg_falsch": aufg_falsch,
         "aufg_offen": aufg_offen,
 
-        # Punkte
         "sum_richtig": float(richtig_punkte),
         "sum_fehler_punkte": float(falsch_punkte_roh),
         "sum_quote": quote,
@@ -323,17 +329,45 @@ def test_anzeigen(req, test_id, profil_id):
         "sum_lsg": int(lsg_cnt),
         "sum_punkte": float(lsg_cnt/2),
 
-        "zeilen": zeilen,
         "zeilen_gesamt": gesamt,
-
-        # optional noch die Roh-Fehler
         "sum_falsch": int(falsch_punkte_roh),
-        "sum_quote": quote,
         "note": note,
         "noten_spiegel_s": noten_spiegel_s,
         "noten_durchschnitt_s": noten_durchschnitt_s,
     }
+    return context, None
+
+def test_anzeigen(req, test_id, profil_id):
+    context, error_response = _build_test_context(req, test_id, profil_id)
+    if error_response is not None:
+        return error_response
     return render(req, "tests/test.html", context)
+
+def test_anzeigen_pdf(req, test_id, profil_id):
+    # Kontext mit unserer Hilfsfunktion holen
+    context, error_response = _build_test_context(req, test_id, profil_id)
+
+    if error_response is not None:
+        return error_response
+
+    # 1. HTML aus Template rendern
+    html_string = render_to_string("tests/test.html", context, request=req)
+
+    # 2. WeasyPrint-HTML-Objekt ERZEUGEN
+    #    -> WICHTIG: NUR KEYWORD-ARGUMENTE verwenden!
+    html = HTML(string=html_string, base_url=req.build_absolute_uri("/"))
+
+    # 3. PDF aus HTML erzeugen (Bytes)
+    pdf_bytes = html.write_pdf()
+
+    test = context["test"]
+    profil = context["profil"]
+    filename = f"test_{test.id}_{profil.nachname}_{profil.vorname}.pdf"
+
+    # 4. HTTP-Response mit Content-Type PDF
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 # ---------- Schritt 4: Test bearbeiten ----------
 def test(req, slug):

@@ -44,10 +44,11 @@
   {% endif %}
 
 
-  <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
-  <h1>{{ test.name }} – {{ gruppe.name }}</h1>
+
 
   <div class="no-print">
+    <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
+    <h1>{{ test.name }} – {{ gruppe.name }}</h1>
     <table class="table">
       <thead>
         <tr>
@@ -64,7 +65,7 @@
 
       <tbody>
         {% for z in zeilen %}
-          <tr style="{{ z.kat.farbe }}">
+          <tr style = "{{ z.kat.farbe }}">
             {% if z.darf_starten %}
               <td style="text-align:center;">
                 <a class="button" href="{% url 'test' z.kat.slug %}?test={{ test.id }}">{{ z.kat.name }}</a>
@@ -106,49 +107,57 @@
       <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
         🖨️ Drucken
       </button>
+
+      <a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
+         class="btn btn-secondary btn-sm no-print">
+        📄 Als PDF herunterladen
+      </a>
     {% endif %}
-
   </div>
 
-<div class="protokoll-header">
-  <div class="no-print">
-    <h2>Rechentrainer – Testprotokoll</h2>
-  </div>
-  <h2>Testauswertung</h2>
-  {% if note %}
-    <div class="zeugnis-box">
-      <div class="zeugnis-grid">
-        <!-- LINKE SPALTE -->
-        <div class="left">
-          <table class="meta-table">
-            <tr>
-              <th>Testname:</th>
-              <td>{{ test.name }}</td>
-            </tr>
-            <tr>
-              <th>Schüler:</th>
-              <td>{{ profil.vorname }} {{ profil.nachname }}</td>
-            </tr>
-            <tr>
-              <th>Lerngruppe:</th>
-              <td>{{ gruppe.name }}</td>
-            </tr>
-            <tr>
-              <th>Datum:</th>
-              <td>
-                {% if test_datum %}
-                  {{ test_datum|date:"d.m.Y" }}
-                {% else %}
-                  – noch nicht bearbeitet –
-                {% endif %}
-              </td>
-            </tr>
-            <tr>
-              <th>Note:</th>
-              <td class="note-big">{{ note }}</td>
-            </tr>
-          </table>
-        </div>
+  <div class="protokoll-header">
+    <div class="no-print">
+      <h2>Rechentrainer – Testprotokoll</h2>
+    </div>
+    <div class="only-print">
+      <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
+      <h1>{{ test.name }} – {{ gruppe.name }}</h1>
+      <!-- <h2>Testauswertung</h2> -->
+    </div>
+    {% if note %}
+      <div class="zeugnis-box">
+        <div class="zeugnis-grid">
+          <!-- LINKE SPALTE -->
+          <div class="left">
+            <table class="meta-table">
+              <tr>
+                <th>Testname:</th>
+                <td>{{ test.name }}</td>
+              </tr>
+              <tr>
+                <th>Schüler:</th>
+                <td>{{ profil.vorname }} {{ profil.nachname }}</td>
+              </tr>
+              <tr>
+                <th>Lerngruppe:</th>
+                <td>{{ gruppe.name }}</td>
+              </tr>
+              <tr>
+                <th>Datum:</th>
+                <td>
+                  {% if test_datum %}
+                    {{ test_datum|date:"d.m.Y" }}
+                  {% else %}
+                    – noch nicht bearbeitet –
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Note:</th>
+                <td class="note-big">{{ note }}</td>
+              </tr>
+            </table>
+          </div>
 
         <!-- RECHTE SPALTE -->
         <div class="right signature-block">
@@ -308,6 +317,27 @@
   </tbody>
 </table>
 
+<style>
+  /* Standard: nur-Bildschirm-Elemente anzeigen, nur-Druck-Elemente verstecken */
+  .only-print {
+    display: none;
+  }
+
+  .only-screen {
+    display: block;
+  }
+
+  @media print {
+    .no-print,
+    .only-screen {
+      display: none !important;
+    }
+
+    .only-print {
+      display: block !important;
+    }
+  }
+</style>
 
 {# einfache Print-Styles #}
 <style>
@@ -315,6 +345,10 @@
     @page {
         size: A4 portrait;
         margin: 8mm;  /* kleinere Seitenränder */
+    }
+
+    body, html {
+        background: #ffffff !important;
     }
 
     /* Elemente, die beim Drucken verschwinden sollen */
@@ -351,8 +385,18 @@
         text-align: center;
         width: 30px;   /* r, f, abbr, Lsg → kleine feste Breite */
     }
+
+    h1, h2, .protokoll-header {
+        page-break-after: avoid;
+    }
+
+    .zeugnis-box,
+    .header-row,
+    .protokoll-summary,
+    .noten-box {
+        page-break-inside: avoid;
+    }
+    
 }
 </style>
-
-
 {% endblock %}
