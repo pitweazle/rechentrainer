@@ -275,6 +275,9 @@
       <th>f</th>
       <th>abbr</th>
       <th>Lsg</th>
+      {% if user == gruppe.lehrer or user.is_superuser %}
+        <th>Korrigieren</th>
+    {% endif %}
     </tr>
   </thead>
   <tbody>
@@ -301,6 +304,13 @@
         <td>{{ z.falsch }}</td>
         <td>{% if z.abbr %}x{% endif %}</td>
         <td>{% if z.lsg %}x{% endif %}</td>
+
+        {% if user == gruppe.lehrer or user.is_superuser %}
+          <td>
+            <a href="{% url 'bewertung_aendern' z.id 'r' %}">✔ richtig</a><br>
+            <a href="{% url 'bewertung_aendern' z.id 'f' %}">✖ falsch</a>
+          </td>
+        {% endif %}
       </tr>
     {% empty %}
       <tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
