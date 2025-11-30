@@ -133,6 +133,17 @@
                                 mit dem Schulort und dem Namen der Schule. Anschließend können sie dann die Arbeit ihrer Schülerinnen und Schüler online kontrolieren.</li> 
                             </ul>
                             </details>
+                            <details>
+                                <summary>                                  
+                                    <a href="{% url 'duell_how_to' %}">Ausprobieren: Das Rechenduell</a>
+                                </summary>
+                            </details>  
+                            <!--Lernkontrollen-->
+                            <details>
+                                <summary>
+                                   <a href="{% url 'test_how_to' %}">Lernkontrollen mit dem Rechentrainer</a>
+                                </summary>
+                            </details>
                         {% else %}
                             {% if lehrer %}
                             <!--hier geht es zu den Hinweisen für Lehrer-->
@@ -180,7 +191,6 @@
                                 <summary>
                                    <a href="{% url 'test_how_to' %}">Lernkontrollen mit dem Rechentrainer</a>
                                 </summary>
-                                    
                             </details>
                             {% endif %}
                         {% endif %}
