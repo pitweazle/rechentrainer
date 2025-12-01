@@ -52,6 +52,7 @@ class wahl_kurs(models.TextChoices):
     B_KURS = 'B', 'B-Kurs'
     C_KURS = 'C', 'C-Kurs'
     FOERDER = 'i', 'Förderschüler/in'
+    BERUF = 'Z', 'Ausbildung/Berufsschule'
     
 class Profil(models.Model):
     user = models.OneToOneField(User, related_name='profil', on_delete=models.CASCADE )
@@ -89,6 +90,7 @@ class Profil(models.Model):
 
 class Geloescht(models.Model):
     benutzername = models.CharField(max_length=25, blank=True)
+    grund = models.CharField(max_length=25, null=True, blank=True)
     text = models.CharField(max_length=200)
     erstellt_am = models.DateTimeField(default=timezone.now)
     class Meta:

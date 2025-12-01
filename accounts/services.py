@@ -132,7 +132,7 @@ def stufe_aus_jg(jg, kurs="E"):
                 jg = 10
                 kurs = "Y"
             stufe = stufe_liste[jg-5] 
-            if kurs in ["Y","R","E","B"]:
+            if kurs in ["Y","R","E","B","Z"]:
                 stufe +=1
     return stufe
 
