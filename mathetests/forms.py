@@ -2,6 +2,8 @@ from django import forms
 
 from accounts.models import wahl_kurs
 from core.models import Auswahl
+from django import forms
+from core.models import Protokoll
 
 class TestErstellenForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -48,5 +50,17 @@ class TestNameForm(forms.Form):
         initial=wahl_kurs.E_KURS,
     )
 
+class ProtokollBewertungForm(forms.ModelForm):
+    class Meta:
+        model = Protokoll
+        fields = ["richtig", "falsch"]
+        labels = {
+            "richtig": "richtig (Punkte)",
+            "falsch": "falsch (Punkte)",
+        }
+        widgets = {
+            "richtig": forms.NumberInput(attrs={"step": "0.5", "style": "width:6em;"}),
+            "falsch": forms.NumberInput(attrs={"step": "1", "style": "width:6em;"}),
+        }
 
 

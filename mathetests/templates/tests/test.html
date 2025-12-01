@@ -275,9 +275,13 @@
       <th>f</th>
       <th>abbr</th>
       <th>Lsg</th>
-      {% if user == gruppe.lehrer or user.is_superuser %}
-        <th>Korrigieren</th>
-    {% endif %}
+      <th>
+        {% if user.is_superuser or user == gruppe.lehrer %}
+          Ändern
+        {% else %}
+          Geändert
+        {% endif %}
+      </th>
     </tr>
   </thead>
   <tbody>
@@ -304,13 +308,14 @@
         <td>{{ z.falsch }}</td>
         <td>{% if z.abbr %}x{% endif %}</td>
         <td>{% if z.lsg %}x{% endif %}</td>
-
-        {% if user == gruppe.lehrer or user.is_superuser %}
-          <td>
-            <a href="{% url 'bewertung_aendern' z.id 'r' %}">✔ richtig</a><br>
-            <a href="{% url 'bewertung_aendern' z.id 'f' %}">✖ falsch</a>
-          </td>
-        {% endif %}
+        <td  style="text-align: center;">
+          {% if user.is_superuser or user == gruppe.lehrer %}
+            <a href="{% url 'protokoll_bewertung' z.id %}">✏️</a>
+          {% endif %}
+          {% if z.korrigiert %}
+            <span title="Bewertung wurde manuell geändert">*</span>
+          {% endif %}
+        </td>
       </tr>
     {% empty %}
       <tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
