@@ -17,6 +17,7 @@ class wahl_kurs(models.TextChoices):
     B_KURS = 'B', 'B-Kurs'
     C_KURS = 'C', 'C-Kurs'
     FOERDER = 'i', 'Förderschüler'
+    BERUF = 'z', 'Ausbildung/Berufschule'
 
 class Login_Form(forms.Form):
     username = forms.CharField(label='Benutzername', localize=True)

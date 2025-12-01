@@ -105,15 +105,17 @@ class Protokoll(models.Model):
     #Eintrag richtig, falsch, Extrapunkte, Lösung anzeigen, Abbruch:
     wertung = models.CharField(max_length=10, blank=True)
     richtig = models.DecimalField(max_digits=3, decimal_places=1, default=0)
-
     falsch = models.PositiveSmallIntegerField(default=0)  
     abbr = models.BooleanField(default=True)
     lsg = models.BooleanField(default=False)    
-    hilfe = models.BooleanField(default=False)  
+    hilfe = models.BooleanField(default=False)
+
+    korrigiert = models.BooleanField(default=False)  
     
     start = models.DateTimeField('Start', auto_now_add=True)
     end = models.DateTimeField('Ende', blank=True, null=True, default=None)
     #szeit=models.FloatField(default=0)
+
 
     @property
     def dauer(self):

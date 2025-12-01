@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+  {% autoescape off %}
+  <h2>Bewertung korrigieren</h2>
+
+  <p>
+    <b>Schüler:</b> {{ protokoll.profil.vorname }} {{ protokoll.profil.nachname }}<br>
+    <b>Kategorie:</b> {{ protokoll.kategorie.name }}<br>
+    <b>Aufgabe:</b> {{ protokoll.aufgnr }}<br>
+  </p>
+
+  <p>
+    <b>Aufgabentext:</b><br>
+    {{ protokoll.text }}<br>
+    {% comment %} {% if protokoll.einheit %}({{ protokoll.einheit }}){% endif %} {% endcomment %}
+  </p>
+
+  <p>
+    <b>Lösung(en):</b> {{ protokoll.loesung|first }}<br>
+    <b>Eingabe:</b> {{ protokoll.eingabe }}
+  </p>
+
+  <hr>
+
+  <form method="post">
+    {% csrf_token %}
+    <p>
+      {{ form.richtig.label_tag }} {{ form.richtig }}
+    </p>
+    <p>
+      {{ form.falsch.label_tag }} {{ form.falsch }}
+    </p>
+
+    <button type="submit" class="btn btn-primary">Speichern</button>
+    <a href="{% url 'test_anzeigen' test.id protokoll.profil_id %}" class="btn btn-secondary">
+      Zurück
+    </a>
+  </form>
+
+  {% if protokoll.korrigiert %}
+    <p><i>Hinweis: Diese Bewertung wurde bereits einmal manuell angepasst.</i></p>
+  {% endif %}
+</div>
+{% endautoescape %}
+{% endblock %}

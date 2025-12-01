@@ -11,12 +11,16 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.models import Profil, Lerngruppe
+
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler
 from core.views import get_profil, aufgaben, kontrolle
 from core.forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
 
 from .models import Test, TestEinstellung
 from .forms import TestErstellenForm, TestNameForm
+
+from .models import Test
+from .forms import ProtokollBewertungForm
 
 def test_how_to(req):
     return render(req, "tests/test_how_to.html",)
@@ -902,7 +906,6 @@ def bewertung_aendern(req, protokoll_id, ziel):
     user = req.user
     profil = prot.profil
     gruppe = profil.gruppe               # Lerngruppe
-    print("Gruppe", gruppe, gruppe.lehrer)
     lehrer = gruppe.lehrer               # Lehrkraft der Gruppe
 
     ist_superuser = user.is_superuser
@@ -1062,4 +1065,37 @@ def loesung(req, zaehler_id, protokoll_id):
     }
     return render(req, "tests/test_aufgabe.html", context)
 
+def protokoll_bewertung(req, protokoll_id):
+    prot = get_object_or_404(Protokoll, pk=protokoll_id)
+    # Test zu diesem Protokoll finden (über proto_marker)
+    test = Test.objects.filter(proto_marker=prot.hilfe_id).first()
+    if not test:
+        return HttpResponseForbidden("Kein zugehöriger Test gefunden.")
+    gruppe = test.gruppe
+    user = req.user
+    # Nur zuständige Lehrkraft dieser Gruppe oder Superuser
+    if not (user.is_superuser or user == gruppe.lehrer):
+        return HttpResponseForbidden("Keine Berechtigung.")
+    if req.method == "POST":
+        form = ProtokollBewertungForm(req.POST, instance=prot)
+        if form.is_valid():
+            # Werte übernehmen
+            obj = form.save(commit=False)
+            # negative Werte verhindern
+            if obj.richtig < 0 or obj.falsch < 0:
+                messages.error(req, "richtig/falsch dürfen nicht negativ sein.")
+            else:
+                obj.korrigiert = True
+                obj.save()
+                messages.success(req, "Bewertung wurde gespeichert.")
+                return redirect("test_anzeigen", test_id=test.id, profil_id=prot.profil_id)
+    else:
+        form = ProtokollBewertungForm(instance=prot)
+    context = {
+        "protokoll": prot,
+        "form": form,
+        "test": test,
+        "gruppe": gruppe,
+    }
+    return render(req, "tests/protokoll_bewertung.html", context)
 
