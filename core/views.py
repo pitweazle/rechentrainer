@@ -4589,7 +4589,7 @@ def gleichungen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenf
         variable = ["",]
         pro_text = einheit = anmerkung =  ""
         erg = random.randint(1,9)
-        absolut = 0
+        absolut = hilfe_id = 0
         while absolut == 0:
             absolut = random.randint(-4,4)
         koeff1 = random.randint(2,5)
