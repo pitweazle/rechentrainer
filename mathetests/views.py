@@ -325,6 +325,8 @@ def test_anzeigen(req, test_id, profil_id):
         "sum_abbr": int(abbr_cnt),
         "abbr_punkte": float(abbr_cnt/2),
         "sum_lsg": int(lsg_cnt),
+        "lsg_punkte": float(lsg_cnt/2),
+
         "sum_punkte": float(lsg_cnt/2),
 
         "zeilen": zeilen,
