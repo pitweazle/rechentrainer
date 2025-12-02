@@ -44,7 +44,7 @@
 
 {% block css_files %}
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'mathe/aufgabe.css' %}">
+    <link rel="stylesheet" href="{% static 'core/aufgabe.css' %}">
     <style>
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -132,7 +132,7 @@
                     </button>
                 {% else %}
                     {% if "potenzen" in parameter.object %}
-                        {% include 'mathe/potenzen.html'%}
+                        {% include 'core/potenzen.html'%}
                     {% endif %}
                     {{message_unten}}
                     {% if parameter.popup %}
@@ -193,7 +193,7 @@
                         </button>
                     </nav>
                     {% if duell %}
-                        {% include 'mathe/duell.html'%}
+                        {% include 'core/duell.html'%}
                     {% else %}
                         {% if bis_loeschen > 0 %}
                             Fehler löschen: noch {{bis_loeschen}} Aufgaben
