@@ -37,6 +37,8 @@ from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, su
 from django.db.models import Sum, F,  Max
 from accounts.services import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
+from mathetests.models import Test
+
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -7896,308 +7898,315 @@ def uebersicht(req, schueler_id=0):
     gibtes = Profil.objects.filter(user_id = req.user.id).count()
     if gibtes == 0:
         return redirect('anmelden')
-    if req.user.is_authenticated:
-        lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
-        loeschen = False 
-        if schueler_id == 0:
-            profil = get_object_or_404(Profil, user_id = req.user.id)
-            if lehrer:
-                loeschen = True            
-        else:
-            if schueler_id == req.user.profil.id:
-                loeschen = True
-            profil = get_object_or_404(Profil, id = schueler_id)
-        if (profil.id) == (req.user.profil.id):
-            pass
-        else:
-            if req.user.is_superuser:
-                pass
-            elif lehrer:
-                try:
-                    if (profil.gruppe.lehrer.id) == (req.user.id):
-                        pass
-                    else:
-                        meldung = profil, " ist nicht in dieser Lerngruppe angemeldet"
-                        return HttpResponse(meldung)
-                except:
-                    return HttpResponse("Daten nicht vorhanden")
-            else:
-                return HttpResponse("Zugriff verweigert")
-        gruppe = profil.gruppe
-        note_anzeigen = sub_note_anzeigen(profil)
-        if note_anzeigen:
-            aufgaben_pro_woche = gruppe.aufgaben_pro_woche
-            if aufgaben_pro_woche < 1:
-                aufgaben_pro_woche = 10 * profil.jg
-        else:
-            aufgaben_pro_woche = 10 * profil.jg
-        protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
-        form = UebersichtHalbjahr
-        if req.method == 'POST':
-            auswahl = form(req.POST)
-            if auswahl.is_valid(): 
-                auswahl = auswahl.cleaned_data['auswahl']
-                if auswahl == "alle":
-                    note_anzeigen = False
-                    protokoll = Protokoll.objects.filter(profil=profil)
-                    form = UebersichtHalbjahr()
-                    form.fields['auswahl'].initial = 'alle' 
-        richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
-        #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
-        alle_kat= False
-        if "Details ausblenden" in req.POST:
-            profil.details = False
-            profil.save()
-        if "Details anzeigen" in req.POST:
-            profil.details = True
-            profil.save()
-        if "alle Kategorien" in req.POST:
-            alle_kat= True
-        if profil.jg >= 7 or alle_kat:
-            kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle_kat egorien
-            alle_kat= True
-        elif profil.jg >= 6:
-            kategorien = Kategorie.objects.filter(zeile__lt = 22)
-        elif profil.jg >= 5:
-            kategorien = Kategorie.objects.filter(zeile__lt = 15)
-        else:
-            kategorien = Kategorie.objects.filter(zeile__lt = 8)
-        zeilen = []
-        zeit_gesamt = 0
-        bearbeitet = 0
-        prozent_kat = 0
-        breite = "breit"
-        sj = profil.sj
-        hj = profil.hj
-        gruppe = profil.gruppe
-        prozent_summe = nicht_richtig_summe =  nicht_richtig_summe_quote = 0
-        prozent_summe_farbe = nicht_richtig_summe_farbe = farbe_kat = None
-        note = "-"
-        if profil.jg > 10:
-            aufgaben_pro_woche = 100
-        try:
-            details = profil.details
-        except:
-            details = True
-        if lehrer:
-            details = True
-        # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
-        profil_gruppe = profil.gruppe
-        if profil_gruppe:
-            startdatum = profil.gruppe.erstellt_am
-        else:
-            startdatum = profil.user.date_joined
-        schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
-        zaehler_profil = Zaehler.objects.filter(profil=profil)
-        letzte_alle = zaehler_profil.order_by('letzte').first()
-        for kategorie in kategorien:
-            pflicht = False
-            aktiv = True
-            falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
-            nicht_richtig_kat = prozent_kat = 0
-            prozent_farbe = nicht_richtg_farbe = None
-            if (kategorie.start_jg < profil.jg) or (kategorie.start_sw <= schulwoche and kategorie.start_jg == profil.jg):
-                pflicht = True                                                                      # pflicht = Aufgabenkategorie müsste erledigt werden
-                kat_farbe = "rot"
-            else:
-                kat_farbe = None
-            index =  kategorie.zeile
-            protokoll_kategorie = protokoll.filter(kategorie = kategorie)
-            if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
-                zaehler_kategorie, created = Zaehler.objects.get_or_create(profil=profil, kategorie = kategorie)
-                kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
-                    protokoll_kategorie
-                    .values("kategorie__zeile")
-                    .annotate(richtig_sum=Sum('richtig'))
-                    .annotate(zeit_sum=Sum(F('end') - F('start')))
-                    )
-                for k in kategorie_werte:
-                    zeile = [[],[]] 
-                    richtig_kat = k['richtig_sum']
-                    #richtig_kat += zaehler_kategorie.bonus
-                    richtig_gesamt += richtig_kat
-                    if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
-                        kat_farbe = "gruen"
-                    elif richtig_kat >= 10:
-                        kat_farbe = "gelb"
-                    # elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
-                    #     kat_farbe = "gelb"
-                    #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
-                    falsch_kat = zaehler_kategorie.fehler_zaehler
-                    abbr_kat = zaehler_kategorie.abbr_zaehler
-                    lsg_kat = zaehler_kategorie.lsg_zaehler
-                    hilfe_kat = zaehler_kategorie.hilfe_zaehler
-                    if 1==1:
-                        pass  
-                        # else:
-                        #     fehler_ab = zaehler_kategorie.fehler_ab
-                        #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
-                        #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
-                        #         protokoll_fehler
-                        #         .values("kategorie__zeile")
-                        #         .annotate(falsch_kat=Sum('falsch'))
-                        #         .annotate(abbr_kat=Sum('abbr'))
-                        #         .annotate(lsg_kat=Sum('lsg'))
-                        #         .annotate(hilfe_kat=Sum('hilfe'))
-                        #         ) 
-                        #     for f in protokoll_fehler:
-                        #         falsch_kat = f['falsch_kat'] 
-                        #         abbr_kat = f['abbr_kat']
-                        #         lsg_kat = f['lsg_kat'] 
-                        #         hilfe_kat = f['hilfe_kat'] 
-                        #         if abbr_kat == True:
-                        #             abbr_kat = 1
-                        #         elif abbr_kat == False:
-                        #             abbr_kat = 0 
-                        #         if lsg_kat == True:
-                        #             lsg_kat = 1
-                        #         elif lsg_kat == False:
-                        #             lsg_kat = 0 
-                        #         if hilfe_kat == True:
-                        #             hilfe_kat = 1
-                        #         elif hilfe_kat == False:
-                        #             hilfe_kat = 0 
-                    qfarbe = quote_farbe(richtig_kat, falsch_kat)
-                    zeit_kat = k['zeit_sum']
-                    try:
-                        zeit_text = int(zeit_kat.total_seconds())
-                        if zeit_text <= 60:
-                            zeit_text = "<"
-                        else:
-                            mm = zeit_text//60
-                            hh, mm = divmod(mm, 60)
-                            zeit_text = f"{hh}:{mm:02d}"
-                    except:
-                         zeit_text = "-"
-                    letzte_kat = zaehler_kategorie.letzte.strftime("%d.%m.%y")
-                    abbr_farbe = lsg_farbe = None
-                    nicht_richtig_quote = 0
-                    if richtig_kat > 0:
-                        if lsg_gesamt > 0:
-                            if lsg_kat > richtig_kat/10:
-                                lsg_farbe = "rot"
-                            elif lsg_kat > richtig_kat/20:
-                                lsg_farbe ="gelb"
-                        if abbr_kat  > 0:
-                            if abbr_kat > richtig_kat/10:
-                                abbr_farbe = "rot"
-                            elif abbr_kat > richtig_kat/20:
-                                abbr_farbe ="gelb"
-                    if richtig_kat+falsch_kat > 0:
-                        quote = int(falsch_kat/(richtig_kat+falsch_kat)*100)
-                        try:
-                            pro_aufg = round(zeit_kat.total_seconds()/float(richtig_kat+falsch_kat),1)
-                        except:
-                            pro_aufg = "-"
-                        if not details:
-                            nicht_richtig_kat = falsch_kat+abbr_kat+lsg_kat
-                            nicht_richtig_quote = int(nicht_richtig_kat/(richtig_kat+nicht_richtig_kat)*100)
-                    else:
-                        quote = "-"
-                        pro_aufg = "-"
-                    if zeit_kat == None:
-                        zeit_kat = '-'
-                    else:
-                        zeit_gesamt += zeit_kat.seconds
-                    prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
-                    if not pflicht or not note_anzeigen:
-                        prozent_farbe = None
-                    if not pflicht:
-                        qfarbe = abbr_farbe = lsg_farbe = None
-                        if richtig_kat >= 10:
-                            kat_farbe = "gruen"
-                        else:
-                            kat_farbe = None
-                    else:
-                        if prozent_kat>=110 and not lehrer and falsch_kat < 1:
-                            aktiv = False
-                    prozent_summe +=prozent_kat
-                    nicht_richtig_summe +=nicht_richtig_kat
-                    if details == True:
-                        werte = (kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)),                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat),
-                    else:
-                        werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%")
-                    if note_anzeigen:
-                        werte += ((prozent_farbe, str(int(prozent_kat))+"%"),)
-                    werte += ((None,letzte_kat),)
-                    zeile = (kategorie,aktiv,(werte))
-                    bearbeitet = index
-            if index != bearbeitet:
-                # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
-                # try:
-                #     zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
-                #     bonus_kat = zaehler_kat.bonus
-                # except:
-                #     bonus_kat = 0
-                # if bonus_kat > 0:
-                #richtig_kat = bonus_kat
-                # if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
-                #     kat_farbe = "gruen"
-                # elif richtig_kat >= 10:
-                #     kat_farbe = "gelb"
-                # else:
-                kat_farbe = 'rot' if pflicht else None
-                prozent_farbe = 'rot' if pflicht and note_anzeigen else None
-                richtig_kat = '-'
-                if details == True:
-                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * 8,
-                    breite = "breit"
-                else:
-                    werte = (kat_farbe,richtig_kat), *((None,'-'),) * 2,
-                    breite = "schmal"
-                if note_anzeigen:
-                    werte += ((prozent_farbe,'0%' if pflicht else '-'),)
-                werte += ((None,'-'),)
-                zeile = (kategorie, aktiv,(werte))
-            zeilen.append(zeile)
-        summe_farbe = prozent_summe_farbe = "unset" 
-        if richtig_gesamt + falsch_gesamt >0:
-            summe_farbe = quote_farbe(richtig_gesamt,soll_hj-richtig_gesamt)
-            quote = int(falsch_gesamt/(richtig_gesamt + falsch_gesamt)*100)
-            qfarbe = quote_farbe(richtig_gesamt, falsch_gesamt)  
-            pro_aufg = format_zahl(zeit_gesamt/(richtig_gesamt + falsch_gesamt),1)
-            h, min = divmod(zeit_gesamt, 3600)
-            min, sec = divmod(min, 60) 
-            dauer = f'{int(h)}:{int(min):02d}'
-            if pflicht_kat > 0:
-                prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe)                         # Berechnung der Gesamtnote
-            else:
-                prozent_summe_farbe = prozent_summe = note = None  
-            if not note_anzeigen:
-                prozent_summe_farbe = None
-            if not details:
-                nicht_richtig_summe_quote = int(nicht_richtig_summe/(richtig_gesamt + nicht_richtig_summe)*100)
-                nicht_richtig_summe_farbe = quote_farbe(richtig_gesamt,nicht_richtig_summe)
-            if soll_hj < 10*pflicht_kat and prozent_summe < 50:
-                note = "-"
-                prozent_summe_farbe = None
-        else:
-            # zaehler_profil = Zaehler.objects.filter(profil = profil)
-            # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-            # if bonus_summe != None:
-            #     richtig_gesamt = bonus_summe 
-            # else:
-            richtig_gesamt = 0 
-            falsch_gesamt=zeit_gesamt=abbr_gesamt=lsg_gesamt=hilfe_gesamt=0
-            quote = "-"  
-            qfarbe = "unset" 
-            dauer = '-'
-            pro_aufg = "-" 
-        context = dict(lehrer= lehrer, loeschen= loeschen, form= form, schueler = profil, schueler_id = schueler_id, 
-            zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
-            richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
-            abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note_anzeigen=note_anzeigen, note=note, 
-            nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite,)
-        try:
-            context["letzte"] = letzte_alle.letzte.strftime("%d.%m.%y %H:%M")
-        except:
-            pass
-        if details:
-            return render(req, 'core/uebersicht.html', context)
-        else:
-            return render(req, 'core/uebersicht_ohne_details.html', context)
-    else:
+    if not req.user.is_authenticated:
         return redirect('anmelden')
+    lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
+    loeschen = False 
+    if schueler_id == 0:
+        profil = get_object_or_404(Profil, user_id = req.user.id)
+        if lehrer:
+            loeschen = True            
+    else:
+        if schueler_id == req.user.profil.id:
+            loeschen = True
+        profil = get_object_or_404(Profil, id = schueler_id)
+    if (profil.id) == (req.user.profil.id):
+        pass
+    else:
+        if req.user.is_superuser:
+            pass
+        elif lehrer:
+            try:
+                if (profil.gruppe.lehrer.id) == (req.user.id):
+                    pass
+                else:
+                    meldung = profil, " ist nicht in dieser Lerngruppe angemeldet"
+                    return HttpResponse(meldung)
+            except:
+                return HttpResponse("Daten nicht vorhanden")
+        else:
+            return HttpResponse("Zugriff verweigert")
+    gruppe = profil.gruppe
+    note_anzeigen = sub_note_anzeigen(profil)
+    if note_anzeigen:
+        aufgaben_pro_woche = gruppe.aufgaben_pro_woche
+        if aufgaben_pro_woche < 1:
+            aufgaben_pro_woche = 10 * profil.jg
+    else:
+        aufgaben_pro_woche = 10 * profil.jg
+    protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+    form = UebersichtHalbjahr
+    if req.method == 'POST':
+        auswahl = form(req.POST)
+        if auswahl.is_valid(): 
+            auswahl = auswahl.cleaned_data['auswahl']
+            if auswahl == "alle":
+                note_anzeigen = False
+                protokoll = Protokoll.objects.filter(profil=profil)
+                form = UebersichtHalbjahr()
+                form.fields['auswahl'].initial = 'alle' 
+    richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
+    #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
+    alle_kat= False
+    if "Details ausblenden" in req.POST:
+        profil.details = False
+        profil.save()
+    if "Details anzeigen" in req.POST:
+        profil.details = True
+        profil.save()
+    if "alle Kategorien" in req.POST:
+        alle_kat= True
+    if profil.jg >= 7 or alle_kat:
+        kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle_kat egorien
+        alle_kat= True
+    elif profil.jg >= 6:
+        kategorien = Kategorie.objects.filter(zeile__lt = 22)
+    elif profil.jg >= 5:
+        kategorien = Kategorie.objects.filter(zeile__lt = 15)
+    else:
+        kategorien = Kategorie.objects.filter(zeile__lt = 8)
+    zeilen = []
+    zeit_gesamt = 0
+    bearbeitet = 0
+    prozent_kat = 0
+    breite = "breit"
+    sj = profil.sj
+    hj = profil.hj
+    gruppe = profil.gruppe
+    prozent_summe = nicht_richtig_summe =  nicht_richtig_summe_quote = 0
+    prozent_summe_farbe = nicht_richtig_summe_farbe = farbe_kat = None
+    note = "-"
+    if profil.jg > 10:
+        aufgaben_pro_woche = 100
+    try:
+        details = profil.details
+    except:
+        details = True
+    if lehrer:
+        details = True
+    # wenn die Lerngruppe nach dem Beginn des Halbjahres angelegt wurde, werden von den Sollaufgaben entsprechend abgezogen - ebenso, wenn keine Lerngruppe verknüpft ist, entsprechend mit der Registrierung
+    profil_gruppe = profil.gruppe
+    if profil_gruppe:
+        startdatum = profil.gruppe.erstellt_am
+    else:
+        startdatum = profil.user.date_joined
+    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, profil.jg, aufgaben_pro_woche, startdatum)                    # berechnet den Aufgabensoll für das Halbjahr und Kategorie
+    zaehler_profil = Zaehler.objects.filter(profil=profil)
+    letzte_alle = zaehler_profil.order_by('letzte').first()
+    for kategorie in kategorien:
+        pflicht = False
+        aktiv = True
+        falsch_kat = abbr_kat = lsg_kat = hilfe_kat = 0
+        nicht_richtig_kat = prozent_kat = 0
+        prozent_farbe = nicht_richtg_farbe = None
+        if (kategorie.start_jg < profil.jg) or (kategorie.start_sw <= schulwoche and kategorie.start_jg == profil.jg):
+            pflicht = True                                                                      # pflicht = Aufgabenkategorie müsste erledigt werden
+            kat_farbe = "rot"
+        else:
+            kat_farbe = None
+        index =  kategorie.zeile
+        protokoll_kategorie = protokoll.filter(kategorie = kategorie)
+        if protokoll_kategorie.count() > 0:                                                     # es sind Aufgaben da
+            zaehler_kategorie, created = Zaehler.objects.get_or_create(profil=profil, kategorie = kategorie)
+            kategorie_werte = (                                                                 # die Summen der einzelnen Kategoren des jeweiligen Users
+                protokoll_kategorie
+                .values("kategorie__zeile")
+                .annotate(richtig_sum=Sum('richtig'))
+                .annotate(zeit_sum=Sum(F('end') - F('start')))
+                )
+            for k in kategorie_werte:
+                zeile = [[],[]] 
+                richtig_kat = k['richtig_sum']
+                #richtig_kat += zaehler_kategorie.bonus
+                richtig_gesamt += richtig_kat
+                if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
+                    kat_farbe = "gruen"
+                elif richtig_kat >= 10:
+                    kat_farbe = "gelb"
+                # elif richtig_kat >= 10 and richtig_kat*2 < durchschnitt and pflicht:          # wenn weniger als die Hälfte der durchschnittlichen Aufgaben gerechnet wurden  
+                #     kat_farbe = "gelb"
+                #if zaehler_kategorie.fehler_ab.replace(tzinfo=None) < datetime(2024, 1, 1, 0, 0, 0, 0):
+                falsch_kat = zaehler_kategorie.fehler_zaehler
+                abbr_kat = zaehler_kategorie.abbr_zaehler
+                lsg_kat = zaehler_kategorie.lsg_zaehler
+                hilfe_kat = zaehler_kategorie.hilfe_zaehler
+                if 1==1:
+                    pass  
+                    # else:
+                    #     fehler_ab = zaehler_kategorie.fehler_ab
+                    #     protokoll_fehler = protokoll_kategorie.filter(start__gt=fehler_ab)
+                    #     protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+                    #         protokoll_fehler
+                    #         .values("kategorie__zeile")
+                    #         .annotate(falsch_kat=Sum('falsch'))
+                    #         .annotate(abbr_kat=Sum('abbr'))
+                    #         .annotate(lsg_kat=Sum('lsg'))
+                    #         .annotate(hilfe_kat=Sum('hilfe'))
+                    #         ) 
+                    #     for f in protokoll_fehler:
+                    #         falsch_kat = f['falsch_kat'] 
+                    #         abbr_kat = f['abbr_kat']
+                    #         lsg_kat = f['lsg_kat'] 
+                    #         hilfe_kat = f['hilfe_kat'] 
+                    #         if abbr_kat == True:
+                    #             abbr_kat = 1
+                    #         elif abbr_kat == False:
+                    #             abbr_kat = 0 
+                    #         if lsg_kat == True:
+                    #             lsg_kat = 1
+                    #         elif lsg_kat == False:
+                    #             lsg_kat = 0 
+                    #         if hilfe_kat == True:
+                    #             hilfe_kat = 1
+                    #         elif hilfe_kat == False:
+                    #             hilfe_kat = 0 
+                qfarbe = quote_farbe(richtig_kat, falsch_kat)
+                zeit_kat = k['zeit_sum']
+                try:
+                    zeit_text = int(zeit_kat.total_seconds())
+                    if zeit_text <= 60:
+                        zeit_text = "<"
+                    else:
+                        mm = zeit_text//60
+                        hh, mm = divmod(mm, 60)
+                        zeit_text = f"{hh}:{mm:02d}"
+                except:
+                        zeit_text = "-"
+                letzte_kat = zaehler_kategorie.letzte.strftime("%d.%m.%y")
+                abbr_farbe = lsg_farbe = None
+                nicht_richtig_quote = 0
+                if richtig_kat > 0:
+                    if lsg_gesamt > 0:
+                        if lsg_kat > richtig_kat/10:
+                            lsg_farbe = "rot"
+                        elif lsg_kat > richtig_kat/20:
+                            lsg_farbe ="gelb"
+                    if abbr_kat  > 0:
+                        if abbr_kat > richtig_kat/10:
+                            abbr_farbe = "rot"
+                        elif abbr_kat > richtig_kat/20:
+                            abbr_farbe ="gelb"
+                if richtig_kat+falsch_kat > 0:
+                    quote = int(falsch_kat/(richtig_kat+falsch_kat)*100)
+                    try:
+                        pro_aufg = round(zeit_kat.total_seconds()/float(richtig_kat+falsch_kat),1)
+                    except:
+                        pro_aufg = "-"
+                    if not details:
+                        nicht_richtig_kat = falsch_kat+abbr_kat+lsg_kat
+                        nicht_richtig_quote = int(nicht_richtig_kat/(richtig_kat+nicht_richtig_kat)*100)
+                else:
+                    quote = "-"
+                    pro_aufg = "-"
+                if zeit_kat == None:
+                    zeit_kat = '-'
+                else:
+                    zeit_gesamt += zeit_kat.seconds
+                prozent_farbe, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
+                if not pflicht or not note_anzeigen:
+                    prozent_farbe = None
+                if not pflicht:
+                    qfarbe = abbr_farbe = lsg_farbe = None
+                    if richtig_kat >= 10:
+                        kat_farbe = "gruen"
+                    else:
+                        kat_farbe = None
+                else:
+                    if prozent_kat>=110 and not lehrer and falsch_kat < 1:
+                        aktiv = False
+                prozent_summe +=prozent_kat
+                nicht_richtig_summe +=nicht_richtig_kat
+                if details == True:
+                    werte = (kat_farbe,richtig_kat), (None,falsch_kat), (qfarbe,str(quote)+"%"), (None,zeit_text), (None,pro_aufg), (None, str(zaehler_kategorie.richtig_of)+"/"+str(kategorie.eof)),                                 (abbr_farbe,abbr_kat), (lsg_farbe, lsg_kat), (None,hilfe_kat),
+                else:
+                    werte = (kat_farbe,richtig_kat), (None,nicht_richtig_kat), (qfarbe, str(nicht_richtig_quote)+"%")
+                if note_anzeigen:
+                    werte += ((prozent_farbe, str(int(prozent_kat))+"%"),)
+                werte += ((None,letzte_kat),)
+                zeile = (kategorie,aktiv,(werte))
+                bearbeitet = index
+        if index != bearbeitet:
+            # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
+            # try:
+            #     zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
+            #     bonus_kat = zaehler_kat.bonus
+            # except:
+            #     bonus_kat = 0
+            # if bonus_kat > 0:
+            #richtig_kat = bonus_kat
+            # if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
+            #     kat_farbe = "gruen"
+            # elif richtig_kat >= 10:
+            #     kat_farbe = "gelb"
+            # else:
+            kat_farbe = 'rot' if pflicht else None
+            prozent_farbe = 'rot' if pflicht and note_anzeigen else None
+            richtig_kat = '-'
+            if details == True:
+                werte = (kat_farbe,richtig_kat), *((None,'-'),) * 8,
+                breite = "breit"
+            else:
+                werte = (kat_farbe,richtig_kat), *((None,'-'),) * 2,
+                breite = "schmal"
+            if note_anzeigen:
+                werte += ((prozent_farbe,'0%' if pflicht else '-'),)
+            werte += ((None,'-'),)
+            zeile = (kategorie, aktiv,(werte))
+        zeilen.append(zeile)
+    summe_farbe = prozent_summe_farbe = "unset" 
+    if richtig_gesamt + falsch_gesamt >0:
+        summe_farbe = quote_farbe(richtig_gesamt,soll_hj-richtig_gesamt)
+        quote = int(falsch_gesamt/(richtig_gesamt + falsch_gesamt)*100)
+        qfarbe = quote_farbe(richtig_gesamt, falsch_gesamt)  
+        pro_aufg = format_zahl(zeit_gesamt/(richtig_gesamt + falsch_gesamt),1)
+        h, min = divmod(zeit_gesamt, 3600)
+        min, sec = divmod(min, 60) 
+        dauer = f'{int(h)}:{int(min):02d}'
+        if pflicht_kat > 0:
+            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe)                         # Berechnung der Gesamtnote
+        else:
+            prozent_summe_farbe = prozent_summe = note = None  
+        if not note_anzeigen:
+            prozent_summe_farbe = None
+        if not details:
+            nicht_richtig_summe_quote = int(nicht_richtig_summe/(richtig_gesamt + nicht_richtig_summe)*100)
+            nicht_richtig_summe_farbe = quote_farbe(richtig_gesamt,nicht_richtig_summe)
+        if soll_hj < 10*pflicht_kat and prozent_summe < 50:
+            note = "-"
+            prozent_summe_farbe = None
+    else:
+        # zaehler_profil = Zaehler.objects.filter(profil = profil)
+        # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
+        # if bonus_summe != None:
+        #     richtig_gesamt = bonus_summe 
+        # else:
+        richtig_gesamt = 0 
+        falsch_gesamt=zeit_gesamt=abbr_gesamt=lsg_gesamt=hilfe_gesamt=0
+        quote = "-"  
+        qfarbe = "unset" 
+        dauer = '-'
+        pro_aufg = "-" 
+    tests = []
+    if req.user.is_authenticated:
+        profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
+        if profil and profil.gruppe_id:
+            tests = Test.objects.all().order_by("-created_at")
+    else:
+        profil = None
+    context = dict(lehrer= lehrer, loeschen= loeschen, form= form, profil = profil, schueler = profil, schueler_id = schueler_id, tests = tests,
+        zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
+        richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
+        abbr=abbr_gesamt, lsg=lsg_gesamt, hilfe= hilfe_gesamt, prozent_summe_farbe=prozent_summe_farbe, prozent_summe=prozent_summe, note_anzeigen=note_anzeigen, note=note, 
+        nicht_richtig_summe_farbe=nicht_richtig_summe_farbe, nicht_richtig_summe_quote=nicht_richtig_summe_quote, nicht_richtig_summe=nicht_richtig_summe, breite = breite,)
+    try:
+        context["letzte"] = letzte_alle.letzte.strftime("%d.%m.%y %H:%M")
+    except:
+        pass
+    if details:
+        return render(req, 'core/uebersicht.html', context)
+    else:
+        return render(req, 'core/uebersicht_ohne_details.html', context)
+
 
 def protokoll_zeit_filter(protokoll, auswahl):
     sj, hj = name_hj()
