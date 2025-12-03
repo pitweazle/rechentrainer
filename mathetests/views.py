@@ -64,10 +64,6 @@ def test_erstellen(req, gruppe_id):
     })
 
 # ---------- Schritt 2: Test benennen & speichern ----------
-from .forms import TestNameForm
-from .models import Test, TestEinstellung
-from core.models import Kategorie, Auswahl
-
 def test_benennen(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     draft = req.session.get("test_draft")
@@ -98,9 +94,7 @@ def test_benennen(req, gruppe_id):
                     else:
                         optionen_text = "keine"
                     ret = aufgaben(
-                        kategorie_id=kat.id,
-                        jg=jg,
-                        stufe=stufe,
+                        kategorie_id=kat.zeile,
                         optionen=optionen_text,
                     )
                     if not isinstance(ret, tuple):
