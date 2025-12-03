@@ -901,3 +901,13 @@ def suchen(req, gruppe_id=None):
     else:
         return HttpResponse("Zugriff verweigert")
 
+def account_pruefen(id):
+    nachricht = ""
+    user = User.objects.filter(id = id).first()
+    if user == None:
+        nachricht = "Ein Account mit der ID {} existiert nicht".format(id)
+    else:
+        profil = Profil.objects.filter(user = user).first()
+        if profil == None:
+            nachricht = "Ein Profil mit der ID {} existiert nicht".format(id)
+    return user, nachricht
