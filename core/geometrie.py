@@ -288,6 +288,7 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
     return parameter
 
 def sub_punkt_pruefen(eingabe, loesung):
+    print("eingabe",eingabe)
     try:
         if "(" not in eingabe or not ")" in eingabe:
                 return 0, "Du musst die Koordinaten in Klammern eingeben."
@@ -301,13 +302,13 @@ def sub_punkt_pruefen(eingabe, loesung):
                 eingabe=eingabe.split("|")
             elif ":" in eingabe:
                 eingabe=eingabe.split(":")
-            zahl=(float(eingabe[0])*10+20)*1000
+            zahl=(float(eingabe[0])*-10+20)*1000
             zahl = zahl + float(eingabe[1])*10
             if zahl == float(loesung):
                 return 1, ""
         return 0, "" 
     except:
-        return 0, "Mit deiner Eingabe stimmt etwas nicht."
+       return 0, "Mit deiner Eingabe stimmt etwas nicht."
 
 def linien_koordinaten(dreh, startwinkel, id = 21):
         schieb_x = math.tan(math.radians(dreh))*50
