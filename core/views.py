@@ -37,8 +37,6 @@ from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, su
 from django.db.models import Sum, F,  Max
 from accounts.services import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
-from mathetests.models import Test
-
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -8190,7 +8188,8 @@ def uebersicht(req, schueler_id=0):
     if req.user.is_authenticated:
         profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
         if profil and profil.gruppe_id:
-            tests = Test.objects.all().order_by("-created_at")
+            tests = Test.objects.filter(gruppe = profil.gruppe).order_by("-created_at")
+
     else:
         profil = None
     context = dict(lehrer= lehrer, loeschen= loeschen, form= form, profil = profil, schueler = profil, schueler_id = schueler_id, tests = tests,
@@ -8206,7 +8205,6 @@ def uebersicht(req, schueler_id=0):
         return render(req, 'core/uebersicht.html', context)
     else:
         return render(req, 'core/uebersicht_ohne_details.html', context)
-
 
 def protokoll_zeit_filter(protokoll, auswahl):
     sj, hj = name_hj()

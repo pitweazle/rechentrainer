@@ -40,14 +40,13 @@ def index(req):
         anz_geloescht = data.get("anzahl", 0)
     except FileNotFoundError:
         anz_geloescht = 0
-
     anz_gesamt = anz_aktuell + anz_geloescht
     lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
     tests = []
     if req.user.is_authenticated:
         profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
         if profil and profil.gruppe_id:
-            tests = Test.objects.all().order_by("-created_at")
+            tests = Test.objects.filter(gruppe = profil.gruppe).order_by("-created_at")
     else:
         profil = None
     return render(req, "index.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_gesamt, "tests": tests, })
