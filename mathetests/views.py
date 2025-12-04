@@ -335,7 +335,7 @@ def test_anzeigen(req, test_id, profil_id):
         "noten_spiegel_s": noten_spiegel_s,
         "noten_durchschnitt_s": noten_durchschnitt_s,
     }
-    return render(req, "tests/test.html", context)
+    return render(req, "tests/test_anzeigen.html", context)
 
 # ---------- Schritt 4: Test bearbeiten ----------
 def test(req, slug):
