@@ -849,6 +849,7 @@ def suchen(req, gruppe_id=None):
                                             if nachricht != "Der/die Zähler: ":
                                                 nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
                                                 verschoben.text += nachricht
+                                                verschoben.grund = "zaehler_verschoben"
                                                 verschoben.save()                            
                                     n = 0
                                     for protokoll in protokolle:
