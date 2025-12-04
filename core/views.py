@@ -20,7 +20,8 @@ from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, Uebersicht
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
 
-from mathetests.models import Test
+from mathetests.utilities import slots_pro_tabelle
+from mathetests.models import Test 
 
 from .services import erstelle_reihenfolge, soll_berechnung, bewertung_kat, bewertung_hj
 
