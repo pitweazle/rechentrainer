@@ -309,12 +309,13 @@
         <td>{% if z.abbr %}x{% endif %}</td>
         <td>{% if z.lsg %}x{% endif %}</td>
         <td  style="text-align: center;">
-          {% if user.is_superuser or user == gruppe.lehrer %}
+          {{z.wertung}}
+          {% comment %} {% if user.is_superuser or user == gruppe.lehrer %}
             <a href="{% url 'protokoll_bewertung' z.id %}">✏️</a>
           {% endif %}
           {% if z.korrigiert %}
             <span title="Bewertung wurde manuell geändert">*</span>
-          {% endif %}
+          {% endif %} {% endcomment %}
         </td>
       </tr>
     {% empty %}

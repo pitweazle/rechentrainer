@@ -56,3 +56,25 @@ def slots_pro_tabelle(kategorie):
     elif kategorie.slug == "quadratische-funktionen":
         return 4
     return 1
+
+# mathetests/utilities.py
+
+def werte_aus_wertung(wertung: str):
+    """
+    Wertet den String 'wertung' eines Protokolls aus.
+
+    - zählt nur die Zeichen r/f/x (alles andere wird ignoriert: '/', Leerzeichen, Ziffern ...)
+    - r_slots = Anzahl richtiger Slots (1 Punkt pro Slot)
+    - f_slots = Anzahl falscher Slots
+    - x_slots = Anzahl Extrapunkte-Slots (0,5 Punkt pro x)
+    """
+    if not wertung:
+        return 0, 0, 0
+
+    # alles klein, nur r/f/x behalten
+    w = "".join(ch for ch in wertung.lower() if ch in ("r", "f", "x"))
+
+    r_slots = w.count("r")
+    f_slots = w.count("f")
+    x_slots = w.count("x")
+    return r_slots, f_slots, x_slots
