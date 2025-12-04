@@ -183,16 +183,18 @@ def test_anzeigen(req, test_id, profil_id):
     zeilen = []
     for e in einstellungen:
         kat = e.kategorie
+        slots = slots_pro_tabelle(kat)
+        print("Einstellungen", e, e.anzahl, slots)
         stats = protomap.get(kat.id, {})
         richtig_aufg = stats.get("richtig_aufg", 0) or 0
         falsch_aufg  = stats.get("falsch_aufg", 0) or 0
         abbr_aufg    = stats.get("abbr_anz", 0) or 0
         lsg_aufg     = stats.get("lsg_anz", 0) or 0
         erledigt     = richtig_aufg + falsch_aufg
-        offen        = max(e.anzahl - erledigt, 0)
+        offen        = max(e.anzahl + slots - 1 - erledigt, 0)
         zeilen.append({
             "kat": kat,
-            "soll": e.anzahl,
+            "soll": e.anzahl + slots -1,
             "erledigt": erledigt,
             "offen": offen,
             "richtig": richtig_aufg,
@@ -654,6 +656,10 @@ def test(req, slug):
         reihenfolge=reihenfolge,
         optionen="",
     )
+    slots = slots_pro_tabelle(kategorie)
+    if slots > 1:
+        lsg = ([lsg[0][:slots]])
+        lsg = ["; ".join(lsg[0])]
     if kategorie.slug == "sachaufgaben":
         zaehler.letzter_typ = typ
         zaehler.save()
