@@ -527,11 +527,20 @@ def test(req, slug):
         if wertung <= 2:
             tabelle = 0
             richtig = wertung
+            if "halben Extra" in wertung:
+                protokoll.wertung = protokoll.wertung + "x"
+                protokoll.save()
+            elif "Extra" in wertung:
+                protokoll.wertung = protokoll.wertung + "xx"
+                protokoll.save()
         else:
             if wertung >= 3000:
                 tabelle = 3
                 richtig = str(wertung).count("1")
                 falsch = str(wertung).count("0")
+                if str(wertung).count("2")>0:
+                    protokoll.abbr = True
+                    protokoll.save()
             if wertung >= 30000:
                 tabelle = 4
             if wertung >= 300000:
@@ -570,12 +579,12 @@ def test(req, slug):
         else:
             parameter = protokoll.parameter
             if tabelle > 0:
-                protokoll.wertung = (str(wertung)[1:]
-                                      .replace("1", "r")
-                                      .replace("0", "f")
-                                      .replace("2", "/"))
-                protokoll.falsch = falsch
-                protokoll.richtig = richtig
+                # protokoll.wertung = (str(wertung)[1:]
+                #                       .replace("1", "r")
+                #                       .replace("0", "f")
+                #                       .replace("2", "/"))
+                # protokoll.falsch = falsch
+                # protokoll.richtig = richtig
                 str_wertung = (str(wertung)[1:]).replace("1","r").replace("0","f").replace("2","/")
                 protokoll.wertung = str_wertung
                 if protokoll.falsch < falsch:
