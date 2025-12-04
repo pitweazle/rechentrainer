@@ -22,6 +22,8 @@ from .forms import TestErstellenForm, TestNameForm
 from .models import Test
 from .forms import ProtokollBewertungForm
 
+from .utilities import kurs_to_stufe, berechne_note, slots_pro_tabelle
+
 def test_how_to(req):
     return render(req, "tests/test_how_to.html",)
 
@@ -55,9 +57,9 @@ def test_erstellen(req, gruppe_id):
     zeilen = []
     for kat in kategorien:
         feld_anz = form[f"kat_{kat.pk}_anzahl"]
+        slots = slots_pro_tabelle(kat)
         feld_opt = form[f"kat_{kat.pk}_opts"] if f"kat_{kat.pk}_opts" in form.fields else None
-        zeilen.append((kat, feld_anz, feld_opt))
-
+        zeilen.append((kat, feld_anz, slots, feld_opt))
     return render(req, "tests/test_erstellen.html", {
         "gruppe": gruppe,
         "zeilen": zeilen,
@@ -927,57 +929,20 @@ def bewertung_aendern(req, protokoll_id, ziel):
     # einfach zurück zur vorherigen Seite
     return redirect(req.META.get("HTTP_REFERER", "/"))
 
-@require_POST
-def test_toggle_aktiv(req, test_id):
-    test = get_object_or_404(Test, pk=test_id)
-    # nur Lehrer oder Superuser
-    if req.user != test.gruppe.lehrer and not req.user.is_superuser:
-        return HttpResponse("Kein Zugriff")
-    action = req.POST.get("action")
-    if action == "start":
-        test.aktiv = True
-    elif action == "stop":
-        test.aktiv = False
-    test.save(update_fields=["aktiv"])
-    # zurück zur Lehrer-Übersicht
-    return redirect("test_uebersicht_lehrer", test_id=test.id)
-
-def kurs_to_stufe(kurs: str) -> int:
-    if kurs in ("Y", "R", "E", "A", "B"):
-        return 2
-    if kurs in ("H", "G", "C"):
-        return 1
-    return 0  # S oder i
-
-def berechne_note(prozent, streng):
-    """
-    prozent: float, z.B. 83.5
-    streng: bool (True = 95/80/65/50/25, False = 90/75/60/45/30)
-    """
-    if streng:
-        grenzen = {1: 95, 2: 80, 3: 65, 4: 50, 5: 25, 6: 0}
-    else:
-        grenzen = {1: 90, 2: 75, 3: 60, 4: 45, 5: 30, 6: 0}
-    p = float(prozent)
-    # Grundnote bestimmen
-    for n in range(1, 6):
-        if p >= grenzen[n]:
-            note = n
-            break
-    else:
-        note = 6
-    # + / - nur bei 2–5
-    zusatz = ""
-    if 2 <= note <= 5:
-        g_akt = grenzen[note]
-        g_besser = grenzen[note - 1]  # Grenze der besseren Note
-        # knapp über der eigenen Grenze → Minus
-        if p < g_akt + 3:
-            zusatz = "-"
-        # knapp unter der besseren Grenze → Plus
-        elif p >= g_besser - 3:
-            zusatz = "+"
-    return note, zusatz
+# @require_POST
+# def test_toggle_aktiv(req, test_id):
+#     test = get_object_or_404(Test, pk=test_id)
+#     # nur Lehrer oder Superuser
+#     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
+#         return HttpResponse("Kein Zugriff")
+#     action = req.POST.get("action")
+#     if action == "start":
+#         test.aktiv = True
+#     elif action == "stop":
+#         test.aktiv = False
+#     test.save(update_fields=["aktiv"])
+#     # zurück zur Lehrer-Übersicht
+#     return redirect("test_uebersicht_lehrer", test_id=test.id)
 
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)

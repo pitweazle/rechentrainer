@@ -24,11 +24,18 @@
             </tr>
           </thead>
           <tbody>
-            {% for kat, feld_anz, feld_opts in zeilen %}
+            {% for kat, feld_anz, slots, feld_opts in zeilen %}
               <tr style="{{ kat.farbe }}">
                 <td>{{ kat.zeile }}</td>
                 <td>{{ kat.name }}</td>
-                <td>{{ feld_anz }}</td>
+                <td>{{ feld_anz }}
+                  {% if slots > 1 %}
+                    <br>
+                    <small>
+                      (Die Wertetabelle hat {{ slots }} Teilaufgaben)
+                    </small>
+                  {% endif %}
+                </td>
                 <td>
                   {% if feld_opts %}
                     <div class="opts-inline">{{ feld_opts }}</div>
