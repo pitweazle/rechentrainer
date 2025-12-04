@@ -7,10 +7,9 @@ urlpatterns = [
     path("test_anzeigen/<int:test_id>/<int:profil_id>/", views.test_anzeigen, name="test_anzeigen"),
     path("test_how_to/", views.test_how_to, name="test_how_to"),
 
-    #path('test/<slug:slug>/', views.test, name='test'),
+    path('test/<slug:slug>/', views.test, name='test'),
     path("test/<int:test_id>/uebersicht/", views.test_uebersicht, name="test_uebersicht_lehrer"),
-    #path("tests/<int:test_id>/toggle/", views.test_toggle_aktiv, name="test_toggle_aktiv"),
-    #path("bewertung_aendern/<int:protokoll_id>/<str:ziel>/", views.bewertung_aendern, name="bewertung_aendern",),
+    
     path("protokoll_bewertung/<int:protokoll_id>/", views.protokoll_bewertung, name="protokoll_bewertung",),
     path("tests/<int:test_id>/loeschen/", views.test_loeschen, name="test_loeschen"),
 
