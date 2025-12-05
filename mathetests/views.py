@@ -23,7 +23,7 @@ from .forms import TestErstellenForm, TestNameForm
 from .models import Test
 from .forms import ProtokollBewertungForm
 
-from .utilities import kurs_to_stufe, berechne_note, slots_pro_tabelle, werte_aus_wertung
+from .utilities import kurs_to_stufe, berechne_note, slots_pro_tabelle, werte_aus_wertung, build_soll_map, analyse_protokolle, berechne_quote_und_note
 
 def test_how_to(req):
     return render(req, "tests/test_how_to.html",)
@@ -129,7 +129,13 @@ def test_benennen(req, gruppe_id):
 def test_anzeigen(req, test_id, profil_id):
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
-    profil = Profil.objects.filter(id=profil_id).select_related("gruppe").first()
+    # Profil des Schülers
+    profil = (
+        Profil.objects
+        .filter(id=profil_id)
+        .select_related("gruppe")
+        .first()
+    )
     user_profil = getattr(req.user, "profil", None)
 
     # --- Zugriff prüfen ---
@@ -137,96 +143,17 @@ def test_anzeigen(req, test_id, profil_id):
         return HttpResponse("Zugriff verweigert")
     if not profil or profil.gruppe_id != gruppe.id:
         return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
-    # --- Testeinstellungen ---
+    # --- Testeinstellungen / Kategorien ---
     einstellungen = (
         TestEinstellung.objects
         .filter(test=test)
         .select_related("kategorie")
         .order_by("kategorie__zeile")
     )
-    # Alle Protokolle zu diesem Test + Profil
-    prot = (
-        Protokoll.objects
-        .filter(profil=profil, hilfe_id=test.proto_marker)
-        .select_related("kategorie")
-        .order_by("-start")   # letzte Aufgabe oben anzeigen
-    )
-    test_datum = prot.order_by("start").first().start.date() if prot.exists() else None
-    prots = prot
-    # ------------------------------------------------------------------
-    # 1. Summen pro Kategorie für die Tabelle oben
-    #    - Soll: Aufgaben inkl. Wertetabellen-Slots
-    #    - erledigt / richtig / falsch aus p.wertung (r/f)
-    # ------------------------------------------------------------------
-    protos_by_kat = defaultdict(list)
-    for p in prots:
-        protos_by_kat[p.kategorie_id].append(p)
-    zeilen = []
-    for e in einstellungen:
-        kat = e.kategorie
-        anzahl = e.anzahl or 0
-        # Slots der ersten Aufgabe (Wertetabelle → z.B. 3,4,5; sonst 1)
-        slots_first = slots_pro_tabelle(kat)
-        # Soll in „Aufgaben“ (= Slots):
-        #  - erste Aufgabe: Tabelle mit slots_first
-        #  - restliche Aufgaben: je 1
-        if anzahl <= 0:
-            soll = 0
-        elif anzahl == 1:
-            soll = slots_first
-        else:
-            soll = slots_first + (anzahl - 1)
-        kat_prots = protos_by_kat.get(kat.id, [])
-        erledigt = 0   # erledigte Slots (r + f)
-        richtig = 0
-        falsch = 0
-        abbr_aufg = 0
-        lsg_aufg = 0
-        for p in kat_prots:
-            if p.abbr:
-                abbr_aufg += 1
-            if p.lsg:
-                lsg_aufg += 1
-            r_slots, f_slots, x_slots = werte_aus_wertung(p.wertung or "")
-            erledigt += (r_slots + f_slots)
-            richtig  += r_slots
-            falsch   += f_slots
-        offen = max(soll - erledigt, 0)
-        zeilen.append({
-            "kat": kat,
-            "soll": soll,
-            "erledigt": erledigt,
-            "offen": offen,
-            "richtig": richtig,
-            "falsch": falsch,
-            "abbr": abbr_aufg,
-            "lsg": lsg_aufg,
-            "darf_starten": test.aktiv and offen > 0,
-        })
-    gesamt = {
-        "soll":     sum(z["soll"]      for z in zeilen),
-        "erledigt": sum(z["erledigt"]  for z in zeilen),
-        "offen":    sum(z["offen"]     for z in zeilen),
-        "richtig":  sum(z["richtig"]   for z in zeilen),
-        "falsch":   sum(z["falsch"]    for z in zeilen),
-        "abbr":     sum(z["abbr"]      for z in zeilen),
-        "lsg":      sum(z["lsg"]       for z in zeilen),
-    }
-    gesamt_soll = gesamt["soll"]
-    gesamt_erledigt = gesamt["erledigt"]
-    gesamt_offen = gesamt["offen"]
-    gesamt_richtig = gesamt["richtig"]
-    gesamt_falsch = gesamt["falsch"]
-    gesamt_abbr = gesamt["abbr"]
-    gesamt_lsg = gesamt["lsg"]
-    # ------------------------------------------------------------------
-    # 2. Gesamt-Auswertung (Punkte + Quote) für DIESES Profil
-    #    - Nenner = gesamt["soll"] (inkl. Tabellen-Slots)
-    #    - r: Basis-Punkte
-    #    - x: Extrapunkte (= 0,5 je x)
-    #    - Abbr/Lsg: je -0,5
-    # ------------------------------------------------------------------
-    # --- ausführliches Protokoll (Liste unten) ---
+    # Soll-Slots pro Kategorie (inkl. Wertetabellen)
+    soll_map, total_soll_global = build_soll_map(einstellungen)
+
+    # --- Protokolle dieses Schülers für diesen Test ---
     prot = (
         Protokoll.objects
         .filter(profil=profil, hilfe_id=test.proto_marker)
@@ -237,109 +164,113 @@ def test_anzeigen(req, test_id, profil_id):
         test_datum = prot.order_by("start").first().start.date()
     else:
         test_datum = None
-    # ==== Gesamt-Auswertung (Punkte / Quote / nicht gemacht) ====
-    prots = prot  # nur Alias
-    agg = prots.aggregate(
-        richtig_sum=Sum("richtig"),
-        falsch_sum=Sum("falsch"),
-    )
-    richtig_punkte = Decimal(agg["richtig_sum"] or 0)
-    falsch_sum = Decimal(agg["falsch_sum"] or 0)
-    cheat_punkte = Decimal("-0.5") * (falsch_sum - gesamt_falsch)
-    malus_punkte = (Decimal("0.5") * Decimal(gesamt_abbr + gesamt_lsg)+cheat_punkte
-        )
-    if gesamt_soll > 0:
-        quote = round(((richtig_punkte-malus_punkte) / gesamt_soll) * 100, 1)
-    else:
-        quote = 0
-    # Note nur, wenn Test nicht aktiv ist UND es überhaupt Protokolle gibt
-    if (not test.aktiv) and prot.exists():
-        note, zusatz = berechne_note(quote, test.note_streng)
-        note = str(note)+zusatz
-    else:
-        note = None
-    # Note nur, wenn Test beendet ist und es überhaupt Protokolle gibt
-    if (not test.aktiv) and prots.exists():
-        note_zahl, zusatz = berechne_note(quote, test.note_streng)
-        note = f"{note_zahl}{zusatz}"
-    else:
-        note = None
+    # Slot-Analyse aus wertung (für obere Tabelle & Zähler)
+    analysis = analyse_protokolle(prot, soll_map)
+    # 1. Summen pro Kategorie für die Tabelle oben (nur aus wertung!)
+    protos_by_kat = defaultdict(list)
+    for p in prot:
+        protos_by_kat[p.kategorie_id].append(p)
+
+    zeilen = []
+    for e in einstellungen:
+        kat = e.kategorie
+        kat_id = kat.id
+
+        soll = soll_map.get(kat_id, 0)
+
+        kat_stats = analysis["pro_kat"].get(kat_id, {"r": 0, "f": 0, "x": 0})
+        richtig_slots = kat_stats["r"]
+        falsch_slots = kat_stats["f"]
+        erledigt_slots = richtig_slots + falsch_slots
+
+        # Abbrüche / „Lsg anzeigen“ pro Kategorie (ändern wertung NICHT!)
+        kat_prots = protos_by_kat.get(kat_id, [])
+        abbr_aufg = 0
+        lsg_aufg = 0
+        for p in kat_prots:
+            if p.abbr:
+                abbr_aufg += 1
+            if p.lsg:
+                lsg_aufg += 1
+
+        offen = max(soll - erledigt_slots, 0)
+
+        zeilen.append({
+            "kat": kat,
+            "soll": soll,
+            "erledigt": erledigt_slots,
+            "offen": offen,
+            "richtig": richtig_slots,
+            "falsch": falsch_slots,
+            "abbr": abbr_aufg,
+            "lsg": lsg_aufg,
+            "darf_starten": test.aktiv and offen > 0,
+        })
+
+    # Gesamtsummen für Zählerzeile (alles Slots / wertung-basiert)
+    gesamt_abbr = sum(z["abbr"] for z in zeilen)
+    gesamt_lsg  = sum(z["lsg"] for z in zeilen)
+
+    gesamt = {
+        "soll":     analysis["total_soll"],
+        "erledigt": analysis["erledigt_sum"],
+        "offen":    analysis["offen"],
+        "richtig":  analysis["r_sum"],
+        "falsch":   analysis["f_sum"],
+        "abbr":     gesamt_abbr,
+        "lsg":      gesamt_lsg,
+    }
+    gesamt_soll   = gesamt["soll"]
+    gesamt_offen  = gesamt["offen"]
+    aufg_richtig  = analysis["r_sum"]
+    aufg_falsch   = analysis["f_sum"]
     # ------------------------------------------------------------------
-    # 3. Notenspiegel für die Schülerseite
-    #    → gleiche Quote-Logik, pro Schüler neu berechnet
+    # 2. Punkte / Quote / Note (nur p.richtig / p.falsch + Abbr/Lsg)
+    #    => hier greifen manuelle Änderungen des Lehrers!
+    # ------------------------------------------------------------------
+    quote_info = berechne_quote_und_note(
+        analysis=analysis,
+        protos=prot,
+        test=test,
+    )
+    # ------------------------------------------------------------------
+    # 3. Notenspiegel (für Schülerseite)
+    #    -> für jeden Schüler: Slot-Analyse + Punkte-Logik wie oben
     # ------------------------------------------------------------------
     noten_spiegel_s = None
     noten_durchschnitt_s = None
+
     if not test.aktiv:
         noten_spiegel_s = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
         noten_summe = 0
         noten_anzahl = 0
-        # Precompute total_soll (gleich für alle Profile)
-        total_soll_global = 0
-        for e in einstellungen:
-            anzahl = e.anzahl or 0
-            slots_first = slots_pro_tabelle(e.kategorie)
-            if anzahl <= 0:
-                soll_kat = 0
-            elif anzahl == 1:
-                soll_kat = slots_first
-            else:
-                soll_kat = slots_first + (anzahl - 1)
-            total_soll_global += soll_kat
-
         for sch in Profil.objects.filter(gruppe=gruppe):
-            prot_s = Protokoll.objects.filter(
-                profil=sch, hilfe_id=test.proto_marker
+            prot_s = (
+                Protokoll.objects
+                .filter(profil=sch, hilfe_id=test.proto_marker)
+                .select_related("kategorie")
             )
             if not prot_s.exists():
                 continue
-            basis_r = 0
-            falsch_s = 0
-            bonus_s = Decimal("0")
-            abbr_s = 0
-            lsg_s = 0
-
-            for p in prot_s:
-                w = p.wertung or ""
-                if p.abbr:
-                    abbr_s += 1
-                    continue
-                if p.lsg:
-                    lsg_s += 1
-                    continue
-
-                basis_r += w.count("r")
-                falsch_s += w.count("f")
-                bonus_s  += Decimal("0.5") * Decimal(w.count("x"))
-
-            erledigt_s = basis_r + falsch_s
-            offene_s   = max(total_soll_global - erledigt_s, 0)
-
-            abbr_pts_s = Decimal("0.5") * Decimal(abbr_s)
-            lsg_pts_s  = Decimal("0.5") * Decimal(lsg_s)
-
-            basis_eff_s = min(basis_r, total_soll_global)
-
-            if total_soll_global > 0:
-                pv_s = Decimal(basis_eff_s) + bonus_s
-                straf_s = abbr_pts_s + lsg_pts_s
-                pn_s = pv_s - straf_s
-                if pn_s < 0:
-                    pn_s = Decimal("0")
-
-                quote_s = float((pn_s * Decimal("100")) / Decimal(total_soll_global))
-                quote_s = max(0.0, min(round(quote_s, 1), 100.0))
-            else:
-                quote_s = 0.0
-
-            note_s, zusatz_s = berechne_note(quote_s, test.note_streng)
-            noten_spiegel_s[note_s] += 1
-            noten_summe += note_s
-            noten_anzahl += 1
-
+            analysis_s = analyse_protokolle(prot_s, soll_map)
+            qinfo_s = berechne_quote_und_note(
+                analysis=analysis_s,
+                protos=prot_s,
+                test=test,
+            )
+            note_s = qinfo_s["note"]
+            if not note_s:
+                continue
+            try:
+                basis = int(note_s[0])
+            except (ValueError, TypeError):
+                continue
+            if basis in noten_spiegel_s:
+                noten_spiegel_s[basis] += 1
+                noten_summe += basis
+                noten_anzahl += 1
         if noten_anzahl > 0:
             noten_durchschnitt_s = round(noten_summe / noten_anzahl, 1)
-
     # ------------------------------------------------------------------
     # 4. Context für Template
     # ------------------------------------------------------------------
@@ -352,23 +283,21 @@ def test_anzeigen(req, test_id, profil_id):
         "prot": prot,
         "test_datum": test_datum,
 
-        # Zähler-Zeile
+        # Zähler-Zeile (Aufgaben = Slots aus wertung)
         "gesamt_soll": gesamt_soll,
         "gesamt_offen": gesamt_offen,
         "gesamt_abbr": gesamt_abbr,
         "gesamt_lsg": gesamt_lsg,
-        "aufg_richtig": float(richtig_punkte),
-        "aufg_falsch": float(falsch_sum),
+        "aufg_richtig": float(aufg_richtig),
+        "aufg_falsch": float(aufg_falsch),
+        # Punkte-Zeile (aus p.richtig/p.falsch + Abbr/Lsg)
+        "richtig_punkte": quote_info["richtig_punkte"],
+        "cheat_punkte": quote_info["cheat_punkte"],
+        "abbr_punkte": quote_info["abbr_punkte"],
+        "lsg_punkte": quote_info["lsg_punkte"],
+        "sum_quote": quote_info["quote"],
 
-        # Punkte-Zeile
-        "richtig_punkte": float(richtig_punkte),
-        "cheat_punkte": float(cheat_punkte),
-        "abbr_punkte": float(0.5 * gesamt_abbr),
-        "lsg_punkte": float(0.5 * gesamt_lsg), 
-        "sum_quote": quote,
-
-        "sum_quote": quote,
-        "note": note,
+        "note": quote_info["note"],
         "noten_spiegel_s": noten_spiegel_s,
         "noten_durchschnitt_s": noten_durchschnitt_s,
     }
@@ -803,7 +732,6 @@ def test_uebersicht(req, test_id):
     # Nur der zuständige Lehrer oder Superuser
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponseForbidden("Zugriff verweigert")
-
     # Kategorien dieses Tests (inkl. Soll-Anzahl je Kategorie)
     einstellungen = (
         TestEinstellung.objects
@@ -811,41 +739,19 @@ def test_uebersicht(req, test_id):
         .select_related("kategorie")
         .order_by("kategorie__zeile")
     )
-
-    # >>> Gesamt-Soll in SLOTS (wie in test_anzeigen) <<<
-    total_soll_global = 0
-    soll_pro_kategorie = {}  # kategorie_id -> soll_slots
-
-    for e in einstellungen:
-        anzahl = e.anzahl or 0
-        slots_first = slots_pro_tabelle(e.kategorie)
-
-        if anzahl <= 0:
-            soll_kat = 0
-        elif anzahl == 1:
-            soll_kat = slots_first
-        else:
-            soll_kat = slots_first + (anzahl - 1)
-
-        soll_pro_kategorie[e.kategorie.id] = soll_kat
-        total_soll_global += soll_kat
-
-    kat_ids = list(soll_pro_kategorie.keys())
-
+    # Slot-Soll pro Kategorie (inkl. Wertetabellen) – gleich wie in Schüleransicht
+    soll_map, total_soll_global = build_soll_map(einstellungen)
     # Schüler der Lerngruppe
     schueler_liste = (
         Profil.objects
         .filter(gruppe=gruppe)
         .order_by("nachname", "vorname")
     )
-
     rows = []
-
-    # Notenspiegel + Durchschnitt sammeln (wie Schüleransicht)
+    # Notenspiegel + Durchschnitt sammeln (soll zu Schüleransicht passen!)
     noten_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
     noten_sum = 0
     noten_n = 0
-
     for schueler in schueler_liste:
         # Alle Protokolle dieses Schülers zu diesem Test
         prot_s = (
@@ -853,118 +759,75 @@ def test_uebersicht(req, test_id):
             .filter(
                 profil=schueler,
                 hilfe_id=test.proto_marker,
-                kategorie_id__in=kat_ids,
             )
             .select_related("kategorie")
         )
-
-        # nach Kategorie gruppieren
-        protos_by_kat = defaultdict(list)
-        for p in prot_s:
-            protos_by_kat[p.kategorie_id].append(p)
-
+        # Analyse aus wertung (Slots, Abbr, Lsg, …)
+        if prot_s.exists():
+            analysis_s = analyse_protokolle(prot_s, soll_map)
+        else:
+            # keine Protokolle → leere Analyse
+            analysis_s = {
+                "pro_kat": {},
+                "r_sum": 0,
+                "f_sum": 0,
+                "x_sum": 0,
+                "erledigt_sum": 0,
+                "abbr": 0,
+                "lsg": 0,
+                "offen": total_soll_global,
+                "total_soll": total_soll_global,
+            }
         row = {
             "profil": schueler,
             "kategorien": [],
-            "sum_richtig": 0,   # SLOTS richtig
-            "sum_falsch": 0,    # SLOTS falsch
-            "sum_erledigt": 0,  # SLOTS erledigt
+            "sum_richtig": 0,   # Slots richtig (wertung)
+            "sum_falsch": 0,    # Slots falsch  (wertung)
+            "sum_erledigt": 0,  # Slots erledigt
             "note": None,
         }
-
-        # --- pro Kategorie: Soll/erledigt/richtig/falsch in SLOTS ---
+        # --- pro Kategorie: Soll/erledigt/richtig/falsch in Slots ---
         for e in einstellungen:
             kat = e.kategorie
-            soll_kat = soll_pro_kategorie.get(kat.id, 0)
-            kat_prots = protos_by_kat.get(kat.id, [])
+            kat_id = kat.id
+            soll_kat = soll_map.get(kat_id, 0)
 
-            erledigt_slots = 0
-            richtig_slots = 0
-            falsch_slots = 0
-
-            for p in kat_prots:
-                r_slots, f_slots, x_slots = werte_aus_wertung(p.wertung or "")
-                erledigt_slots += (r_slots + f_slots)
-                richtig_slots  += r_slots
-                falsch_slots   += f_slots
+            kat_stats = analysis_s["pro_kat"].get(kat_id, {"r": 0, "f": 0, "x": 0})
+            r_kat = kat_stats["r"]
+            f_kat = kat_stats["f"]
+            erledigt_kat = r_kat + f_kat
 
             row["kategorien"].append({
                 "kategorie": kat,
                 "soll": soll_kat,
-                "erledigt": erledigt_slots,
-                "richtig": richtig_slots,
-                "falsch": falsch_slots,
+                "erledigt": erledigt_kat,
+                "richtig": r_kat,
+                "falsch": f_kat,
             })
-
-            row["sum_richtig"]  += richtig_slots
-            row["sum_falsch"]   += falsch_slots
-            row["sum_erledigt"] += erledigt_slots
-
-        # --- Quote + Note wie in test_anzeigen (Notenspiegel für Schüler) ---
-        if prot_s.exists() and total_soll_global > 0:
-            basis_r = 0
-            falsch_s = 0
-            bonus_s = Decimal("0")
-            abbr_s = 0
-            lsg_s = 0
-
-            for p in prot_s:
-                w = p.wertung or ""
-
-                if p.abbr:
-                    abbr_s += 1
-                    continue
-                if p.lsg:
-                    lsg_s += 1
-                    continue
-
-                basis_r += w.count("r")
-                falsch_s += w.count("f")
-                bonus_s  += Decimal("0.5") * Decimal(w.count("x"))
-
-            erledigt_s = basis_r + falsch_s
-            offene_s   = max(total_soll_global - erledigt_s, 0)
-
-            abbr_pts_s = Decimal("0.5") * Decimal(abbr_s)
-            lsg_pts_s  = Decimal("0.5") * Decimal(lsg_s)
-
-            basis_eff_s = min(basis_r, total_soll_global)
-
-            pv_s = Decimal(basis_eff_s) + bonus_s
-            straf_s = abbr_pts_s + lsg_pts_s
-            pn_s = pv_s - straf_s
-            if pn_s < 0:
-                pn_s = Decimal("0")
-
-            quote_s = float((pn_s * Decimal("100")) / Decimal(total_soll_global))
-            quote_s = max(0.0, min(round(quote_s, 1), 100.0))
-
-            if not test.aktiv:
-                note_s, zusatz_s = berechne_note(quote_s, test.note_streng)
-                note_str = f"{note_s}{zusatz_s}"
-            else:
-                note_str = None
+            row["sum_richtig"]  += r_kat
+            row["sum_falsch"]   += f_kat
+            row["sum_erledigt"] += erledigt_kat
+        # --- Gesamtauswertung + Note für diesen Schüler ---
+        if prot_s.exists():
+            quote_info = berechne_quote_und_note(analysis_s, prot_s, test)
+            note_str = quote_info["note"]
         else:
+            quote_info = None
             note_str = None
-
         row["note"] = note_str
-
         # Notenspiegel zählen (nur Hauptnote 1–6)
         if note_str:
             basis = note_str[0]  # "2" aus "2+"
             try:
                 basis_int = int(basis)
-                if basis_int in noten_counts:
-                    noten_counts[basis_int] += 1
-                    noten_sum += basis_int
-                    noten_n += 1
             except ValueError:
-                pass
-
+                basis_int = None
+            if basis_int in noten_counts:
+                noten_counts[basis_int] += 1
+                noten_sum += basis_int
+                noten_n += 1
         rows.append(row)
-
     noten_durchschnitt = (noten_sum / noten_n) if noten_n else None
-
     context = {
         "test": test,
         "gruppe": gruppe,
@@ -972,7 +835,6 @@ def test_uebersicht(req, test_id):
         "rows": rows,
         "noten_spiegel": noten_counts,
         "noten_durchschnitt": noten_durchschnitt,
-        "total_soll_global": total_soll_global,
     }
     return render(req, "tests/test_uebersicht_lehrer.html", context)
 
