@@ -853,38 +853,6 @@ def test_toggle_aktiv(req, test_id):
     # zurück zur Lehrer-Übersicht
     return redirect("test_uebersicht_lehrer", test_id=test.id)
 
-def bewertung_aendern(req, protokoll_id, ziel):
-    prot = get_object_or_404(Protokoll, id=protokoll_id)
-
-    # Nur Lehrkräfte oder Superuser dürfen eingreifen
-    user = req.user
-    profil = prot.profil
-    gruppe = profil.gruppe               # Lerngruppe
-    lehrer = gruppe.lehrer               # Lehrkraft der Gruppe
-
-    ist_superuser = user.is_superuser
-    ist_zustaendiger_lehrer = (req.user == lehrer)
-
-    if not (ist_superuser or ist_zustaendiger_lehrer):
-        return HttpResponseForbidden("Keine Berechtigung.")
-
-    # ziel: "r" = richtig, "f" = falsch
-    if ziel == "r":
-        prot.richtig = max(prot.richtig, 1)  # mindestens 1 Punkt
-        prot.falsch = 0
-        prot.abbr = False
-        prot.lsg = False
-    elif ziel == "f":
-        prot.falsch = max(prot.falsch, 1)
-        prot.richtig = 0
-        prot.abbr = False
-        prot.lsg = False
-
-    prot.save()
-
-    # einfach zurück zur vorherigen Seite
-    return redirect(req.META.get("HTTP_REFERER", "/"))
-
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
 
@@ -895,8 +863,6 @@ def test_loeschen(req, test_id):
         test.delete()
         messages.success(req, "Test wurde gelöscht.")
         return redirect("gruppe_uebersicht", gruppe_id=test.gruppe.id)
-
-    return render(req, "tests/test_loeschen_bestaetigen.html", {"test": test})
 
 def abbrechen(req, zaehler_id, test_id):
     test = get_object_or_404(Test, pk=test_id)
