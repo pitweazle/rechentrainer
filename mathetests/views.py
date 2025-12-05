@@ -929,20 +929,20 @@ def bewertung_aendern(req, protokoll_id, ziel):
     # einfach zurück zur vorherigen Seite
     return redirect(req.META.get("HTTP_REFERER", "/"))
 
-# @require_POST
-# def test_toggle_aktiv(req, test_id):
-#     test = get_object_or_404(Test, pk=test_id)
-#     # nur Lehrer oder Superuser
-#     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
-#         return HttpResponse("Kein Zugriff")
-#     action = req.POST.get("action")
-#     if action == "start":
-#         test.aktiv = True
-#     elif action == "stop":
-#         test.aktiv = False
-#     test.save(update_fields=["aktiv"])
-#     # zurück zur Lehrer-Übersicht
-#     return redirect("test_uebersicht_lehrer", test_id=test.id)
+@require_POST
+def test_toggle_aktiv(req, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    # nur Lehrer oder Superuser
+    if req.user != test.gruppe.lehrer and not req.user.is_superuser:
+        return HttpResponse("Kein Zugriff")
+    action = req.POST.get("action")
+    if action == "start":
+        test.aktiv = True
+    elif action == "stop":
+        test.aktiv = False
+    test.save(update_fields=["aktiv"])
+    # zurück zur Lehrer-Übersicht
+    return redirect("test_uebersicht_lehrer", test_id=test.id)
 
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
