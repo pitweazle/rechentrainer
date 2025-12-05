@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% load static %}
+{% load filters %}
 
 {% block css_files %}
   <link rel="stylesheet" href="{% static 'tests/test.css' %}">
@@ -290,7 +291,13 @@
         <td>{{ z.kategorie.name }} <br>({{ z.typ }}/{{ z.typ2 }})</td>
         <td>{{ z.aufgnr }}</td>
         <td>{% if z.pro_text %}{{ z.pro_text|safe }}{% else %}{{ z.text|safe }}{% endif %}</td>
-        <td>{% if z.wert %}{{ z.wert.normalize }}{% else %}{{ z.loesung.0 }}{% endif %}</td>
+        <td>
+          {% if z.wert %}
+            {{ z.wert.normalize }}
+          {% else %}
+            {{ z|kuerze_lsg }}
+          {% endif %}
+        </td>
 
         {% if z.falsch > 0 %}
           {% if z.richtig > 0 %}
@@ -309,13 +316,12 @@
         <td>{% if z.abbr %}x{% endif %}</td>
         <td>{% if z.lsg %}x{% endif %}</td>
         <td  style="text-align: center;">
-          {{z.wertung}}
-          {% comment %} {% if user.is_superuser or user == gruppe.lehrer %}
+          {% if user.is_superuser or user == gruppe.lehrer %}
             <a href="{% url 'protokoll_bewertung' z.id %}">✏️</a>
           {% endif %}
           {% if z.korrigiert %}
             <span title="Bewertung wurde manuell geändert">*</span>
-          {% endif %} {% endcomment %}
+          {% endif %}
         </td>
       </tr>
     {% empty %}
