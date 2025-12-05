@@ -6,26 +6,37 @@ register = template.Library()
 @register.filter
 def kuerze_lsg(protokoll):
     """
-    Gibt die Lösungsliste gekürzt auf die tatsächliche Slot-Anzahl zurück.
-    Für Wertetabellen wird der Zufalls-/Extra-Wert am Ende entfernt.
-    Rückgabe ist ein hübscher String, z.B. "3; 8; 15; 0".
+    Gibt die im Protokoll gespeicherte Lösung passend formatiert zurück.
+
+    - Normalfall (keine Wertetabelle):
+        loesung = [irgendwas, ...]
+        → es wird NUR der erste Eintrag angezeigt.
+
+    - Wertetabellen (slots_pro_tabelle > 1 UND loesung[0] ist Liste):
+        loesung = [[w1, w2, w3, ..., extra]]
+        → es wird die innere Liste OHNE den letzten Eintrag angezeigt:
+          "w1; w2; w3; ..."
     """
     if protokoll is None:
         return ""
 
     lsg = getattr(protokoll, "loesung", None)
-
     if not isinstance(lsg, (list, tuple)) or not lsg:
-        return lsg
+        return ""
 
-    # Viele deiner Tabellen haben Struktur: [ [werte...], ... ]
-    if isinstance(lsg[0], (list, tuple)):
-        werte = list(lsg[0])
-    else:
-        werte = list(lsg)
+    first = lsg[0]
 
-    slots = slots_pro_tabelle(protokoll.kategorie)  # 1,3,4,5 je nach Kat
-    werte = werte[:slots]
+    # Wertetabelle erkennen: mehr als 1 Slot und erste Lösung ist Liste
+    slots = slots_pro_tabelle(protokoll.kategorie)
 
-    # Als String zurückgeben
-    return "; ".join(str(v) for v in werte)
+    if slots > 1 and isinstance(first, (list, tuple)):
+        werte = list(first)
+
+        # Falls mehr Werte als Slots: auf Slot-Anzahl kürzen
+        if len(werte) > slots:
+            werte = werte[:slots]
+        # Falls gleich viele oder weniger: einfach so nehmen
+        return "; ".join(str(v) for v in werte)
+
+    # Normalfall: einfach den ersten Eintrag der Liste anzeigen
+    return str(first)

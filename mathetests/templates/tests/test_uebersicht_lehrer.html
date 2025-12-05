@@ -33,7 +33,6 @@
 
       </form>
     {% endif %}
-
 <div class="header-row">
   <div>
     <p>
@@ -41,7 +40,6 @@
       Lehrer: {{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}
     </p>
   </div>
-
   <div class="noten-box">
     {% if not test.aktiv %}
       <h3>Notenspiegel</h3>
@@ -72,9 +70,6 @@
     {% endif %}
   </div>
 </div>
-      
-
-
     <table class="table">
       <thead>
         <tr>
@@ -102,15 +97,12 @@
                 {{ row.profil.vorname }} {{ row.profil.nachname }}
               </a>
             </td>
-
             {# neue Gesamt-Spalte: erledigt / richtig / falsch / Note #}
             <td>
-              erledigt:<br>
-              richtig: <br>
-              falsch: <br>
-
+              erledigt: {{ row.sum_erledigt }} / {{ total_soll_global }}<br>
+              richtig: {{ row.sum_richtig }}<br>
+              falsch: {{ row.sum_falsch }}<br>
             </td>
-
             {# pro Kategorie nur noch Zahlen, ohne Labels #}
             {% for k in row.kategorien %}
               <td>
@@ -133,26 +125,20 @@
         {% endfor %}
       </tbody>
     </table>
-
     <p>
       <a href="{% url 'meine_gruppen' %}">zurück zu „meine Lerngruppen“</a>
     </p>
   </div>
-
 <style>
 @page {
     size: A4 landscape;
     margin: 10mm;   /* oder 0 für absolut keinen Rand */
 }
-
 @media print {
     .no-print, header, footer { display: none !important; }
     body { margin: 0 !important; padding: 0 !important; }
 }
 </style>
-
-
-
 {% endblock %}
 
 
