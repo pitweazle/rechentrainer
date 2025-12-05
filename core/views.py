@@ -8611,7 +8611,7 @@ def main(req, slug):
                         protokoll.falsch = 2
                         protokoll.wertung = "f"
                         zaehler.fehler_zaehler += 2
-                        protokoll.eingabe = "Betrug"
+                        protokoll.eingabe = "Cheat"
                     else:
                         protokoll.richtig = richtig                      
                     protokoll.save()
