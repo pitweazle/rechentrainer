@@ -44,7 +44,6 @@
     </script>
   {% endif %}
 
-
   <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
   <h1>{{ test.name }} – {{ gruppe.name }}</h1>
 
@@ -208,21 +207,33 @@
       <tbody>
         <tr>
           <td>Aufgaben</td>
-          <td>{{ total_soll }}</td>
+          <td>{{ gesamt_soll }}</td>
           <td>{{ aufg_richtig }}</td>
           <td>{{ aufg_falsch }}</td>
-          <td>{{ aufg_offen }}</td>
-          <td>{{ sum_abbr }}</td>
-          <td>{{ sum_lsg }}</td>
+          <td>{{ gesamt_offen }}</td>
+          <td>{{ gesamt_abbr }}</td>
+          <td>{{ gesamt_lsg }}</td>
         </tr>
         <tr>
           <td>Punkte</td>
           <td></td>
-          <td>{{ sum_richtig }}</td>
-          <td>-{{ sum_fehler_punkte }}</td>
-          <td>-{{ aufg_offen }}</td>
-          <td>-{{ abbr_punkte|floatformat:1 }}</td>
-          <td>-{{ lsg_punkte|floatformat:1 }}</td>
+          <td>{{ richtig_punkte }}</td>
+          <td>
+            {% if cheat_punkte %}
+              {{ cheat_punkte }}
+            {% endif %}
+          </td>
+          <td></td>
+          <td>
+            {% if abbr_punkte %}
+              -{{ abbr_punkte|floatformat:1 }}
+            {% endif %}
+          </td>
+          <td>
+            {% if lsg_punkte %}
+              -{{ lsg_punkte|floatformat:1 }}
+            {% endif %}
+            </td>
         </tr>
       </tbody>
     </table>
@@ -260,7 +271,6 @@
     {% endif %}
   </div>
 </div>
-
 
 <h3>Aufgaben-Verlauf</h3>
 

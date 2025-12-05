@@ -125,9 +125,6 @@ def test_benennen(req, gruppe_id):
         form = TestNameForm()
     return render(req, "tests/test_benennen.html", {"gruppe": gruppe, "form": form})
 
-from collections import defaultdict
-from decimal import Decimal
-
 # ---------- Schritt 3: Test anzeigen ----------
 def test_anzeigen(req, test_id, profil_id):
     test = get_object_or_404(Test, pk=test_id)
@@ -140,7 +137,6 @@ def test_anzeigen(req, test_id, profil_id):
         return HttpResponse("Zugriff verweigert")
     if not profil or profil.gruppe_id != gruppe.id:
         return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
-
     # --- Testeinstellungen ---
     einstellungen = (
         TestEinstellung.objects
@@ -148,9 +144,7 @@ def test_anzeigen(req, test_id, profil_id):
         .select_related("kategorie")
         .order_by("kategorie__zeile")
     )
-
     # Alle Protokolle zu diesem Test + Profil
-
     prot = (
         Protokoll.objects
         .filter(profil=profil, hilfe_id=test.proto_marker)
@@ -167,7 +161,6 @@ def test_anzeigen(req, test_id, profil_id):
     protos_by_kat = defaultdict(list)
     for p in prots:
         protos_by_kat[p.kategorie_id].append(p)
-
     zeilen = []
     for e in einstellungen:
         kat = e.kategorie
@@ -219,6 +212,13 @@ def test_anzeigen(req, test_id, profil_id):
         "abbr":     sum(z["abbr"]      for z in zeilen),
         "lsg":      sum(z["lsg"]       for z in zeilen),
     }
+    gesamt_soll = gesamt["soll"]
+    gesamt_erledigt = gesamt["erledigt"]
+    gesamt_offen = gesamt["offen"]
+    gesamt_richtig = gesamt["richtig"]
+    gesamt_falsch = gesamt["falsch"]
+    gesamt_abbr = gesamt["abbr"]
+    gesamt_lsg = gesamt["lsg"]
     # ------------------------------------------------------------------
     # 2. Gesamt-Auswertung (Punkte + Quote) für DIESES Profil
     #    - Nenner = gesamt["soll"] (inkl. Tabellen-Slots)
@@ -226,74 +226,54 @@ def test_anzeigen(req, test_id, profil_id):
     #    - x: Extrapunkte (= 0,5 je x)
     #    - Abbr/Lsg: je -0,5
     # ------------------------------------------------------------------
-    total_soll = gesamt["soll"]
-    basis_richtig_slots = 0      # Anzahl r-Slots
-    falsch_slots = 0             # Anzahl f-Slots (nur Anzeige)
-    bonus_punkte = Decimal("0")  # aus 'x' in wertung
-    abbr_cnt = 0
-    lsg_cnt = 0
-    for p in prots:
-        w = p.wertung or ""
-
-        if p.abbr:
-            abbr_cnt += 1
-            continue
-        if p.lsg:
-            lsg_cnt += 1
-            continue
-
-        r_slots = w.count("r")
-        f_slots = w.count("f")
-        x_slots = w.count("x")   # jeder 'x' = 0,5 Punkt
-
-        basis_richtig_slots += r_slots
-        falsch_slots        += f_slots
-        bonus_punkte        += Decimal("0.5") * Decimal(x_slots)
-
-    erledigt_slots = basis_richtig_slots + falsch_slots
-    offene_slots   = max(total_soll - erledigt_slots, 0)
-
-    abbr_punkte = Decimal("0.5") * Decimal(abbr_cnt)
-    lsg_punkte  = Decimal("0.5") * Decimal(lsg_cnt)
-
-    # Basis-Punkte können den Nenner nicht überholen
-    basis_punkte_eff = min(basis_richtig_slots, total_soll)
-
-    if total_soll > 0:
-        punkte_vor_strafe = Decimal(basis_punkte_eff) + bonus_punkte
-        strafpunkte       = abbr_punkte + lsg_punkte
-        punkte_nach       = punkte_vor_strafe - strafpunkte
-        if punkte_nach < 0:
-            punkte_nach = Decimal("0")
-
-        quote = float((punkte_nach * Decimal("100")) / Decimal(total_soll))
-        # Kappen auf [0, 100]
-        quote = max(0.0, min(round(quote, 1), 100.0))
+    # --- ausführliches Protokoll (Liste unten) ---
+    prot = (
+        Protokoll.objects
+        .filter(profil=profil, hilfe_id=test.proto_marker)
+        .select_related("kategorie")
+        .order_by("-start")
+    )
+    if prot.exists():
+        test_datum = prot.order_by("start").first().start.date()
     else:
-        punkte_vor_strafe = Decimal("0")
-        strafpunkte       = abbr_punkte + lsg_punkte
-        punkte_nach       = Decimal("0")
-        quote             = 0.0
-
+        test_datum = None
+    # ==== Gesamt-Auswertung (Punkte / Quote / nicht gemacht) ====
+    prots = prot  # nur Alias
+    agg = prots.aggregate(
+        richtig_sum=Sum("richtig"),
+        falsch_sum=Sum("falsch"),
+    )
+    richtig_punkte = Decimal(agg["richtig_sum"] or 0)
+    falsch_sum = Decimal(agg["falsch_sum"] or 0)
+    cheat_punkte = Decimal("-0.5") * (falsch_sum - gesamt_falsch)
+    malus_punkte = (Decimal("0.5") * Decimal(gesamt_abbr + gesamt_lsg)+cheat_punkte
+        )
+    if gesamt_soll > 0:
+        quote = round(((richtig_punkte-malus_punkte) / gesamt_soll) * 100, 1)
+    else:
+        quote = 0
+    # Note nur, wenn Test nicht aktiv ist UND es überhaupt Protokolle gibt
+    if (not test.aktiv) and prot.exists():
+        note, zusatz = berechne_note(quote, test.note_streng)
+        note = str(note)+zusatz
+    else:
+        note = None
     # Note nur, wenn Test beendet ist und es überhaupt Protokolle gibt
     if (not test.aktiv) and prots.exists():
         note_zahl, zusatz = berechne_note(quote, test.note_streng)
         note = f"{note_zahl}{zusatz}"
     else:
         note = None
-
     # ------------------------------------------------------------------
     # 3. Notenspiegel für die Schülerseite
     #    → gleiche Quote-Logik, pro Schüler neu berechnet
     # ------------------------------------------------------------------
     noten_spiegel_s = None
     noten_durchschnitt_s = None
-
     if not test.aktiv:
         noten_spiegel_s = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
         noten_summe = 0
         noten_anzahl = 0
-
         # Precompute total_soll (gleich für alle Profile)
         total_soll_global = 0
         for e in einstellungen:
@@ -311,10 +291,8 @@ def test_anzeigen(req, test_id, profil_id):
             prot_s = Protokoll.objects.filter(
                 profil=sch, hilfe_id=test.proto_marker
             )
-
             if not prot_s.exists():
                 continue
-
             basis_r = 0
             falsch_s = 0
             bonus_s = Decimal("0")
@@ -374,19 +352,20 @@ def test_anzeigen(req, test_id, profil_id):
         "prot": prot,
         "test_datum": test_datum,
 
-        # obere Zusammenfassung
-        "total_soll": total_soll,
-        "aufg_richtig": basis_richtig_slots,
-        "aufg_falsch": falsch_slots,
-        "aufg_offen": offene_slots,
-        "sum_abbr": abbr_cnt,
-        "sum_lsg": lsg_cnt,
+        # Zähler-Zeile
+        "gesamt_soll": gesamt_soll,
+        "gesamt_offen": gesamt_offen,
+        "gesamt_abbr": gesamt_abbr,
+        "gesamt_lsg": gesamt_lsg,
+        "aufg_richtig": float(richtig_punkte),
+        "aufg_falsch": float(falsch_sum),
 
         # Punkte-Zeile
-        "sum_richtig": float(basis_richtig_slots) + float(bonus_punkte),
-        "sum_fehler_punkte": float(falsch_slots),
-        "abbr_punkte": float(abbr_punkte),
-        "lsg_punkte": float(lsg_punkte),
+        "richtig_punkte": float(richtig_punkte),
+        "cheat_punkte": float(cheat_punkte),
+        "abbr_punkte": float(0.5 * gesamt_abbr),
+        "lsg_punkte": float(0.5 * gesamt_lsg), 
+        "sum_quote": quote,
 
         "sum_quote": quote,
         "note": note,
@@ -628,7 +607,7 @@ def test(req, slug):
             if cheat:
                 protokoll.falsch = 2
                 protokoll.wertung = "f"
-                protokoll.eingabe = "Betrug: Lösung wurde aufgerufen"
+                protokoll.eingabe = "Cheat: Lösung wurde aufgerufen"
                 messages.warning(req, f'Das habe ich gemerkt!<br>Du hast geschummelt, du hast die Lösung aufgerufen. Die Eingabe stimmt zwar, die Aufgabe wird aber als Doppelfehler gewertet!')
             else:
                 if wertung < 10:                # damit nicht die Wertung (zb 3111) aus Wertetabelle mit nicht komplett richtigen Eingaben gespeichert wird
@@ -995,21 +974,6 @@ def bewertung_aendern(req, protokoll_id, ziel):
 
     # einfach zurück zur vorherigen Seite
     return redirect(req.META.get("HTTP_REFERER", "/"))
-
-# @require_POST
-# def test_toggle_aktiv(req, test_id):
-#     test = get_object_or_404(Test, pk=test_id)
-#     # nur Lehrer oder Superuser
-#     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
-#         return HttpResponse("Kein Zugriff")
-#     action = req.POST.get("action")
-#     if action == "start":
-#         test.aktiv = True
-#     elif action == "stop":
-#         test.aktiv = False
-#     test.save(update_fields=["aktiv"])
-#     # zurück zur Lehrer-Übersicht
-#     return redirect("test_uebersicht_lehrer", test_id=test.id)
 
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
