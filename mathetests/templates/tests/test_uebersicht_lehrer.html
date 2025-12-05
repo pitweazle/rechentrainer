@@ -11,8 +11,7 @@
 
   <div class="container">
     <h1>Testübersicht – {{ test.name }}</h1>
-
-      {% if user.is_authenticated and user == gruppe.lehrer %}
+      {% if user.is_superuser or user == gruppe.lehrer %}
         <form method="post" action="{% url 'test_toggle_aktiv' test.id %}" class="no-print" style="display:inline;">
           {% csrf_token %}
           {% if test.aktiv %}
