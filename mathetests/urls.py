@@ -11,7 +11,7 @@ urlpatterns = [
     path("test/<int:test_id>/uebersicht/", views.test_uebersicht, name="test_uebersicht_lehrer"),
     path("tests/<int:test_id>/toggle/", views.test_toggle_aktiv, name="test_toggle_aktiv"),
     
-    path("protokoll_bewertung/<int:protokoll_id>/", views.protokoll_bewertung, name="protokoll_bewertung",),
+    path("bewertung_korrigieren/<int:protokoll_id>/", views.bewertung_korrigieren, name="bewertung_korrigieren",),
     path("tests/<int:test_id>/loeschen/", views.test_loeschen, name="test_loeschen"),
 
     path('test_abbrechen/<int:zaehler_id>/<int:test_id>/', views.abbrechen, name='test_abbrechen'),
