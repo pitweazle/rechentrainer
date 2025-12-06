@@ -855,7 +855,6 @@ def test_toggle_aktiv(req, test_id):
 
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
-
     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
         return HttpResponseForbidden("Kein Zugriff")
 
@@ -933,37 +932,181 @@ def loesung(req, zaehler_id, protokoll_id):
     }
     return render(req, "tests/test_aufgabe.html", context)
 
-def protokoll_bewertung(req, protokoll_id):
+from decimal import Decimal
+
+def bewertung_korrigieren(req, protokoll_id):
     prot = get_object_or_404(Protokoll, pk=protokoll_id)
+
     # Test zu diesem Protokoll finden (über proto_marker)
     test = Test.objects.filter(proto_marker=prot.hilfe_id).first()
     if not test:
         return HttpResponseForbidden("Kein zugehöriger Test gefunden.")
+
     gruppe = test.gruppe
     user = req.user
+
     # Nur zuständige Lehrkraft dieser Gruppe oder Superuser
     if not (user.is_superuser or user == gruppe.lehrer):
         return HttpResponseForbidden("Keine Berechtigung.")
+
+    # --- erkennen, ob es eine Wertetabelle ist ---
+    lsg = prot.loesung
+    is_wertetabelle = (
+        isinstance(lsg, (list, tuple))
+        and lsg
+        and isinstance(lsg[0], (list, tuple))
+    )
+
+    slots_wt = 0
+    if is_wertetabelle:
+        print("A")
+        # Primäre, „offizielle“ Quelle: wie viele Einträge sollen die SuS ausfüllen?
+        try:
+            slots_wt = int(slots_pro_tabelle(prot.kategorie) or 0)
+        except Exception:
+            slots_wt = 0
+
+        # Fallback, falls die Hilfsfunktion nichts Sinnvolles liefert
+        if slots_wt <= 0:
+            inner = lsg[0]
+            if isinstance(inner, (list, tuple)):
+                # letzter Wert evtl. Zufalls-/Extra-Wert
+                slots_wt = max(len(inner) - 1, 0)
+
     if req.method == "POST":
+        print("B")
         form = ProtokollBewertungForm(req.POST, instance=prot)
         if form.is_valid():
-            # Werte übernehmen
+            print("C")
             obj = form.save(commit=False)
+
+            # r_neu ist Decimal, f_neu int
+            r_neu = obj.richtig or Decimal("0")
+            f_neu = obj.falsch or 0
+
             # negative Werte verhindern
-            if obj.richtig < 0 or obj.falsch < 0:
+            if r_neu < 0 or f_neu < 0:
                 messages.error(req, "richtig/falsch dürfen nicht negativ sein.")
             else:
-                obj.korrigiert = True
-                obj.save()
-                messages.success(req, "Bewertung wurde gespeichert.")
-                return redirect("test_anzeigen", test_id=test.id, profil_id=prot.profil_id)
+                alte_wertung = prot.wertung or ""
+                # übrige Zeichen (Bonus, Cheats, etc.) behalten
+                rest = "".join(ch for ch in alte_wertung if ch not in ("r", "f"))
+
+                if is_wertetabelle:
+                    # Bei Wertetabellen nur ganze Punkte zulassen
+                    if obj.richtig != int(obj.richtig or 0) or obj.falsch != int(obj.falsch or 0):
+                        messages.error(
+                            req,
+                            "Bei Wertetabellen sind nur ganze Punktzahlen für richtig/falsch erlaubt."
+                        )
+                        # Formular nochmal anzeigen
+                        return render(req, "tests/bewertung_korrigieren.html", {
+                            "protokoll": prot,
+                            "form": form,
+                            "test": test,
+                            "gruppe": gruppe,
+                        })
+
+                    r_int = int(obj.richtig or 0)
+                    f_int = int(obj.falsch or 0)
+
+                    if r_int < 0 or f_int < 0:
+                        messages.error(req, "richtig/falsch dürfen nicht negativ sein.")
+                        return render(req, "tests/bewertung_korrigieren.html", {
+                            "protokoll": prot,
+                            "form": form,
+                            "test": test,
+                            "gruppe": gruppe,
+                        })
+
+                    # maximale Anzahl Einträge nicht überschreiten
+                    if slots_wt > 0 and (r_int + f_int) > slots_wt:
+                        messages.error(
+                            req,
+                            f"Zu viele Punkte: Für diese Wertetabelle sind maximal {slots_wt} Einträge (r+f) möglich."
+                        )
+                        return render(req, "tests/bewertung_korrigieren.html", {
+                            "protokoll": prot,
+                            "form": form,
+                            "test": test,
+                            "gruppe": gruppe,
+                        })
+
+                    # wertung neu aufbauen:
+                    # alle r/f raus, dann neue r/f rein, Rest (x, a, ...) bleibt
+                    alte_wertung = prot.wertung or ""
+                    rest = "".join(ch for ch in alte_wertung if ch not in ("r", "f"))
+
+                    neue_wertung = "r" * r_int + "f" * f_int + rest
+                    obj.wertung = neue_wertung
+
+                    # abgebrochen = noch nicht alle Slots bewertet
+                    if slots_wt > 0 and (r_int + f_int) < slots_wt:
+                        obj.abbr = True
+                    else:
+                        obj.abbr = False
+
+                    obj.korrigiert = True
+                    obj.save()
+                    messages.success(req, "Bewertung für die Wertetabelle wurde gespeichert.")
+                    return redirect("test_anzeigen", test_id=test.id, profil_id=prot.profil_id)
+
+
+                else:
+                    # ---------- Fall 2: normale Aufgabe ----------
+
+                    # Lehrer soll keine Cheats erzeugen:
+                    # 2f gibt es nur zur Laufzeit → f_neu > 1 verbieten
+                    if f_neu > 1:
+                        messages.error(
+                            req,
+                            "Bei normalen Aufgaben darf 'falsch' höchstens 1 sein. "
+                            "Cheats werden nur automatisch gezählt."
+                        )
+                    # Aufgabe kann nicht gleichzeitig richtig UND falsch sein
+                    elif r_neu > 0 and f_neu > 0:
+                        messages.error(
+                            req,
+                            "Eine Aufgabe kann nicht gleichzeitig richtig und falsch sein."
+                        )
+                    else:
+                        # Slot-Logik: normale Aufgabe hat 1 Slot
+                        # → entweder ein 'r', ein 'f' oder keins von beiden
+                        if r_neu > 0:
+                            neue_wertung = "r" + rest
+                            obj.abbr = False
+                        elif f_neu > 0:
+                            neue_wertung = "f" + rest
+                            obj.abbr = False
+                        else:
+                            # weder richtig noch falsch gesetzt:
+                            # wertung weist keine r/f mehr aus; abbr bleibt wie bisher
+                            neue_wertung = rest
+
+                        obj.wertung = neue_wertung
+                        obj.korrigiert = True
+                        obj.save()
+                        messages.success(
+                            req,
+                            "Bewertung wurde gespeichert. "
+                            "Hinweis: Aufgabenübersicht, Quote und Note wurden entsprechend angepasst."
+                        )
+                        return redirect(
+                            "test_anzeigen",
+                            test_id=test.id,
+                            profil_id=prot.profil_id,
+                        )
+
+        # wenn wir hier landen: Fehler → Formular mit Meldungen erneut anzeigen
     else:
         form = ProtokollBewertungForm(instance=prot)
+
     context = {
         "protokoll": prot,
         "form": form,
         "test": test,
         "gruppe": gruppe,
     }
-    return render(req, "tests/protokoll_bewertung.html", context)
+    return render(req, "tests/bewertung_korrigieren.html", context)
+
 

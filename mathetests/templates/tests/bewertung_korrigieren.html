@@ -5,6 +5,25 @@
   {% autoescape off %}
   <h2>Bewertung korrigieren</h2>
 
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="alert alert-warning {{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <style>
+  .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+  }
+  </style>
+
+
   <p>
     <b>Schüler:</b> {{ protokoll.profil.vorname }} {{ protokoll.profil.nachname }}<br>
     <b>Kategorie:</b> {{ protokoll.kategorie.name }}<br>
