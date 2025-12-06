@@ -309,7 +309,10 @@
           {% endif %}
         </td>
 
-        {% if z.falsch > 0 %}
+        {% if z.abbr and z.richtig > 0 %}
+          {# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
+          <td class="gelb">{{ z.zweigabe }}</td>
+        {% elif z.falsch > 0 %}
           {% if z.richtig > 0 %}
             <td class="gelb">{{ z.zweigabe }}</td>
           {% else %}
@@ -320,6 +323,7 @@
         {% else %}
           <td class="rot">{{ z.zweigabe }}</td>
         {% endif %}
+
 
         <td>{{ z.richtig.normalize }}</td>
         <td>{{ z.falsch }}</td>

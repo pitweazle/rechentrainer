@@ -335,7 +335,6 @@ def test(req, slug):
         w = p.wertung or ""
         # nur echte Aufgaben-Slots zählen: r oder f
         erledigt_kat += w.count("r") + w.count("f")
-
     # ---------------- Kategorie abgeschlossen? ----------------
     # Wenn Aufgabe falsch war und dies die letzte Aufgabe der Kategorie ist:
     if erledigt_kat >= soll_anzahl:
@@ -551,12 +550,6 @@ def test(req, slug):
         else:
             parameter = protokoll.parameter
             if tabelle > 0:
-                # protokoll.wertung = (str(wertung)[1:]
-                #                       .replace("1", "r")
-                #                       .replace("0", "f")
-                #                       .replace("2", "/"))
-                # protokoll.falsch = falsch
-                # protokoll.richtig = richtig
                 str_wertung = (str(wertung)[1:]).replace("1","r").replace("0","f").replace("2","/")
                 protokoll.wertung = str_wertung
                 if protokoll.falsch < falsch:
@@ -564,16 +557,16 @@ def test(req, slug):
                 protokoll.richtig = richtig
                 protokoll.save()
                 messages.info(req, f'{rueckmeldung}')
-                color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
-                color_wertung =color_wertung[:-1].split(",")
-                y_farbe = {}
-                if tabelle >3:
-                    for n in range (0,tabelle):
-                        y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
-                else:
-                    for n in range (0,tabelle):
-                        y_farbe["color" + str(n+2)] = color_wertung[tabelle-1-n]
-                parameter.update(y_farbe)
+                # color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
+                # color_wertung =color_wertung[:-1].split(",")
+                # y_farbe = {}
+                # if tabelle >3:
+                #     for n in range (0,tabelle):
+                #         y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
+                # else:
+                #     for n in range (0,tabelle):
+                #         y_farbe["color" + str(n+2)] = color_wertung[tabelle-1-n]
+                # parameter.update(y_farbe)
             else:
                 protokoll.wertung = "f"
                 protokoll.falsch = 1
@@ -853,53 +846,6 @@ def test_toggle_aktiv(req, test_id):
     # zurück zur Lehrer-Übersicht
     return redirect("test_uebersicht_lehrer", test_id=test.id)
 
-def bewertung_aendern(req, protokoll_id, ziel):
-    prot = get_object_or_404(Protokoll, id=protokoll_id)
-
-    # Nur Lehrkräfte oder Superuser dürfen eingreifen
-    user = req.user
-    profil = prot.profil
-    gruppe = profil.gruppe               # Lerngruppe
-    lehrer = gruppe.lehrer               # Lehrkraft der Gruppe
-
-    ist_superuser = user.is_superuser
-    ist_zustaendiger_lehrer = (req.user == lehrer)
-
-    if not (ist_superuser or ist_zustaendiger_lehrer):
-        return HttpResponseForbidden("Keine Berechtigung.")
-
-    # ziel: "r" = richtig, "f" = falsch
-    if ziel == "r":
-        prot.richtig = max(prot.richtig, 1)  # mindestens 1 Punkt
-        prot.falsch = 0
-        prot.abbr = False
-        prot.lsg = False
-    elif ziel == "f":
-        prot.falsch = max(prot.falsch, 1)
-        prot.richtig = 0
-        prot.abbr = False
-        prot.lsg = False
-
-    prot.save()
-
-    # einfach zurück zur vorherigen Seite
-    return redirect(req.META.get("HTTP_REFERER", "/"))
-
-@require_POST
-def test_toggle_aktiv(req, test_id):
-    test = get_object_or_404(Test, pk=test_id)
-    # nur Lehrer oder Superuser
-    if req.user != test.gruppe.lehrer and not req.user.is_superuser:
-        return HttpResponse("Kein Zugriff")
-    action = req.POST.get("action")
-    if action == "start":
-        test.aktiv = True
-    elif action == "stop":
-        test.aktiv = False
-    test.save(update_fields=["aktiv"])
-    # zurück zur Lehrer-Übersicht
-    return redirect("test_uebersicht_lehrer", test_id=test.id)
-
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
@@ -1006,7 +952,6 @@ def bewertung_korrigieren(req, protokoll_id):
 
     slots_wt = 0
     if is_wertetabelle:
-        print("A")
         # Primäre, „offizielle“ Quelle: wie viele Einträge sollen die SuS ausfüllen?
         try:
             slots_wt = int(slots_pro_tabelle(prot.kategorie) or 0)
@@ -1021,10 +966,8 @@ def bewertung_korrigieren(req, protokoll_id):
                 slots_wt = max(len(inner) - 1, 0)
 
     if req.method == "POST":
-        print("B")
         form = ProtokollBewertungForm(req.POST, instance=prot)
         if form.is_valid():
-            print("C")
             obj = form.save(commit=False)
 
             # r_neu ist Decimal, f_neu int
