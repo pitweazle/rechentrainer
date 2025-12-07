@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from weasyprint import HTML
+
 from accounts.models import Profil, Lerngruppe
 
 from core.models import Kategorie, Auswahl, Protokoll, Zaehler
@@ -303,6 +305,36 @@ def test_anzeigen(req, test_id, profil_id):
     }
 
     return render(req, "tests/test_anzeigen.html", context)
+
+def test_anzeigen_pdf(req, test_id, profil_id):
+    """
+    PDF-Version der Schüleransicht.
+    Benutzt exakt dieselbe Logik wie test_anzeigen.
+    """
+    # Erst ganz normal den HTML-View ausführen
+    html_response = test_anzeigen(req, test_id, profil_id)
+
+    # Wenn der normale View keinen 200er liefert (kein Zugriff, redirect, etc.),
+    # dann geben wir das einfach so zurück.
+    if getattr(html_response, "status_code", None) != 200:
+        return html_response
+
+    # HTML aus der Response holen
+    html_string = html_response.content.decode("utf-8")
+
+    # base_url wichtig, damit WeasyPrint relative Pfade (CSS, Bilder) findet
+    base_url = req.build_absolute_uri("/")
+
+    pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
+
+    # Für den Dateinamen Test/Profil laden (ohne irgendwas neu zu berechnen)
+    test = get_object_or_404(Test, pk=test_id)
+    profil = get_object_or_404(Profil, pk=profil_id)
+    filename = f"test_{test.id}_{profil.nachname}_{profil.vorname}.pdf".replace(" ", "_")
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 # ---------- Schritt 4: Test bearbeiten ----------
 def test(req, slug):
@@ -718,6 +750,7 @@ def kategorie_fertig(req):
     context = {}
     return render(req, "tests/kategorie_fertig.html", context)    
 
+# ---------- Schritt 5: Lehreransicht ----------
 def test_uebersicht(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
@@ -831,6 +864,37 @@ def test_uebersicht(req, test_id):
     }
     return render(req, "tests/test_uebersicht_lehrer.html", context)
 
+def test_uebersicht_pdf(req, test_id):
+    """
+    PDF-Version der Lehrerübersicht.
+    Benutzt exakt dieselbe Logik wie test_uebersicht.
+    """
+    test = get_object_or_404(Test, pk=test_id)
+    einstellungen = TestEinstellung.objects.filter(test=test)
+
+    einstellungen = TestEinstellung.objects.filter(test=test)
+    kat_count = einstellungen.count()
+
+    # Automatische Orientierung:
+    orientation = "portrait" if kat_count <= 10 else "landscape"
+
+    html_response = test_uebersicht(req, test_id)
+
+    if getattr(html_response, "status_code", None) != 200:
+        return html_response
+
+    html_string = html_response.content.decode("utf-8")
+    base_url = req.build_absolute_uri("/")
+
+    pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
+
+    test = get_object_or_404(Test, pk=test_id)
+    filename = f"test_{test.id}_uebersicht.pdf".replace(" ", "_")
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
 @require_POST
 def test_toggle_aktiv(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
@@ -925,7 +989,7 @@ def loesung(req, zaehler_id, protokoll_id):
     }
     return render(req, "tests/test_aufgabe.html", context)
 
-from decimal import Decimal
+# ---------- Schritt 5: bewertung korrigieren ----------
 
 def bewertung_korrigieren(req, protokoll_id):
     prot = get_object_or_404(Protokoll, pk=protokoll_id)
