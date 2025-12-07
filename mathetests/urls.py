@@ -5,6 +5,9 @@ urlpatterns = [
     path("test_erstellen/<int:gruppe_id>/", views.test_erstellen, name="test_erstellen"),
     path("test_benennen/<int:gruppe_id>/", views.test_benennen, name="test_benennen"),
     path("test_anzeigen/<int:test_id>/<int:profil_id>/", views.test_anzeigen, name="test_anzeigen"),
+    path("tests/<int:test_id>/<int:profil_id>/pdf/", views.test_anzeigen_pdf, name="test_anzeigen_pdf"),
+    path("tests/<int:test_id>/uebersicht/pdf/", views.test_uebersicht_pdf, name="test_uebersicht_pdf"),
+
     path("test_how_to/", views.test_how_to, name="test_how_to"),
 
     path('test/<slug:slug>/', views.test, name='test'),
