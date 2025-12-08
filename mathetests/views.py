@@ -7,11 +7,14 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.db import transaction
 from django.db.models import Count, Sum, Case, Q, When, IntegerField
 from django.utils import timezone
+from django.utils.text import slugify
 from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from weasyprint import HTML
+from io import BytesIO
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from accounts.models import Profil, Lerngruppe
 
@@ -894,6 +897,60 @@ def test_uebersicht_pdf(req, test_id):
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+def test_alle_schueler_zip(req, test_id):
+    """
+    Erzeugt für alle Schüler der Lerngruppe eines Tests
+    je ein Schüler-PDF (test_anzeigen-Ansicht) und packt
+    diese als ZIP zum Download zusammen.
+    """
+    test = get_object_or_404(Test, pk=test_id)
+    gruppe = test.gruppe
+
+    # Nur zuständige Lehrkraft oder Superuser
+    if not (req.user == gruppe.lehrer or req.user.is_superuser):
+        return HttpResponseForbidden("Zugriff verweigert")
+
+    # alle Profile der Gruppe
+    schueler_qs = (
+        Profil.objects
+        .filter(gruppe=gruppe)
+        .order_by("nachname", "vorname")
+    )
+
+    if not schueler_qs.exists():
+        return HttpResponse("Keine Schüler in dieser Lerngruppe.", status=400)
+
+    # ZIP im Speicher aufbauen
+    zip_buffer = BytesIO()
+    base_url = req.build_absolute_uri("/")
+
+    with ZipFile(zip_buffer, "w", ZIP_DEFLATED) as zip_file:
+        # Ordnername im ZIP, z.B. "Test_2_Halbjahr_Klasse_6a"
+        folder_name = slugify(f"{test.name}_{gruppe.name}") or f"test_{test.id}"
+
+        for profil in schueler_qs:
+            html_response = test_anzeigen(req, test.id, profil.id)
+            if getattr(html_response, "status_code", 200) != 200:
+                continue
+
+            html_string = html_response.content.decode("utf-8")
+            pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
+
+            file_name = f"{profil.nachname}_{profil.vorname}.pdf"
+            file_name = file_name.replace(" ", "_")
+
+            # → Datei in Unterordner schreiben:
+            zip_path = f"{folder_name}/{file_name}"
+            zip_file.writestr(zip_path, pdf_bytes)
+
+    zip_buffer.seek(0)
+
+    zip_filename = f"{folder_name}.zip"
+    response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
+    return response
+
 
 @require_POST
 def test_toggle_aktiv(req, test_id):

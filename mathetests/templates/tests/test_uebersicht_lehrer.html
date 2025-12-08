@@ -12,6 +12,7 @@
   @page {
       size: A4 {% if einstellungen|length <= 10 %}portrait{% else %}landscape{% endif %};
       margin: 8mm;
+      background: #ffffff !important;
   }
 </style>
 
@@ -44,7 +45,16 @@
         class="btn btn-secondary btn-sm no-print">
           📄 Übersicht als PDF herunterladen
       </a>
+      <a href="{% url 'test_alle_schueler_zip' test.id %}"
+        id="zip-download-btn"
+        class="btn btn-secondary btn-sm no-print">
+        📦 Alle Schüler-PDFs (ZIP)
+      </a>
 
+      <span class="no-print"
+        style="display:inline-block; margin-left:0.75rem; color:#b10; font-weight:bold;">
+          Hinweis: Das Erstellen der ZIP-Datei kann je nach Klassengröße einige Sekunden dauern.
+        </span>
 
     {% endif %}
 
@@ -151,6 +161,19 @@
 
   <style>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("zip-download-btn");
+        if (!btn) return;
+
+        btn.addEventListener("click", function () {
+            // kleinen visuellen Hinweis geben
+            btn.textContent = "ZIP wird erstellt …";
+            btn.classList.add("disabled");
+        });
+    });
+  </script>
+
   @media print {
       .no-print, header, footer {
           display: none !important;
@@ -160,6 +183,12 @@
           margin: 0 !important;
           padding: 0 !important;
           background: #ffffff !important;  /* Rosa/Grau weg */
+      }
+
+
+      /* NEU: alle direkten Body-Kinder weiß machen (header, wrapper, etc.) */
+      body > * {
+          background: #ffffff !important;
       }
 
       .container {
