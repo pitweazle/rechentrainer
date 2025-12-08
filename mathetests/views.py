@@ -12,7 +12,11 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from weasyprint import HTML
+try:
+    from weasyprint import HTML
+    WEASYPRINT_AVAILABLE = True
+except Exception:
+    WEASYPRINT_AVAILABLE = False
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -314,6 +318,7 @@ def test_anzeigen_pdf(req, test_id, profil_id):
     PDF-Version der Schüleransicht.
     Benutzt exakt dieselbe Logik wie test_anzeigen.
     """
+    
     # Erst ganz normal den HTML-View ausführen
     html_response = test_anzeigen(req, test_id, profil_id)
 
