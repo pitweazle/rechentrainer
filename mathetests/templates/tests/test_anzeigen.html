@@ -44,8 +44,6 @@
     </script>
   {% endif %}
 
-
-
   <div class="no-print">  
     <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
     <h1>{{ test.name }} – {{ gruppe.name }}</h1>
@@ -350,15 +348,30 @@
 
 {# einfache Print-Styles #}
 <style>
-@media print {
-    @page {
-        size: A4 portrait;
-        margin: 8mm;  /* kleinere Seitenränder */
+
+    /* Seite wirklich weiß machen */
+    html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     /* Elemente, die beim Drucken verschwinden sollen */
     .no-print, header, footer, .btn {
         display: none !important;
+    }
+
+    /* Typische Layout-Wrapper auf weiß zwingen */
+    header,
+    footer,
+    main,
+    .wrapper,
+    .content,
+    .page,
+    .page-wrapper,
+    body > div,
+    body > div > div {
+        background: #ffffff !important;
     }
 
     /* Container im Druck -> volle Breite, aber nicht riesig */
@@ -368,12 +381,13 @@
         padding: 4mm !important;
         box-shadow: none !important;
         border-radius: 0 !important;
+        background: #ffffff !important;
     }
 
     /* Tabelle kompakter machen */
     .protokoll-table {
         width: 100% !important;
-        table-layout: auto;  /* wichtigste Änderung → flexible Spalten */
+        table-layout: auto;   /* wichtigste Änderung → flexible Spalten */
         border-collapse: collapse;
         font-size: 9pt;       /* 1pt kleiner reicht oft aus */
     }
@@ -384,20 +398,18 @@
         white-space: nowrap;  /* kein Zeilenumbruch */
     }
 
-    /* Kleine Hilfsspalten für die schmalen Spalten */
+    /* Kleine Hilfsspalten für die schmalen Spalten (r, f, abbr, Lsg) */
     .protokoll-table th:nth-last-child(-n+4),
     .protokoll-table td:nth-last-child(-n+4) {
         text-align: center;
-        width: 30px;   /* r, f, abbr, Lsg → kleine feste Breite */
+        width: 30px;
     }
 
-    /* ===== HIER: Weißraum reduzieren ===== */
-
-    /* Überschriften dichter */
+    /* Überschriften kompakter */
     h1, h2, h3 {
-        margin-top: 0;
-        margin-bottom: 4px;
-        line-height: 1.1;
+        margin-top: 0 !important;
+        margin-bottom: 3mm !important;
+        line-height: 1.1 !important;
     }
 
     /* Zeugnis-Box & Meta-Tabelle enger */
@@ -418,67 +430,20 @@
         padding-bottom: 0 !important;
     }
 
-    /* Zusammenfassungs-Tabellen enger */
-    .protokoll-summary table {
-        margin-top: 0 !important;
-        margin-bottom: 2mm !important;
-    }
-
-    .noten-box table {
-        margin-top: 0 !important;
-    }
-
+    /* Zusammenfassungs-Block (Quote + Notenspiegel) kompakt halten */
     .header-row {
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* Allgemein weniger vertikalen Abstand */
-    .container > * {
-        margin-top: 0 !important;
-        margin-bottom: 3mm !important;
-    }
-
-    hr {
-        margin: 3mm 0 !important;
-    }
-
-        /* Abstandhalter in der Unterschrifts-Spalte komplett abschalten */
-    .sig-spacer {
-        height: 0 !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* Alle automatischen Seitenumbruch-Tricks hier zurücksetzen,
-       damit WeasyPrint nicht unnötig große Blöcke reserviert */
-    .protokoll-header,
-    .zeugnis-box,
-    .header-row,
-    .protokoll-summary,
-    .noten-box {
-        page-break-before: auto !important;
-        page-break-after: auto !important;
-        page-break-inside: auto !important;
-
-        margin-top: 0 !important;
-        margin-bottom: 3mm !important;
-        padding-top: 0 !important;
-    }
-
-    /* Tabellen-Abstände minimieren (falls global mal was gesetzt ist) */
     .protokoll-summary table,
     .noten-box table {
         margin-top: 0 !important;
         margin-bottom: 2mm !important;
     }
 
-    /* Überschriften allgemein kompakter */
-    h1, h2, h3 {
+    .noten-box {
         margin-top: 0 !important;
-        margin-bottom: 3mm !important;
-        line-height: 1.1 !important;
     }
 
     /* Generell: direkter Fluss im Container, wenig Luft */
@@ -487,11 +452,33 @@
         margin-bottom: 3mm !important;
     }
 
+    /* Abstandhalter in der Unterschrifts-Spalte komplett abschalten */
+    .sig-spacer {
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Seitenumbrüche nicht unnötig konservativ machen */
+    .protokoll-header,
+    .zeugnis-box,
+    .header-row,
+    .protokoll-summary,
+    .noten-box {
+        page-break-before: auto !important;
+        page-break-after: auto !important;
+        page-break-inside: auto !important;
+        margin-top: 0 !important;
+        margin-bottom: 3mm !important;
+        padding-top: 0 !important;
+    }
+
+    /* Feinerer Abstand für horizontale Linien */
     hr {
         margin: 2mm 0 !important;
     }
 
-}
 </style>
 
 {% endblock %}
