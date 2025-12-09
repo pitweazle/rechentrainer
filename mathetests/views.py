@@ -1,4 +1,5 @@
 import random
+import platform
 from decimal import Decimal
 from collections import defaultdict
 
@@ -13,10 +14,17 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 try:
-    from weasyprint import HTML
-    WEASYPRINT_AVAILABLE = True
+    if platform.system() == "Windows":
+        WEASYPRINT_AVAILABLE = False
+        HTML = None
+    else:
+        from weasyprint import HTML
+        WEASYPRINT_AVAILABLE = True
 except Exception:
+    # Falls auf Linux irgendwas schiefgeht: PDFs auch dort deaktivieren
+    HTML = None
     WEASYPRINT_AVAILABLE = False
+
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -136,6 +144,7 @@ def test_benennen(req, gruppe_id):
 
 # ---------- Schritt 3: Test anzeigen ----------
 def test_anzeigen(req, test_id, profil_id):
+
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
     # Profil des Schülers
@@ -284,6 +293,7 @@ def test_anzeigen(req, test_id, profil_id):
     # 4. Context für Template
     # ------------------------------------------------------------------
     context = {
+        "WEASYPRINT_AVAILABLE": WEASYPRINT_AVAILABLE,
         "test": test,
         "profil": profil,
         "gruppe": gruppe,
@@ -314,11 +324,11 @@ def test_anzeigen(req, test_id, profil_id):
     return render(req, "tests/test_anzeigen.html", context)
 
 def test_anzeigen_pdf(req, test_id, profil_id):
-    """
-    PDF-Version der Schüleransicht.
-    Benutzt exakt dieselbe Logik wie test_anzeigen.
-    """
-    
+    if not WEASYPRINT_AVAILABLE:
+        return HttpResponse(
+            "Die PDF-Funktion ist auf diesem System nicht verfügbar "
+            "(WeasyPrint läuft nur auf dem Server)."
+        )
     # Erst ganz normal den HTML-View ausführen
     html_response = test_anzeigen(req, test_id, profil_id)
 
@@ -863,6 +873,7 @@ def test_uebersicht(req, test_id):
         rows.append(row)
     noten_durchschnitt = (noten_sum / noten_n) if noten_n else None
     context = {
+        "WEASYPRINT_AVAILABLE": WEASYPRINT_AVAILABLE,
         "test": test,
         "gruppe": gruppe,
         "einstellungen": einstellungen,
@@ -873,10 +884,11 @@ def test_uebersicht(req, test_id):
     return render(req, "tests/test_uebersicht_lehrer.html", context)
 
 def test_uebersicht_pdf(req, test_id):
-    """
-    PDF-Version der Lehrerübersicht.
-    Benutzt exakt dieselbe Logik wie test_uebersicht.
-    """
+    if not WEASYPRINT_AVAILABLE:
+        return HttpResponse(
+            "Die PDF-Funktion ist auf diesem System nicht verfügbar "
+            "(WeasyPrint läuft nur auf dem Server)."
+        )
     test = get_object_or_404(Test, pk=test_id)
     einstellungen = TestEinstellung.objects.filter(test=test)
 
@@ -909,6 +921,11 @@ def test_alle_schueler_zip(req, test_id):
     je ein Schüler-PDF (test_anzeigen-Ansicht) und packt
     diese als ZIP zum Download zusammen.
     """
+    if not WEASYPRINT_AVAILABLE:
+        return HttpResponse(
+            "ZIP mit Schüler-PDFs kann auf diesem System nicht erstellt werden "
+            "(WeasyPrint läuft nur auf dem Server)."
+        )
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
 
