@@ -357,6 +357,7 @@
 
 {# einfache Print-Styles #}
 <style>
+@media print {
 
     /* Seite wirklich weiß machen */
     html, body {
@@ -396,32 +397,29 @@
     /* Tabelle kompakter machen */
     .protokoll-table {
         width: 100% !important;
-        table-layout: auto;   /* wichtigste Änderung → flexible Spalten */
+        table-layout: auto;
         border-collapse: collapse;
-        font-size: 9pt;       /* 1pt kleiner reicht oft aus */
+        font-size: 9pt;
     }
 
     .protokoll-table th,
     .protokoll-table td {
-        padding: 2px 4px;     /* kompakter */
-        white-space: nowrap;  /* kein Zeilenumbruch */
+        padding: 2px 4px;
+        white-space: nowrap;
     }
 
-    /* Kleine Hilfsspalten für die schmalen Spalten (r, f, abbr, Lsg) */
     .protokoll-table th:nth-last-child(-n+4),
     .protokoll-table td:nth-last-child(-n+4) {
         text-align: center;
         width: 30px;
     }
 
-    /* Überschriften kompakter */
     h1, h2, h3 {
         margin-top: 0 !important;
         margin-bottom: 3mm !important;
         line-height: 1.1 !important;
     }
 
-    /* Zeugnis-Box & Meta-Tabelle enger */
     .zeugnis-box {
         margin: 0 0 4mm 0 !important;
         padding: 3mm !important;
@@ -433,13 +431,11 @@
         padding: 2px 4px !important;
     }
 
-    /* Abstand unter der Protokoll-Überschrift verkleinern */
     .protokoll-header {
         margin-bottom: 4mm !important;
         padding-bottom: 0 !important;
     }
 
-    /* Zusammenfassungs-Block (Quote + Notenspiegel) kompakt halten */
     .header-row {
         margin: 0 !important;
         padding: 0 !important;
@@ -455,13 +451,11 @@
         margin-top: 0 !important;
     }
 
-    /* Generell: direkter Fluss im Container, wenig Luft */
     .container > * {
         margin-top: 0 !important;
         margin-bottom: 3mm !important;
     }
 
-    /* Abstandhalter in der Unterschrifts-Spalte komplett abschalten */
     .sig-spacer {
         height: 0 !important;
         min-height: 0 !important;
@@ -469,7 +463,6 @@
         padding: 0 !important;
     }
 
-    /* Seitenumbrüche nicht unnötig konservativ machen */
     .protokoll-header,
     .zeugnis-box,
     .header-row,
@@ -483,11 +476,13 @@
         padding-top: 0 !important;
     }
 
-    /* Feinerer Abstand für horizontale Linien */
     hr {
         margin: 2mm 0 !important;
     }
 
+}  /* Ende @media print */
 </style>
+
+
 
 {% endblock %}
