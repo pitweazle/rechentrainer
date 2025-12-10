@@ -3,7 +3,7 @@
 {% load filters %}
 
 {% block css_files %}
-  <link rel="stylesheet" href="{% static 'tests/test.css' %}">
+  <link rel="stylesheet" href="{% static 'tests/test_anzeigen.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -101,7 +101,7 @@
       <p style="color:red; text-align:center;"><b>Dieser Test ist derzeit nicht aktiv.</b></p>
     {% endif %}
 
-    {% if user.is_authenticated and (user == gruppe.lehrer or user.is_superuser) %}
+    {% if user == gruppe.lehrer or user.is_superuser %}
       <button type="button"
               onclick="window.print()"
               class="btn btn-secondary btn-sm no-print">
