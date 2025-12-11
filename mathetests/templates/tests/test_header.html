@@ -2,6 +2,7 @@
 <header>
     <div class="navbar">
             <a href="{% url 'index' %}">&#8962 Home</a>
+            <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
         <div class="dropdown">
             <button class="dropbtn"> 
                 {% if user.is_authenticated %}
