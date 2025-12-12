@@ -14,14 +14,9 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 try:
-    if platform.system() == "Windows":
-        WEASYPRINT_AVAILABLE = False
-        HTML = None
-    else:
-        from weasyprint import HTML
-        WEASYPRINT_AVAILABLE = True
+    from weasyprint import HTML
+    WEASYPRINT_AVAILABLE = True
 except Exception:
-    # Falls auf Linux irgendwas schiefgeht: PDFs auch dort deaktivieren
     HTML = None
     WEASYPRINT_AVAILABLE = False
 
