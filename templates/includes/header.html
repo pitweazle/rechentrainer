@@ -35,12 +35,9 @@
                     <a href="{% url 'profil' %}">mein Profil</a>
                     {% comment %} <a href="{% url 'logout' %}">Abmelden</a>  {% endcomment %}
                     <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <a><input type="submit"  value= "abmelden"></a>
+                    {% csrf_token %}
+                    <button type="submit">Abmelden</button>
                     </form>
-                    {% comment %} {% if loeschen %}
-                        <a href="{% url 'aufgaben_loeschen' user.id %}">alle Aufgaben löschen</a>
-                    {% endif %}        {% endcomment %}
                 </div>
             {% endif %}
         </div>  
