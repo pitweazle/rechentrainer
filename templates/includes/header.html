@@ -33,10 +33,9 @@
                 <div class="dropdown-content">
                     <a href="{% url 'password_reset' %}">Passwort zurücksetzen</a>
                     <a href="{% url 'profil' %}">mein Profil</a>
-                    {% comment %} <a href="{% url 'logout' %}">Abmelden</a>  {% endcomment %}
-                    <form method="post" action="{% url 'logout' %}" style="margin:0;">
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-link">Abmelden</button>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <a><input type="submit"  value= "abmelden"></a>
                     </form>
 
                 </div>
