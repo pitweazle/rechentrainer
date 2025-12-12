@@ -101,12 +101,12 @@
       <p style="color:red; text-align:center;"><b>Dieser Test ist derzeit nicht aktiv.</b></p>
     {% endif %}
 
-    {% if user == gruppe.lehrer %}
+    {% if user == gruppe.lehrer or user.is_superuser  %}
       <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
         🖨️ Drucken
       </button>
     {% endif %}
-    
+
     {% if WEASYPRINT_AVAILABLE %}
       <a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
         class="btn btn-secondary btn-sm no-print">
