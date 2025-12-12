@@ -106,6 +106,13 @@
         🖨️ Drucken
       </button>
     {% endif %}
+    
+    {% if WEASYPRINT_AVAILABLE %}
+      <a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
+        class="btn btn-secondary btn-sm no-print">
+        📄 Als PDF herunterladen
+      </a>
+    {% endif %}
 
   </div>
 
