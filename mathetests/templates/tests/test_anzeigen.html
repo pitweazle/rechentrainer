@@ -401,13 +401,21 @@
     .protokoll-table th,
     .protokoll-table td {
         padding: 2px 4px;
-        white-space: nowrap;
+        white-space: normal !important;
     }
 
     .protokoll-table th:nth-last-child(-n+4),
     .protokoll-table td:nth-last-child(-n+4) {
         text-align: center;
         width: 30px;
+    }
+
+
+    /* NUR die Aufgabenspalte explizit umbrechbar machen */
+    .protokoll-table td:nth-child(3) {
+      white-space: normal !important;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     h1, h2, h3 {
