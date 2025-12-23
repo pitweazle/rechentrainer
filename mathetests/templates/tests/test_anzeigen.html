@@ -115,171 +115,173 @@
 
   </div>
 
-<div class="protokoll-header">
-  <div class="no-print">
-    <h2>Rechentrainer – Testprotokoll</h2>
-  </div>
-  {% if note %}
-    <div class="zeugnis-box">
-      <div class="zeugnis-grid">
-        <!-- LINKE SPALTE -->
-        <div class="left">
-          <table class="meta-table">
-            <tr>
-              <th>Testname:</th>
-              <td>{{ test.name }}</td>
-            </tr>
-            <tr>
-              <th>Schüler:</th>
-              <td>{{ profil.vorname }} {{ profil.nachname }}</td>
-            </tr>
-            <tr>
-              <th>Lerngruppe:</th>
-              <td>{{ gruppe.name }}</td>
-            </tr>
-            <tr>
-              <th>Datum:</th>
-              <td>
-                {% if test_datum %}
-                  {{ test_datum|date:"d.m.Y" }}
-                {% else %}
-                  – noch nicht bearbeitet –
-                {% endif %}
-              </td>
-            </tr>
-            <tr>
-              <th>Note:</th>
-              <td class="note-big">{{ note }}</td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- RECHTE SPALTE -->
-        <div class="right signature-block">
-          <p class="sig-spacer"></p>
-          <p>Unterschrift Lehrkraft: </p>
-        </div>
-
-      </div>
-  {% else %}
-    <table class="meta-table">
-      <tr>
-        <th>Testname:</th>
-        <td>{{ test.name }}</td>
-      </tr>
-      <tr>
-        <th>Schüler:</th>
-        <td>{{ profil.vorname }} {{ profil.nachname }}</td>
-      </tr>
-      <tr>
-        <th>Lerngruppe:</th>
-        <td>{{ gruppe.name }}</td>
-      </tr>
-      <tr>
-        <th>Lehrkraft:</th>
-        <td>{{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}</td>
-      </tr>
-      <tr>
-        <th>Datum des Tests:</th>
-        <td>
-          {% if test_datum %}
-              {{ test_datum|date:"d.m.Y" }}
-          {% else %}
-              der Test wurde (noch) nicht bearbeitet
-          {% endif %}
-        </td>
-      </tr>
-    </table>
-  {% endif %}
-</div>
-<div class="only-print">
-  <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
-  <h1>{{ test.name }} – {{ gruppe.name }}</h1>
-</div>
-<hr>
-<div class="header-row">
-  <div class="protokoll-summary">
-    <table class="table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Soll</th>
-          <th>richtig</th>
-          <th>falsch</th>
-          <th>offen</th>
-          <th>Abbr.(·0,5)</th>
-          <th>Lsg.(·0,5)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Aufgaben</td>
-          <td>{{ gesamt_soll }}</td>
-          <td>{{ aufg_richtig }}</td>
-          <td>{{ aufg_falsch }}</td>
-          <td>{{ gesamt_offen }}</td>
-          <td>{{ gesamt_abbr }}</td>
-          <td>{{ gesamt_lsg }}</td>
-        </tr>
-        <tr>
-          <td>Punkte</td>
-          <td></td>
-          <td>{{ richtig_punkte }}</td>
-          <td>
-            {% if cheat_punkte %}
-              {{ cheat_punkte }}
-            {% endif %}
-          </td>
-          <td></td>
-          <td>
-            {% if abbr_punkte %}
-              -{{ abbr_punkte|floatformat:1 }}
-            {% endif %}
-          </td>
-          <td>
-            {% if lsg_punkte %}
-              -{{ lsg_punkte|floatformat:1 }}
-            {% endif %}
-            </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p><b>Quote:</b> {{ sum_quote }}%{% if note %} &nbsp;–&nbsp; <b>Note:</b> {{ note }}{% endif %}</p>
-  </div>
-  <div class="noten-box">
+  <div class="protokoll-header">
+    <div class="no-print">
+      <h2>Rechentrainer – Testprotokoll</h2>
+    </div>
     {% if note %}
-      <h3>Notenspiegel</h3>
+      <div class="zeugnis-box">
+        <div class="zeugnis-grid">
+          <!-- LINKE SPALTE -->
+          <div class="left">
+            <table class="meta-table">
+              <tr>
+                <th>Testname:</th>
+                <td>{{ test.name }}</td>
+              </tr>
+              <tr>
+                <th>Schüler:</th>
+                <td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
+              </tr>
+              <tr>
+                <th>Lerngruppe:</th>
+                <td>{{ gruppe.name }}</td>
+              </tr>
+              <tr>
+                <th>Datum:</th>
+                <td>
+                  {% if test_datum %}
+                    {{ test_datum|date:"d.m.Y" }}
+                  {% else %}
+                    – noch nicht bearbeitet –
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Note:</th>
+                <td class="note-big">{{ note }}</td>
+              </tr>
+            </table>
+          </div>
 
-      <table class="table" style="width:auto;">
+          <!-- RECHTE SPALTE -->
+          <div class="right signature-block">
+            <p class="sig-spacer"></p>
+            <p>Unterschrift Lehrkraft: </p>
+          </div>
+
+        </div>
+    {% else %}
+      <table class="meta-table">
+        <tr>
+          <th>Testname:</th>
+          <td>{{ test.name }}</td>
+        </tr>
+        <tr>
+          <th>Schüler:</th>
+          <td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
+        </tr>
+        <tr>
+          <th>Lerngruppe:</th>
+          <td>{{ gruppe.name }}</td>
+        </tr>
+        <tr>
+          <th>Lehrkraft:</th>
+          <td>{{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}</td>
+        </tr>
+        <tr>
+          <th>Datum des Tests:</th>
+          <td>
+            {% if test_datum %}
+                {{ test_datum|date:"d.m.Y" }}
+            {% else %}
+                der Test wurde (noch) nicht bearbeitet
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    {% endif %}
+  </div>
+
+  <div class="only-print">
+    <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
+    <h1>{{ test.name }} – {{ gruppe.name }}</h1>
+  </div>
+
+  <hr>
+  <div class="header-row">
+    <div class="protokoll-summary">
+      <table class="table">
         <thead>
           <tr>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
-            <th>6</th>
-            <th>&#8960;</th>
+            <th></th>
+            <th>Soll</th>
+            <th>richtig</th>
+            <th>falsch</th>
+            <th>offen</th>
+            <th>Abbr.(·0,5)</th>
+            <th>Lsg.(·0,5)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{{ noten_spiegel_s.1 }}</td>
-            <td>{{ noten_spiegel_s.2 }}</td>
-            <td>{{ noten_spiegel_s.3 }}</td>
-            <td>{{ noten_spiegel_s.4 }}</td>
-            <td>{{ noten_spiegel_s.5 }}</td>
-            <td>{{ noten_spiegel_s.6 }}</td>
-            <td>{{ noten_durchschnitt_s }}</td>
+            <td>Aufgaben</td>
+            <td>{{ gesamt_soll }}</td>
+            <td>{{ aufg_richtig }}</td>
+            <td>{{ aufg_falsch }}</td>
+            <td>{{ gesamt_offen }}</td>
+            <td>{{ gesamt_abbr }}</td>
+            <td>{{ gesamt_lsg }}</td>
+          </tr>
+          <tr>
+            <td>Punkte</td>
+            <td></td>
+            <td>{{ richtig_punkte }}</td>
+            <td>
+              {% if cheat_punkte %}
+                {{ cheat_punkte }}
+              {% endif %}
+            </td>
+            <td></td>
+            <td>
+              {% if abbr_punkte %}
+                -{{ abbr_punkte|floatformat:1 }}
+              {% endif %}
+            </td>
+            <td>
+              {% if lsg_punkte %}
+                -{{ lsg_punkte|floatformat:1 }}
+              {% endif %}
+              </td>
           </tr>
         </tbody>
       </table>
-    {% endif %}
-  </div>
-</div>
 
-<h3>Aufgaben-Verlauf</h3>
+      <p><b>Quote:</b> {{ sum_quote }}%{% if note %} &nbsp;–&nbsp; <b>Note:</b> {{ note }}{% endif %}</p>
+    </div>
+    <div class="noten-box">
+      {% if note %}
+        <h3>Notenspiegel</h3>
+
+        <table class="table" style="width:auto;">
+          <thead>
+            <tr>
+              <th>1</th>
+              <th>2</th>
+              <th>3</th>
+              <th>4</th>
+              <th>5</th>
+              <th>6</th>
+              <th>&#8960;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ noten_spiegel_s.1 }}</td>
+              <td>{{ noten_spiegel_s.2 }}</td>
+              <td>{{ noten_spiegel_s.3 }}</td>
+              <td>{{ noten_spiegel_s.4 }}</td>
+              <td>{{ noten_spiegel_s.5 }}</td>
+              <td>{{ noten_spiegel_s.6 }}</td>
+              <td>{{ noten_durchschnitt_s }}</td>
+            </tr>
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  </div>
+
+  <h3>Aufgaben-Verlauf</h3>
 
 <table class="table protokoll-table">
   <colgroup>
@@ -336,39 +338,39 @@
           {% endif %}
         </td>
 
-        {% if z.abbr and z.richtig > 0 %}
-          {# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
-          <td class="gelb">{{ z.zweigabe }}</td>
-        {% elif z.falsch > 0 %}
-          {% if z.richtig > 0 %}
+          {% if z.abbr and z.richtig > 0 %}
+            {# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
             <td class="gelb">{{ z.zweigabe }}</td>
+          {% elif z.falsch > 0 %}
+            {% if z.richtig > 0 %}
+              <td class="gelb">{{ z.zweigabe }}</td>
+            {% else %}
+              <td class="rot">{{ z.zweigabe }}</td>
+            {% endif %}
+          {% elif z.richtig > 0 %}
+            <td class="gruen">{{ z.zweigabe }}</td>
           {% else %}
             <td class="rot">{{ z.zweigabe }}</td>
           {% endif %}
-        {% elif z.richtig > 0 %}
-          <td class="gruen">{{ z.zweigabe }}</td>
-        {% else %}
-          <td class="rot">{{ z.zweigabe }}</td>
-        {% endif %}
 
-        <td>{{ z.richtig.normalize }}</td>
-        <td>{{ z.falsch }}</td>
-        <td>{% if z.abbr %}x{% endif %}</td>
-        <td>{% if z.lsg %}x{% endif %}</td>
-        <td  style="text-align: center;">
-          {% if user.is_superuser or user == gruppe.lehrer %}
-            <a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
-          {% endif %}
-          {% if z.korrigiert %}
-            <span title="Bewertung wurde manuell geändert">*</span>
-          {% endif %}
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+          <td>{{ z.richtig.normalize }}</td>
+          <td>{{ z.falsch }}</td>
+          <td>{% if z.abbr %}x{% endif %}</td>
+          <td>{% if z.lsg %}x{% endif %}</td>
+          <td  style="text-align: center;">
+            {% if user.is_superuser or user == gruppe.lehrer %}
+              <a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
+            {% endif %}
+            {% if z.korrigiert %}
+              <span title="Bewertung wurde manuell geändert">*</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
 {# einfache Print-Styles #}
 <style>
@@ -407,87 +409,86 @@
     background: #fff !important;
   }
 
-  /* Layout kompakt */
-  .container {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 4mm !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-  }
+    /* Layout kompakt */
+    .container {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 4mm !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+    }
 
-  h1, h2, h3 {
-    margin: 0 0 3mm 0 !important;
-    line-height: 1.1 !important;
-  }
+    h1, h2, h3 {
+      margin: 0 0 3mm 0 !important;
+      line-height: 1.1 !important;
+    }
 
-  hr { margin: 2mm 0 !important; }
+    hr { margin: 2mm 0 !important; }
 
-  /* ===== Protokolltabelle ===== */
-  .protokoll-table {
-    width: 100% !important;
-    border-collapse: collapse;
-    table-layout: fixed;      /* WICHTIG: damit colgroup-Breiten greifen */
-    font-size: 9pt;
-  }
+    /* ===== Protokolltabelle ===== */
+    .protokoll-table {
+      width: 100% !important;
+      border-collapse: collapse;
+      table-layout: fixed;      /* WICHTIG: damit colgroup-Breiten greifen */
+      font-size: 9pt;
+    }
 
-  .protokoll-table th,
-  .protokoll-table td {
-    padding: 2px 4px;
-    vertical-align: top;
-    white-space: normal;      /* Standard: Umbruch erlaubt */
-  }
+    .protokoll-table th,
+    .protokoll-table td {
+      padding: 2px 4px;
+      vertical-align: top;
+      white-space: normal;      /* Standard: Umbruch erlaubt */
+    }
 
-  /* colgroup-Breiten */
-  .protokoll-table col.c-kat     { width: 12%; }
-  .protokoll-table col.c-nr      { width: 4%; }
-  .protokoll-table col.c-aufgabe { width: 26%; }
-  .protokoll-table col.c-erg     { width: 20%; }
-  .protokoll-table col.c-eingabe { width: 10%; }
+    .protokoll-table tr { break-inside: avoid; page-break-inside: avoid; }
 
-  .protokoll-table col.c-r,
-  .protokoll-table col.c-f,
-  .protokoll-table col.c-abbr,
-  .protokoll-table col.c-lsg,
-  .protokoll-table col.c-edit    { width: 3%; }
+    /* colgroup-Breiten */
+    .protokoll-table col.c-kat     { width: 12%; }
+    .protokoll-table col.c-nr      { width: 4%; }
+    .protokoll-table col.c-aufgabe { width: 26%; }
+    .protokoll-table col.c-erg     { width: 20%; }
+    .protokoll-table col.c-eingabe { width: 10%; }
 
-  /* Letzte 5 Spalten sind “klein” → kein Umbruch */
-  .protokoll-table th:nth-last-child(-n+5),
-  .protokoll-table td:nth-last-child(-n+5) {
-    white-space: nowrap !important;
-    text-align: center;
-  }
+    .protokoll-table col.c-r,
+    .protokoll-table col.c-f,
+    .protokoll-table col.c-abbr,
+    .protokoll-table col.c-lsg,
+    .protokoll-table col.c-edit    { width: 3%; }
 
-  /* AUFGABE-Spalte (3. Spalte) → Umbruch maximal erzwingen */
-  .protokoll-table th:nth-child(3),
-  .protokoll-table td:nth-child(3) {
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;   /* bricht auch lange Tokens */
-    word-break: break-word !important;
-    hyphens: auto;
-  }
+    /* Letzte 5 Spalten sind “klein” → kein Umbruch */
+    .protokoll-table th:nth-last-child(-n+5),
+    .protokoll-table td:nth-last-child(-n+5) {
+      white-space: nowrap !important;
+      text-align: center;
+    }
 
-  /* falls in der Aufgabe HTML/Spans mit nowrap drin stecken */
-  .protokoll-table td:nth-child(3) * {
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-  }
-  /* Ergebnis/Formeln umbrechen, sonst quetscht es die Aufgabe-Spalte */
-  .protokoll-table td:nth-child(4),
-  .protokoll-table td:nth-child(4) *{
-    overflow-wrap:anywhere !important;
-    word-break:break-word !important;
-    white-space: normal !important;
-  }
-  /* Boxen kompakt */
-  .zeugnis-box { margin: 0 0 4mm 0 !important; padding: 3mm !important; }
-  .meta-table th, .meta-table td { padding: 2px 4px !important; }
+    .protokoll-table th:nth-child(3),
+    .protokoll-table td:nth-child(3){
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+    }
 
-  .protokoll-header { margin-bottom: 4mm !important; padding-bottom: 0 !important; }
-  .header-row { margin: 0 !important; padding: 0 !important; }
-  .protokoll-summary table, .noten-box table { margin: 0 0 2mm 0 !important; }
+    /* falls in der Aufgabe HTML/Spans mit nowrap drin stecken */
+    .protokoll-table td:nth-child(3) * {
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
+    }
+    /* Ergebnis/Formeln umbrechen, sonst quetscht es die Aufgabe-Spalte */
+    .protokoll-table td:nth-child(4),
+    .protokoll-table td:nth-child(4) *{
+      overflow-wrap:anywhere !important;
+      word-break:break-word !important;
+      white-space: normal !important;
+    }
+    /* Boxen kompakt */
+    .zeugnis-box { margin: 0 0 4mm 0 !important; padding: 3mm !important; }
+    .meta-table th, .meta-table td { padding: 2px 4px !important; }
+
+    .protokoll-header { margin-bottom: 4mm !important; padding-bottom: 0 !important; }
+    .header-row { margin: 0 !important; padding: 0 !important; }
+    .protokoll-summary table, .noten-box table { margin: 0 0 2mm 0 !important; }
 
   .sig-spacer { height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; }
 }
