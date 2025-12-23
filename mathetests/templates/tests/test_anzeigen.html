@@ -399,5 +399,98 @@
     }
   }
 
+<<<<<<< HEAD
+=======
+  header, footer, main,
+  .wrapper, .content, .page, .page-wrapper,
+  body > div, body > div > div {
+    background: #fff !important;
+  }
+
+  /* Layout kompakt */
+  .container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 4mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+  }
+
+  h1, h2, h3 {
+    margin: 0 0 3mm 0 !important;
+    line-height: 1.1 !important;
+  }
+
+  hr { margin: 2mm 0 !important; }
+
+  /* ===== Protokolltabelle ===== */
+  .protokoll-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    table-layout: fixed;      /* WICHTIG: damit colgroup-Breiten greifen */
+    font-size: 9pt;
+  }
+
+  .protokoll-table th,
+  .protokoll-table td {
+    padding: 2px 4px;
+    vertical-align: top;
+    white-space: normal;      /* Standard: Umbruch erlaubt */
+  }
+
+  /* colgroup-Breiten */
+  .protokoll-table col.c-kat     { width: 12%; }
+  .protokoll-table col.c-nr      { width: 4%; }
+  .protokoll-table col.c-aufgabe { width: 26%; }
+  .protokoll-table col.c-erg     { width: 20%; }
+  .protokoll-table col.c-eingabe { width: 10%; }
+
+  .protokoll-table col.c-r,
+  .protokoll-table col.c-f,
+  .protokoll-table col.c-abbr,
+  .protokoll-table col.c-lsg,
+  .protokoll-table col.c-edit    { width: 3%; }
+
+  /* Letzte 5 Spalten sind “klein” → kein Umbruch */
+  .protokoll-table th:nth-last-child(-n+5),
+  .protokoll-table td:nth-last-child(-n+5) {
+    white-space: nowrap !important;
+    text-align: center;
+  }
+
+  /* AUFGABE-Spalte (3. Spalte) → Umbruch maximal erzwingen */
+  .protokoll-table th:nth-child(3),
+  .protokoll-table td:nth-child(3) {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;   /* bricht auch lange Tokens */
+    word-break: break-word !important;
+    hyphens: auto;
+  }
+
+  /* falls in der Aufgabe HTML/Spans mit nowrap drin stecken */
+  .protokoll-table td:nth-child(3) * {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+  /* Ergebnis/Formeln umbrechen, sonst quetscht es die Aufgabe-Spalte */
+  .protokoll-table td:nth-child(4),
+  .protokoll-table td:nth-child(4) *{
+    overflow-wrap:anywhere !important;
+    word-break:break-word !important;
+    white-space: normal !important;
+  }
+  /* Boxen kompakt */
+  .zeugnis-box { margin: 0 0 4mm 0 !important; padding: 3mm !important; }
+  .meta-table th, .meta-table td { padding: 2px 4px !important; }
+
+  .protokoll-header { margin-bottom: 4mm !important; padding-bottom: 0 !important; }
+  .header-row { margin: 0 !important; padding: 0 !important; }
+  .protokoll-summary table, .noten-box table { margin: 0 0 2mm 0 !important; }
+
+  .sig-spacer { height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; }
+}
+>>>>>>> jetzt geht es besser
 </style>
 {% endblock %}
