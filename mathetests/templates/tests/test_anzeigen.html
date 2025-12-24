@@ -3,500 +3,490 @@
 {% load filters %}
 
 {% block css_files %}
-  <link rel="stylesheet" href="{% static 'tests/test_anzeigen.css' %}">
+<link rel="stylesheet" href="{% static 'tests/test_anzeigen.css' %}">
 {% endblock %}
 
 {% block content %}
 {% include 'tests/test_header.html' %}
 <div class="container">
 
-  {% if test.aktiv %}
-    <div id="modal-overlay" class="modal-overlay">
-      <div class="modal-box">
-        <p>
-          Hinweis: Für <b>Abbrechen</b> und <b>„Lösung anzeigen“</b> erhältst du
-          jeweils <b>-0,5 Punkte</b>.
-        </p>
-        <button type="button" id="modal-ok">OK</button>
-      </div>
-    </div>
+{% if test.aktiv %}
+<div id="modal-overlay" class="modal-overlay">
+<div class="modal-box">
+<p>
+Hinweis: Für <b>Abbrechen</b> und <b>„Lösung anzeigen“</b> erhältst du
+jeweils <b>-0,5 Punkte</b>.
+</p>
+<button type="button" id="modal-ok">OK</button>
+</div>
+</div>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const key = "test_popup_{{ test.id }}_{{ profil.id }}";
-        const overlay = document.getElementById("modal-overlay");
-        const btn = document.getElementById("modal-ok");
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+const key = "test_popup_{{ test.id }}_{{ profil.id }}";
+const overlay = document.getElementById("modal-overlay");
+const btn = document.getElementById("modal-ok");
 
-        if (!overlay || !btn) return;
+if (!overlay || !btn) return;
 
-        // Falls Hinweis schon bestätigt, Overlay ausblenden
-        if (localStorage.getItem(key)) {
-            overlay.style.display = "none";
-        } else {
-            overlay.style.display = "flex";  // aktivieren
-        }
+// Falls Hinweis schon bestätigt, Overlay ausblenden
+if (localStorage.getItem(key)) {
+overlay.style.display = "none";
+} else {
+overlay.style.display = "flex"; // aktivieren
+}
 
-        btn.addEventListener("click", () => {
-            overlay.style.display = "none";
-            localStorage.setItem(key, "1");
-        });
-    });
-    </script>
-  {% endif %}
+btn.addEventListener("click", () => {
+overlay.style.display = "none";
+localStorage.setItem(key, "1");
+});
+});
+</script>
+{% endif %}
 
-  <div class="no-print">  
-    <h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
-    <h1>{{ test.name }} – {{ gruppe.name }}</h1>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Kategorie</th>
-          <th>Soll</th>
-          <th>Erledigt</th>
-          <th>Offen</th>
-          <th>Richtig</th>
-          <th>Falsch</th>
-          <th>Abbr.</th>
-          <th>Lsg.</th>
-        </tr>
-      </thead>
+<div class="no-print"> 
+<h1>{{ profil.vorname }} {{ profil.nachname }}</h1>
+<h1>{{ test.name }} – {{ gruppe.name }}</h1>
+<table class="table">
+<thead>
+<tr>
+<th>Kategorie</th>
+<th>Soll</th>
+<th>Erledigt</th>
+<th>Offen</th>
+<th>Richtig</th>
+<th>Falsch</th>
+<th>Abbr.</th>
+<th>Lsg.</th>
+</tr>
+</thead>
 
-      <tbody>
-        {% for z in zeilen %}
-          <tr style="{{ z.kat.farbe }}">
-            {% if z.darf_starten %}
-              <td style="text-align:center;">
-                <a class="button" href="{% url 'test' z.kat.slug %}?test={{ test.id }}">{{ z.kat.name }}</a>
-              </td>
-            {% else %}
-              <td style="text-align:center; opacity: 0.6;">{{ z.kat.name }}</td>
-            {% endif %}
-            <td style="text-align:right;">{{ z.soll }}</td>
-            <td style="text-align:right;">{{ z.erledigt }}</td>
-            <td style="text-align:right;">{{ z.offen }}</td>
-            <td style="text-align:right;">{{ z.richtig }}</td>
-            <td style="text-align:right;">{{ z.falsch }}</td>
-            <td style="text-align:right;">{{ z.abbr }}</td>
-            <td style="text-align:right;">{{ z.lsg }}</td>
+<tbody>
+{% for z in zeilen %}
+<tr style="{{ z.kat.farbe }}">
+{% if z.darf_starten %}
+<td style="text-align:center;">
+<a class="button" href="{% url 'test' z.kat.slug %}?test={{ test.id }}">{{ z.kat.name }}</a>
+</td>
+{% else %}
+<td style="text-align:center; opacity: 0.6;">{{ z.kat.name }}</td>
+{% endif %}
+<td style="text-align:right;">{{ z.soll }}</td>
+<td style="text-align:right;">{{ z.erledigt }}</td>
+<td style="text-align:right;">{{ z.offen }}</td>
+<td style="text-align:right;">{{ z.richtig }}</td>
+<td style="text-align:right;">{{ z.falsch }}</td>
+<td style="text-align:right;">{{ z.abbr }}</td>
+<td style="text-align:right;">{{ z.lsg }}</td>
 
-          </tr>
-        {% endfor %}
+</tr>
+{% endfor %}
 
-      <tfoot>
-        <tr>
-          <th>Summe</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.soll }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.erledigt }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.offen }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.richtig }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.falsch }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.abbr }}</th>
-          <th style="text-align:right;">{{ zeilen_gesamt.lsg }}</th>
-        </tr>
-      </tfoot>        
-      </tbody>
-    </table>
+<tfoot>
+<tr>
+<th>Summe</th>
+<th style="text-align:right;">{{ zeilen_gesamt.soll }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.erledigt }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.offen }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.richtig }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.falsch }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.abbr }}</th>
+<th style="text-align:right;">{{ zeilen_gesamt.lsg }}</th>
+</tr>
+</tfoot> 
+</tbody>
+</table>
 
-    {% if not test.aktiv %}
-      <p style="color:red; text-align:center;"><b>Dieser Test ist derzeit nicht aktiv.</b></p>
-    {% endif %}
+{% if not test.aktiv %}
+<p style="color:red; text-align:center;"><b>Dieser Test ist derzeit nicht aktiv.</b></p>
+{% endif %}
 
-    {% if user == gruppe.lehrer or user.is_superuser  %}
-      <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
-        🖨️ Drucken
-      </button>
-      {% if WEASYPRINT_AVAILABLE %}
-        <a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
-          class="btn btn-secondary btn-sm no-print">
-          📄 Als PDF herunterladen
-        </a>
-      {% endif %}
-    {% endif%}
+{% if user == gruppe.lehrer or user.is_superuser %}
+<button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
+🖨️ Drucken
+</button>
+{% if WEASYPRINT_AVAILABLE %}
+<a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
+class="btn btn-secondary btn-sm no-print">
+📄 Als PDF herunterladen
+</a>
+{% endif %}
+{% endif%}
 
-  </div>
+</div>
 
-  <div class="protokoll-header">
-    <div class="no-print">
-      <h2>Rechentrainer – Testprotokoll</h2>
-    </div>
-    {% if note %}
-      <div class="zeugnis-box">
-        <div class="zeugnis-grid">
-          <!-- LINKE SPALTE -->
-          <div class="left">
-            <table class="meta-table">
-              <tr>
-                <th>Testname:</th>
-                <td>{{ test.name }}</td>
-              </tr>
-              <tr>
-                <th>Schüler:</th>
-                <td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
-              </tr>
-              <tr>
-                <th>Lerngruppe:</th>
-                <td>{{ gruppe.name }}</td>
-              </tr>
-              <tr>
-                <th>Datum:</th>
-                <td>
-                  {% if test_datum %}
-                    {{ test_datum|date:"d.m.Y" }}
-                  {% else %}
-                    – noch nicht bearbeitet –
-                  {% endif %}
-                </td>
-              </tr>
-              <tr>
-                <th>Note:</th>
-                <td class="note-big">{{ note }}</td>
-              </tr>
-            </table>
-          </div>
+<div class="protokoll-header">
+<div class="no-print">
+<h2>Rechentrainer – Testprotokoll</h2>
+</div>
+{% if note %}
+<div class="zeugnis-box">
+<div class="zeugnis-grid">
+<!-- LINKE SPALTE -->
+<div class="left">
+<table class="meta-table">
+<tr>
+<th>Testname:</th>
+<td>{{ test.name }}</td>
+</tr>
+<tr>
+<th>Schüler:</th>
+<td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
+</tr>
+<tr>
+<th>Lerngruppe:</th>
+<td>{{ gruppe.name }}</td>
+</tr>
+<tr>
+<th>Datum:</th>
+<td>
+{% if test_datum %}
+{{ test_datum|date:"d.m.Y" }}
+{% else %}
+– noch nicht bearbeitet –
+{% endif %}
+</td>
+</tr>
+<tr>
+<th>Note:</th>
+<td class="note-big">{{ note }}</td>
+</tr>
+</table>
+</div>
 
-          <!-- RECHTE SPALTE -->
-          <div class="right signature-block">
-            <p class="sig-spacer"></p>
-            <p>Unterschrift Lehrkraft: </p>
-          </div>
+<!-- RECHTE SPALTE -->
+<div class="right signature-block">
+<p class="sig-spacer"></p>
+<p>Unterschrift Lehrkraft: </p>
+</div>
 
-        </div>
-    {% else %}
-      <table class="meta-table">
-        <tr>
-          <th>Testname:</th>
-          <td>{{ test.name }}</td>
-        </tr>
-        <tr>
-          <th>Schüler:</th>
-          <td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
-        </tr>
-        <tr>
-          <th>Lerngruppe:</th>
-          <td>{{ gruppe.name }}</td>
-        </tr>
-        <tr>
-          <th>Lehrkraft:</th>
-          <td>{{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}</td>
-        </tr>
-        <tr>
-          <th>Datum des Tests:</th>
-          <td>
-            {% if test_datum %}
-                {{ test_datum|date:"d.m.Y" }}
-            {% else %}
-                der Test wurde (noch) nicht bearbeitet
-            {% endif %}
-          </td>
-        </tr>
-      </table>
-    {% endif %}
-  </div>
+</div>
+{% else %}
+<table class="meta-table">
+<tr>
+<th>Testname:</th>
+<td>{{ test.name }}</td>
+</tr>
+<tr>
+<th>Schüler:</th>
+<td><strong>{{ profil.vorname }} {{ profil.nachname }}</strong></td>
+</tr>
+<tr>
+<th>Lerngruppe:</th>
+<td>{{ gruppe.name }}</td>
+</tr>
+<tr>
+<th>Lehrkraft:</th>
+<td>{{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}</td>
+</tr>
+<tr>
+<th>Datum des Tests:</th>
+<td>
+{% if test_datum %}
+{{ test_datum|date:"d.m.Y" }}
+{% else %}
+der Test wurde (noch) nicht bearbeitet
+{% endif %}
+</td>
+</tr>
+</table>
+{% endif %}
+</div>
 
-  <hr>
-  <div class="header-row">
-    <div class="protokoll-summary">
-      <table class="table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Soll</th>
-            <th>richtig</th>
-            <th>falsch</th>
-            <th>offen</th>
-            <th>Abbr.(·0,5)</th>
-            <th>Lsg.(·0,5)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Aufgaben</td>
-            <td>{{ gesamt_soll }}</td>
-            <td>{{ aufg_richtig }}</td>
-            <td>{{ aufg_falsch }}</td>
-            <td>{{ gesamt_offen }}</td>
-            <td>{{ gesamt_abbr }}</td>
-            <td>{{ gesamt_lsg }}</td>
-          </tr>
-          <tr>
-            <td>Punkte</td>
-            <td></td>
-            <td>{{ richtig_punkte }}</td>
-            <td>
-              {% if cheat_punkte %}
-                {{ cheat_punkte }}
-              {% endif %}
-            </td>
-            <td></td>
-            <td>
-              {% if abbr_punkte %}
-                -{{ abbr_punkte|floatformat:1 }}
-              {% endif %}
-            </td>
-            <td>
-              {% if lsg_punkte %}
-                -{{ lsg_punkte|floatformat:1 }}
-              {% endif %}
-              </td>
-          </tr>
-        </tbody>
-      </table>
+<hr>
+<div class="header-row">
+<div class="protokoll-summary">
+<table class="table">
+<thead>
+<tr>
+<th></th>
+<th>Soll</th>
+<th>richtig</th>
+<th>falsch</th>
+<th>offen</th>
+<th>Abbr.(·0,5)</th>
+<th>Lsg.(·0,5)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aufgaben</td>
+<td>{{ gesamt_soll }}</td>
+<td>{{ aufg_richtig }}</td>
+<td>{{ aufg_falsch }}</td>
+<td>{{ gesamt_offen }}</td>
+<td>{{ gesamt_abbr }}</td>
+<td>{{ gesamt_lsg }}</td>
+</tr>
+<tr>
+<td>Punkte</td>
+<td></td>
+<td>{{ richtig_punkte }}</td>
+<td>
+{% if cheat_punkte %}
+{{ cheat_punkte }}
+{% endif %}
+</td>
+<td></td>
+<td>
+{% if abbr_punkte %}
+-{{ abbr_punkte|floatformat:1 }}
+{% endif %}
+</td>
+<td>
+{% if lsg_punkte %}
+-{{ lsg_punkte|floatformat:1 }}
+{% endif %}
+</td>
+</tr>
+</tbody>
+</table>
 
-      <p><b>Quote:</b> {{ sum_quote }}%{% if note %} &nbsp;–&nbsp; <b>Note:</b> {{ note }}{% endif %}</p>
-    </div>
-    <div class="noten-box">
-      {% if note %}
-        <h3>Notenspiegel</h3>
+<p><b>Quote:</b> {{ sum_quote }}%{% if note %} &nbsp;–&nbsp; <b>Note:</b> {{ note }}{% endif %}</p>
+</div>
+<div class="noten-box">
+{% if note %}
+<h3>Notenspiegel</h3>
 
-        <table class="table" style="width:auto;">
-          <thead>
-            <tr>
-              <th>1</th>
-              <th>2</th>
-              <th>3</th>
-              <th>4</th>
-              <th>5</th>
-              <th>6</th>
-              <th>&#8960;</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ noten_spiegel_s.1 }}</td>
-              <td>{{ noten_spiegel_s.2 }}</td>
-              <td>{{ noten_spiegel_s.3 }}</td>
-              <td>{{ noten_spiegel_s.4 }}</td>
-              <td>{{ noten_spiegel_s.5 }}</td>
-              <td>{{ noten_spiegel_s.6 }}</td>
-              <td>{{ noten_durchschnitt_s }}</td>
-            </tr>
-          </tbody>
-        </table>
-      {% endif %}
-    </div>
-  </div>
+<table class="table" style="width:auto;">
+<thead>
+<tr>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>&#8960;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{{ noten_spiegel_s.1 }}</td>
+<td>{{ noten_spiegel_s.2 }}</td>
+<td>{{ noten_spiegel_s.3 }}</td>
+<td>{{ noten_spiegel_s.4 }}</td>
+<td>{{ noten_spiegel_s.5 }}</td>
+<td>{{ noten_spiegel_s.6 }}</td>
+<td>{{ noten_durchschnitt_s }}</td>
+</tr>
+</tbody>
+</table>
+{% endif %}
+</div>
+</div>
 
-  <h3>Aufgaben-Verlauf</h3>
+<h3>Aufgaben-Verlauf</h3>
 
 <table class="table protokoll-table">
-  <colgroup>
-    <col class="c-kat">
-    <col class="c-nr">
-    <col class="c-aufgabe">
-    <col class="c-erg">
-    <col class="c-eingabe">
-    <col class="c-r">
-    <col class="c-f">
-    <col class="c-abbr">
-    <col class="c-lsg">
-    <col class="c-edit">
-  </colgroup>  
-  <thead>
-    <tr>
-      <th>Kategorie (Typ)</th>
-      <th>Nr.</th>
-      <th>Aufgabe</th>
-      <th>Ergebnis</th>
-      <th>Eingabe</th>
-      <th>r</th>
-      <th>f</th>
-      <th>abbr</th>
-      <th>Lsg</th>
-      <th>
-        {% if user.is_superuser or user == gruppe.lehrer %}
-          Ändern
-        {% else %}
-          Geändert
-        {% endif %}
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for z in prot %}
-      <tr>
-        <td>{{ z.kategorie.name }} <br>({{ z.typ }}/{{ z.typ2 }})</td>
-        <td>{{ z.aufgnr }}</td>
-        <td class="aufgabe">
-          <div class="aufgabe-text">
-            {% if z.pro_text %}
-              {{ z.pro_text|safe }}
-            {% else %}
-              {{ z.text|safe }}
-            {% endif %}
-          </div>
-        </td>
-        <td>
-          {% if z.wert %}
-            {{ z.wert.normalize }}
-          {% else %}
-            {{ z|kuerze_lsg }}
-          {% endif %}
-        </td>
+<colgroup>
+<col class="c-kat">
+<col class="c-nr">
+<col class="c-aufgabe">
+<col class="c-erg">
+<col class="c-eingabe">
+<col class="c-r">
+<col class="c-f">
+<col class="c-abbr">
+<col class="c-lsg">
+<col class="c-edit">
+</colgroup> 
+<thead>
+<tr class="repeat-header">
+<th colspan="10">
+{{ profil.vorname }} {{ profil.nachname }} – {{ test.name }} – {{ gruppe.name }}
+</th>
+</tr>
+<tr>
+<th>Kategorie (Typ)</th>
+<th>Nr.</th>
+<th>Aufgabe</th>
+<th>Ergebnis</th>
+<th>Eingabe</th>
+<th>r</th>
+<th>f</th>
+<th>abbr</th>
+<th>Lsg</th>
+<th>
+{% if user.is_superuser or user == gruppe.lehrer %}
+Ändern
+{% else %}
+Geändert
+{% endif %}
+</th>
+</tr>
+</thead>
+<tbody>
+{% for z in prot %}
+<tr>
+<td>{{ z.kategorie.name }} <br>({{ z.typ }}/{{ z.typ2 }})</td>
+<td>{{ z.aufgnr }}</td>
+<td>{% if z.pro_text %}{{ z.pro_text|safe }}{% else %}{{ z.text|safe }}{% endif %}</td>
+<td>
+{% if z.wert %}
+{{ z.wert.normalize }}
+{% else %}
+{{ z|kuerze_lsg }}
+{% endif %}
+</td>
 
-          {% if z.abbr and z.richtig > 0 %}
-            {# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
-            <td class="gelb">{{ z.zweigabe }}</td>
-          {% elif z.falsch > 0 %}
-            {% if z.richtig > 0 %}
-              <td class="gelb">{{ z.zweigabe }}</td>
-            {% else %}
-              <td class="rot">{{ z.zweigabe }}</td>
-            {% endif %}
-          {% elif z.richtig > 0 %}
-            <td class="gruen">{{ z.zweigabe }}</td>
-          {% else %}
-            <td class="rot">{{ z.zweigabe }}</td>
-          {% endif %}
+{% if z.abbr and z.richtig > 0 %}
+{# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
+<td class="gelb">{{ z.zweigabe }}</td>
+{% elif z.falsch > 0 %}
+{% if z.richtig > 0 %}
+<td class="gelb">{{ z.zweigabe }}</td>
+{% else %}
+<td class="rot">{{ z.zweigabe }}</td>
+{% endif %}
+{% elif z.richtig > 0 %}
+<td class="gruen">{{ z.zweigabe }}</td>
+{% else %}
+<td class="rot">{{ z.zweigabe }}</td>
+{% endif %}
 
-          <td>{{ z.richtig.normalize }}</td>
-          <td>{{ z.falsch }}</td>
-          <td>{% if z.abbr %}x{% endif %}</td>
-          <td>{% if z.lsg %}x{% endif %}</td>
-          <td  style="text-align: center;">
-            {% if user.is_superuser or user == gruppe.lehrer %}
-              <a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
-            {% endif %}
-            {% if z.korrigiert %}
-              <span title="Bewertung wurde manuell geändert">*</span>
-            {% endif %}
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<td>{{ z.richtig.normalize }}</td>
+<td>{{ z.falsch }}</td>
+<td>{% if z.abbr %}x{% endif %}</td>
+<td>{% if z.lsg %}x{% endif %}</td>
+<td style="text-align: center;">
+{% if user.is_superuser or user == gruppe.lehrer %}
+<a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
+{% endif %}
+{% if z.korrigiert %}
+<span title="Bewertung wurde manuell geändert">*</span>
+{% endif %}
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="9">Noch keine Aufgaben für diesen Test.</td></tr>
+{% endfor %}
+</tbody>
+</table>
 
 {# einfache Print-Styles #}
 <style>
-  @media print {
 
-    .protokoll-table {
-      table-layout: fixed;
-      width: 100%;
-    }
+/* Browser */
+.repeat-header { display: none; }
+@media print {
 
-    .protokoll-table td.aufgabe {
-      vertical-align: top;
-    }
-
-    .aufgabe-text {
-      display: block !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-      hyphens: auto;
-      max-width: 100%;
-    }
-
-    /* falls innerer HTML-Müll */
-    .aufgabe-text * {
-      white-space: normal !important;
-      max-width: 100%;
-    }
-  }
-
-<<<<<<< HEAD
-=======
-  header, footer, main,
-  .wrapper, .content, .page, .page-wrapper,
-  body > div, body > div > div {
-    background: #fff !important;
-  }
-
-      /* Layout kompakt */
-      .container {
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 4mm !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-      }
-
-      h1, h2, h3 {
-        margin: 0 0 3mm 0 !important;
-        line-height: 1.1 !important;
-      }
-
-      hr { margin: 2mm 0 !important; }
-
-      /* ===== Protokolltabelle ===== */
-      thead { display: table-header-group; }
-      .repeat-header { display: table-row; }
-      .repeat-header th{
-        font-size: 9pt;
-        text-align: left;
-        padding: 2px 4px;
-        border-bottom: 1px solid #ccc;
-        background: #fff;
-      }
-
-      .protokoll-table {
-        width: 100% !important;
-        border-collapse: collapse;
-        table-layout: fixed;      /* WICHTIG: damit colgroup-Breiten greifen */
-        font-size: 9pt;
-      }
-
-      .protokoll-table th,
-      .protokoll-table td {
-        padding: 2px 4px;
-        vertical-align: top;
-        white-space: normal;      /* Standard: Umbruch erlaubt */
-      }
-
-      .protokoll-table tr { break-inside: avoid; page-break-inside: avoid; }
-
-      /* colgroup-Breiten */
-      .protokoll-table col.c-kat     { width: 12%; }
-      .protokoll-table col.c-nr      { width: 4%; }
-      .protokoll-table col.c-aufgabe { width: 26%; }
-      .protokoll-table col.c-erg     { width: 20%; }
-      .protokoll-table col.c-eingabe { width: 10%; }
-
-      .protokoll-table col.c-r,
-      .protokoll-table col.c-f,
-      .protokoll-table col.c-abbr,
-      .protokoll-table col.c-lsg,
-      .protokoll-table col.c-edit    { width: 3%; }
-
-      /* Letzte 5 Spalten sind “klein” → kein Umbruch */
-      .protokoll-table th:nth-last-child(-n+5),
-      .protokoll-table td:nth-last-child(-n+5) {
-        white-space: nowrap !important;
-        text-align: center;
-      }
-
-      .protokoll-table th:nth-child(3),
-      .protokoll-table td:nth-child(3){
-        overflow-wrap: normal !important;
-        word-break: normal !important;
-      }
-
-      /* falls in der Aufgabe HTML/Spans mit nowrap drin stecken */
-      .protokoll-table td:nth-child(3) * {
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        word-break: break-word !important;
-      }
-      /* Ergebnis/Formeln umbrechen, sonst quetscht es die Aufgabe-Spalte */
-      .protokoll-table td:nth-child(4),
-      .protokoll-table td:nth-child(4) *{
-        overflow-wrap:anywhere !important;
-        word-break:break-word !important;
-        white-space: normal !important;
-      }
-      /* Boxen kompakt */
-      .zeugnis-box { margin: 0 0 4mm 0 !important; padding: 3mm !important; }
-      .meta-table th, .meta-table td { padding: 2px 4px !important; }
-
-      .protokoll-header { margin-bottom: 4mm !important; padding-bottom: 0 !important; }
-      .header-row { margin: 0 !important; padding: 0 !important; }
-      .protokoll-summary table, .noten-box table { margin: 0 0 2mm 0 !important; }
-
-  .sig-spacer { height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; }
+@page {
+size: A4 portrait;
+margin: 8mm;
 }
->>>>>>> jetzt geht es besser
+
+/* Seite wirklich weiß */
+html, body {
+background: #fff !important;
+margin: 0 !important;
+padding: 0 !important;
+}
+
+/* alles, was nicht gedruckt werden soll */
+.no-print, header, footer, .btn {
+display: none !important;
+}
+
+header, footer, main,
+.wrapper, .content, .page, .page-wrapper,
+body > div, body > div > div {
+background: #fff !important;
+}
+
+/* Layout kompakt */
+.container {
+max-width: 100% !important;
+margin: 0 !important;
+padding: 4mm !important;
+box-shadow: none !important;
+border-radius: 0 !important;
+background: #fff !important;
+}
+
+h1, h2, h3 {
+margin: 0 0 3mm 0 !important;
+line-height: 1.1 !important;
+}
+
+hr { margin: 2mm 0 !important; }
+
+/* ===== Protokolltabelle ===== */
+thead { display: table-header-group; }
+.repeat-header { display: table-row; }
+.repeat-header th{
+font-size: 9pt;
+text-align: left;
+padding: 2px 4px;
+border-bottom: 1px solid #ccc;
+background: #fff;
+}
+
+.protokoll-table {
+width: 100% !important;
+border-collapse: collapse;
+table-layout: fixed; /* WICHTIG: damit colgroup-Breiten greifen */
+font-size: 9pt;
+}
+
+.protokoll-table th,
+.protokoll-table td {
+padding: 2px 4px;
+vertical-align: top;
+white-space: normal; /* Standard: Umbruch erlaubt */
+}
+
+.protokoll-table tr { break-inside: avoid; page-break-inside: avoid; }
+
+/* colgroup-Breiten */
+.protokoll-table col.c-kat { width: 12%; }
+.protokoll-table col.c-nr { width: 4%; }
+.protokoll-table col.c-aufgabe { width: 26%; }
+.protokoll-table col.c-erg { width: 20%; }
+.protokoll-table col.c-eingabe { width: 10%; }
+
+.protokoll-table col.c-r,
+.protokoll-table col.c-f,
+.protokoll-table col.c-abbr,
+.protokoll-table col.c-lsg,
+.protokoll-table col.c-edit { width: 3%; }
+
+/* Letzte 5 Spalten sind “klein” → kein Umbruch */
+.protokoll-table th:nth-last-child(-n+5),
+.protokoll-table td:nth-last-child(-n+5) {
+white-space: nowrap !important;
+text-align: center;
+}
+
+.protokoll-table th:nth-child(3),
+.protokoll-table td:nth-child(3){
+overflow-wrap: normal !important;
+word-break: normal !important;
+}
+
+/* falls in der Aufgabe HTML/Spans mit nowrap drin stecken */
+.protokoll-table td:nth-child(3) * {
+white-space: normal !important;
+overflow-wrap: anywhere !important;
+word-break: break-word !important;
+}
+/* Ergebnis/Formeln umbrechen, sonst quetscht es die Aufgabe-Spalte */
+.protokoll-table td:nth-child(4),
+.protokoll-table td:nth-child(4) *{
+overflow-wrap:anywhere !important;
+word-break:break-word !important;
+white-space: normal !important;
+}
+/* Boxen kompakt */
+.zeugnis-box { margin: 0 0 4mm 0 !important; padding: 3mm !important; }
+.meta-table th, .meta-table td { padding: 2px 4px !important; }
+
+.protokoll-header { margin-bottom: 4mm !important; padding-bottom: 0 !important; }
+.header-row { margin: 0 !important; padding: 0 !important; }
+.protokoll-summary table, .noten-box table { margin: 0 0 2mm 0 !important; }
+
+.sig-spacer { height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; }
+}
 </style>
 {% endblock %}
+
