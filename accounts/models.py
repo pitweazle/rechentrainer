@@ -89,7 +89,7 @@ class Profil(models.Model):
         verbose_name_plural = 'Profile'
 
 class Geloescht(models.Model):
-    benutzername = models.CharField(max_length=25, blank=True)
+    benutzername = models.CharField(max_length=50, blank=True)
     grund = models.CharField(max_length=50, null=True, blank=True)
     text = models.CharField(max_length=1000)
     erstellt_am = models.DateTimeField(default=timezone.now)
