@@ -140,7 +140,7 @@ class Zaehler(models.Model):
     
     sj = models.SmallIntegerField(default=0)
     hj = models.SmallIntegerField(default=0)  
-    optionen_text=models.CharField(max_length=40, blank=True, default="", verbose_name="Optionen")
+    optionen_text=models.CharField(max_length=60, blank=True, default="", verbose_name="Optionen")
     typ_anf = models.SmallIntegerField(default=0)        
     typ_end = models.SmallIntegerField(default=0)    
     aufgnr = models.PositiveSmallIntegerField(default=0)  
