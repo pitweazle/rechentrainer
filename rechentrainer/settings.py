@@ -19,6 +19,10 @@ DEBUG = getenv("DEBUG", "0") == "1"
 
 # Application definition
 
+ALLOWED_HOSTS = getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
