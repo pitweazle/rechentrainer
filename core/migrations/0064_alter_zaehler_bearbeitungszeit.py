@@ -10,9 +10,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='zaehler',
-            name='bearbeitungszeit',
-            field=models.DurationField(default=0),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                # absichtlich leer: kein ALTER COLUMN TYPE auf PostgreSQL
+            ],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="zaehler",
+                    name="bearbeitungszeit",
+                    field=models.TimeField(default=0),
+                ),
+            ],
         ),
     ]

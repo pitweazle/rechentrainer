@@ -20,10 +20,15 @@ class Migration(migrations.Migration):
             name='falsch',
             field=models.PositiveSmallIntegerField(default=0),
         ),
-        migrations.AlterField(
-            model_name='protokoll',
-            name='hilfe',
-            field=models.BooleanField(default=False),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name='protokoll',
+                    name='hilfe',
+                    field=models.BooleanField(default=False),
+                ),
+            ],
         ),
         migrations.AlterField(
             model_name='protokoll',

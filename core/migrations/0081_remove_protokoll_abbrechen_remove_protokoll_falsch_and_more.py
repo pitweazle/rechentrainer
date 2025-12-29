@@ -23,9 +23,22 @@ class Migration(migrations.Migration):
             name='hilfe',
             field=models.SmallIntegerField(default=0),
         ),
-        migrations.AlterField(
-            model_name='protokoll',
-            name='loesung',
-            field=models.JSONField(),
+        migrations.RunSQL(
+            """
+            ALTER TABLE core_protokoll
+            ALTER COLUMN loesung TYPE jsonb
+            USING to_jsonb(loesung);
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="protokoll",
+                    name="loesung",
+                    field=models.JSONField(),
+                ),
+            ],
         ),
     ]

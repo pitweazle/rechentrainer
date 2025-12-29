@@ -10,9 +10,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='profil',
-            name='voreinst',
-            field=models.JSONField(default=dict),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name='profil',
+                    name='voreinst',
+                    field=models.JSONField(default=dict),
+                ),
+            ],
         ),
     ]

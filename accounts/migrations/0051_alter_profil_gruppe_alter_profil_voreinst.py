@@ -16,9 +16,14 @@ class Migration(migrations.Migration):
             name='gruppe',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='gruppe', to='accounts.lerngruppe'),
         ),
-        migrations.AlterField(
-            model_name='profil',
-            name='voreinst',
-            field=models.JSONField(blank=True, default=dict),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name='profil',
+                    name='voreinst',
+                    field=models.JSONField(blank=True, default=dict),
+                ),
+            ],
         ),
     ]

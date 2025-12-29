@@ -6,7 +6,7 @@ from django.utils import timezone
 
 class Ort(models.Model):
     name = models.CharField(max_length=50)
-    plz = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(1000), MaxValueValidator(99999)] )
+    plz = models.CharField(max_length=10, blank=True, null=True)
     
     def __str__(self):
         return f"{self.plz} {self.name}"

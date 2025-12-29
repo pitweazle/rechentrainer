@@ -1,5 +1,5 @@
-# Ausnahmen – diese Datei soll getrackt werden
-!core/zaehler_geloeschte_aufgaben.json
+# Ausnahmen – diese Datei soll nicht getrackt werden
+core/zaehler_geloeschte_aufgaben.json
 
 # Byte-compiled / optimized / DLL files #
 __pycache__/
@@ -62,8 +62,6 @@ db.sqlite3
 __pycache__/
 */__pycache__/
 *.log
-local_settings.py
-settings.py
 *.sqlite3
 *.sqlite3-journal
 *.db

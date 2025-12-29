@@ -33,9 +33,22 @@ class Migration(migrations.Migration):
             name='hilfe_id',
             field=models.SmallIntegerField(default=0),
         ),
-        migrations.AlterField(
-            model_name='protokoll',
-            name='hilfe',
-            field=models.BooleanField(default=False),
+        migrations.RunSQL(
+            """
+            ALTER TABLE core_protokoll
+            ALTER COLUMN hilfe TYPE boolean
+            USING (hilfe <> 0);
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="protokoll",
+                    name="hilfe",
+                    field=models.BooleanField(default=False),
+                ),
+            ],
         ),
     ]

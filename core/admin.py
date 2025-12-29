@@ -20,7 +20,7 @@ class ZaehlerAdmin(admin.ModelAdmin):
     ordering = ["-id", "profil__vorname", "kategorie__zeile"]
 
 class ProtokollAdmin(admin.ModelAdmin):
-    search_fields = ['profil__vorname', 'profil__nachname']
+    search_fields = ['profil__vorname', 'profil__nachname', 'id']
     list_filter=( "start","kategorie", "profil__gruppe",)
     
     list_display = ('id', 'start', 'kategorie', 'name') 

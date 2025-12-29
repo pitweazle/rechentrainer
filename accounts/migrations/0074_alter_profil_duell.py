@@ -9,10 +9,13 @@ class Migration(migrations.Migration):
         ('accounts', '0073_profil_duell'),
     ]
 
-    operations = [
-        migrations.AlterField(
-            model_name='profil',
-            name='duell',
-            field=models.PositiveSmallIntegerField(default=0),
-        ),
-    ]
+    migrations.SeparateDatabaseAndState(
+        database_operations=[],
+        state_operations=[
+            migrations.AlterField(
+                model_name='profil',
+                name='duell',
+                field=models.PositiveSmallIntegerField(default=0),
+            ),
+        ],
+    ),

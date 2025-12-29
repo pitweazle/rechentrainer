@@ -75,7 +75,7 @@ class Protokoll(models.Model):
     hj = models.SmallIntegerField(default=0)
 
     kategorie = models.ForeignKey(Kategorie, related_name='protokolle', on_delete=models.CASCADE)
-    titel = models.CharField(max_length=25, blank=True)
+    titel = models.CharField(max_length=50, blank=True)
     typ = models.SmallIntegerField(default=0) 
     typ2 = models.SmallIntegerField(default=0) 
      
@@ -85,21 +85,21 @@ class Protokoll(models.Model):
     text = models.TextField(blank=True)
     pro_text = models.CharField(max_length=100, blank=True)
     variable = models.JSONField()
-    frage = models.CharField(max_length=20, blank=True)
-    einheit = models.CharField(max_length=20, blank=True)
-    anmerkung = models.CharField(max_length=100, blank=True)
+    frage = models.CharField(max_length=60, blank=True)
+    einheit = models.CharField(max_length=25, blank=True)
+    anmerkung = models.CharField(max_length=250, blank=True)
    
     parameter = models.JSONField()
  
     #hier speichere ich die Lösung, wahlweise als zahl, u.U. auch (mehrere) Lösungen als String:
-    wert = models.DecimalField('Wert', null=True, max_digits=20, decimal_places=7)
+    wert = models.DecimalField('Wert', null=True, blank=True, max_digits=20, decimal_places=7)
     loesung = models.JSONField()                                                    #hier können mehrere Werte eingegeben werden, der erste wird angezeigt wenn "Lösung anzeigen" angeklickt wird. Steht hier auch "indiv" so wird die Eingabe in der jeweiligen Funktion überprüft
 
     #hilfe = models.TextField(blank=True)
     hilfe_id = models.SmallIntegerField(default=0)
     
     #die Eingabe des users:
-    eingabe = models.CharField(max_length=20, blank=True)
+    eingabe = models.CharField(max_length=100, blank=True)
 
     versuche = models.PositiveSmallIntegerField('Versuche', default=0)
     #Eintrag richtig, falsch, Extrapunkte, Lösung anzeigen, Abbruch:
@@ -126,15 +126,6 @@ class Protokoll(models.Model):
     def zweigabe(self):
         return self.eingabe.replace(".",",")
     
-    # def farbe(self):                        # wird im Duell_Protokoll benötigt
-    #     if self.richtig > 0:
-    #         farbe = "gruen"
-    #     elif self.richtig <0:
-    #         farbe = "rot"
-    #     else:
-    #         farbe = "null"
-    #     return farbe
-        
     def name(self):        
         return f"{self.profil.nachname}, {self.profil.vorname}, {self.profil.klasse}, {self.profil.gruppe}"
 

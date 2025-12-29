@@ -15,9 +15,22 @@ class Migration(migrations.Migration):
             name='help',
             field=models.BooleanField(default=False),
         ),
-        migrations.AlterField(
-            model_name='protokoll',
-            name='hilfe',
-            field=models.SmallIntegerField(default=0),
+        migrations.RunSQL(
+            """
+            ALTER TABLE core_protokoll
+            ALTER COLUMN hilfe TYPE smallint
+            USING (CASE WHEN hilfe THEN 1 ELSE 0 END);
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="protokoll",
+                    name="hilfe",
+                    field=models.SmallIntegerField(...),  # exakt wie 0086 es will
+                ),
+            ],
         ),
     ]
