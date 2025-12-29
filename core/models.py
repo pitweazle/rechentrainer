@@ -103,7 +103,7 @@ class Protokoll(models.Model):
 
     versuche = models.PositiveSmallIntegerField('Versuche', default=0)
     #Eintrag richtig, falsch, Extrapunkte, Lösung anzeigen, Abbruch:
-    wertung = models.CharField(max_length=10, blank=True)
+    wertung = models.CharField(max_length=15, blank=True)
     richtig = models.DecimalField(max_digits=3, decimal_places=1, default=0)
     falsch = models.PositiveSmallIntegerField(default=0)  
     abbr = models.BooleanField(default=True)
