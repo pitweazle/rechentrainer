@@ -91,7 +91,7 @@ class Profil(models.Model):
 class Geloescht(models.Model):
     benutzername = models.CharField(max_length=25, blank=True)
     grund = models.CharField(max_length=25, null=True, blank=True)
-    text = models.CharField(max_length=200)
+    text = models.CharField(max_length=500)
     erstellt_am = models.DateTimeField(default=timezone.now)
     class Meta:
         verbose_name = 'Gelöscht'
