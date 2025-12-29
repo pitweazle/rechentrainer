@@ -22,6 +22,9 @@ DEBUG = getenv("DEBUG", "0") == "1"
 ALLOWED_HOSTS = getenv("ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
+CSRF_TRUSTED_ORIGINS = getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
