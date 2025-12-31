@@ -10,7 +10,7 @@ class Command(BaseCommand):
         users_ohne_profil = User.objects.filter(
             profil__isnull=True,
             is_superuser=False,
-            is_staff=False,  # falls du is_staff nicht nutzt, kannst du diese Zeile zur Not auch weglassen
+            #is_staff=False,  # falls du is_staff nicht nutzt, kannst du diese Zeile zur Not auch weglassen
         )
         anzahl = 0
         for user in users_ohne_profil:
