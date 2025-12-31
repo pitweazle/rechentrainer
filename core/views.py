@@ -8125,19 +8125,6 @@ def uebersicht(req, schueler_id=0):
                 zeile = (kategorie,aktiv,(werte))
                 bearbeitet = index
         if index != bearbeitet:
-            # diese Zeilen werden nur im Sj 24/25_1 gebraucht um Fehler auszugleichen
-            # try:
-            #     zaehler_kat = Zaehler.objects.filter(profil = profil, kategorie = kategorie).last()
-            #     bonus_kat = zaehler_kat.bonus
-            # except:
-            #     bonus_kat = 0
-            # if bonus_kat > 0:
-            #richtig_kat = bonus_kat
-            # if richtig_kat >= soll_kat:                                                     # in jeder Schulwoche sollte mindestens 10 * sj Aufgaben richtig gerechnet werden
-            #     kat_farbe = "gruen"
-            # elif richtig_kat >= 10:
-            #     kat_farbe = "gelb"
-            # else:
             kat_farbe = 'rot' if pflicht else None
             prozent_farbe = 'rot' if pflicht and note_anzeigen else None
             richtig_kat = '-'
@@ -8558,7 +8545,10 @@ def main(req, slug):
                 elif protokoll.versuche == 2:
                     protokoll.eingabe ="(1:) {}; (2:) {}".format(protokoll.eingabe, pro_eingabe)
                 else:
-                    protokoll.eingabe = "{}; (3:) {}" .format(protokoll.eingabe, pro_eingabe) 
+                    if "(3:)" not in (protokoll.eingabe or ""):
+                        protokoll.eingabe = "{}; (3:) {}".format(protokoll.eingabe, pro_eingabe)
+                    # sonst: nichts anhängen
+
                 #bei der Erstellung der Aufgabe wird der Abbrechen_zähler um Eins hochgezählt, wenn eine Eingabe erfolgt wird das hier wieder rückgängig gemacht.
                 #Dadurch wird der Zähler hochgesetzt, wenn mit F5 eine neue Aufgabe erzeugt wird.
                 protokoll.abbr = False
@@ -8598,7 +8588,8 @@ def main(req, slug):
                             rueckmeldung = "Die letzte Aufgabe war richtig."+ rueckmeldung
                         zaehler.richtig_of += 1
                         zaehler.aufgnr += 1                                                                         
-                        protokoll.wertung = protokoll.wertung + "r"
+                        if "r" not in protokoll.wertung:
+                            protokoll.wertung = protokoll.wertung + "r"
                     if zaehler.richtig_of >= kategorie.eof:                 # wenn die erforderliche Anzahl richtiger Antworten eingegeben wurde, wird der jeweilige Fehlerzähler zurückgesetzt
                         if zaehler.fehler_zaehler > 0:
                             rueckmeldung = rueckmeldung + "<br><b>Herzlichen Glückwunsch: Dein Fehlerzähler wurde zurückgesetzt.</b>"

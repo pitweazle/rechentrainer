@@ -116,7 +116,6 @@ class Protokoll(models.Model):
     end = models.DateTimeField('Ende', blank=True, null=True, default=None)
     #szeit=models.FloatField(default=0)
 
-
     @property
     def dauer(self):
         if not self.end:
@@ -132,6 +131,27 @@ class Protokoll(models.Model):
     class Meta:
         verbose_name = 'Protokoll'
         verbose_name_plural = 'Protokolle'
+
+    class Meta:
+        indexes = [
+            # Basisfilter: fast alle Queries
+            models.Index(
+                fields=["profil", "sj", "hj", "kategorie"],
+                name="prot_p_sj_hj_kat",
+            ),
+
+            # Zeitraum-Filter (start__gt, start__date__gte/lte)
+            models.Index(
+                fields=["profil", "start"],
+                name="prot_p_start",
+            ),
+
+            # Kombination Kategorie + Zeitraum (Fehler seit X, letzte Aufgaben)
+            models.Index(
+                fields=["profil", "kategorie", "start"],
+                name="prot_p_kat_start",
+            ),
+        ]
 
 class Zaehler(models.Model):
     profil = models.ForeignKey(Profil, verbose_name='Benutzer', related_name='zaehler', on_delete=models.CASCADE) 

@@ -88,18 +88,21 @@ class Profil(models.Model):
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["gruppe"], name="profil_gruppe"),
+        ]
+
 class Geloescht(models.Model):
     benutzername = models.CharField(max_length=50, blank=True)
     grund = models.CharField(max_length=50, null=True, blank=True)
-    text = models.CharField(max_length=1000)
+    text = models.TextField(blank=True)
     erstellt_am = models.DateTimeField(default=timezone.now)
     class Meta:
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
     def __str__(self):
         return f"{self.benutzername}: {self.text}"
+
+
    
-
-
-    
-
