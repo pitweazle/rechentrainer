@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 import json
 
@@ -7,8 +7,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 
-from accounts.models import Profil, Lerngruppe, Geloescht
+from accounts.models import Profil, Geloescht
 from core.models import Protokoll
+
 
 COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
@@ -22,28 +23,11 @@ def add_geloeschte_aufgaben(n: int):
     COUNTER_FILE.write_text(json.dumps(data))
 
 
-def schuljahr_grenzen():
-    """Gibt Beginn aktuelles, letztes und vorletztes SJ zurück."""
-    heute = timezone.now().date()
-    jahr = heute.year
-    beginn_sj = date(jahr, 8, 1)
-
-    if heute < beginn_sj:
-        beginn_aktuelles = date(jahr - 1, 8, 1)
-    else:
-        beginn_aktuelles = date(jahr, 8, 1)
-
-    beginn_letztes = date(beginn_aktuelles.year - 1, 8, 1)
-    beginn_vorletztes = date(beginn_aktuelles.year - 2, 8, 1)
-
-    return beginn_aktuelles, beginn_letztes, beginn_vorletztes
-
-
 class Command(BaseCommand):
-    help = "Löscht Lehrer, die in zwei Schuljahren inaktiv waren und deren Lerngruppen auch inaktiv sind."
+    help = "Löscht Lehrer, die >366 Tage inaktiv waren UND deren Lerngruppen auch >366 Tage inaktiv sind."
 
     def handle(self, *args, **options):
-        beginn_aktuelles, beginn_letztes, beginn_vorletztes = schuljahr_grenzen()
+        grenze = timezone.now().date() - timedelta(days=366)
 
         try:
             gruppe_lehrer = Group.objects.get(name="Lehrer")
@@ -51,7 +35,6 @@ class Command(BaseCommand):
             self.stdout.write("WARNUNG: Gruppe 'Lehrer' existiert nicht.")
             return
 
-        # Nur echte Lehrer-User (keine Superuser/Staff)
         lehrer_qs = (
             User.objects
             .filter(groups=gruppe_lehrer, is_superuser=False, is_staff=False)
@@ -77,10 +60,10 @@ class Command(BaseCommand):
 
             lehrer_aktiv = (
                 letzte_lehrer is not None
-                and letzte_lehrer.start.date() >= beginn_vorletztes
+                and letzte_lehrer.start.date() >= grenze
             )
 
-            # alle Lerngruppen des Lehrers
+            # Lerngruppen des Lehrers
             lerngruppen = list(lehrer.lerngruppen.all())
             anzahl_gruppen = len(lerngruppen)
 
@@ -95,39 +78,28 @@ class Command(BaseCommand):
 
             gruppe_aktiv = (
                 letzte_gruppe is not None
-                and letzte_gruppe.start.date() >= beginn_vorletztes
+                and letzte_gruppe.start.date() >= grenze
             )
 
-            # Wenn Lehrer oder Gruppe in den letzten 2 SJ aktiv → NICHT löschen
+            # Wenn Lehrer ODER Gruppen innerhalb 366 Tage aktiv → NICHT löschen
             if lehrer_aktiv or gruppe_aktiv:
                 continue
 
-            # Ab hier: Lehrer + seine Gruppen wirklich komplett inaktiv → löschen
+            # Ab hier: Lehrer + Gruppen wirklich inaktiv → löschen
 
-            # Alle Protokolle des Lehrers + seiner Gruppen löschen und zählen
             qs_protokolle = Protokoll.objects.filter(
                 profil__in=list(gruppen_profile) + ([profil] if profil else [])
             )
             anzahl_aufgaben = qs_protokolle.count()
+
             gesamt_geloeschte_aufgaben += anzahl_aufgaben
             add_geloeschte_aufgaben(anzahl_aufgaben)
             qs_protokolle.delete()
 
             # Infos für Log
-            if profil:
-                name = f"{profil.vorname} {profil.nachname}"
-            else:
-                name = lehrer.username
-
-            if letzte_lehrer:
-                lehrer_datum = letzte_lehrer.start.date()
-            else:
-                lehrer_datum = None
-
-            if letzte_gruppe:
-                gruppe_datum = letzte_gruppe.start.date()
-            else:
-                gruppe_datum = None
+            name = f"{profil.vorname} {profil.nachname}" if profil else lehrer.username
+            lehrer_datum = letzte_lehrer.start.date() if letzte_lehrer else None
+            gruppe_datum = letzte_gruppe.start.date() if letzte_gruppe else None
 
             text = (
                 f"Lehrer {name} ({lehrer.username}) wurde gelöscht. "
@@ -135,15 +107,16 @@ class Command(BaseCommand):
                 f"Letzte eigene Aufgabe: {lehrer_datum if lehrer_datum else 'nie'}. "
                 f"Letzte Gruppenaufgabe: {gruppe_datum if gruppe_datum else 'nie'}. "
                 f"Insgesamt {anzahl_aufgaben} Aufgaben gelöscht. "
-                f"Grund: Inaktivität in zwei aufeinanderfolgenden Schuljahren."
+                f"Grund: Inaktivität >366 Tage (Lehrer und Gruppen)."
             )
 
             Geloescht.objects.create(
                 benutzername=lehrer.username,
+                grund="lehrer_inaktiv_366_tage",
                 text=text,
             )
 
-            # Lerngruppen explizit löschen (würden beim User-Delete per CASCADE auch wegfallen)
+            # Gruppen löschen
             geloeschte_gruppen += anzahl_gruppen
             for lg in lerngruppen:
                 lg.delete()

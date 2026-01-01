@@ -20,6 +20,7 @@ class Command(BaseCommand):
             )
             Geloescht.objects.create(
                 benutzername=user.username,
+                grund="unvollstaendig - kein Profil"
                 text=text,
             )
             user.delete()

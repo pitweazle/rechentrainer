@@ -70,7 +70,9 @@ class BenutzerAdmin(UserAdmin):
     profil_gruppe.short_description = "Mathegruppe"
 
 class GeloeschtAdmin(admin.ModelAdmin):
-    search_fields = ['benutzername']
+    search_fields = ['benutzername',]
+    list_filter = ['grund',]
+
 
 admin.site.unregister(User)
 admin.site.register(User,  BenutzerAdmin)  
