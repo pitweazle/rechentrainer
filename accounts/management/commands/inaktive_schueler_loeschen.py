@@ -10,7 +10,7 @@ from core.models import Protokoll
 import json
 from pathlib import Path
 
-
+heute = timezone.now().date()
 # JSON-Zähler für gelöschte Aufgaben
 COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
             Geloescht.objects.create(
                 benutzername=user.username,
-                grund="schueler_inaktiv_366_tage"
+                grund="schueler_inaktiv",
                 text=text,
             )
 
@@ -107,7 +107,7 @@ class Command(BaseCommand):
             user.delete()
 
             geloeschte_profile += 1
-            self.stdout.write(text)
+            #self.stdout.write(text)
 
         self.stdout.write("")
         self.stdout.write("-----------------------------------------------------")
@@ -115,3 +115,8 @@ class Command(BaseCommand):
         self.stdout.write(f"Insgesamt gelöschte Aufgaben: {gesamt_geloeschte_aufgaben}")
         self.stdout.write("-----------------------------------------------------")
         self.stdout.write("")
+        Geloescht.objects.create(
+            benutzername="cronjob",
+            grund="cronjob",
+            text=(f"{heute} insgesamt gelöscht: {geloeschte_profile} Schüler, {gesamt_geloeschte_aufgaben} Aufgaben"),
+            )

@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
         for eintrag in Geloescht.objects.all():
             # Wenn schon etwas im Feld steht, lassen wir es in Ruhe
-            if getattr(eintrag, "grund", None):
+            if getattr(eintrag, "grund", None) is not None and eintrag.grund != "sonstiges":
                 uebersprungen += 1
                 continue
             text = eintrag.text or ""
@@ -36,6 +36,10 @@ class Command(BaseCommand):
                 grund = "zähler_verschoben"
             elif "aufgaben gelöscht" in t:
                 grund = "aufgaben_geloescht"
+            elif "zaehler angelegt" in t:
+                grund = "zähler angelegt"
+            elif "übertragen" in t:
+                grund = "aufgaben_übertragen"
             # 7) Allgemeines Löschen von Aufgaben
             # Fallback
             if grund is None:

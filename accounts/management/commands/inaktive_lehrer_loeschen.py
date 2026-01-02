@@ -11,6 +11,7 @@ from accounts.models import Profil, Geloescht
 from core.models import Protokoll
 
 
+heute = timezone.now().date()
 COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
 if not COUNTER_FILE.exists():
@@ -112,7 +113,7 @@ class Command(BaseCommand):
 
             Geloescht.objects.create(
                 benutzername=lehrer.username,
-                grund="lehrer_inaktiv_366_tage",
+                grund="lehrer_inaktiv",
                 text=text,
             )
 
@@ -127,7 +128,7 @@ class Command(BaseCommand):
             lehrer.delete()
 
             geloeschte_lehrer += 1
-            self.stdout.write(text)
+            #self.stdout.write(text)
 
         self.stdout.write("")
         self.stdout.write("-----------------------------------------------------")
@@ -136,3 +137,8 @@ class Command(BaseCommand):
         self.stdout.write(f"   Insgesamt gelöschte Aufgaben: {gesamt_geloeschte_aufgaben}")
         self.stdout.write("-----------------------------------------------------")
         self.stdout.write("")
+        Geloescht.objects.create(
+            benutzername="cronjob",
+            grund="cronjob",
+            text=(f"{heute} insgesamt gelöscht: {geloeschte_lehrer} Lehrer, {geloeschte_gruppen} Gruppen, {gesamt_geloeschte_aufgaben} Aufgaben"),
+            )

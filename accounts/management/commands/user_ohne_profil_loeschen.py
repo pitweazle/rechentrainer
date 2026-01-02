@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from accounts.models import Geloescht  # Profil brauchst du hier eigentlich nicht
 
+heute = timezone.now().date()
 class Command(BaseCommand):
     help = "Löscht User ohne Profil (unvollständige Anmeldungen) und protokolliert das"
     def handle(self, *args, **options):
@@ -20,10 +21,14 @@ class Command(BaseCommand):
             )
             Geloescht.objects.create(
                 benutzername=user.username,
-                grund="unvollstaendig - kein Profil"
+                grund="unvollstaendig - kein Profil",
                 text=text,
             )
             user.delete()
             anzahl += 1
             self.stdout.write(text)
         self.stdout.write(f"{anzahl} User ohne Profil gelöscht.")
+        Geloescht.objects.create(
+            benutzername="cronjob",
+            grund="cronjob",
+            text=(f"{heute} {anzahl} User ohne Profil gelöscht."),)

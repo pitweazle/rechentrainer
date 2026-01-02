@@ -609,6 +609,7 @@ def gruppe_uebersicht(req, gruppe_id):
                     if created:
                         fehler.text = "folgende Zählerobjekte wurden angelegt: "
                         fehler.text += str(kat_name)+ ", "
+                        fehler.grund = "Zähler angelegt"
                     else:
                         fehler.text += str(kat_name)+ ", "
                 else:
@@ -892,6 +893,7 @@ def suchen(req, gruppe_id=None):
                                 nachricht = 'Das Userprofil von {} mit dem Account "{}" wurde am {} von {} {} gelöscht.'.format(user.profil.vorname+" "+user.profil.nachname, user.username, heute, req.user.profil.vorname, req.user.profil.nachname)
                                 geloescht, created = Geloescht.objects.get_or_create(benutzername = str(user))
                                 geloescht.text += nachricht
+                                geloescht.text = "profil_gelöscht"
                                 geloescht.save()
         loeschen_form = Loeschen_Form
         zusammen_form = Zusammen_Form
