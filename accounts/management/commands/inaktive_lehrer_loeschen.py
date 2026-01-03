@@ -25,10 +25,10 @@ def add_geloeschte_aufgaben(n: int):
 
 
 class Command(BaseCommand):
-    help = "Löscht Lehrer, die >366 Tage inaktiv waren UND deren Lerngruppen auch >366 Tage inaktiv sind."
+    help = "Löscht Lehrer, die >500 Tage inaktiv waren UND deren Lerngruppen auch >500 Tage inaktiv sind."
 
     def handle(self, *args, **options):
-        grenze = timezone.now().date() - timedelta(days=366)
+        grenze = timezone.now().date() - timedelta(days=500)
 
         try:
             gruppe_lehrer = Group.objects.get(name="Lehrer")
@@ -82,7 +82,7 @@ class Command(BaseCommand):
                 and letzte_gruppe.start.date() >= grenze
             )
 
-            # Wenn Lehrer ODER Gruppen innerhalb 366 Tage aktiv → NICHT löschen
+            # Wenn Lehrer ODER Gruppen innerhalb 500 Tage aktiv → NICHT löschen
             if lehrer_aktiv or gruppe_aktiv:
                 continue
 
@@ -108,7 +108,7 @@ class Command(BaseCommand):
                 f"Letzte eigene Aufgabe: {lehrer_datum if lehrer_datum else 'nie'}. "
                 f"Letzte Gruppenaufgabe: {gruppe_datum if gruppe_datum else 'nie'}. "
                 f"Insgesamt {anzahl_aufgaben} Aufgaben gelöscht. "
-                f"Grund: Inaktivität >366 Tage (Lehrer und Gruppen)."
+                f"Grund: Inaktivität >500 Tage (Lehrer und Gruppen)."
             )
 
             Geloescht.objects.create(

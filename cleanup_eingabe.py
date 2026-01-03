@@ -16,7 +16,7 @@ from core.models import Protokoll
 import re
 
 # ---- Settings ----
-DRY_RUN = False
+DRY_RUN = True
 
 MAX_SINGLE = 50
 MAX_ANS = 30
