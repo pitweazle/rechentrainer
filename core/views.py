@@ -5567,28 +5567,34 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             typ_end = 16
         return typ_anf, typ_end
     elif eingabe != "":
-        try:
-            if (typ in (7, 8) and typ2 == 4) or typ > 14:
-                loe = lsg[-2] 
-                if round(loe) == round(float(eingabe.replace(",","."))*100,0):
-                    return -1,  "Du sollst nicht den Taschenrechner benutzen!"
-                else:
-                    return -1, "" 
-            if typ in (13, 14):
-                loe = lsg[-2] 
-                if round(loe) == round(float(eingabe.replace(",","."))*100,0):
-                    return -1,  "Du sollst nicht den Taschenrechner benutzen!"
-                else:
-                    if typ2 == 2:
-                        loe = lsg[-3]
-                        if round(loe) == round(float(eingabe.replace(",","."))*100,0):
-                            return -1,  "Du musst zuerst die Summe bilden und dann erst die Wurzel ziehen."                
-                        else:
-                            return -1, ""
+        if typ ==1:
+            if int(eingabe) == math.sqrt(int(lsg[0])/6):
+                return 0, "Du sollst nicht die Kantenlänge berechnen, sondern den Oberflächeninhalt"
+            else:
+                return -1, ""
+        else:
+            try:
+                if (typ in (7, 8) and typ2 == 4) or typ > 14:
+                    loe = lsg[-2] 
+                    if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                        return -1,  "Du sollst nicht den Taschenrechner benutzen!"
                     else:
-                        return -1, ""    
-        except:
-            return -1, ""    
+                        return -1, "" 
+                if typ in (13, 14):
+                    loe = lsg[-2] 
+                    if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                        return -1,  "Du sollst nicht den Taschenrechner benutzen!"
+                    else:
+                        if typ2 == 2:
+                            loe = lsg[-3]
+                            if round(loe) == round(float(eingabe.replace(",","."))*100,0):
+                                return -1,  "Du musst zuerst die Summe bilden und dann erst die Wurzel ziehen."                
+                            else:
+                                return -1, ""
+                        else:
+                            return -1, ""    
+            except:
+                return -1, ""    
     else:
         typ = random.randint(typ_anf, typ_end)
         text = "Berechne{}"
@@ -5606,7 +5612,7 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             frage = "O="
             einheit = "cm²"
             erg = kante*kante*6
-            lsg = [str(kante)]
+            lsg = [str(erg),"indiv_0"]
             hilfe_id = 10
             hilfe = "Du musst zunächst die dritte Wurzel ziehen um die Kante zu berechnen.<br>Dann kannst du zunächst die Fläche einer Seite berechnen und dann die Fläche aller sechs Seiten."
         elif typ == 2:                                  # Kantenlänge eines Würfels
