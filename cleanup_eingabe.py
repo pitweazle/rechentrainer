@@ -32,7 +32,7 @@ DETECT_WERTETABELLE = True
 
 def clip(s: str, n: int) -> str:
     s = (s or "").strip()
-    return s if len(s) <= n else s[:n] + "..."
+    return s if len(s) <= n else s[:n]
 
 abbr_re = re.compile(r"(abbr\.\s*,\s*)*abbr\.\s*,?\s*$")
 
@@ -140,8 +140,13 @@ def main():
                 printed += 1
 
             if not DRY_RUN:
+                new = (new or "").strip()
+                if len(new) > MAX_WT:   # MAX_WT=100 = Feldgröße
+                    new = new[:MAX_WT]
+
                 p.eingabe = new
                 p.save(update_fields=["eingabe"])
+
 
     print("\nFERTIG")
     print("gesamt:", total)
