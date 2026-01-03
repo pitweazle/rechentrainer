@@ -12,6 +12,13 @@
 # - Wertetabellen: gleiche Marker-Regel, nur anderes Längenlimit
 # - Single-Eingaben: nur kürzen, keine reinen Whitespace-Änderungen
 
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rechentrainer.settings")
+django.setup()
+
+
 from core.models import Protokoll
 import re
 
