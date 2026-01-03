@@ -5799,10 +5799,10 @@ def wurzeln(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 frage = "√(" + text + ")="
                 hilfe_id = 132
                 hilfe = "Man muss zunächst {0} und {1} addieren und aus der Summe die Wurzel ziehen."
-                wurzel = math.sqrt(zahl1+zahl2)
+                wurzel = math.sqrt(zahl1**2+zahl2**2)
                 if wurzel%1 == 0:
                     erg = wurzel
-                    lsg = [str(erg)]
+                    lsg = [format_zahl(erg,0)]
                 else:
                     lsg = [hilfe.format(*variable) + " - die richtige Antwort wäre also 'irrational' denn die Wurzel aus " + str(zahl1**2+zahl2**2) + " hat keine rationale Lösung", "irrational", (zahl1+zahl2)*100, wurzel*100,"indiv_0"]
                 strich = "&macr;" * len(text)
