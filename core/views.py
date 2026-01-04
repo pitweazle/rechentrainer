@@ -4224,7 +4224,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge =
             if lsg[:1] == "+":
                 lsg = lsg[1:]
             pro_text = frage+"="
-            lsg = [lsg, "indiv_0"]                 
+            lsg = [lsg, "indiv_0"]
             text = "Vereinfache den Term so weit wie möglich:<br>" + frage
             anmerkung = "Du musst die Buchstaben nach dem Alphabet sortieren, Konstanten stehen am Ende"
             hilfe_id = 20

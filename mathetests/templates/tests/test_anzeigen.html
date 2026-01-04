@@ -60,7 +60,6 @@
                     <th>Lsg.</th>
                 </tr>
             </thead>
-
             <tbody>
             {% for z in zeilen %}
                 <tr style="{{ z.kat.farbe }}">
@@ -101,14 +100,15 @@
         {% endif %}
 
         {% if user == gruppe.lehrer or user.is_superuser %}
-            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
-            🖨️ Drucken
-            </button>
             {% if WEASYPRINT_AVAILABLE %}
                 <a href="{% url 'test_anzeigen_pdf' test.id profil.id %}"
                 class="btn btn-secondary btn-sm no-print">
                 📄 Als PDF herunterladen
                 </a>
+            {% else %}
+                <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
+                🖨️ Drucken
+                </button>
             {% endif %}
         {% endif%}
     </div>
@@ -270,9 +270,7 @@
         {% endif %}
         </div>
     </div>
-
     <h3>Aufgaben-Verlauf</h3>
-
     <table class="table protokoll-table">
         <colgroup>
             <col class="c-kat">
@@ -324,7 +322,6 @@
                         {{ z|kuerze_lsg }}
                     {% endif %}
                     </td>
-
                     {% if z.abbr and z.richtig > 0 %}
                         {# unvollständige, aber teilweise richtige Aufgabe (z.B. Wertetabelle) -> gelb #}
                         <td class="gelb">{{ z.zweigabe }}</td>
@@ -345,12 +342,14 @@
                     <td>{% if z.abbr %}x{% endif %}</td>
                     <td>{% if z.lsg %}x{% endif %}</td>
                     <td style="text-align: center;">
-                    {% if user.is_superuser or user == gruppe.lehrer %}
-                        <a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
-                    {% endif %}
-                    {% if z.korrigiert %}
-                        <span title="Bewertung wurde manuell geändert">*</span>
-                    {% endif %}
+                        <div class="no-print"> 
+                            {% if user.is_superuser or user == gruppe.lehrer %}
+                                <a href="{% url 'bewertung_korrigieren' z.id %}">✏️</a>
+                            {% endif %}
+                        </div>
+                        {% if z.korrigiert %}
+                            <span title="Bewertung wurde manuell geändert">*</span>
+                        {% endif %}
                     </td>
                 </tr>
             {% empty %}
