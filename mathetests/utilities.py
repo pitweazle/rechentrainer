@@ -173,8 +173,20 @@ def berechne_quote_und_note(analysis, protos, test):
 
     # Punkte aus Protokollfeldern (inkl. manueller Korrekturen)
     agg = protos.aggregate(
-        richtig_sum=Sum("richtig"),
-        falsch_sum=Sum("falsch"),
+        richtig_sum=Sum(
+            Case(
+                When(richtig=True, then=1),
+                default=0,
+                output_field=IntegerField(),
+            )
+        ),
+        falsch_sum=Sum(
+            Case(
+                When(falsch=True, then=1),
+                default=0,
+                output_field=IntegerField(),
+            )
+        ),
     )
     richtig_punkte = Decimal(agg["richtig_sum"] or 0)
     falsch_sum = Decimal(agg["falsch_sum"] or 0)
