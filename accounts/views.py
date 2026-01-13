@@ -15,6 +15,7 @@ from django.http import HttpResponse, FileResponse, Http404
 from django.conf import settings
 
 from django.db.models import Max, Sum, Count, F, Q
+from django.db.models import Sum, Case, When, IntegerField
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
@@ -593,7 +594,13 @@ def gruppe_uebersicht(req, gruppe_id):
             kategorie_werte = (                                                     # die Summen der einzelnen Kategoren des jeweiligen Users
                 protokoll_profil
                 .values("kategorie__zeile")
-                .annotate(richtig_kat=Sum('richtig'))
+                .annotate(richtig_kat=Sum(
+                    Case(
+                        When(richtig=True, then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ),)
                 )
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
@@ -626,7 +633,15 @@ def gruppe_uebersicht(req, gruppe_id):
                         protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
                             protokoll_fehler
                             .values("kategorie__zeile")
-                            .annotate(falsch_kat=Sum('falsch'))
+                            .annotate(
+                                falsch_kat=Sum(
+                                    Case(
+                                        When(falsch=True, then=1),
+                                        default=0,
+                                        output_field=IntegerField(),
+                                    )
+                                ),
+                            )
                             .annotate(abbr_kat=Sum('abbr'))
                             .annotate(lsg_kat=Sum('lsg'))
                             .annotate(hilfe_kat=Sum('hilfe'))
