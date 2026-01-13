@@ -16,6 +16,8 @@ from django.conf import settings
 
 from django.db.models import Max, Sum, Count, F, Q
 from django.db.models import Sum, Case, When, IntegerField
+from django.db import connection
+
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
@@ -683,12 +685,20 @@ def gruppe_uebersicht(req, gruppe_id):
             mm = int(seconds/60)
             hh, mm = divmod(mm, 60)
             gesamtzeit_text = f"{hh}:{mm:02d}" 
-        gesamtsummen = (
-            protokoll_zeitraum                                                           # hier werden die Gesamtsummen der einzelnen Kategorien bestimmt
-            .values("kategorie__zeile")
-            .annotate(richtig_sum=Sum('richtig'))
-            .annotate(zeit_sum=Sum(F('end') - F('start')))
-            )  
+            gesamtsummen = (
+                protokoll_zeitraum
+                .values("kategorie__zeile")
+                .annotate(
+                    richtig_sum=Sum(
+                        Case(
+                            When(richtig=True, then=1),
+                            default=0,
+                            output_field=IntegerField(),
+                        )
+                    )
+                )
+                .annotate(zeit_sum=Sum(F('end') - F('start')))
+            ) 
         for k in gesamtsummen: 
             index = int(k['kategorie__zeile'])
             richtig_sum = k['richtig_sum']
