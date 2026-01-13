@@ -157,7 +157,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index" 
 
-DEFAULT_FROM_EMAIL = 'info@rechentrainer.app'  
+ADMINS = [
+    ("Rechentrainer", "info@rechentrainer.app"),
+]
+
+DEFAULT_FROM_EMAIL = "info@rechentrainer.app"
+SERVER_EMAIL = "info@rechentrainer.app"
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # SMTP-Backend
 EMAIL_HOST = 'smtp.dcpserver.de'
 EMAIL_PORT = 25
