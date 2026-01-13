@@ -707,12 +707,38 @@ def test(req, slug):
             )
             if not prot_s.exists():
                 continue
+
             agg_s = prot_s.aggregate(
-                rsum=Sum("richtig"),
-                fsum=Sum("falsch"),
-                ab=Sum(Case(When(abbr=True, then=1), default=0, output_field=IntegerField())),
-                lg=Sum(Case(When(lsg=True,  then=1), default=0, output_field=IntegerField())),
+                rsum=Sum(
+                    Case(
+                        When(richtig=True, then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ),
+                fsum=Sum(
+                    Case(
+                        When(falsch=True, then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ),
+                ab=Sum(
+                    Case(
+                        When(abbr=True, then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ),
+                lg=Sum(
+                    Case(
+                        When(lsg=True, then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ),
             )
+
             r_p = Decimal(agg_s["rsum"] or 0)
             f_p = Decimal(agg_s["fsum"] or 0)
             ab = agg_s["ab"] or 0
