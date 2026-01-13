@@ -534,8 +534,13 @@ def gruppe_uebersicht(req, gruppe_id):
             protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
             wahl = auswahl_liste[auswahl]
         elif start_datum.is_valid() and end_datum.is_valid():
-            start = start_datum.cleaned_data['aufgaben_seit']
-            ende = end_datum.cleaned_data['aufgaben_bis']
+            start_raw = start_datum.cleaned_data['aufgaben_seit']
+            ende_raw = end_datum.cleaned_data['aufgaben_bis']
+
+            start = start_raw.date() if hasattr(start_raw, "date") else start_raw
+            ende = ende_raw.date() if hasattr(ende_raw, "date") else ende_raw
+
+
             protokoll_zeitraum =  protokoll_gruppe.filter(start__date__gte = start, start__date__lte = ende)
             wahl = start.strftime("%d.%m.%y") + " bis " + ende.strftime("%d.%m.%y")
     else:
