@@ -1,17 +1,13 @@
-{% extends 'auswahl.html' %}   
+{% extends 'auswahl.html' %}
 {% block content %}
-  <body>
-    {{schueler}}
-    <form action="/schueler_aendern/{{schueler.id}}/" method="POST">
+    {{ schueler }}
+    <form action="/schueler_aendern/{{ schueler.id }}/" method="POST">
       <table>
         {% csrf_token %}
-        {{profil_form.as_table}}
+        {{ profil_form.as_table }}
       </table>
-      <button type="submit">ändern</button>  
+      <button type="submit">ändern</button>
     </form>
     <br>
-    <button>
-      <a href="{% url 'index' %}">zurück</a>
-    </button>
-  </body>
+    <a href="{% url 'index' %}">zurück</a>
 {% endblock %}

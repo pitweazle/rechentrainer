@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.admin.widgets import AdminSplitDateTime
 
 from .models import Profil, Ort, Schule, Lerngruppe
 
@@ -110,13 +111,20 @@ class End_Datum(forms.Form):
 class Schueler_Aendern_Form(forms.ModelForm):
     class Meta:
         model = Profil
-        fields = ['vorname', 'nachname', 'klasse', 'jg', 'kurs' , 'stufe', 'schule', 'gruppe', 'sj', 'hj']
+        fields = ['vorname', 'nachname', 'klasse', 'jg', 'kurs' , 'stufe', 'schule', 'gruppe', 'sj', 'hj', 'halbjahr_ab']
         help_texts = {'stufe': "Vor Änderung der Stufe bitte die Anleitung lesen!"}
         widgets = {'jg': forms.TextInput(attrs={'size': 2}), 
                 'klasse': forms.TextInput(attrs={'size': 10}),
                 'stufe': forms.TextInput(attrs={'size': 2}),
                 'sj': forms.TextInput(attrs={'size': 4}),
-                'hj': forms.TextInput(attrs={'size': 1}),}
+                'hj': forms.TextInput(attrs={'size': 1}),
+                'schuljahr_ab': forms.DateTimeInput(
+                    attrs={'type': 'datetime-local'}
+                ),
+                'halbjahr_ab': forms.DateTimeInput(
+                    attrs={'type': 'datetime-local'}
+                ),
+                }
 
 class Suchen_Form(forms.Form):
     vorname = forms.CharField(label="Vorname", max_length=50, required=False)

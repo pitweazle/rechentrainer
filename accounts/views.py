@@ -149,10 +149,6 @@ def account_loeschen(req):
         return render(req, 'index.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
-# def uebersicht(request, profil_id):
-#     profil = get_object_or_404(Profil, id=profil_id)
-#     return render(request, "core/uebersicht.html", {"profil": profil})
-
 def naechstes_halbjahr(req):
     if req.method == 'POST':
         neues_halbjahr = req.POST.get('neu', 'nein')

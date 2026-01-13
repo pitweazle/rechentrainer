@@ -54,7 +54,6 @@ def check_hj(req):
     """Überprüft Halbjahr und Profil, gibt entweder Redirect, Render oder 'OK' zurück"""
     if not req.user.is_authenticated:
         return redirect('anmelden')
-
     email = req.user.email
     try:
         profil = req.user.profil
@@ -73,8 +72,10 @@ def check_hj(req):
         return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
 
     heute = get_today()
+    print("C", heute)
     # Halbjahres-/Schuljahreswechsel prüfen
     if heute.month in (1, 7) and sub_note_anzeigen(profil):
+        print("D")
         next_sj, next_hj = name_next_hj()
         if profil.hj == next_hj and profil.sj == next_sj:
             # User arbeitet schon im nächsten Halbjahr

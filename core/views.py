@@ -36,7 +36,7 @@ from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hy
 from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
 
 from django.db.models import Sum, F,  Max
-from accounts.services import name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
+from accounts.services import check_hj, name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def addieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -8712,6 +8712,11 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
+            print("A")
+            result = check_hj(req)
+            if isinstance(result, HttpResponse):
+                print("B")
+                return result
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
