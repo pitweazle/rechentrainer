@@ -5895,7 +5895,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
     if optionen != "":                                                               
         typ_anf = 4
         typ_end = 14
-        print("Stufe: ",stufe)
         if jg > 10 or stufe >= 43 or "Winkel" in optionen:
             typ_anf = 1
             typ_end = 27        
@@ -6002,7 +6001,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 typ = random.randint(typ_anf, typ_end)
         except:
             typ = random.randint(typ_anf, typ_end)
-        print(reihenfolge, typ_end)
         typ2 = 0
         titel = "rechtwinklige Dreiecke" 
         parameter = {'name': 'svg/dreiecke.svg', 'object': 'pythagoras', 'box_breite': 350,  'box_hoehe': 200}
@@ -8712,10 +8710,8 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            print("A")
             result = check_hj(req)
             if isinstance(result, HttpResponse):
-                print("B")
                 return result
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()

@@ -94,7 +94,6 @@ def duell_uebersicht(req, gruppe_id):
         for schueler in schueler_liste:
             duellant, created = Duellant.objects.get_or_create(profil = schueler)
             if created:
-                print(duellant)
                 duellant.name = schueler.vorname
                 duellant.gruppe = gruppe
                 duellant.save()

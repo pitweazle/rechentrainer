@@ -72,10 +72,8 @@ def check_hj(req):
         return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
 
     heute = get_today()
-    print("C", heute)
     # Halbjahres-/Schuljahreswechsel prüfen
     if heute.month in (1, 7) and sub_note_anzeigen(profil):
-        print("D")
         next_sj, next_hj = name_next_hj()
         if profil.hj == next_hj and profil.sj == next_sj:
             # User arbeitet schon im nächsten Halbjahr

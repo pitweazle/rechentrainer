@@ -95,7 +95,6 @@ def registrieren(req):
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
                 if profil.hj == 1:
-                    print("C")
                     profil.schuljahr_ab = timezone.now()
                 else:
                     profil.halbjahr_ab = timezone.now()

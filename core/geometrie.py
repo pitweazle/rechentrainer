@@ -288,7 +288,6 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
     return parameter
 
 def sub_punkt_pruefen(eingabe, loesung):
-    print("eingabe",eingabe)
     try:
         if "(" not in eingabe or not ")" in eingabe:
                 return 0, "Du musst die Koordinaten in Klammern eingeben."
