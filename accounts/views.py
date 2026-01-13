@@ -632,22 +632,26 @@ def gruppe_uebersicht(req, gruppe_id):
                     else:
                         fehler_ab = zaehler.fehler_ab
                         protokoll_fehler = protokoll_profil_kategorie.filter(start__gt=fehler_ab)
-                        protokoll_fehler = (                                                                 # die Summen der Fehler seit des jeweiligen Users
+
+                        protokoll_fehler = (
                             protokoll_fehler
                             .values("kategorie__zeile")
                             .annotate(
                                 falsch_kat=Sum(
-                                    Case(
-                                        When(falsch=True, then=1),
-                                        default=0,
-                                        output_field=IntegerField(),
-                                    )
+                                    Case(When(falsch=True, then=1), default=0, output_field=IntegerField())
+                                ),
+                                abbr_kat=Sum(
+                                    Case(When(abbr=True, then=1), default=0, output_field=IntegerField())
+                                ),
+                                lsg_kat=Sum(
+                                    Case(When(lsg=True, then=1), default=0, output_field=IntegerField())
+                                ),
+                                hilfe_kat=Sum(
+                                    Case(When(hilfe=True, then=1), default=0, output_field=IntegerField())
                                 ),
                             )
-                            .annotate(abbr_kat=Sum('abbr'))
-                            .annotate(lsg_kat=Sum('lsg'))
-                            .annotate(hilfe_kat=Sum('hilfe'))
-                            ) 
+                        )
+
                         for f in protokoll_fehler:
                             falsch_kat = f['falsch_kat'] 
                             abbr_kat = f['abbr_kat']
