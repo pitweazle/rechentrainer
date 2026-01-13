@@ -15,7 +15,7 @@ load_dotenv(BASE_DIR / ".env", override=True)
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv("DEBUG", "0") == "1"
+DEBUG = getenv("DEBUG", "0") == "0"
 
 # Application definition
 
@@ -28,7 +28,8 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    
+    'django.contrib.auth',
+    'django.contrib.contenttypes',    
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
