@@ -15,7 +15,7 @@ load_dotenv(BASE_DIR / ".env", override=True)
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv("DEBUG", "0") == "0"
+DEBUG = getenv("DEBUG", "0") == "1"
 
 # Application definition
 
@@ -140,10 +140,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-# settings.py
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-if not DEBUG:
+# STATIC_URL = '/static/'                                             #.habe ich augeliefert, funktioniert in uberspace aber nicht lokal
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+# if not DEBUG:
+#     STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATIC_URL = "/static/"
+if DEBUG:
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+else:
     STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
@@ -157,18 +162,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index" 
 
-ADMINS = [
-    ("Rechentrainer", "info@rechentrainer.app"),
-]
-
+ADMINS = [("Rechentrainer", "info@rechentrainer.app"),]
+MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = "info@rechentrainer.app"
 SERVER_EMAIL = "info@rechentrainer.app"
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # SMTP-Backend
 EMAIL_HOST = 'smtp.dcpserver.de'
-EMAIL_PORT = 25
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'info@rechentrainer.app'
+
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # aus .env
+DEFAULT_FROM_EMAIL = 'info@rechentrainer.app'
+SERVER_EMAIL = 'info@rechentrainer.app'  # für Error-Mails
+
+# EMAIL_HOST_PASSWORD wird aus .env geladen
 
 #EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 #EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
