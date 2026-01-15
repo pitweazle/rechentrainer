@@ -107,6 +107,7 @@ def check_hj(req):
             profil.save()
             sub_daten_loeschen(req)
             return "OK"
+    return "OK"
         
 def sub_note_anzeigen(profil):
     if (profil.gruppe):

@@ -8711,8 +8711,15 @@ def main(req, slug):
         #hier wird die Aufgabe erstellt:
         else:
             result = check_hj(req)
+            print("check_hj", req.user, "ergibt:", result)
             if isinstance(result, HttpResponse):
+                print("==> Rückgabe-Typ:", type(result))
                 return result
+            # result = check_hj(req)
+            # if result == "OK":
+            #     pass
+            # elif isinstance(result, HttpResponse):
+            #     return result
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
