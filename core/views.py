@@ -8710,10 +8710,10 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            response = check_hj(req)
-            if response is not None:
-                return response
-            result = check_hj(req)
+            # response = check_hj(req)
+            # if response is not None:
+            #     return response
+            # result = check_hj(req)
             # print("check_hj", req.user, "ergibt:", result)
             # if isinstance(result, HttpResponse):
             #     print("==> Rückgabe-Typ:", type(result))
