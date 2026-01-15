@@ -8713,11 +8713,20 @@ def main(req, slug):
             # response = check_hj(req)
             # if response is not None:
             #     return response
+            import logging
+            logger = logging.getLogger(__name__)
             result = check_hj(req)
-            print("check_hj", req.user, "ergibt:", result)
+
+            logger.warning(
+                "check_hj user=%s ergibt=%r (%s)",
+                req.user,
+                result,
+                type(result),
+            )
+
             if isinstance(result, HttpResponse):
-                print("==> Rückgabe-Typ:", type(result))
                 return result
+
             # result = check_hj(req)
             # if result == "OK":
             #     pass
