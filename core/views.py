@@ -8710,28 +8710,9 @@ def main(req, slug):
                 return render(req, 'core/aufgabe.html', context)                
         #hier wird die Aufgabe erstellt:
         else:
-            # response = check_hj(req)
-            # if response is not None:
-            #     return response
-            import logging
-            logger = logging.getLogger(__name__)
-            result = check_hj(req)
-
-            logger.warning(
-                "check_hj user=%s ergibt=%r (%s)",
-                req.user,
-                result,
-                type(result),
-            )
-
-            if isinstance(result, HttpResponse):
-                return result
-
-            # result = check_hj(req)
-            # if result == "OK":
-            #     pass
-            # elif isinstance(result, HttpResponse):
-            #     return result
+            response = check_hj(req)
+            if response is not None:
+                return response
             zaehler, created = Zaehler.objects.get_or_create(profil = profil, kategorie = kategorie)
             gerechnet = Protokoll.objects.filter(richtig__gte = 1, profil=profil, kategorie = kategorie, sj = profil.sj, hj = profil.hj).count()
             zaehler = Zaehler.objects.get(profil=profil, kategorie = kategorie)
