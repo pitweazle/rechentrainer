@@ -77,7 +77,8 @@ def check_hj(req):
         next_sj, next_hj = name_next_hj()
         if profil.hj == next_hj and profil.sj == next_sj:
             # User arbeitet schon im nächsten Halbjahr
-            return redirect('uebersicht')
+            #return redirect('uebersicht')
+            return None
 
         sj, hj = name_hj()
         if profil.hj != hj or profil.sj != sj:#
