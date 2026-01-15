@@ -92,12 +92,12 @@ def check_hj(req):
             return render(req, 'naechstes_halbjahr.html', context)
 
         # Alles im Lot → keine Frage, kein Wechsel
-        return "OK"
+        return None
 
     # Kein Halbjahreswechsel aktuell → nur prüfen, ob Profil im richtigen Jahr/HJ ist
     sj, hj = name_hj()
     if profil.hj == hj and profil.sj == sj:
-        return "OK"
+        return None
     else:
         if sub_note_anzeigen(profil):
             return redirect('neues_halbjahr')
@@ -106,8 +106,8 @@ def check_hj(req):
             profil.sj = sj
             profil.save()
             sub_daten_loeschen(req)
-            return "OK"
-    return "OK"
+            return None
+    return None
         
 def sub_note_anzeigen(profil):
     if (profil.gruppe):
