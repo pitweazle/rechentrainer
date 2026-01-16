@@ -563,7 +563,7 @@ def gruppe_uebersicht(req, gruppe_id):
         gesamtzeit_text = "-"
         katmax_max = 0
     if 1 == 1:
-        kategorien = list(Kategorie.objects.filter(zeile__lt=katmax_max + 1))
+        kategorien = list(Kategorie.objects.filter(zeile__lt=katmax_max + 1).order_by('zeile', 'pk'))
         kategorie_summen = [(0, "-")] * (katmax_max+1) 
         kategorie_fehler = [(0)] * (katmax_max+1) 
         gesamtzeit = timedelta()

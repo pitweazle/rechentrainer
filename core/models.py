@@ -40,6 +40,7 @@ class Kategorie(models.Model):
         return self.slug
 
     class Meta:
+        ordering = ['zeile', 'pk']
         verbose_name = 'Kategorie'
         verbose_name_plural = 'Kategorien'
 
