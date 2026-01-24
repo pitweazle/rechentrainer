@@ -137,7 +137,6 @@
                     {{message_unten}}
                     {% if parameter.popup %}
                         <a href="#" id="openPopup"><br>{{parameter.popup}}</a>
-                
                         <!-- Popup-Struktur -->
                         <div class="popup-overlay" id="popupOverlay"></div>
                         <div class="popup" id="popup">
@@ -162,17 +161,26 @@
                             });
                         </script>
                     {% endif %}
-                    {% if not "tab" in parameter.name %}
-                        <form action="{% url 'main' kategorie.slug %}" method="post">
-                            {% csrf_token %}
-                            <fieldset>
-                                {{frage}}
-                                {{form.eingabe}}
-                                {{einheit}}
-                                <input type="submit" value="Prüfen">
-                            </fieldset>
-                        </form>
-                    {%else%}
+{% if not "tab" in parameter.name %}
+<form action="{% url 'main' kategorie.slug %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {{ frage }}
+
+        {{ form.eingabe }}
+
+        {{ einheit }}
+
+        <div id="eingabe-hint"
+             style="display:none; color:#c00; margin-top:4px;">
+            So viel Text passt hier leider nicht rein.
+        </div>
+
+        <input type="submit" value="Prüfen">
+    </fieldset>
+</form>
+{% else %}
+
                         <table>
                             <tr>
                                 <td><input type="submit" value="Prüfen"></td>
@@ -204,4 +212,15 @@
             {% endautoescape %}
         {% endblock %}
     </div>
+    <script>
+    function checkLen(el) {
+        const hint = document.getElementById("eingabe-hint");
+        if (!hint) return;
+        if (el.value.length >= 100) {
+            hint.style.display = "block";
+        } else {
+            hint.style.display = "none";
+        }
+    }
+    </script>
 </body>

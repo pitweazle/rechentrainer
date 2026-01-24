@@ -5,7 +5,21 @@ class AufgabeFormZahl(forms.Form):
     eingabe = forms.DecimalField(label='', localize=True, max_digits=15, decimal_places=5, widget=forms.NumberInput(attrs={'autofocus': True, 'autocomplete': 'off'}))
     
 class AufgabeFormStr(forms.Form):
-    eingabe = forms.CharField(label='', localize=True, widget=forms.TextInput(attrs={'autofocus': True, 'autocomplete': 'off'}))
+    eingabe = forms.CharField(
+        label='',
+        max_length=100,                # <<< WICHTIG
+        localize=True,
+        widget=forms.TextInput(attrs={
+            'autofocus': True,
+            'autocomplete': 'off',
+            'maxlength': '100',        # Browser bremst
+            'oninput': 'checkLen(this)'
+        })
+    )
+
+    def clean_eingabe(self):
+        # Backend-Sicherheitsnetz
+        return (self.cleaned_data.get("eingabe") or "")[:100]
 
 class AufgabeFormTab(forms.Form):
     y2 = forms.DecimalField(label='', max_digits=5,
