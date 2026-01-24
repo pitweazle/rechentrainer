@@ -317,8 +317,6 @@ def bestenliste(req):
     for g in gruppe:
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
         mitglieder = Profil.objects.filter(gruppe = g).count()
-
-
         if mitglieder > 0:
             protokoll = Protokoll.objects.filter(profil__gruppe=g)
             summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
@@ -562,7 +560,7 @@ def gruppe_uebersicht(req, gruppe_id):
         kategorie_summen = [(0, "-")]
         gesamtzeit_text = "-"
         katmax_max = 0
-    if 1 == 1:
+    if protokoll_gruppe.count() > 0:
         kategorien = list(Kategorie.objects.filter(zeile__lt=katmax_max + 1).order_by('zeile', 'pk'))
         kategorie_summen = [(0, "-")] * (katmax_max+1) 
         kategorie_fehler = [(0)] * (katmax_max+1) 
