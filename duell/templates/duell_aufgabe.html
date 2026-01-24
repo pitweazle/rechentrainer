@@ -42,45 +42,45 @@
             clearInterval(uhrInterval); // Stoppe das Intervall
         }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
-        const falsch = "{{ falsch|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
-        const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
-        const edit = "{{ edit|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+        document.addEventListener('DOMContentLoaded', function() {
+            const neu = "{{ neu|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+            const falsch = "{{ falsch|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+            const richtig = "{{ richtig|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
+            const edit = "{{ edit|default:'' }}"; // Holt den Wert von 'neu' aus dem Template
 
 
-        const addStarsInterval = setInterval(function() {
-            starCount++;
-            einsStars += "*";
-            zweiStars += "*";
-            document.getElementById('Eins').value = einsStars;
-            document.getElementById('Zwei').value = zweiStars;
+            const addStarsInterval = setInterval(function() {
+                starCount++;
+                einsStars += "*";
+                zweiStars += "*";
+                document.getElementById('Eins').value = einsStars;
+                document.getElementById('Zwei').value = zweiStars;
 
-            // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
-            if (starCount === 4 || falsch || edit || richtig) {
-                clearInterval(addStarsInterval);
+                // Wenn 4 Sterne erreicht sind, stoppen und sofort die Namen anzeigen
+                if (starCount === 4 || falsch || edit || richtig) {
+                    clearInterval(addStarsInterval);
 
-                // Sofortige Anzeige der Namen und Farben
-                document.getElementById('Eins').value = '{{duell.duellant_1.name}}';
-                document.getElementById('Zwei').value = '{{duell.duellant_2.name}}';
-                
-                // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
-                document.getElementById('Eins').className = '{{ duell.duellant_1.liga }}';
-                document.getElementById('Zwei').className = '{{ duell.duellant_2.liga }}';
-                document.getElementById('meldung').textContent = '{{meldung}}';
+                    // Sofortige Anzeige der Namen und Farben
+                    document.getElementById('Eins').value = '{{duell.duellant_1.name}}';
+                    document.getElementById('Zwei').value = '{{duell.duellant_2.name}}';
+                    
+                    // Farben und Meldung sichtbar machen, indem die 'no-color' Klasse durch die Liga-Klassen ersetzt wird
+                    document.getElementById('Eins').className = '{{ duell.duellant_1.liga }}';
+                    document.getElementById('Zwei').className = '{{ duell.duellant_2.liga }}';
+                    document.getElementById('meldung').textContent = '{{meldung}}';
+                }
+                }, 500); // Update alle 500 Millisekunden
+            
+            if (neu) {
+                localStorage.clear('sekunden');
+                starteUhr();
             }
-            }, 500); // Update alle 500 Millisekunden
-        
-        if (neu) {
-            localStorage.clear('sekunden');
-            starteUhr();
-        }
-        else {
-            sekunden = localStorage.getItem('sekunden')
-            stoppeUhr()
-            document.getElementById('uhr').textContent = sekunden + " Sek.";
-        }
-    });
+            else {
+                sekunden = localStorage.getItem('sekunden')
+                stoppeUhr()
+                document.getElementById('uhr').textContent = sekunden + " Sek.";
+            }
+        });
     </script>
 </head>
 <body>
@@ -107,15 +107,15 @@
                 </div>
                 <h2> {{protokoll.titel }}</h2>
                 <h3>Aufg. Nr. {{protokoll.aufgnr}}/10 </h3>
-                <h1>
-                {% if "∛" in protokoll.frage %}
-                    Berechne &#8731;<span>&macr;&macr;&macr;&macr;</span><span style="margin-left: -2.3em; vertical-align: -0.1em;"> {{protokoll.text}}</span>
-                {% endif %} 
-                {% if protokoll.parameter.strich %}
-                    {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
-                {% else %}
-                    {{protokoll.text}}
-                {% endif %} 
+                <h1 style="font-size: {% if protokoll.text|length > 30 %}1.5rem{% elif protokoll.text|length > 20 %}2rem{% else %}3rem{% endif %};">
+                    {% if "∛" in protokoll.frage %}
+                        Berechne &#8731;<span>&macr;&macr;&macr;&macr;</span><span style="margin-left: -2.3em; vertical-align: -0.1em;"> {{protokoll.text}}</span>
+                    {% endif %} 
+                    {% if protokoll.parameter.strich %}
+                        {{parameter.koeffizient}}&radic;<span style="vertical-align: 0.3em;">{{parameter.strich}}</span><span style="{{parameter.laenge}}"> {{protokoll.text}}</span>
+                    {% else %}
+                        {{protokoll.text}}
+                    {% endif %} 
                 </h1>             
             </div>
             <div class="mitte">
