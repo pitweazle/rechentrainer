@@ -280,8 +280,14 @@ def duell_optionen(req, slug):
         else:
             optionen_text = "keine"
     zaehler = get_object_or_404(Zaehler, kategorie = kategorie, profil = profil)
-    zaehler.optionen_text = optionen_text   
-    typ_anf, typ_end, reihenfolge = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, optionen = zaehler.optionen_text)
+    zaehler.optionen_text = optionen_text  
+    ret = aufgaben(kategorie.zeile, jg = jg, stufe = stufe, optionen = zaehler.optionen_text)
+    # dritte Rückgabe optional
+    if len(ret) == 3:
+        typ_anf, typ_end, reihenfolge = ret
+    else:
+        typ_anf, typ_end = ret
+        reihenfolge = None
     zaehler.typ_anf = typ_anf
     zaehler.typ_end = typ_end
     zaehler.save()
