@@ -5308,7 +5308,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
-        typ2 = 0
+        typ2 = 0 
         titel = "Funktionen" 
         text = "default{}"
         hilfe_text = frage = pro_text = anmerkung = einheit = lsg = ""
@@ -5338,8 +5338,16 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 parameter.update({'titel_x': 'x', 'titel_y': "y = " + term})
                 pro_text = "Termbelegung: " + term
         elif typ in (2,3):                  # Funktionswert / Nullstelle berechnen
-            gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
-            x = random.randint(-3,6)
+            if typ == 3:
+                steigung = 3
+                absolut = 1
+                while 10*(absolut/steigung)%2 > 0 or absolut == 0:
+                    gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
+                    print(absolut)
+                    x = random.randint(-3,6)
+            else: 
+                gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
+                x = random.randint(-3,6)
             variable = [gleichung, x]
             if typ == 2:
                 text = "Berechne für die Funktion f(x)= {} den Funktionswert für x= {}" 
@@ -5358,8 +5366,9 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                     text = "Berechne für die Funktion f(x) = {} den Schnittpunkt mit der x-Achse" 
                     frage = pro_text = "Schnittpunkt:"
                     nullstelle = -absolut/steigung
-                    wert=(nullstelle*10+20)*1000                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-                    lsg = ["("+str(wert).replace(".",",")+";0)", wert, "indiv_0"]
+                    erg = nullstelle
+                    #wert=(nullstelle*10+20)*1000                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                    lsg = [str(nullstelle)]#,"("+str(wert).replace(".",",")+";0)", wert, "indiv_0"]
                     hilfe_id = 33
                     hilfe_text = "Für die x-Koordinate musst du zunächst 0 für y einsetzen und dann die Gleichung nach x auflösen"
                 else:
