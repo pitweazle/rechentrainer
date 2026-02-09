@@ -9,7 +9,7 @@
   {% include 'includes/header.html' %}
 
   <div class="container container--narrow">
-    <h1>Test erstellen – {{ gruppe.name }}</h1>
+    <h1>Lernkontrolle erstellen – {{ gruppe.name }}</h1>
 
     <form method="post">
       {% csrf_token %}
@@ -20,7 +20,7 @@
               <th>Nr.</th>
               <th>Kategorie</th>
               <th>Anzahl</th>
-              <th>Auswahl (max. 5)</th>
+              <th>Auswahl</th>
             </tr>
           </thead>
           <tbody>

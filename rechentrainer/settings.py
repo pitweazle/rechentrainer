@@ -177,6 +177,15 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # aus .env
 DEFAULT_FROM_EMAIL = 'info@rechentrainer.app'
 SERVER_EMAIL = 'info@rechentrainer.app'  # für Error-Mails
 
+# # E-Mail Einstellungen für Uberspace
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'localhost'
+# EMAIL_PORT = 25
+# EMAIL_USE_TLS = False
+# EMAIL_USE_SSL = False
+# DEFAULT_FROM_EMAIL = 'info@rechentrainer.app'
+# SERVER_EMAIL = "info@rechentrainer.app"
+
 # EMAIL_HOST_PASSWORD wird aus .env geladen
 
 #EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"

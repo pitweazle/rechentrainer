@@ -80,6 +80,7 @@ class Gruppe_Aendern_Form(forms.ModelForm):
         fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
+            'note_anzeigen': 'Bearbeitungsstand',
         }
         widgets = {
             'aufgaben_pro_woche': forms.NumberInput(attrs={
@@ -95,12 +96,13 @@ class Gruppe_Neu_Form(forms.ModelForm):
         fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
+            'note_anzeigen': 'Bearbeitungsstand',
         }
         help_texts = {'name': 'Das kann einfach der Name der Klasse sein oder die Kursbezeichnung aus dem Stundenplan - die Schülerinnen und Schüler sollten ihre Lerngruppe an diesem Namen erkennen können.',
                       'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
 
 class ProtokollFilter_Gruppe(forms.Form):
-    auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("all",'Alle Aufgaben'),("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])
+    auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])
 
 class Start_Datum(forms.Form):
     aufgaben_seit = forms.DateField(label="von", widget = forms.SelectDateWidget(years=range(datetime.now().year-1, datetime.now().year+1)), initial=datetime.today())

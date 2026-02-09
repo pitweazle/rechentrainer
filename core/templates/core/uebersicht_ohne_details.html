@@ -54,12 +54,12 @@
             <td class = "{{summe_farbe}}">{{richtig}}</td>
             <td>{{nicht_richtig_summe}}</td> 
             <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% if note_anzeigen == True %}
+            {% comment %} {% if note_anzeigen == True %}
                 <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
                 <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-            {% else %}
-                <td>{{letzte}}</td> 
-            {% endif %}         
+            {% else %} {% endcomment %}
+            <td>{{letzte}}</td> 
+            {% comment %} {% endif %}          {% endcomment %}
             {% for kategorie, aktiv, zeile in zeilen %}            
                 <tr>
                     {% if lehrer and not loeschen or not aktiv%}

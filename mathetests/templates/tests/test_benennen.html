@@ -2,7 +2,8 @@
 {% block content %}
   {% include "includes/header.html" %}
   <div class="container container--narrow">
-    <h1>Test benennen – {{ gruppe.name }}</h1>
+    <h1>Lernkontrolle benennen – {{ gruppe.name }}</h1>
+    
     <form method="post">
       {% csrf_token %}
 
@@ -11,7 +12,7 @@
         {{ form.name }}
       </p>
 
-      <p><b>Notensystem auswählen:</b><br>
+      <p><b>Bewertungsschlüssel auswählen:</b><br>
           {{ form.note_modus }}
       </p>
 

@@ -17,7 +17,7 @@
 </style>
 
   <div class="container">
-    <h1>Testübersicht – {{ test.name }}</h1>
+    <h1>Ergebnisübersicht – {{ test.name }}</h1>
 
     {% if user == gruppe.lehrer or user.is_superuser %}
       <form method="post" action="{% url 'test_toggle_aktiv' test.id %}" class="no-print" style="display:inline;">
@@ -43,11 +43,11 @@
         <a href="{% url 'test_alle_schueler_zip' test.id %}"
           id="zip-download-btn"
           class="btn btn-secondary btn-sm no-print">
-          📦 Alle Schüler-PDFs (ZIP)
+            📦 Alle Schüler-PDFs (ZIP)
         </a>
         <span class="no-print"
           style="display:inline-block; margin-left:0.75rem; color:#b10; font-weight:bold;">
-            Hinweis: Das Erstellen der ZIP-Datei kann je nach Klassengröße einige Sekunden dauern.
+            Hinweis: Das Erstellen der ZIP-Datei kann einige Sekunden dauern.
           </span>
       {% else %}
         <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm no-print">
@@ -67,31 +67,35 @@
 
       <div class="noten-box">
         {% if not test.aktiv %}
-          <h3>Notenspiegel</h3>
+          <h3>Ergebnisübersicht</h3>
           <table>
             <thead>
               <tr>
-                <th>1</th>
-                <th>2</th>
-                <th>3</th>
-                <th>4</th>
-                <th>5</th>
-                <th>6</th>
-                <th>&#8960;</th>
+                {# Dynamische Spaltenköpfe basierend auf dem gewählten Schlüssel #}
+                <th>≥</th>
+                <th>{{ schwellen.0 }}%</th>
+                <th>{{ schwellen.1 }}%</th>
+                <th>{{ schwellen.2 }}%</th>
+                <th>{{ schwellen.3 }}%</th>
+                <th>{{ schwellen.4 }}%</th>
+                <th><{{ schwellen.4 }}%</th>
+                <th>&#8960; %</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>{{ noten_spiegel.1 }}</td>
-                <td>{{ noten_spiegel.2 }}</td>
-                <td>{{ noten_spiegel.3 }}</td>
-                <td>{{ noten_spiegel.4 }}</td>
-                <td>{{ noten_spiegel.5 }}</td>
-                <td>{{ noten_spiegel.6 }}</td>
-                <td>{{ noten_durchschnitt|floatformat:1 }}</td>
+                <td></td>
+                <td>{{ leistungs_spiegel.1 }}</td>
+                <td>{{ leistungs_spiegel.2 }}</td>
+                <td>{{ leistungs_spiegel.3 }}</td>
+                <td>{{ leistungs_spiegel.4 }}</td>
+                <td>{{ leistungs_spiegel.5 }}</td>
+                <td>{{ leistungs_spiegel.6 }}</td>
+                <td><strong>{{ durchschnitt_quote|floatformat:1 }}%</strong></td>
               </tr>
             </tbody>
           </table>
+          <p style="font-size: 0.75rem; margin-top: 5px; color: #666;">{{ bewertung_titel }}</p>
         {% endif %}
       </div>
     </div>
@@ -112,7 +116,7 @@
           {% endfor %}
           <th>Σ richtig</th>
           <th>Σ falsch</th>
-          <th>Note</th>
+          <th>Quote</th>
         </tr>
       </thead>
       <tbody>
@@ -125,7 +129,7 @@
             </td>
 
             <td>
-              erledigt: {{ row.sum_erledigt }} / {{ einstellungen|length }}<br>
+              erledigt: {{ row.sum_erledigt }} / {{ total_soll_global }}<br>
               richtig: {{ row.sum_richtig }}<br>
               falsch: {{ row.sum_falsch }}<br>
             </td>
@@ -138,9 +142,15 @@
               </td>
             {% endfor %}
 
-            <td>{{ row.sum_richtig }}</td>
-            <td>{{ row.sum_falsch }}</td>
-            <td>{{ row.note|default:"-" }}</td>
+            <td style="text-align: center;">{{ row.sum_richtig }}</td>
+            <td style="text-align: center;">{{ row.sum_falsch }}</td>
+            <td style="text-align: center;">
+              {% if row.quote != None %}
+                <strong>{{ row.quote }}%</strong>
+              {% else %}
+                -
+              {% endif %}
+            </td>
           </tr>
         {% empty %}
           <tr>
@@ -164,7 +174,6 @@
         if (!btn) return;
 
         btn.addEventListener("click", function () {
-            // kleinen visuellen Hinweis geben
             btn.textContent = "ZIP wird erstellt …";
             btn.classList.add("disabled");
         });
@@ -180,11 +189,9 @@
       html, body {
           margin: 0 !important;
           padding: 0 !important;
-          background: #ffffff !important;  /* Rosa/Grau weg */
+          background: #ffffff !important;
       }
 
-
-      /* NEU: alle direkten Body-Kinder weiß machen (header, wrapper, etc.) */
       body > * {
           background: #ffffff !important;
       }
@@ -206,24 +213,21 @@
 
       th, td {
           padding: 2px 4px;
+          border: 1px solid #ccc; /* Linien im PDF/Druck sicherstellen */
       }
 
       .header-row {
           margin-bottom: 4mm !important;
       }
-          /* Kopfzeile der Kategorien flacher machen */
+      
     .rotated-th {
-        height: 140px !important;   /* nach Bedarf noch weiter runter, z.B. 120 */
+        height: 140px !important;
         padding: 0 !important;
     }
 
     .rotated-th__label {
         font-size: 8pt !important;
         padding: 0 2px !important;
-    }
-
-    .header-row {
-        margin-bottom: 4mm !important;
     }
   }
   </style>

@@ -29,18 +29,21 @@ class TestErstellenForm(forms.Form):
                 )
 
 class TestNameForm(forms.Form):
-    name = forms.CharField(max_length=200, label="Testname")
+    # Änderung: "Testname" -> "Name der Lernkontrolle"
+    name = forms.CharField(max_length=200, label="Name der Lernkontrolle")
 
+    # Änderung: Begriffe "Streng" und "weniger streng" durch neutrale Basis-Werte ersetzt
     NOTENWAHL = [
-        ("normal", "Strenge Noten: 95% / 80% / 65% / 50% / 25%"),
-        ("weniger streng", "weniger strenge Benotung: 90% / 75% / 60% / 45% / 30%"),
+        ("normal", "normal: 95% / 80% / 65% / 50% / 25%"),
+        ("weniger streng", "weniger streng: 90% / 75% / 60% / 45% / 30%"),
     ]
 
+    # Änderung: Label "Notensystem" -> "Bewertungsschlüssel"
     note_modus = forms.ChoiceField(
         choices=NOTENWAHL,
         widget=forms.RadioSelect,
         initial="normal",
-        label="Notensystem"
+        label="Bewertungsschlüssel"
     )
 
     schwierigkeit = forms.ChoiceField(
