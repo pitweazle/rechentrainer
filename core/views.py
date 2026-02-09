@@ -5308,6 +5308,7 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
             typ = 1 
         else:
             typ = random.randint(2, typ_end) 
+        typ=6
         typ2 = 0 
         titel = "Funktionen" 
         text = "default{}"
@@ -5503,10 +5504,10 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 x = random.randint(-6,10)/2
                 erg = steigung*x+absolut
             frage = pro_text = "f({1})="
-            variable = [gleichung, str(x).replace(".",",")]
+            variable = [gleichung, f"{x:g}".replace(".",",")]
             ablesen = {'x':x_null+x*40, 'y':y_null-erg*40}
             parameter.update(ablesen)
-            lsg = [str(erg)]
+            lsg = [f"{erg:g}".replace(".", ",")]
         elif typ == 7:                      # x für Funktionswert ablesen                                                            
             titel = "Funktionswerte" 
             text = "Für welches x wird der Funktionswert <br>f(x)= {1} erreicht?"
