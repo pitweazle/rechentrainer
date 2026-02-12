@@ -179,7 +179,7 @@
                     <tr>
                         <td>Punkte</td>
                         <td></td>
-                        <td>{{ richtig_punkte|floatformat:"-1" }}</td>
+                        <td>{{ aufg_richtig|floatformat:"-1" }}</td>
                         <td>{% if cheat_punkte %}{{ cheat_punkte }}{% endif %}</td>
                         <td></td>
                         <td>{% if abbr_punkte %}-{{ abbr_punkte|floatformat:1 }}{% endif %}</td>
@@ -187,11 +187,26 @@
                     </tr>
                 </tbody>
             </table>
-
-            <p><b>richtig gelöst:</b> {{ sum_quote }}%</p>
+            <p>
+                <b>Berechnung:</b><br>
+                {% if abbr_punkte or lsg_punkte or cheat_punkte %}
+                    (<b>{{ aufg_richtig|floatformat:"-1" }}</b> richtig 
+                    {% if abbr_punkte %}- {{ abbr_punkte|floatformat:1 }} Abbr.{% endif %}
+                    {% if lsg_punkte %}- {{ lsg_punkte|floatformat:1 }} Lsg.{% endif %}
+                    {% if cheat_punkte %}- {{ cheat_punkte|floatformat:1 }} Cheat{% endif %})
+                    von {{ gesamt_soll }} Aufgaben = 
+                {% else %}
+                    {{ aufg_richtig|floatformat:"-1" }} von {{ gesamt_soll }} Aufgaben = 
+                {% endif %}
+                <br>
+                <b>{{ richtig_punkte|floatformat:"-1" }} Punkte</b> von <b>{{ gesamt_soll }} Aufgaben</b> entsprechen 
+                <span style="font-size: 1.3rem;">
+                    <b>{{ sum_quote }}%</b>
+                </span>
+            </p>
         </div>
 <div class="noten-box">
-    {% if leistungs_spiegel %}
+    {% if not test.aktiv %}
         <h3>Ergebnisübersicht</h3>
         {% comment %} <p><small>{{ bewertung_titel }}</small></p> {% endcomment %}
         <table class="table" style="width:auto; font-size: 0.85rem;">
@@ -222,7 +237,7 @@
                 </tr>
             </tbody>
         </table>
-        <p><small><i>Anzahl der Schüler/innen pro Quote</i></small></p>
+        {% comment %} <p><small><i>Anzahl der Schüler/innen pro Quote</i></small></p> {% endcomment %}
     {% endif %}
     </div>
     </div>

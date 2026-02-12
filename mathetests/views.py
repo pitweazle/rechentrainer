@@ -823,32 +823,53 @@ def test_uebersicht(req, test_id):
             quote_info = berechne_quote_und_note(analysis_s, prot_s, test)
             q = quote_info["quote"]
             
+            # --- Spiegel-Zähler basierend auf der Quote (statt Note) ---
+            if q >= schwellen[0]: bereich = 1    # >= 95% (oder 90%)
+            elif q >= schwellen[1]: bereich = 2  # >= 80% (oder 75%)
+            elif q >= schwellen[2]: bereich = 3  # >= 65% (oder 60%)
+            elif q >= schwellen[3]: bereich = 4  # >= 50% (oder 45%)
+            elif q >= schwellen[4]: bereich = 5  # >= 25% (oder 30%)
+            else: bereich = 6                   # < 25% (oder 30%)
+            
+            leistungs_spiegel[bereich] += 1
+            # ----------------------------------------------------------
+
             quote_summe += q
             anzahl_bearbeitet += 1
-
-            # Zuordnung zum Spiegel (identisch zur Schüleransicht)
-            if q >= schwellen[0]: grad = 1
-            elif q >= schwellen[1]: grad = 2
-            elif q >= schwellen[2]: grad = 3
-            elif q >= schwellen[3]: grad = 4
-            elif q >= schwellen[4]: grad = 5
-            else: grad = 6
-            
-            leistungs_spiegel[grad] += 1
         else:
+            # Standardwerte für Schüler ohne Versuche
             analysis_s = {
-                "pro_kat": {}, "r_sum": 0, "f_sum": 0, "erledigt_sum": 0, "total_soll": total_soll_global,
+                "pro_kat": {}, "r_sum": 0, "f_sum": 0, "erledigt_sum": 0, "total_soll": total_soll_global, "abzug_sum": 0
             }
             q = None
             grad = None
-        print("alle", total_soll_global)
+
+        # --- DIESER TEIL MUSS (WIEDER) REIN ---
+        kat_liste = []
+        # Wir gehen die soll_map durch, damit die Reihenfolge der Spalten 
+        # exakt den Überschriften (einstellungen) entspricht
+        for kat_id, soll_wert in soll_map.items():
+            # Wir holen das Dictionary für diese Kategorie aus analysis_s
+            d = analysis_s["pro_kat"].get(kat_id, {})
+            
+            kat_liste.append({
+                "soll": soll_wert,
+                # Wir prüfen beide Varianten: "richtig" (Modell-Stil) und "r" (Abkürzung)
+                "richtig": d.get("richtig", d.get("r", 0)),
+                "falsch": d.get("falsch", d.get("f", 0)),
+                "erledigt": d.get("erledigt", d.get("e", 0)),
+            })
+        # --------------------------------------
+
         row = {
             "profil": schueler,
             "soll": total_soll_global,
             "sum_richtig": analysis_s["r_sum"],
+            "sum_falsch": analysis_s["f_sum"],
             "sum_erledigt": analysis_s["erledigt_sum"],
+            "abzuege": quote_info["malus_summe"],
             "quote": q,
-            "grad": grad,
+            "kategorien": kat_liste, # Das Template braucht diesen Key!
         }
         rows.append(row)
 
@@ -859,6 +880,7 @@ def test_uebersicht(req, test_id):
         "test": test,
         "gruppe": gruppe,
         "rows": rows,
+        "einstellungen": einstellungen,
         "leistungs_spiegel": leistungs_spiegel,
         "schwellen": schwellen,
         "durchschnitt_quote": round(durchschnitt_quote, 1),
