@@ -57,7 +57,7 @@ class AuswahlForm(forms.Form):
             )
 
 class ProtokollFilter(forms.Form):
-    auswahl = forms.ChoiceField(label='Filter', choices=[('heute','heute'), ('Woche','Woche'), ("Halbjahr",'aktuelles Halbjahr'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),])
+    auswahl = forms.ChoiceField(label='Filter', choices=[('heute','heute'), ('Woche','Woche'), ("Halbjahr",'aktuelles Halbjahr'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),("all",'Alle Aufgaben'),])
  
 class ProtokollFilter_neu(forms.Form):
     auswahl = forms.ChoiceField(label='Filter', choices=[("next",'nächstes Halbjahr'), ("Halbjahr",'aktuelles Halbjahr'), ('heute','heute'), ('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),])

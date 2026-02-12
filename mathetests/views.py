@@ -841,9 +841,10 @@ def test_uebersicht(req, test_id):
             }
             q = None
             grad = None
-
+        print("alle", total_soll_global)
         row = {
             "profil": schueler,
+            "soll": total_soll_global,
             "sum_richtig": analysis_s["r_sum"],
             "sum_erledigt": analysis_s["erledigt_sum"],
             "quote": q,

@@ -170,8 +170,8 @@
                     <tr>
                         <td>Aufgaben</td>
                         <td>{{ gesamt_soll }}</td>
-                        <td>{{ aufg_richtig }}</td>
-                        <td>{{ aufg_falsch }}</td>
+                        <td>{{ aufg_richtig|floatformat:"-1" }}</td>
+                        <td>{{ aufg_falsch|floatformat:"-1" }}</td>
                         <td>{{ gesamt_offen }}</td>
                         <td>{{ gesamt_abbr }}</td>
                         <td>{{ gesamt_lsg }}</td>
@@ -179,7 +179,7 @@
                     <tr>
                         <td>Punkte</td>
                         <td></td>
-                        <td>{{ richtig_punkte }}</td>
+                        <td>{{ richtig_punkte|floatformat:"-1" }}</td>
                         <td>{% if cheat_punkte %}{{ cheat_punkte }}{% endif %}</td>
                         <td></td>
                         <td>{% if abbr_punkte %}-{{ abbr_punkte|floatformat:1 }}{% endif %}</td>
@@ -188,12 +188,12 @@
                 </tbody>
             </table>
 
-            <p><b>Erfolgsquote:</b> {{ sum_quote }}%</p>
+            <p><b>richtig gelöst:</b> {{ sum_quote }}%</p>
         </div>
 <div class="noten-box">
     {% if leistungs_spiegel %}
         <h3>Ergebnisübersicht</h3>
-        <p><small>{{ bewertung_titel }}</small></p>
+        {% comment %} <p><small>{{ bewertung_titel }}</small></p> {% endcomment %}
         <table class="table" style="width:auto; font-size: 0.85rem;">
             <thead>
                 <tr>
@@ -222,9 +222,9 @@
                 </tr>
             </tbody>
         </table>
-        <p><small><i>Anzahl der Schüler/innen pro Erreichungsgrad</i></small></p>
+        <p><small><i>Anzahl der Schüler/innen pro Quote</i></small></p>
     {% endif %}
-</div>
+    </div>
     </div>
 
     <h3>Aufgaben-Verlauf</h3>
