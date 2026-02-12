@@ -71,6 +71,7 @@
           <table>
             <thead>
               <tr>
+                {# Dynamische Spaltenköpfe basierend auf dem gewählten Schlüssel #}
                 <th>≥</th>
                 <th>{{ schwellen.0 }}%</th>
                 <th>{{ schwellen.1 }}%</th>
@@ -103,7 +104,7 @@
       <thead>
         <tr>
           <th class="th-name">Schüler/in</th>
-          <th class="th-gesamt">Gesamt</th>
+          <th class="th-gesamt">erledigt</th>
           {% for e in einstellungen %}
             <th>
               <div class="rotated-th" style="{{ e.kategorie.farbe }}; height:230px;">
@@ -113,24 +114,8 @@
               </div>
             </th>
           {% endfor %}
-          <th>
-              <div class="rotated-th" style="height:230px;">
-                <span class="rotated-th__label">
-                  Σ richtig
-                </span>
-          </th>
-          <th>
-              <div class="rotated-th" style="height:230px;">
-                <span class="rotated-th__label">
-                  Σ falsch
-                </span>
-          </th>
-          <th>
-              <div class="rotated-th" style="height:230px;">
-                <span class="rotated-th__label">
-                  Σ Abzüge
-                </span>
-          </th>
+          <th>Σ richtig</th>
+          <th>Σ falsch</th>
           <th>Quote</th>
         </tr>
       </thead>
@@ -144,23 +129,21 @@
             </td>
 
             <td>
-              erledigt: {{ row.sum_erledigt|floatformat:"-1" }} / {{ row.soll }}<br>
-              richtig: {{ row.sum_richtig|floatformat:"-1" }}<br>
-              falsch: {{ row.sum_falsch }}<br>
+              {{ row.sum_erledigt|floatformat:"-1" }} / {{ row.soll }}<br>
+              {% comment %} richtig: {{ row.sum_richtig|floatformat:"-1" }}<br>
+              falsch: {{ row.sum_falsch }}<br> {% endcomment %}
             </td>
 
-            {% for k in row.kategorien %}
+            {% comment %} {% for k in row.kategorien %}
               <td>
                 {{ k.erledigt|floatformat:"-1" }}/{{ k.soll }}<br>
                 {{ k.richtig|floatformat:"-1" }}<br>
                 {{ k.falsch }}
               </td>
-            {% endfor %}
+            {% endfor %} {% endcomment %}
 
             <td style="text-align: center;">{{ row.sum_richtig }}</td>
             <td style="text-align: center;">{{ row.sum_falsch }}</td>
-            <td style="text-align: center;">{{ row.abzuege|floatformat:"-1" }}</td>
-
             <td style="text-align: center;">
               {% if row.quote != None %}
                 <strong>{{ row.quote }}%</strong>

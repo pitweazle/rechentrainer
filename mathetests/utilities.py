@@ -218,8 +218,9 @@ def berechne_quote_und_note(analysis, protos, test):
     return {
         "quote": quote,
         "note": note,
-        "richtig_punkte": float(richtig_punkte),
+        "richtig_punkte": float(pn),
         "cheat_punkte": float(cheat_punkte),
         "abbr_punkte": float(abbr_punkte),
         "lsg_punkte": float(lsg_punkte),
+        "malus_summe": float(malus_punkte),
     }

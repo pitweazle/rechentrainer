@@ -133,7 +133,6 @@ class Protokoll(models.Model):
         verbose_name = 'Protokoll'
         verbose_name_plural = 'Protokolle'
 
-    class Meta:
         indexes = [
             # Basisfilter: fast alle Queries
             models.Index(
