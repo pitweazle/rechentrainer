@@ -152,97 +152,96 @@
             </div>
         </div>
 
-        <hr>
-        <div class="header-row">
-            <div class="protokoll-summary">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Soll</th>
-                            <th>richtig</th>
-                            <th>falsch</th>
-                            <th>offen</th>
-                            <th>Abbr.(·0,5)</th>
-                            <th>Lsg.(·0,5)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Aufgaben</td>
-                            <td>{{ gesamt_soll }}</td>
-                            <td>{{ aufg_richtig|floatformat:"-1" }}</td>
-                            <td>{{ aufg_falsch|floatformat:"-1" }}</td>
-                            <td>{{ gesamt_offen }}</td>
-                            <td>{{ gesamt_abbr }}</td>
-                            <td>{{ gesamt_lsg }}</td>
-                        </tr>
-                        <tr>
-                            <td>Punkte</td>
-                            <td></td>
-                            <td>{{ aufg_richtig|floatformat:"-1" }}</td>
-                            <td>{% if cheat_punkte %}{{ cheat_punkte }}{% endif %}</td>
-                            <td></td>
-                            <td>{% if abbr_punkte %}-{{ abbr_punkte|floatformat:1 }}{% endif %}</td>
-                            <td>{% if lsg_punkte %}-{{ lsg_punkte|floatformat:1 }}{% endif %}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>
-                    <b>Berechnung:</b><br>
-                    {% if abbr_punkte or lsg_punkte or cheat_punkte %}
-                        (<b>{{ aufg_richtig|floatformat:"-1" }}</b> richtig 
-                        {% if abbr_punkte %}- {{ abbr_punkte|floatformat:1 }} Abbr.{% endif %}
-                        {% if lsg_punkte %}- {{ lsg_punkte|floatformat:1 }} Lsg.{% endif %}
-                        {% if cheat_punkte %}- {{ cheat_punkte|floatformat:1 }} Cheat{% endif %})
-                        von {{ gesamt_soll }} Aufgaben = 
-                    {% else %}
-                        {{ aufg_richtig|floatformat:"-1" }} von {{ gesamt_soll }} Aufgaben = 
-                    {% endif %}
-                    <br>
-                    <b>{{ richtig_punkte|floatformat:"-1" }} Punkte</b> von <b>{{ gesamt_soll }} Aufgaben</b> entsprechen 
-                    <span style="font-size: 1.3rem;">
-                        <b>{{ sum_quote }}%</b>
-                    </span>
-                </p>
-            </div>
-
-            <div class="noten-box">
-                {% if not test.aktiv %}
-                    <h3>Ergebnisübersicht</h3>
-                    {% comment %} <p><small>{{ bewertung_titel }}</small></p> {% endcomment %}
-                    <table class="table" style="width:auto; font-size: 0.85rem;">
-                        <thead>
-                            <tr>
-                                {# Dynamische Header basierend auf der Auswahl (streng/weniger streng) #}
-                                <th>≥</th>
-                                <th>{{ schwellen.0 }}%</th>
-                                <th>{{ schwellen.1 }}%</th>
-                                <th>{{ schwellen.2 }}%</th>
-                                <th>{{ schwellen.3 }}%</th>
-                                <th>{{ schwellen.4 }}%</th>
-                                <th><{{ schwellen.4 }}%</th>
-                                <th style="background-color: #eee;">Ø-Quote</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                {# Die Zahlen 1-6 im leistungs_spiegel repräsentieren jetzt die Erreichungsgrade #}
-                                <td></td>
-                                <td>{{ leistungs_spiegel.1 }}</td>
-                                <td>{{ leistungs_spiegel.2 }}</td>
-                                <td>{{ leistungs_spiegel.3 }}</td>
-                                <td>{{ leistungs_spiegel.4 }}</td>
-                                <td>{{ leistungs_spiegel.5 }}</td>
-                                <td>{{ leistungs_spiegel.6 }}</td>
-                                <td style="background-color: #f8f9fa;"><strong>{{ durchschnitt_quote_s }}%</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    {% comment %} <p><small><i>Anzahl der Schüler/innen pro Quote</i></small></p> {% endcomment %}
+    <hr>
+    <div class="header-row">
+        <div class="protokoll-summary">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Soll</th>
+                        <th>richtig</th>
+                        <th>falsch</th>
+                        <th>offen</th>
+                        <th>Abbr.(·0,5)</th>
+                        <th>Lsg.(·0,5)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Aufgaben</td>
+                        <td>{{ gesamt_soll }}</td>
+                        <td>{{ aufg_richtig|floatformat:"-1" }}</td>
+                        <td>{{ aufg_falsch|floatformat:"-1" }}</td>
+                        <td>{{ gesamt_offen }}</td>
+                        <td>{{ gesamt_abbr }}</td>
+                        <td>{{ gesamt_lsg }}</td>
+                    </tr>
+                    <tr>
+                        <td>Punkte</td>
+                        <td></td>
+                        <td>{{ aufg_richtig|floatformat:"-1" }}</td>
+                        <td>{% if cheat_punkte %}{{ cheat_punkte }}{% endif %}</td>
+                        <td></td>
+                        <td>{% if abbr_punkte %}-{{ abbr_punkte|floatformat:1 }}{% endif %}</td>
+                        <td>{% if lsg_punkte %}-{{ lsg_punkte|floatformat:1 }}{% endif %}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b>Berechnung:</b><br>
+                {% if abbr_punkte or lsg_punkte or cheat_punkte %}
+                    (<b>{{ aufg_richtig|floatformat:"-1" }}</b> richtig 
+                    {% if abbr_punkte %}- {{ abbr_punkte|floatformat:1 }} Abbr.{% endif %}
+                    {% if lsg_punkte %}- {{ lsg_punkte|floatformat:1 }} Lsg.{% endif %}
+                    {% if cheat_punkte %}- {{ cheat_punkte|floatformat:1 }} Cheat{% endif %})
+                    von {{ gesamt_soll }} Aufgaben = 
+                {% else %}
+                    {{ aufg_richtig|floatformat:"-1" }} von {{ gesamt_soll }} Aufgaben = 
                 {% endif %}
-            </div>
+                <br>
+                <b>{{ richtig_punkte|floatformat:"-1" }} Punkte</b> von <b>{{ gesamt_soll }} Aufgaben</b> entsprechen 
+                <span style="font-size: 1.3rem;">
+                    <b>{{ sum_quote }}%</b>
+                </span>
+            </p>
         </div>
+<div class="noten-box">
+    {% if not test.aktiv %}
+        <h3>Ergebnisübersicht</h3>
+        {% comment %} <p><small>{{ bewertung_titel }}</small></p> {% endcomment %}
+        <table class="table" style="width:auto; font-size: 0.85rem;">
+            <thead>
+                <tr>
+                    {# Dynamische Header basierend auf der Auswahl (streng/weniger streng) #}
+                    <th>≥</th>
+                    <th>{{ schwellen.0 }}%</th>
+                    <th>{{ schwellen.1 }}%</th>
+                    <th>{{ schwellen.2 }}%</th>
+                    <th>{{ schwellen.3 }}%</th>
+                    <th>{{ schwellen.4 }}%</th>
+                    <th><{{ schwellen.4 }}%</th>
+                    <th style="background-color: #eee;">Ø-Quote</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {# Die Zahlen 1-6 im leistungs_spiegel repräsentieren jetzt die Erreichungsgrade #}
+                    <td></td>
+                    <td>{{ leistungs_spiegel.1 }}</td>
+                    <td>{{ leistungs_spiegel.2 }}</td>
+                    <td>{{ leistungs_spiegel.3 }}</td>
+                    <td>{{ leistungs_spiegel.4 }}</td>
+                    <td>{{ leistungs_spiegel.5 }}</td>
+                    <td>{{ leistungs_spiegel.6 }}</td>
+                    <td style="background-color: #f8f9fa;"><strong>{{ durchschnitt_quote_s }}%</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        {% comment %} <p><small><i>Anzahl der Schüler/innen pro Quote</i></small></p> {% endcomment %}
+    {% endif %}
+    </div>
+    </div>
 
         <h3>Aufgaben-Verlauf</h3>
         <table class="table protokoll-table">
