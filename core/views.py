@@ -1058,7 +1058,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "iniv" in den Lösungen steht
         if typ == 7 or typ == 9:                                                    #Koordinaten
-            richtig, meldung = sub_punkt_pruefen(eingabe, lsg[2])
+            print(lsg)
+            richtig, meldung = sub_punkt_pruefen(eingabe, lsg)
             return richtig, meldung
         elif typ == 8:
             if not eingabe.isdigit():
@@ -1340,8 +1341,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
                 parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe, einteilung=1)
                 x_koo = random.randint(0,14)
                 y_koo = random.randint(0,9) 
-                lsg = ["({0};{1})".format(x_koo, y_koo)]
-                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo)]
+                lsg = lsg =[f"({x_koo:g};{y_koo:g})"]
+                lsg = lsg + ["({0};{1})".format(x_koo, y_koo)]
                 punkt = {
                     'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*20, 
@@ -1357,8 +1358,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
                 parameter = sub_koordinatensystem(x_null, y_null, box_breite, box_hoehe,  grid=10, einteilung=-10)
                 x_koo = random.randint(0,20)
                 y_koo = random.randint(0,20) 
-                lsg = ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
+                lsg = [f"({x_koo:g};{y_koo:g})".replace(".", ",")]
+                lsg = lsg + ["({0};{1})".format(x_koo/10, y_koo/10).replace(".", ",")]
                 punkt = {
                     'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*10, 
@@ -1375,8 +1376,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
                 parameter = sub_koordinatensystem(x_null, y_null,box_breite, box_hoehe, grid, )
                 x_koo = random.randint(-6,11)/2
                 y_koo = random.randint(-6,9)/2 
-                lsg = ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
-                lsg = lsg + ["({0}|{1})".format(x_koo, y_koo).replace(".", ",")]
+                lsg = [f"({x_koo:g};{y_koo:g})".replace(".", ",")]
+                lsg = lsg + ["({0};{1})".format(x_koo, y_koo).replace(".", ",")]
                 punkt = {
                     'object': 'koordinaten',
                     'x_koo' : x_null + x_koo*40, 
@@ -1506,8 +1507,8 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
             frage = ecken[gesucht] + "':"
             pro_text = "Achsenspiegelung"
             anmerkung="Du must die Koordinaten mit Klammer eingeben und mit Semikolon trennen: (  ;  )"             
-            lsg = ["({0};{1})".format(x_bild, y_bild)]
-            lsg = lsg + ["({0}:{1})".format(x_bild, y_bild)]
+            lsg =[f"({x_bild:g};{y_bild:g})"]
+            lsg = lsg + ["({0};{1})".format(x_bild, y_bild)]
             parameter = sub_koordinatensystem(x_null, y_null, breite, hoehe, einteilung=1)
             achse = {
                 'object': 'spiegel', 'spiegelachse': spiegelachse,
@@ -1533,6 +1534,7 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
             titel = "Benennungen am Dreieck"
             typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ) 
             lsg = lsg + ["indiv_0"]    
+        print("A",lsg)
         return typ, typ2, titel, text, pro_text, frage, [], einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -6278,7 +6280,7 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
             werte = {'m': "c=" + str_a + einheit, 'n': "a=" + str_c + einheit, 'o': "b=" + str_b + einheit}
             einheit +="²"
             parameter.update(werte)
-            hilfe_id = 40        # Hilfe wie typ=4
+            hilfe_id = 40        # Hilfe wie typ = 4
         elif typ < 10:                                          # Benennung von Hypotenuse und Kathete
             text = "Ergänze den Satz des Pythagoras für dieses Dreieck:"
             schieb = random.randint(-1,2)

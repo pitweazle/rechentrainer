@@ -289,6 +289,7 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
 
 def sub_punkt_pruefen(eingabe, loesung):
     try:
+        print("c",lsg)
         if "(" not in eingabe or not ")" in eingabe:
                 return 0, "Du musst die Koordinaten in Klammern eingeben."
         elif not (";" in eingabe or "|" in eingabe) :
@@ -302,6 +303,7 @@ def sub_punkt_pruefen(eingabe, loesung):
             elif ":" in eingabe:
                 eingabe=eingabe.split(":")
             zahl=(float(eingabe[0])*-10+20)*1000
+            print(zahl)
             zahl = zahl + float(eingabe[1])*10
             if zahl == float(loesung):
                 return 1, ""
