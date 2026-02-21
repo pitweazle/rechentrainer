@@ -192,6 +192,12 @@
                                    <a href="{% url 'test_how_to' %}">Lernkontrollen mit dem Rechentrainer</a>
                                 </summary>
                             </details>
+                            <!--AVV-->
+                            <details>
+                                <summary>
+                                    <a href="{% static 'accounts/avv.pdf' %}" target="_blank">AVV (PDF)</a>
+                                </summary>
+                            </details>
                             {% endif %}
                         {% endif %}
                         {% if not user.is_authenticated %}
