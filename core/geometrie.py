@@ -176,7 +176,7 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
                 tiefe = random.randint(10,25)*10
                 w = random.randint(-5,5)*10
         elif typ2 == 7:                                                           # Pyramidenstumpf
-            lsg = ["Pyramidenstumpf"]
+            lsg = ["Pyramidenstumpf","Prisma"]
             anmerkung = ""
             hoehe = random.randint(10,15)*10
             tiefe = breite_u*2
@@ -194,11 +194,11 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
         x14 = x0 - breite_o + v + w
         x21 = x11 + int(tiefe*0.35)
         x22 = x12 + int(tiefe*0.35)  
-        x23 = x13 + int(tiefe*0.35)        
-        x24 = x14 + int(tiefe*0.35)
+        x23 = x13 + int(tiefe*0.25)        
+        x24 = x14 + int(tiefe*0.30)
         y11 = y12 = y0
         y13 = y14 = y11 - hoehe
-        y21 = y22 = y11 - int(tiefe*0.35) 
+        y21 = y22 = y11 - int(tiefe*10/hoehe) 
         y23 = y24 = y21 - hoehe
         if typ2 == 6 and jg != -1:
             x23 = x23 - 2*v 
@@ -289,7 +289,6 @@ def sub_koordinatensystem(x_null, y_null, box_breite=400, box_hoehe=360, grid=20
 
 def sub_punkt_pruefen(eingabe, loesung):
     try:
-        print("c",lsg)
         if "(" not in eingabe or not ")" in eingabe:
                 return 0, "Du musst die Koordinaten in Klammern eingeben."
         elif not (";" in eingabe or "|" in eingabe) :
@@ -303,7 +302,6 @@ def sub_punkt_pruefen(eingabe, loesung):
             elif ":" in eingabe:
                 eingabe=eingabe.split(":")
             zahl=(float(eingabe[0])*-10+20)*1000
-            print(zahl)
             zahl = zahl + float(eingabe[1])*10
             if zahl == float(loesung):
                 return 1, ""

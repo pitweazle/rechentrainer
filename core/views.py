@@ -1534,7 +1534,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
             titel = "Benennungen am Dreieck"
             typ2, text, frage, einheit, hilfe_id, anmerkung, lsg, parameter = sub_dreiecke(typ) 
             lsg = lsg + ["indiv_0"]    
-        print("A",lsg)
         return typ, typ2, titel, text, pro_text, frage, [], einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
 def einheiten(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
@@ -5345,7 +5344,6 @@ def funktionen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 absolut = 1
                 while 10*(absolut/steigung)%2 > 0 or absolut == 0:
                     gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
-                    print(absolut)
                     x = random.randint(-3,6)
             else: 
                 gleichung, steigung, absolut, basis = sub_funktionsgleichung(1)
@@ -6640,7 +6638,6 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 wert = math.degrees(math.atan(round(a,0)/round(b,0)))
                 wert2 = (int_a/int_b)
                 lsg = [lsg + "=" + str(round(wert,1)) + "°", lsg, wert, "indiv_0"]
-                #print(lsg)
             hilfe_id = 270
             hilfe = "Ankathete und Gegenkathete gegeben -> Tangens⁻¹ (oder atan oder arctan)." 
         if typ > 24:
