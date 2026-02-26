@@ -7906,6 +7906,28 @@ def bewertung_hj(prozent_summe, pflicht_kat, stufe, keine5=True):               
 
 #Hier werden normalerweise die Aufgaben gestartet
 def uebersicht(req, schueler_id=0):
+    if not req.user.is_authenticated:
+        # Minimal-Daten für Gäste
+        kategorien = Kategorie.objects.all().order_by('zeile') # Beispiel-Set
+        zeilen = []
+        for kat in kategorien:
+            # Erzeugt leere Zeilen mit Bindestrichen
+            werte = [('-', '-') for _ in range(10)] 
+            zeilen.append((kat, True, werte))
+
+        context = {
+            'gast_modus': True,
+            'zeilen': zeilen,
+            'schueler': {'vorname': 'Besucher', 'nachname': ''},
+            'details': True,
+            'breite': 'breit',
+            'soll_hj': 200, # Beispielwerte zur Demo
+            'pro_woche': 10,
+            'soll_kat': 20,
+        }
+        return render(req, 'core/uebersicht.html', context)
+
+#def uebersicht(req, schueler_id=0):
     gibtes = Profil.objects.filter(user_id = req.user.id).count()
     if gibtes == 0:
         return redirect('anmelden')
