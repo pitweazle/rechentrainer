@@ -201,8 +201,9 @@ viewbox="0 0 {{parameter.box_breite}} {{parameter.box_hoehe}}">
     <text x="{{parameter.x22|add:25}}" y="{{parameter.ym}}" >{{parameter.hoehe_text}}</text>
     
     <!--Tiefe:-->
-    <use href="#v2_pfeil"   transform="translate({{parameter.x12|add:20}},{{parameter.y12}}) rotate (45)"/>
-    <text x="{{parameter.x12|add:50}}" y="{{parameter.y12|add:-10}}" >{{parameter.tiefe_text}}</text>
+    <line x1="{{parameter.x12|add:20}}" y1="{{parameter.y11}}" x2="{{parameter.x22|add:20}}" y2="{{parameter.y21}}" stroke = "black" />
+    <text x="{{parameter.x12|add:50}}" y="{{parameter.y12|add:10}}" >{{parameter.tiefe_text}}</text>
+    <line x1="{{parameter.x12}}" y1="{{parameter.y12}}" x2="{{parameter.x12|add:30}}" y2="{{parameter.y12}}"  stroke = "black" stroke-dasharray="10,2"/>
 
     <line x1="{{parameter.x23}}" y1="{{parameter.y23}}" x2="{{parameter.x22|add:30}}" y2="{{parameter.y23}}"  stroke = "black" stroke-dasharray="10,2"/>
     <line x1="{{parameter.x22}}" y1="{{parameter.y22}}" x2="{{parameter.x22|add:30}}" y2="{{parameter.y22}}"  stroke = "black" stroke-dasharray="10,2"/>
