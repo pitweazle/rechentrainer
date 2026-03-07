@@ -87,8 +87,6 @@ class Profil(models.Model):
     class Meta:
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
-
-    class Meta:
         indexes = [
             models.Index(fields=["gruppe"], name="profil_gruppe"),
         ]
