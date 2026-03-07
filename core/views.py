@@ -1058,7 +1058,6 @@ def geometrie(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
         return typ_anf, typ_end
     elif eingabe != "":                                                             #hier werden die Eingaben überprüft wenn "iniv" in den Lösungen steht
         if typ == 7 or typ == 9:                                                    #Koordinaten
-            print(lsg)
             richtig, meldung = sub_punkt_pruefen(eingabe, lsg)
             return richtig, meldung
         elif typ == 8:
@@ -7778,13 +7777,13 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             pass
         #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
         lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        # print(lsg)
+        #print(lsg)
         #if hilfe_id != 0:
-            # print(hilfe.format(*variable))
-            # print(typ2, pro_text)
+            #print(hilfe.format(*variable))
+            #print(typ2, pro_text)
         parameter = {'name':'normal'}
         #print(parameter)
-        # print({k: type(v) for k, v in parameter.items()}) hier kann man (numerische) Einträge in Parameter untersuchen, ob sie "decimal" sind - das wirft einen Fehler
+        #print({k: type(v) for k, v in parameter.items()}) hier kann man (numerische) Einträge in Parameter untersuchen, ob sie "decimal" sind - das wirft einen Fehler
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter
 
 #********************************************************************************************************************************************************

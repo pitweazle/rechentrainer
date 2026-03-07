@@ -193,9 +193,13 @@ def sub_koerper(jg, breite_u = 0, breite_o = 0, hoehe = 0, tiefe = 0, w = 0, box
         x13 = x0 + breite_o - v + w
         x14 = x0 - breite_o + v + w
         x21 = x11 + int(tiefe*0.35)
-        x22 = x12 + int(tiefe*0.35)  
-        x23 = x13 + int(tiefe*0.25)        
-        x24 = x14 + int(tiefe*0.30)
+        x22 = x12 + int(tiefe*0.35) 
+        if typ2 == 7:
+            x23 = x13 + int(tiefe*0.25)        
+            x24 = x14 + int(tiefe*0.30) 
+        else:            
+            x23 = x13 + int(tiefe*0.35)        
+            x24 = x14 + int(tiefe*0.35)
         y11 = y12 = y0
         y13 = y14 = y11 - hoehe
         y21 = y22 = y11 - int(tiefe*10/hoehe) 
