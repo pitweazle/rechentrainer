@@ -1,0 +1,158 @@
+{% load filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page { size: A4 portrait; margin: 1cm; }
+        body { font-family: sans-serif; font-size: 9pt; color: #333; line-height: 1.2; }
+        
+        /* Rahmen oben */
+        .header-box { 
+            width: 100%; border: 1px solid #333; padding: 10px; 
+            margin-bottom: 15px; border-radius: 5px; min-height: 140px; 
+        }
+        .meta-table { width: 100%; border: none; }
+        .meta-table td { border: none; padding: 2px; vertical-align: top; }
+
+        /* Ergebnissektion (Stabil ohne Floats) */
+        .result-section { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+        .result-section td { vertical-align: top; padding: 0; border: none; }
+
+        /* Tabellen-Stil */
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+        table.data-table th, table.data-table td { border: 1px solid #666; padding: 4px; text-align: center; }
+        table.data-table th { background-color: #eee; }
+
+        /* Aufgabenprotokoll */
+        table.protokoll { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; }
+        .protokoll th, .protokoll td { border: 1px solid #666; padding: 4px; vertical-align: top; word-wrap: break-word; }
+        
+        /* Spaltenbreiten */
+        .c-kat { width: 14%; } .c-nr { width: 4%; } .c-aufg { width: 32%; } .c-erg { width: 16%; }
+        .c-ein { width: 12%; } .c-r { width: 4.5%; } .c-f { width: 4.5%; } .c-ab { width: 4.5%; }
+        .c-ls { width: 4.5%; } .c-kor { width: 4%; }
+
+        /* Farben */
+        .gruen { background-color: #d4edda !important; }
+        .rot { background-color: #f8d7da !important; }
+        .gelb { background-color: #fff3cd !important; }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center; margin-top: 0;">Rechentrainer – Testprotokoll</h2>
+
+    <div class="header-box">
+        <div style="float: left; width: 55%;">
+            <table class="meta-table">
+                <tr><td style="width: 100px;"><b>Schüler:</b></td><td>{{ profil.vorname }} {{ profil.nachname }}</td></tr>
+                <tr><td><b>Klasse:</b></td><td>{{ gruppe.name }}</td></tr>
+                <tr><td><b>Test:</b></td><td>{{ test.name }}</td></tr>
+                <tr><td><b>Datum:</b></td><td>{{ test_datum|date:"d.m.Y" }}</td></tr>
+                <tr><td><b>Lehrkraft:</b></td><td>{{ gruppe.lehrer.profil.vorname }} {{ gruppe.lehrer.profil.nachname }}</td></tr>
+                <tr><td><b>Quote:</b></td><td><b style="font-size: 11pt;">{{ sum_quote }}%</b></td></tr>
+            </table>
+        </div>
+        <div style="float: right; width: 40%; text-align: center;">
+            <div style="margin-top: 100px; border-top: 1px solid #000; padding-top: 5px;">Unterschrift Lehrkraft</div>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+
+    <table class="result-section">
+        <tr>
+            <td style="width: 60%; padding-right: 10px;">
+                <table class="data-table">
+                    <thead>
+                        <tr><th></th><th>Soll</th><th>richtig</th><th>falsch</th><th>offen</th><th>Abbr.</th><th>Lsg.</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><b>Aufgaben</b></td><td>{{ gesamt_soll }}</td><td>{{ aufg_richtig|floatformat:0 }}</td><td>{{ aufg_falsch|floatformat:0 }}</td><td>{{ gesamt_offen }}</td><td>{{ gesamt_abbr }}</td><td>{{ gesamt_lsg }}</td></tr>
+                        <tr><td><b>Punkte</b></td><td></td><td>{{ richtig_punkte }}</td><td></td><td></td><td>{{ abbr_punkte }}</td><td>{{ lsg_punkte }}</td></tr>
+                    </tbody>
+                </table>
+            </td>
+            <td style="width: 40%;">
+                <table class="data-table" style="font-size: 7.5pt;">
+                    <thead>
+                        <tr style="background-color: #eee;"><th colspan="7">Ergebnisübersicht</th></tr>
+                        <tr><th>&ge;95%</th><th>80%</th><th>65%</th><th>50%</th><th>25%</th><th>&lt;25%</th><th>&Oslash;</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ noten_spiegel_s.1|default:0 }}</td><td>{{ noten_spiegel_s.2|default:0 }}</td><td>{{ noten_spiegel_s.3|default:0 }}</td>
+                            <td>{{ noten_spiegel_s.4|default:0 }}</td><td>{{ noten_spiegel_s.5|default:0 }}</td><td>{{ noten_spiegel_s.6|default:0 }}</td>
+                            <td>{{ noten_durchschnitt_s|default:"-" }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-bottom: 15px;">
+        <b>Berechnung:</b><br>
+        ({{ aufg_richtig|floatformat:0 }} richtig {% if gesamt_abbr > 0 %} {{ abbr_punkte }} Abbr.{% endif %}{% if gesamt_lsg > 0 %} {{ lsg_punkte }} Lsg.{% endif %}) von {{ gesamt_soll }} Aufgaben = <br>
+        <b>{{ richtig_punkte|add:abbr_punkte|add:lsg_punkte }} Punkte von {{ gesamt_soll }} Aufgaben entsprechen {{ sum_quote }}%</b>
+    </div>
+
+    <h3 style="margin: 10px 0 5px 0;">Aufgaben-Verlauf</h3>
+    <table class="protokoll">
+        <thead>
+            <tr style="background-color: #eee;">
+                <th class="c-kat">Kat.</th><th class="c-nr">Nr.</th><th class="c-aufg">Aufgabe</th><th class="c-erg">Ergebnis</th>
+                <th class="c-ein">Eingabe</th><th class="c-r">r</th><th class="c-f">f</th><th class="c-ab">ab</th><th class="c-ls">ls</th><th class="c-kor">*</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for z in prot %}
+            <tr>
+                <td style="font-size: 7.5pt;">{{ z.kategorie.name }}<br>({{ z.typ }})</td>
+                <td style="text-align: center;">{{ z.aufgnr }}</td><td style="width: 42%; vertical-align: top;">
+    {% if leistungs_spiegel %}
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 7.5pt;">
+        <thead>
+            <tr style="background-color: #eee;">
+                <th colspan="7" style="border: 1px solid #666; padding: 4px; text-align: center;">
+                    {{ bewertung_titel }}
+                </th>
+            </tr>
+            <tr style="font-size: 6.5pt; background-color: #f9f9f9;">
+                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.0 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.1 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.2 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.3 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.4 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&lt;{{ schwellen.4 }}%</th>
+                <th style="border: 1px solid #666; padding: 2px;">&Oslash;-Q</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="text-align: center;">
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.1|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.2|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.3|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.4|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.5|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.6|default:"0" }}</td>
+                <td style="border: 1px solid #666; padding: 4px; background-color: #f2f2f2;">
+                    <b>{{ durchschnitt_quote_s }}%</b>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+</td>
+                <td>{% if z.pro_text %}{{ z.pro_text|safe }}{% else %}{{ z.text|safe }}{% endif %}</td>
+                <td>{% if z.wert %}{{ z.wert.normalize }}{% else %}{{ z|kuerze_lsg }}{% endif %}</td>
+                <td class="{% if z.abbr and z.richtig > 0 %}gelb{% elif z.falsch > 0 %}{% if z.richtig > 0 %}gelb{% else %}rot{% endif %}{% elif z.richtig > 0 %}gruen{% else %}rot{% endif %}">{{ z.zweigabe }}</td>
+                <td style="text-align: center;">{{ z.richtig.normalize }}</td><td style="text-align: center;">{{ z.falsch }}</td>
+                <td style="text-align: center;">{% if z.abbr %}x{% endif %}</td><td style="text-align: center;">{% if z.lsg %}x{% endif %}</td>
+                <td style="text-align: center;">{% if z.korrigiert %}X{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
