@@ -333,4 +333,32 @@
             /* (Deine Styles bleiben unverändert) */
         </style>
     </div>
+  <style>
+  @media print {
+      .no-print, header, footer {
+          display: none !important;
+      }
+
+      html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+      }
+
+      body > * {
+          background: #ffffff !important;
+      }
+
+      .container {
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 4mm !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          background: #ffffff !important;
+      }
+
+
+  </style>
+
 {% endblock %}
