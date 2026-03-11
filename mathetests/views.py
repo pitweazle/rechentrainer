@@ -137,56 +137,26 @@ def test_benennen(req, gruppe_id):
         form = TestNameForm()
     return render(req, "tests/test_benennen.html", {"gruppe": gruppe, "form": form})
 
-# ---------- Schritt 3: Lernkontrolle (ehem. Test) anzeigen ----------
-def test_anzeigen(req, test_id, profil_id):
-    test = get_object_or_404(Test, pk=test_id)
+# ---------- Schritt 3: Lernkontrolle anzeigen ----------
+def get_test_report_context(test, profil):
     gruppe = test.gruppe
-    
-    # Profil des Schülers
-    profil = (
-        Profil.objects
-        .filter(id=profil_id)
-        .select_related("gruppe")
-        .first()
-    )
-    user_profil = getattr(req.user, "profil", None)
-
-    # --- Zugriff prüfen ---
-    if not (user_profil == profil or req.user == gruppe.lehrer or req.user.is_superuser):
-        return HttpResponse("Zugriff verweigert")
-    if not profil or profil.gruppe_id != gruppe.id:
-        return render(req, "schueler/keine_gruppe.html", {"titel": "kein Zugriff"})
-
-    # --- Einstellungen / Kategorien ---
     einstellungen = (
         TestEinstellung.objects
         .filter(test=test)
         .select_related("kategorie")
         .order_by("kategorie__zeile")
     )
-    
-    # Schwellenwerte für die Erfolgsbereiche aus dem Modell laden
-    # Wir nutzen diese Liste später für die statistische Verteilung (Leistungsspiegel)
-    if test.note_streng:
-        schwellen = [95, 80, 65, 50, 25]
-    else:
-        schwellen = [90, 75, 60, 45, 30]
+    soll_map, _ = build_soll_map(einstellungen)
 
-    # Soll-Slots pro Kategorie
-    soll_map, total_soll_global = build_soll_map(einstellungen)
-
-    # --- Protokolle dieses Schülers ---
     prot = (
         Protokoll.objects
         .filter(profil=profil, hilfe_id=test.proto_marker)
         .select_related("kategorie")
         .order_by("-start")
     )
-    
     test_datum = prot.order_by("start").first().start.date() if prot.exists() else None
-    analysis = analyse_protokolle(prot, soll_map)
 
-    # Summen pro Kategorie für die Tabelle oben
+    analysis = analyse_protokolle(prot, soll_map)
     protos_by_kat = defaultdict(list)
     for p in prot:
         protos_by_kat[p.kategorie_id].append(p)
@@ -194,157 +164,97 @@ def test_anzeigen(req, test_id, profil_id):
     zeilen = []
     for e in einstellungen:
         kat = e.kategorie
-        kat_id = kat.id
-        soll = soll_map.get(kat_id, 0)
-        kat_stats = analysis["pro_kat"].get(kat_id, {"r": 0, "f": 0, "x": 0})
-        richtig_slots = kat_stats["r"]
-        falsch_slots = kat_stats["f"]
-        erledigt_slots = richtig_slots + falsch_slots
-
-        kat_prots = protos_by_kat.get(kat_id, [])
+        kat_stats = analysis["pro_kat"].get(kat.id, {"r": 0, "f": 0, "x": 0})
+        kat_prots = protos_by_kat.get(kat.id, [])
         abbr_aufg = sum(1 for p in kat_prots if p.abbr)
         lsg_aufg = sum(1 for p in kat_prots if p.lsg)
-
-        offen = max(soll - erledigt_slots, 0)
+        erledigt = kat_stats["r"] + kat_stats["f"]
+        
         zeilen.append({
             "kat": kat,
-            "soll": soll,
-            "erledigt": erledigt_slots,
-            "offen": offen,
-            "richtig": richtig_slots,
-            "falsch": falsch_slots,
+            "soll": soll_map.get(kat.id, 0),
+            "erledigt": erledigt,
+            "offen": max(soll_map.get(kat.id, 0) - erledigt, 0),
+            "richtig": kat_stats["r"],
+            "falsch": kat_stats["f"],
             "abbr": abbr_aufg,
             "lsg": lsg_aufg,
-            "darf_starten": test.aktiv and offen > 0,
+            "darf_starten": test.aktiv and (max(soll_map.get(kat.id, 0) - erledigt, 0)) > 0,
         })
 
-    # Gesamtsummen
-    gesamt_abbr = sum(z["abbr"] for z in zeilen)
-    gesamt_lsg = sum(z["lsg"] for z in zeilen)
-    
-    gesamt = {
-        "soll": analysis["total_soll"],
-        "erledigt": analysis["erledigt_sum"],
-        "offen": analysis["offen"],
-        "richtig": analysis["r_sum"],
-        "falsch": analysis["f_sum"],
-        "abbr": gesamt_abbr,
-        "lsg": gesamt_lsg,
-    }
+    quote_info = berechne_quote_und_note(analysis=analysis, protos=prot, test=test)
 
-    # ------------------------------------------------------------------
-    # Punkte / Quote (Note wird hier zwar berechnet, aber wir geben sie nicht aus)
-    # ------------------------------------------------------------------
-    quote_info = berechne_quote_und_note(
-        analysis=analysis,
-        protos=prot,
-        test=test,
-    )
-
-    # ------------------------------------------------------------------
-    # Leistungsverteilung (ehem. Notenspiegel) für die Gruppe
-    # ------------------------------------------------------------------
+    # Leistungsspiegel & Schwellen (Basierend auf deinen Vorgaben)
     leistungs_spiegel = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-    durchschnitt_quote_s = None
+    summe_alle_quoten = 0
+    anzahl_schueler = 0
+    schwellen = [95, 80, 65, 50, 25]
 
     if not test.aktiv:
-        quote_summe = 0
-        anzahl_bearbeitet = 0
-        
         for sch in Profil.objects.filter(gruppe=gruppe):
             prot_s = Protokoll.objects.filter(profil=sch, hilfe_id=test.proto_marker)
-            if not prot_s.exists():
-                continue
-            
-            analysis_s = analyse_protokolle(prot_s, soll_map)
-            qinfo_s = berechne_quote_und_note(analysis=analysis_s, protos=prot_s, test=test)
-            
-            q = qinfo_s["quote"]
-            quote_summe += q
-            anzahl_bearbeitet += 1
-            
-            # Verteilung basierend auf den dynamischen Schwellenwerten
-            if q >= schwellen[0]: leistungs_spiegel[1] += 1
-            elif q >= schwellen[1]: leistungs_spiegel[2] += 1
-            elif q >= schwellen[2]: leistungs_spiegel[3] += 1
-            elif q >= schwellen[3]: leistungs_spiegel[4] += 1
-            elif q >= schwellen[4]: leistungs_spiegel[5] += 1
-            else: leistungs_spiegel[6] += 1
-            
-        if anzahl_bearbeitet > 0:
-            durchschnitt_quote_s = round(quote_summe / anzahl_bearbeitet, 1)
+            if prot_s.exists():
+                analysis_s = analyse_protokolle(prot_s, soll_map)
+                qinfo_s = berechne_quote_und_note(analysis=analysis_s, protos=prot_s, test=test)
+                aktuelle_quote = qinfo_s["quote"]
+                summe_alle_quoten += aktuelle_quote
+                anzahl_schueler += 1
+                
+                if aktuelle_quote >= 95: leistungs_spiegel[1] += 1
+                elif aktuelle_quote >= 80: leistungs_spiegel[2] += 1
+                elif aktuelle_quote >= 65: leistungs_spiegel[3] += 1
+                elif aktuelle_quote >= 50: leistungs_spiegel[4] += 1
+                elif aktuelle_quote >= 25: leistungs_spiegel[5] += 1
+                else: leistungs_spiegel[6] += 1
 
-    # ------------------------------------------------------------------
-    # Context für Template (Vollständig neutralisiert)
-    # ------------------------------------------------------------------
-    context = {
-        "WEASYPRINT_AVAILABLE": WEASYPRINT_AVAILABLE,
-        "test": test,
-        "profil": profil,
-        "gruppe": gruppe,
-        "zeilen": zeilen,
-        "zeilen_gesamt": gesamt,
-        "prot": prot,
-        "test_datum": test_datum,
+    durchschnitt_quote_s = round(summe_alle_quoten / anzahl_schueler, 1) if anzahl_schueler > 0 else 0
 
-        "gesamt_soll": gesamt["soll"],
-        "gesamt_offen": gesamt["offen"],
-        "gesamt_abbr": gesamt_abbr,
-        "gesamt_lsg": gesamt_lsg,
+    return {
+        "test": test, "profil": profil, "gruppe": gruppe, "zeilen": zeilen,
+        "prot": prot, "test_datum": test_datum,
+        "gesamt_soll": analysis["total_soll"],
+        "gesamt_offen": analysis["offen"],
+        "gesamt_abbr": sum(z["abbr"] for z in zeilen),
+        "gesamt_lsg": sum(z["lsg"] for z in zeilen),
         "aufg_richtig": float(analysis["r_sum"]),
         "aufg_falsch": float(analysis["f_sum"]),
-        
         "richtig_punkte": quote_info["richtig_punkte"],
-        "cheat_punkte": quote_info["cheat_punkte"],
+        "cheat_punkte": quote_info.get("cheat_punkte"),
         "abbr_punkte": quote_info["abbr_punkte"],
         "lsg_punkte": quote_info["lsg_punkte"],
         "sum_quote": quote_info["quote"],
-
-        # Statistische Daten statt Noten
         "leistungs_spiegel": leistungs_spiegel,
         "schwellen": schwellen,
         "durchschnitt_quote_s": durchschnitt_quote_s,
-        "bewertung_titel": "Bewertungsschlüssel (streng)" if test.note_streng else "Bewertungsschlüssel (standard)"
+        "bewertung_titel": "Bewertungsschlüssel (streng)" if test.note_streng else "Bewertungsschlüssel (standard)",
     }
 
+def test_anzeigen(req, test_id, profil_id):
+    test = get_object_or_404(Test, pk=test_id)
+    profil = get_object_or_404(Profil, pk=profil_id)
+    user_profil = getattr(req.user, "profil", None)
+    if not (user_profil == profil or req.user == test.gruppe.lehrer or req.user.is_superuser):
+        return HttpResponse("Zugriff verweigert")
+
+    context = get_test_report_context(test, profil)
+    context["WEASYPRINT_AVAILABLE"] = WEASYPRINT_AVAILABLE
     return render(req, "tests/test_anzeigen.html", context)
 
 def test_anzeigen_pdf(req, test_id, profil_id):
-    if not WEASYPRINT_AVAILABLE:
-        return HttpResponse(
-            "Die PDF-Funktion ist auf diesem System nicht verfügbar "
-            "(WeasyPrint läuft nur auf dem Server)."
-        )
-
-    # Erst ganz normal den (bereits von uns angepassten!) HTML-View ausführen
-    # Dieser enthält bereits keine Noten mehr und nutzt "Lernkontrolle" als Begriff
-    html_response = test_anzeigen(req, test_id, profil_id)
-
-    # Wenn der normale View keinen 200er liefert (kein Zugriff, redirect, etc.),
-    # dann geben wir das einfach so zurück.
-    if getattr(html_response, "status_code", None) != 200:
-        return html_response
-
-    # HTML aus der Response holen
-    html_string = html_response.content.decode("utf-8")
-
-    # base_url wichtig, damit WeasyPrint relative Pfade (CSS, Bilder) findet
-    base_url = req.build_absolute_uri("/")
-
-    pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
-
-    # Für den Dateinamen Test/Profil laden
     test = get_object_or_404(Test, pk=test_id)
     profil = get_object_or_404(Profil, pk=profil_id)
-    
-    # Dateiname neutralisiert: "lernkontrolle" statt "test"
-    filename = f"lernkontrolle_{test.id}_{profil.nachname}_{profil.vorname}.pdf".replace(" ", "_")
+    user_profil = getattr(req.user, "profil", None)
+    if not (user_profil == profil or req.user == test.gruppe.lehrer or req.user.is_superuser):
+        return HttpResponse("Zugriff verweigert")
 
-    response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    context = get_test_report_context(test, profil)
+    html_string = render_to_string("tests/test_druck_pdf.html", context)
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="Test_{profil.nachname}.pdf"'
+    HTML(string=html_string, base_url=req.build_absolute_uri()).write_pdf(response)
     return response
-# ---------- Schritt 4: Test bearbeiten ----------
 
+# ---------- Schritt 4: Test bearbeiten ----------
 def test(req, slug):
     # ---------------- Sicherheit -----------------
     if not req.user.is_authenticated:
