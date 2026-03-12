@@ -12,6 +12,7 @@ from django.utils.text import slugify
 from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.template.loader import render_to_string
 
 try:
     from weasyprint import HTML
@@ -830,58 +831,53 @@ def test_uebersicht_pdf(req, test_id):
     return response
 
 def test_alle_schueler_zip(req, test_id):
-    """
-    Erzeugt für alle Schüler der Lerngruppe eines Tests
-    je ein Schüler-PDF (test_anzeigen-Ansicht) und packt
-    diese als ZIP zum Download zusammen.
-    """
     if not WEASYPRINT_AVAILABLE:
-        return HttpResponse(
-            "ZIP mit Schüler-PDFs kann auf diesem System nicht erstellt werden "
-            "(WeasyPrint läuft nur auf dem Server)."
-        )
+        return HttpResponse("WeasyPrint ist auf diesem System nicht verfügbar.")
+
     test = get_object_or_404(Test, pk=test_id)
     gruppe = test.gruppe
 
     if not (req.user == gruppe.lehrer or req.user.is_superuser):
         return HttpResponseForbidden("Zugriff verweigert")
 
-    schueler_qs = (
-        Profil.objects
-        .filter(gruppe=gruppe)
-        .order_by("nachname", "vorname")
-    )
-
-    if not schueler_qs.exists():
-        return HttpResponse("Keine Schüler in dieser Lerngruppe.", status=400)
+    schueler_qs = Profil.objects.filter(gruppe=gruppe).order_by("nachname", "vorname")
 
     zip_buffer = BytesIO()
+    # Wichtig für Bilder/CSS im PDF
     base_url = req.build_absolute_uri("/")
 
     with ZipFile(zip_buffer, "w", ZIP_DEFLATED) as zip_file:
-        # Ordnername neutralisiert: "Lernkontrolle_..." statt "Test_..."
-        folder_name = slugify(f"Lernkontrolle_{test.name}_{gruppe.name}") or f"lernkontrolle_{test.id}"
+        folder_name = slugify(f"Lernkontrolle_{test.name}_{gruppe.name}")
 
         for profil in schueler_qs:
-            # Nutzt das angepasste test_anzeigen (ohne Noten)
-            html_response = test_anzeigen(req, test.id, profil.id)
-            if getattr(html_response, "status_code", 200) != 200:
-                continue
+            # --- DER ENTSCHEIDENDE SCHRITT ---
+            # Wir nutzen deine fertige Funktion, um ALLE Daten zu berechnen
+            context = get_test_report_context(test, profil)
 
-            html_string = html_response.content.decode("utf-8")
+            hat_teilgenommen = context['prot'].exists() or context['sum_quote'] > 0
+            
+            if not hat_teilgenommen:
+                continue # Nur dann überspringen
+            
+            # Da das Template 'test_druck_pdf.html' vielleicht noch alte 
+            # Variablennamen nutzt, mappen wir hier kurz die Noten:
+            context['noten_spiegel_s'] = context['leistungs_spiegel']
+            context['noten_durchschnitt_s'] = context['durchschnitt_quote_s']
+
+            # Jetzt das saubere PDF-Template rendern
+            html_string = render_to_string('tests/test_druck_pdf.html', context)
+            
+            # PDF erstellen
             pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
 
-            file_name = f"{profil.nachname}_{profil.vorname}.pdf"
-            file_name = file_name.replace(" ", "_")
-
+            # Dateiname bauen
+            file_name = slugify(f"{profil.nachname}_{profil.vorname}") + ".pdf"
             zip_path = f"{folder_name}/{file_name}"
             zip_file.writestr(zip_path, pdf_bytes)
 
     zip_buffer.seek(0)
-
-    zip_filename = f"{folder_name}.zip"
     response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
-    response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
+    response["Content-Disposition"] = f'attachment; filename="{folder_name}.zip"'
     return response
 
 @require_POST
