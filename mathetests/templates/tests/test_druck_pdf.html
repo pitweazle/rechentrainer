@@ -73,21 +73,41 @@
                     </tbody>
                 </table>
             </td>
-            <td style="width: 40%;">
-                <table class="data-table" style="font-size: 7.5pt;">
-                    <thead>
-                        <tr style="background-color: #eee;"><th colspan="7">Ergebnisübersicht</th></tr>
-                        <tr><th>&ge;95%</th><th>80%</th><th>65%</th><th>50%</th><th>25%</th><th>&lt;25%</th><th>&Oslash;</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ noten_spiegel_s.1|default:0 }}</td><td>{{ noten_spiegel_s.2|default:0 }}</td><td>{{ noten_spiegel_s.3|default:0 }}</td>
-                            <td>{{ noten_spiegel_s.4|default:0 }}</td><td>{{ noten_spiegel_s.5|default:0 }}</td><td>{{ noten_spiegel_s.6|default:0 }}</td>
-                            <td>{{ noten_durchschnitt_s|default:"-" }}%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
+            {% if leistungs_spiegel %}
+                <td style="width: 40%;">
+                    <table class="data-table" style="font-size: 7.5pt;">
+                        <thead>
+                            <tr style="background-color: #eee;">
+                                <th colspan="7" style="border: 1px solid #666; padding: 4px; text-align: center;">
+                                    Ergebnisübersicht
+                                </th>
+                            </tr>
+                            <tr style="font-size: 6.5pt; background-color: #f9f9f9;">
+                                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.0 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.1 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.2 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.3 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.4 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&lt;{{ schwellen.4 }}%</th>
+                                <th style="border: 1px solid #666; padding: 2px;">&Oslash;-Q</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="text-align: center;">
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.1|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.2|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.3|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.4|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.5|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.6|default:"0" }}</td>
+                                <td style="border: 1px solid #666; padding: 4px; background-color: #f2f2f2;">
+                                    <b>{{ durchschnitt_quote_s }}%</b>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            {% endif %}
         </tr>
     </table>
 
@@ -109,41 +129,7 @@
             {% for z in prot %}
             <tr>
                 <td style="font-size: 7.5pt;">{{ z.kategorie.name }}<br>({{ z.typ }})</td>
-                <td style="text-align: center;">{{ z.aufgnr }}</td><td style="width: 42%; vertical-align: top;">
-    {% if leistungs_spiegel %}
-    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 7.5pt;">
-        <thead>
-            <tr style="background-color: #eee;">
-                <th colspan="7" style="border: 1px solid #666; padding: 4px; text-align: center;">
-                    {{ bewertung_titel }}
-                </th>
-            </tr>
-            <tr style="font-size: 6.5pt; background-color: #f9f9f9;">
-                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.0 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.1 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.2 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.3 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&ge;{{ schwellen.4 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&lt;{{ schwellen.4 }}%</th>
-                <th style="border: 1px solid #666; padding: 2px;">&Oslash;-Q</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr style="text-align: center;">
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.1|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.2|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.3|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.4|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.5|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px;">{{ leistungs_spiegel.6|default:"0" }}</td>
-                <td style="border: 1px solid #666; padding: 4px; background-color: #f2f2f2;">
-                    <b>{{ durchschnitt_quote_s }}%</b>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    {% endif %}
-</td>
+                <td style="text-align: center;">{{ z.aufgnr }}</td>
                 <td>{% if z.pro_text %}{{ z.pro_text|safe }}{% else %}{{ z.text|safe }}{% endif %}</td>
                 <td>{% if z.wert %}{{ z.wert.normalize }}{% else %}{{ z|kuerze_lsg }}{% endif %}</td>
                 <td class="{% if z.abbr and z.richtig > 0 %}gelb{% elif z.falsch > 0 %}{% if z.richtig > 0 %}gelb{% else %}rot{% endif %}{% elif z.richtig > 0 %}gruen{% else %}rot{% endif %}">{{ z.zweigabe }}</td>
