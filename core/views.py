@@ -234,15 +234,13 @@ def halbieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
         typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Halbieren"
-    # hier wird die Aufgabe erstellt:
-    # hier wird die Aufgabe erstellt:
         if typ == 1:
             zahl1 = random.randint(5,99)
             text = "Was ist die Hälfte von {}?"
             variable = [(str(2*zahl1))]
             erg=zahl1
             lsg = str(zahl1)       
-        elif typ > 2:                                                               #Kommazahlen      
+        elif typ == 2:                                                               # nur "gerade" Kommazahlen      
             zahl2 = random.randint(0,2)
             zahl1= 2*random.randint(1,99)
             zahl1 = zahl1/10**(zahl2)
@@ -250,10 +248,11 @@ def halbieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
             variable = [format_zahl(zahl1,zahl2)]
             erg=zahl1/2
             lsg = f"{format_zahl(zahl1/2,zahl2)}"   
-        else:   
+        else:                                                                       # auch "ungerade" Kommazahlen 
             zahl2 = random.randint(0,2)
             zahl3= random.randint(1,99)
             zahl1 = zahl3/10**(zahl2)
+            print(zahl1)
             text = "Was ist die Hälfte von {}?"
             variable = [format_zahl(zahl1,zahl2)]
             erg=zahl1/2
