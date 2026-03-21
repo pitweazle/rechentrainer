@@ -234,6 +234,7 @@ def halbieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
         typ = random.randint(typ_anf, typ_end)
         typ2 = 0
         titel = "Halbieren"
+        anmerkung = ""
         if typ == 1:
             zahl1 = random.randint(5,99)
             text = "Was ist die Hälfte von {}?"
@@ -252,13 +253,15 @@ def halbieren(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfol
             zahl2 = random.randint(0,2)
             zahl3= random.randint(1,99)
             zahl1 = zahl3/10**(zahl2)
-            print(zahl1)
             text = "Was ist die Hälfte von {}?"
             variable = [format_zahl(zahl1,zahl2)]
             erg=zahl1/2
+            formatiert = format_zahl(zahl1, zahl2)
+            if int(formatiert[-1]) % 2 != 0:
+                anmerkung = "(Hier musst du eine Kommastelle ergänzen)"
             lsg = f"{format_zahl(zahl1/2,(zahl2+(zahl3%2)))}"
         frage = "{}:2"  
-    return typ, typ2, titel, text, "", frage, variable, "", "", [lsg], 0, erg, {'name':'normal'}
+    return typ, typ2, titel, text, "", frage, variable, "", anmerkung, [lsg], 0, erg, {'name':'normal'}
 
 def einmaleins(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
     if optionen != "":
@@ -3636,6 +3639,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, rei
                 return 1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
+        typ=13
         typ2 = 0
         titel = "Prozentrechnung" 
         parameter = {'name': 'normal',} 
@@ -3850,6 +3854,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, rei
             text = "Wie viel Prozent sind {0}{2} von {1}{2}?" 
             pro_text = "{} von {}{} - p%=?" 
             frage = "p=" 
+            einheit = "%"
             variable = [zahl1*bruch.numerator, zahl1*bruch.denominator, einheit]
             erg = prozent*100
             lsg = [str(int(erg)),str(int(erg))]
@@ -3873,12 +3878,12 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, rei
             einheit = "%"
         elif typ == 13:                             # P bei erhöhter und verminderter Grundwert
             if stufe%2==0:
-                typ2 = random.randint(1,2)
+                typ2 = 1
             else:
                 typ2 = random.randint(1,4)
             einheit = "€"
             zahl1 = random.randint(1,5)*5
-            if typ2 == 1:                           # erhöhter Grundwert                          
+            if typ2 < 4:                           # erhöhter Grundwert                          
                 text = "Eine Ware wird wird um {}% teurer.<br>Vorher kostete sie {}€<br>Wie hoch ist der neue Preis?" 
                 pro_text = "{}€+{}% = ?"
                 frage = "G=" 
@@ -3887,7 +3892,7 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, rei
                 variable = [str_prozent, int(zahl1*bruch.denominator)]
                 hilfe_id = 141
                 hilfe_text = [str(prozent+1).replace(".",",")]
-            if typ2 == 2:                           # verminderter Grundwert                          
+            else:                           # verminderter Grundwert                          
                 text = "Eine Ware wird um {}% billiger.<br>Vorher kostete sie {}€<br>Wie hoch ist der neue Preis?"
                 pro_text = "{}€-{}% = ?"
                 frage = "G=" 
