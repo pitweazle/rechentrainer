@@ -80,7 +80,7 @@ class Gruppe_Aendern_Form(forms.ModelForm):
         fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
-            'note_anzeigen': 'Bearbeitungsstand',
+            'note_anzeigen': 'Bewertung anzeigen',
         }
         widgets = {
             'aufgaben_pro_woche': forms.NumberInput(attrs={
@@ -96,7 +96,7 @@ class Gruppe_Neu_Form(forms.ModelForm):
         fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
-            'note_anzeigen': 'Bearbeitungsstand',
+            'note_anzeigen': 'Bewertung anzeigen',
         }
         help_texts = {'name': 'Das kann einfach der Name der Klasse sein oder die Kursbezeichnung aus dem Stundenplan - die Schülerinnen und Schüler sollten ihre Lerngruppe an diesem Namen erkennen können.',
                       'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
