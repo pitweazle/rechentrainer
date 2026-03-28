@@ -752,6 +752,7 @@ def test_uebersicht(req, test_id):
             analysis_s = {
                 "pro_kat": {}, "r_sum": 0, "f_sum": 0, "erledigt_sum": 0, "total_soll": total_soll_global, "abzug_sum": 0
             }
+            quote_info = {"malus_summe": 0, "quote": 0}
             q = None
             grad = None
 
@@ -897,13 +898,21 @@ def test_toggle_aktiv(req, test_id):
 
 def test_loeschen(req, test_id):
     test = get_object_or_404(Test, pk=test_id)
+    
+    # Sicherheitscheck: Nur der Lehrer der Gruppe (oder Superuser) darf löschen
     if req.user != test.gruppe.lehrer and not req.user.is_superuser:
         return HttpResponseForbidden("Kein Zugriff")
 
     if req.method == "POST":
+        # WICHTIG: Die ID der Gruppe merken, BEVOR der Test gelöscht wird
+        gruppe_id = test.gruppe.id 
         test.delete()
-        messages.success(req, "Test wurde gelöscht.")
-        return redirect("gruppe_uebersicht", gruppe_id=test.gruppe.id)
+        messages.success(req, "Test wurde erfolgreich gelöscht.")
+        return redirect("gruppe_uebersicht", gruppe_id=gruppe_id)
+
+    # Wenn die Methode NICHT "POST" ist (also beim ersten Aufruf der Seite):
+    # Zeige das Bestätigungs-Template an
+    return render(req, "tests/test_loeschen_bestaetigen.html", {"test": test})
 
 def abbrechen(req, zaehler_id, test_id):
     test = get_object_or_404(Test, pk=test_id)
