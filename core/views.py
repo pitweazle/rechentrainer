@@ -3639,7 +3639,6 @@ def prozentrechnung(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, rei
                 return 1, ""
     else:                                                                            
         typ = random.randint(typ_anf, typ_end)
-        typ=13
         typ2 = 0
         titel = "Prozentrechnung" 
         parameter = {'name': 'normal',} 
