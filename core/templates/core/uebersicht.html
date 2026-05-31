@@ -78,6 +78,7 @@
             {% else %} {% endcomment %}
             {% endif %}
             <td>{{letzte}}</td>
+            {{aktiv}}
             {% for kategorie, aktiv, zeile in zeilen %}            
                 <tr>
                     {% if lehrer and not loeschen or not aktiv %}

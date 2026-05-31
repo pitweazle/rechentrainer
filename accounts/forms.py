@@ -77,10 +77,11 @@ class Gruppe_Form(forms.Form):
 class Gruppe_Aendern_Form(forms.ModelForm):
     class Meta:
         model = Lerngruppe
-        fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
+        fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen', 'alle_aufgaben']
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
             'note_anzeigen': 'Bewertung anzeigen',
+            'alle_aufgaben': 'Alle Aufgaben',
         }
         widgets = {
             'aufgaben_pro_woche': forms.NumberInput(attrs={
@@ -88,18 +89,21 @@ class Gruppe_Aendern_Form(forms.ModelForm):
                 'min': '0',    # For minimum number
             }),
         }
-        help_texts = {'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
+        help_texts = {'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden.",
+                'alle_aufgaben': "Alle Aufgaben können gerechnet werden - z.B. für das Üben für einen Test.",}
 
 class Gruppe_Neu_Form(forms.ModelForm):
     class Meta:
         model = Lerngruppe
-        fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen']
+        fields = ['name', 'jg', 'aufgaben_pro_woche', 'note_anzeigen', 'alle_aufgaben',]
         labels = {'name': "Gruppenname",
             'aufgaben_pro_woche': 'Aufgaben pro Woche',
             'note_anzeigen': 'Bewertung anzeigen',
+            'alle_aufgaben': 'Alle Aufgaben',
         }
         help_texts = {'name': 'Das kann einfach der Name der Klasse sein oder die Kursbezeichnung aus dem Stundenplan - die Schülerinnen und Schüler sollten ihre Lerngruppe an diesem Namen erkennen können.',
-                      'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden."}
+            'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden.",
+            'alle_aufgaben': "Alle Aufgaben können gerechnet werden. (Das sollte nur vorübergehend aktiviert werden - z.B. für das Üben für einen Test).",}
 
 class ProtokollFilter_Gruppe(forms.Form):
     auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])

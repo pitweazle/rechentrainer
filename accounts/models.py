@@ -31,6 +31,9 @@ class Lerngruppe(models.Model):
     jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
     aufgaben_pro_woche = models.SmallIntegerField(default=0)
     note_anzeigen = models.BooleanField(default = True)
+    alle_aufgaben = models.BooleanField(default = False, 
+        verbose_name="Alle Aufgaben", 
+        help_text="Alle Aufgaben können gerechnet werden – z.B. für das Üben für einen Test.")
     temp = models.BooleanField(default=False)
     liga = models.BooleanField(default=True)
         
