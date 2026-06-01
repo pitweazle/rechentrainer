@@ -7916,7 +7916,6 @@ def uebersicht(req, schueler_id=0):
             # Erzeugt leere Zeilen mit Bindestrichen
             werte = [('-', '-') for _ in range(10)] 
             zeilen.append((kat, True, werte))
-
         context = {
             'gast_modus': True,
             'zeilen': zeilen,
@@ -7928,8 +7927,6 @@ def uebersicht(req, schueler_id=0):
             'soll_kat': 20,
         }
         return render(req, 'core/uebersicht.html', context)
-
-#def uebersicht(req, schueler_id=0):
     gibtes = Profil.objects.filter(user_id = req.user.id).count()
     if gibtes == 0:
         return redirect('anmelden')
@@ -8066,6 +8063,10 @@ def uebersicht(req, schueler_id=0):
                 abbr_kat = zaehler_kategorie.abbr_zaehler
                 lsg_kat = zaehler_kategorie.lsg_zaehler
                 hilfe_kat = zaehler_kategorie.hilfe_zaehler
+                falsch_gesamt += falsch_kat
+                abbr_gesamt += abbr_kat
+                lsg_gesamt += lsg_kat
+                hilfe_gesamt += hilfe_kat
                 if 1==1:
                     pass  
                     # else:
@@ -8210,13 +8211,15 @@ def uebersicht(req, schueler_id=0):
         dauer = '-'
         pro_aufg = "-" 
     tests = []
-    if req.user.is_authenticated:
-        profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
-        if profil and profil.gruppe_id:
-            tests = Test.objects.filter(gruppe = profil.gruppe).order_by("-created_at")
-
-    else:
-        profil = None
+    # if req.user.is_authenticated:
+    #     profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
+    #     if profil and profil.gruppe_id:
+    #         tests = Test.objects.filter(gruppe = profil.gruppe).order_by("-created_at")
+    profil_lehrer = Profil.objects.select_related("gruppe").filter(user=req.user).first()
+    if profil_lehrer and profil_lehrer.gruppe_id:
+        tests = Test.objects.filter(
+            gruppe=profil_lehrer.gruppe
+        ).order_by("-created_at")
     context = dict(lehrer= lehrer, loeschen= loeschen, form= form, profil = profil, schueler = profil, schueler_id = schueler_id, tests = tests,
         zeilen= zeilen, soll_hj = soll_hj, pro_woche =aufgaben_pro_woche, soll_kat=soll_kat,
         richtig=richtig_gesamt, summe_farbe= summe_farbe, falsch=falsch_gesamt, quote=quote, qfarbe=qfarbe, dauer=dauer, pro_aufg = pro_aufg, details=details, alle_kat= alle_kat,
