@@ -8385,7 +8385,7 @@ def abbrechen(req, zaehler_id):
     zaehler.optionen_text = ""
     zaehler.richtig_of = 0 
     zaehler.hinweis = ""
-    zaehler.save() 
+    zaehler.save(update_fields=['aufgnr', 'optionen_text', 'richtig_of', 'hinweis']) 
     protokoll = Protokoll.objects.filter(profil = zaehler.profil).order_by('-id').first()
     if protokoll.wertung != "a":
         protokoll.wertung = protokoll.wertung + "a"
@@ -8393,7 +8393,7 @@ def abbrechen(req, zaehler_id):
         protokoll.eingabe = protokoll.eingabe + ", abbr."
     else:
         protokoll.eingabe = "abbr."        
-    protokoll.save()
+    protokoll.save(update_fields=['wertung', 'eingabe'])
     # if gruppe != 0:
     #     return redirect('duell_uebersicht', gruppe)
     # else:
@@ -8407,13 +8407,13 @@ def loesung(req, zaehler_id, protokoll_id):
     zaehler.richtig_of = 0 
     zaehler.lsg_zaehler += 1
     zaehler.aufgnr +=1
-    zaehler.save()
+    zaehler.save(update_fields=['richtig_of', 'lsg_zaehler', 'aufgnr'])
     protokoll = get_object_or_404(Protokoll, pk = protokoll_id)
     protokoll.eingabe = protokoll.eingabe + " Lsg. "
     protokoll.wertung = "l"
     protokoll.lsg = True
     protokoll.abbr = False
-    protokoll.save()
+    protokoll.save(update_fields=['eingabe', 'wertung', 'lsg', 'abbr'])
     eingabe = protokoll.eingabe.replace(" Lsg.","")
     try:
         if isinstance(protokoll.loesung[0], list):
@@ -8442,7 +8442,7 @@ def hilfe(req, zaehler_id, protokoll_id):
         hilfe = get_object_or_404(Hilfe, kategorie = protokoll.kategorie, hilfe_id = protokoll.hilfe_id)
         protokoll.eingabe = protokoll.eingabe + " Hilfe "
         protokoll.hilfe = True
-        protokoll.save()
+        protokoll.save(update_fields=['eingabe', 'hilfe'])
         messages.info(req, hilfe.text.format(*protokoll.variable))  
     except:
         messages.info(req, "Leider gibt es hier keine Hilfe.<br>Der Rechentrainer freut sich, wenn du ihm eine Email schickst, dass die Hilfe mit der Nummer {} fehlt :).".format(protokoll.hilfe_id)) 
@@ -8600,7 +8600,7 @@ def main(req, slug):
                     protokoll.wertung = "" 
                     zaehler.abbr_zaehler -= 1  
                 protokoll.end = timezone.now()
-                protokoll.save()
+                protokoll.save(update_fields=['eingabe', 'abbr', 'wertung', 'end'])
                 #hier wird die Eingabe überprüft:
                 wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
                 if wertung <= 2:
@@ -8649,7 +8649,7 @@ def main(req, slug):
                         protokoll.eingabe = "Cheat"
                     else:
                         protokoll.richtig = richtig                      
-                    protokoll.save()
+                    protokoll.save(update_fields=['wertung', 'falsch', 'eingabe', 'richtig'])
                     zaehler.save()
                     #nach 10 Aufgaben geht es zurück zur Übersicht - eine neue Kategorie kann gewählt werden:
                     mehr = 0
@@ -8696,7 +8696,7 @@ def main(req, slug):
                         if protokoll.falsch < falsch:
                             protokoll.falsch = falsch
                         protokoll.richtig = richtig
-                        protokoll.save()
+                        protokoll.save(update_fields=['wertung', 'falsch', 'richtig'])
                         messages.info(req, f'{rueckmeldung}')
                         color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
                         color_wertung =color_wertung[:-1].split(",")
@@ -8720,7 +8720,7 @@ def main(req, slug):
                         if wertung == -1:
                             protokoll.falsch = 1
                             protokoll.wertung = "f"
-                            protokoll.save()
+                            protokoll.save(update_fields=['falsch', 'wertung'])
                             zaehler.richtig_of  = 0
                             zaehler.fehler_zaehler +=1
                             zaehler.save()
