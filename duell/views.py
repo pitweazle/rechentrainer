@@ -342,7 +342,7 @@ def duell_loesung(req):
     if "tab" in protokoll.parameter["name"]:                            # für Wertetabellen
         protokoll.loesung = [protokoll.parameter['y5']]
         #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
-        protokoll.save()
+        protokoll.save(update_fields=['loesung'])
     text = ""
     try:
         if isinstance(protokoll.loesung[0], list):
@@ -363,7 +363,7 @@ def sub_punkte(req, duell, duellant, duellant_nr, eingabe, punkte, beide = False
     if beide != "Zweiter":                                                                    # erstellt nur einen Eintrag in "duell_wertung" (für "Erster")
         protokoll = Protokoll.objects.get(pk = req.session.get('protokoll_id'))
         protokoll.richtig = punkte 
-        protokoll.save()
+        protokoll.save(update_fields=['richtig'])
         duell_protokoll = Duell_Protokoll.objects.create(duell = duell)
         duell_protokoll.eingabe = eingabe
         duell_protokoll.punkte = punkte
@@ -372,7 +372,7 @@ def sub_punkte(req, duell, duellant, duellant_nr, eingabe, punkte, beide = False
             duell_protokoll.anmerkung = "gleich schnell"
         else:
             duell_protokoll.anmerkung = duellant.name
-        duell_protokoll.save()
+        duell_protokoll.save(update_fields=['eingabe', 'punkte', 'duellant_nr', 'anmerkung'])
     return duell_protokoll
 
 def sub_eingabe_speichern(req, duell, duellant, eingabe, punkte, beide = None):
@@ -438,14 +438,14 @@ def duell_kontrolle(req):
                 protokoll.loesung = format_zahl(protokoll.parameter['y5'],2)
             #    #protokoll.wert = round(round(parser.parse(protokoll.parameter['y5'].replace(",",".").replace(":","/")).evaluate({}),3),3)
             protokoll.wert = protokoll.parameter['y5']
-            protokoll.save()
+            protokoll.save(update_fields=['loesung', 'wert'])
         else:
             eingabe = pro_eingabe = form.cleaned_data['eingabe']
         req.session['eingabe'] = duell.id
         #protokoll.eingabe = pro_eingabe
         protokoll.abbr = False
         protokoll.end = timezone.now()
-        protokoll.save()
+        protokoll.save(update_fields=['abbr', 'end'])
         #hier wird die Eingabe überprüft:
         wertung, rueckmeldung = kontrolle(eingabe, protokoll.wert, protokoll.loesung, protokoll.id)
         #richtig = wertung

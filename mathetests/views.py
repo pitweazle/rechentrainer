@@ -396,7 +396,7 @@ def test(req, slug):
         protokoll.eingabe = pro_eingabe
         protokoll.abbr = False
         protokoll.end = timezone.now()
-        protokoll.save()
+        protokoll.save(update_fields=['eingabe', 'abbr', 'end'])
         # Kontrolle aufrufen
         wertung, rueckmeldung = kontrolle(
             eingabe,            # bei Tabelle: Liste, sonst String
@@ -451,10 +451,10 @@ def test(req, slug):
             richtig = wertung
             if "halben Extra" in rueckmeldung:
                 protokoll.wertung = protokoll.wertung + "x"
-                protokoll.save()
+                protokoll.save(update_fields=['wertung'])
             elif "Extra" in rueckmeldung:
                 protokoll.wertung = protokoll.wertung + "xx"
-                protokoll.save()
+                protokoll.save(update_fields=['wertung'])
         else:
             if wertung >= 3000:
                 tabelle = 3
@@ -462,7 +462,7 @@ def test(req, slug):
                 falsch = str(wertung).count("0")
                 if str(wertung).count("2")>0:
                     protokoll.abbr = True
-                    protokoll.save()
+                    protokoll.save(update_fields=['abbr'])
             if wertung >= 30000:
                 tabelle = 4
             if wertung >= 300000:
@@ -494,7 +494,7 @@ def test(req, slug):
                 protokoll.abbr = False 
                 protokoll.lsg = False
                 messages.info(req, rueckmeldung)
-            protokoll.save()
+            protokoll.save(update_fields=['wertung', 'richtig', 'falsch', 'eingabe', 'abbr', 'lsg'])
             # neue Aufgabe
             return redirect(f"{req.path}?test={test.id}")
         # ================ FALSCH ====================
@@ -506,7 +506,7 @@ def test(req, slug):
                 if protokoll.falsch < falsch:
                     protokoll.falsch = falsch
                 protokoll.richtig = richtig
-                protokoll.save()
+                protokoll.save(update_fields=['wertung', 'falsch', 'richtig'])
                 messages.info(req, f'{rueckmeldung}')
                 # color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
                 # color_wertung =color_wertung[:-1].split(",")
@@ -531,7 +531,7 @@ def test(req, slug):
                 else:
                     if not "tab" in protokoll.parameter["name"]:
                         messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
-            protokoll.save()
+            protokoll.save(update_fields=['falsch', 'wertung'])
             text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(protokoll.loesung[0],str(protokoll.eingabe).replace(".",","))
             messages.info(req, text) 
             # nächste Aufgabe
