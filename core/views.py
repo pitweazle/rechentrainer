@@ -7730,8 +7730,10 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
 
 #"default" zum Erstellen neuer Aufgaben-Kategorien <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge = None, typ = 0, typ2 = 0, optionen = "", eingabe = "", lsg = ""):
-    #hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
-    #Das kann u.u. noch unter 'Optionen' ausgeweitet werden (z.B. mit Komma oder ohne)
+    # hier wird typ_anf und typ_end festgelegt. Das heißt von welchem Aufgabentyp ("typ") die 10 Aufgaben gemacht werden müssen (genauer: aufgerufen werden). 
+    # Das kann u.u. noch unter 'Optionen' ausgeweitet werden (z.B. mit Komma oder ohne)
+    # Unter Stufe ist der Fortschritt des Users festgelegt - ungerade Zahlen entsprechen einem E(Erweiterungs-) Kurs,gerade einem G (Grund-) Kurs - Null sind Förderkinder.
+    # ... um Aufgaben für das gymnasialen Niveau abzugrenzen, wird zur Stufe noch 0,2 addiert, das muss bei der Aufgabenerstellung abgefabgen werden.
     if stufe%1>1:               # hiermit können Aufgaben nur für den A-Kurs erstellt werden
         typ_end = 20
     if optionen != "":                                                               
@@ -7766,7 +7768,7 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
         typ2 = 0
         titel = "Titel" 
         text = "default{}"
-        variable = ["",]
+        variable = ["",]                            # hier können mittels einer Liste Variable zu dem Text hinzugefügt werden. Diese werden vor der Übergabe ans Template eingefügt (text = text.format(*variable)).
         pro_text = frage = einheit = anmerkung = hilfe = ""
         hilfe_id = 0
         erg = None 
@@ -7778,13 +7780,15 @@ def default(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
                 lsg = str(erg)
         else:
             pass
-        #wert = (x1*10+20)*1000+x2*10                  # hier wird eine vierstellige Zahl erzeugt, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
-        lsg = [lsg] + ["indiv_0"]                                                         #sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
-        #print(lsg)
+        #wert = (x1*10+20)*1000+x2*10                  # hier kann eine vierstellige Zahl erzeugt werden, die später genutzt wird, umd auch Ergebnisse ohne Komma als richtig zu erkennen
+                                                       # das wird aber nur in setenen Fällen genutzt)
+        lsg = [lsg] + ["indiv_0"]                      # sorgt dafür, dass die Eingabe nochmals in der Funktion der Aufgabe überprüft wird                             
+                                                       # wenn bei wert etwas eingegeben wird, dann wird die Eingabe nur daraufhin überprüft und der Eintrag unter "lsg" wird nur ausgegeben um auf Wunsch unter "Lösung anzeigen" den Wert hier auszugeben.
+                                                       # --- wird kein Wert eingegeben, werden die Einträge in der Liste [lsg] nacheinander mit der Eingabe des Users verglichen. 
         #if hilfe_id != 0:
             #print(hilfe.format(*variable))
             #print(typ2, pro_text)
-        parameter = {'name':'normal'}
+        parameter = {'name':'normal'}                   # hier werden Parameter für z.B. Grafiken übergeben - "normal" übergiebt keine 
         #print(parameter)
         #print({k: type(v) for k, v in parameter.items()}) hier kann man (numerische) Einträge in Parameter untersuchen, ob sie "decimal" sind - das wirft einen Fehler
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, [lsg], hilfe_id, erg, parameter

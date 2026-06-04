@@ -187,15 +187,15 @@ def duell_aufgabe(req, slug):
     if not zaehler.optionen_text :  
         return redirect('duell_optionen', slug)
     #!!!!!!!! hier wird dann die nächste Aufgabe erzeugt: 
-    if kategorie.slug == "sachaufgaben":
-        try:  
-            profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
-        except:                                       
-            profil.voreinst.update({"sachaufg" : random.randint(1,20)})
-        profil.save()
-        typ_anf = profil.voreinst["sachaufg"]
-    else:
-        typ_anf = zaehler.typ_anf  
+    # if kategorie.slug == "sachaufgaben":
+    #     try:  
+    #         profil.voreinst["sachaufg"] = profil.voreinst["sachaufg"] + 1
+    #     except:                                       
+    #         profil.voreinst.update({"sachaufg" : random.randint(1,20)})
+    #     profil.save()
+    #     typ_anf = profil.voreinst["sachaufg"]
+    # else:
+    typ_anf = zaehler.typ_anf  
     typ_end = zaehler.typ_end  
     jg = gruppe.jg          
     stufe=(stufe_aus_jg(gruppe.jg))
