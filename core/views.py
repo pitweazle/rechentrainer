@@ -4262,7 +4262,7 @@ def terme(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge =
             pro_text = frage+"="
             text = "Multipliziere:<br>" + frage
         elif typ in [4,6]:                  # Klammern                                                    # 4 = Klammer auflösen, 6= ausklammern
-            stufe=2
+            #stufe=2
             startbuchstabe = typ2 = random.randint(0,2)*4
             if typ == 4:
                 if stufe%2 == 1:
