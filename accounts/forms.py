@@ -105,8 +105,35 @@ class Gruppe_Neu_Form(forms.ModelForm):
             'aufgaben_pro_woche': "Wenn hier Null steht, gilt die Voreinstellung - danach sollen die Schülerinnen und Schüler 10 Aufgaben pro Woche und Jahrgang rechnen (z.B.: 70 im Jahrgang 7) - hier kann aber auch ein anderer Wert eingegeben werden.",
             'alle_aufgaben': "Alle Aufgaben können gerechnet werden. (Das sollte nur vorübergehend aktiviert werden - z.B. für das Üben für einen Test).",}
 
-class ProtokollFilter_Gruppe(forms.Form):
+class xxxProtokollFilter_Gruppe(forms.Form):
     auswahl = forms.ChoiceField(label='', choices=[("Halbjahr",'aktuelles Halbjahr'),('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'), ('heute','heute'), ("next",'nächstes Halbjahr'),("individuell",'individuelle Auswahl'), ])
+
+class ProtokollFilter(forms.Form):
+    auswahl = forms.ChoiceField(
+        label='Filter', 
+        choices=[
+            ("Halbjahr", 'aktuelles Halbjahr'), 
+            ('heute', 'heute'), 
+            ('Woche', 'Woche'), 
+            ("individuell", 'individuelle Auswahl'), 
+            ("Schuljahr", 'aktuelles Schuljahr'),
+            ("all", 'Alle Aufgaben'),
+        ]
+    )
+ 
+class ProtokollFilter_neu(forms.Form):
+    auswahl = forms.ChoiceField(
+        label='Filter', 
+        choices=[
+            ("Halbjahr", 'aktuelles Halbjahr'), 
+            ('heute', 'heute'), 
+            ('Woche', 'Woche'), 
+            ("individuell", 'individuelle Auswahl'),
+            ("Schuljahr", 'aktuelles Schuljahr'),
+             ("next", 'nächstes Halbjahr'), 
+            ("all", 'Alle Aufgaben'),
+        ]
+    )
 
 class Start_Datum(forms.Form):
     aufgaben_seit = forms.DateField(label="von", widget = forms.SelectDateWidget(years=range(datetime.now().year-1, datetime.now().year+1)), initial=datetime.today())

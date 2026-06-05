@@ -7,33 +7,52 @@
 {% block content %}
     {% include 'includes/header.html' %} 
     <body>
-        {%if lehrer and not loeschen%}
+        {% if lehrer and not loeschen %}
             <button>        
                 <a href="javascript:history.go(-1)" class="btn btn-default">zurück</a>
             </button>
-        {%endif%}
+        {% endif %}
 
         <div class="container">
-            <h2>{{schueler.vorname}} {{schueler.nachname}}
+            <h2>{{ schueler.vorname }} {{ schueler.nachname }}
                 {% if not loeschen or not lehrer %}
-                    , {{schueler.klasse}}</h2>
-                {%else%}
-                    </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{schueler.jg}}, Stufe {{schueler.stufe}}
+                    , {{ schueler.klasse }}</h2>
+                {% else %}
+                    </h2><h5 style="text-align: center;">Angemeldet mit: Jg {{ schueler.jg }}, Stufe {{ schueler.stufe }}
                     (Jg. und Stufe können im Profil geändert werden)</h5>
                 {% endif %}
             </h2>
+
             <form action="{% url 'protokoll' schueler.id %}" method="POST">
                 {% csrf_token %}
-                <h2 style= "text-align: left;"> Zeitraum: 
-                    <button type="button">
-                        {{form.auswahl}}
-                    </button type="button">
-                    <button type="button">
-                        <input name="filter" type="submit" value="anwenden">
-                    </button type="button">
+                <h2 style="text-align: left;"> Zeitraum: 
+                    {% if "individuelle Auswahl" in wahl %}
+                        <button type="button">
+                            {{ form_start }}
+                        </button>
+                        
+                        <button type="button">
+                            {{ form_end }}
+                        </button>
+                    {% else %}
+                        <button type="button">
+                            {{ form.auswahl }}
+                        </button>
+                    {% endif %}
+                    
+                    <input name="filter" type="submit" value="anwenden">
                 </h2>
             </form> 
+            
             <br> 
+
+            {% if wochenziel_anzeigen %}
+                <div style="background-color: #f0f8ff; padding: 12px; border-left: 5px solid #2196F3; border-radius: 4px; margin-bottom: 15px; text-align: left;">
+                    <p style="margin: 0 0 5px 0;">Geforderte Aufgaben pro Woche: <strong>{{ wochenziel }}</strong></p>
+                    <p style="margin: 0;">Du hast im gewählten Zeitraum bisher <strong>{{ richtig }}</strong> richtige Aufgaben gelöst.</p>
+                </div>
+            {% endif %}
+
             <table>
                 <thead>
                     <tr>
@@ -47,15 +66,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <td>{{wahl}}:</td>
-                    <td>{{richtig}}</td>
-                    <td>{{falsch}}</td>
-                    <td class="{{qfarbe}}">{{quote}}%</td>        
-                    <td>{{abbr}}</td>
-                    <td>{{lsg}}</td>
-                    <td>{{hilfe}}</td>
+                    <td>{{ wahl }}:</td>
+                    <td>{{ richtig }}</td>
+                    <td>{{ falsch }}</td>
+                    <td class="{{ qfarbe }}">{{ quote }}%</td>        
+                    <td>{{ abbr }}</td>
+                    <td>{{ lsg }}</td>
+                    <td>{{ hilfe }}</td>
                 </tbody>
             </table>
+
             <h2>Protokoll:</h2>
             <table>
                 <thead>
@@ -65,7 +85,7 @@
                         <th>Aufgnr.</th>
                         <th>Aufgabe</th>
                         <th>Ergebnis</th>
-                        <th width = "150"> Eingabe</th>
+                        <th width="150"> Eingabe</th>
                         <th>r</th>
                         <th>f</th>
                         <th>abbr</th>
@@ -78,42 +98,40 @@
                     {% for zeile in protokoll %}
                         <tr>
                             <td>
-                                {{zeile.start|date:"d.m.y H:i"}}
-                                {% comment %} <a class="button" href="{% url 'details' zeile.id %}">{{zeile.start|date:"d.m.y H:i"}} {% endcomment %}
+                                {{ zeile.start|date:"d.m.y H:i" }}
                                 {% if wahl == "Alle Aufgaben" %} 
-                                    {{zeile.sj}}/{{zeile.hj}} 
+                                    {{ zeile.sj }}/{{ zeile.hj }} 
                                 {% endif %}
                             </td>
-                            <td>{{zeile.kategorie.name }} <br>({{zeile.typ}}/{{zeile.typ2}})</td>
-                            <td>{{zeile.aufgnr}} </td>
-                            {% if zeile.pro_text != ""  %}
-                                <td>{{ zeile.pro_text}}</td>
+                            <td>{{ zeile.kategorie.name }} <br>({{ zeile.typ }}/{{ zeile.typ2 }})</td>
+                            <td>{{ zeile.aufgnr }} </td>
+                            {% if zeile.pro_text != "" %}
+                                <td>{{ zeile.pro_text }}</td>
                             {% else %}
-                                <td>{{zeile.text}}</td>
-                            {% endif%}
-                            <td>{%if zeile.wert%}
-                                    {{zeile.wert.normalize}}
-                                {%else%}
-                                    {{zeile.loesung.0}}
-                                {%endif%}
+                                <td>{{ zeile.text }}</td>
+                            {% endif %}
+                            <td>{% if zeile.wert %}
+                                    {{ zeile.wert.normalize }}
+                                {% else %}
+                                    {{ zeile.loesung.0 }}
+                                {% endif %}
                             </td>
                             {% if zeile.falsch > 0 %}
                                 {% if zeile.richtig > 0 %}
-                                    <td class="gelb">{{zeile.zweigabe}}</td>
-                                {%else%}
-                                    <td class="rot">{{zeile.zweigabe}}</td>
-                                {%endif%}
+                                    <td class="gelb">{{ zeile.zweigabe }}</td>
+                                {% else %}
+                                    <td class="rot">{{ zeile.zweigabe }}</td>
+                                {% endif %}
                             {% elif zeile.richtig > 0 %}
-                                <td class="gruen">{{zeile.zweigabe}}</td>
+                                <td class="gruen">{{ zeile.zweigabe }}</td>
                             {% else %}
-                                <td class="rot">{{zeile.zweigabe}}</td>
-                            {% endif%}
-                            <td>{{ zeile.richtig.normalize}}</td>
-                            <td>{{ zeile.falsch}}</td>                
-                            <td>{% if zeile.abbr%}x{%endif%}</td>                
-                            <td>{% if zeile.lsg%}x{%endif%}</td>                 
-                            <td>{% if zeile.hilfe%}x{%endif%}</td> 
-                            {% comment %} <td>{{ zeile.wertung}}</td> {% endcomment %}
+                                <td class="rot">{{ zeile.zweigabe }}</td>
+                            {% endif %}
+                            <td>{{ zeile.richtig.normalize }}</td>
+                            <td>{{ zeile.falsch }}</td>                
+                            <td>{% if zeile.abbr %}x{% endif %}</td>                
+                            <td>{% if zeile.lsg %}x{% endif %}</td>                 
+                            <td>{% if zeile.hilfe %}x{% endif %}</td> 
                         </tr>
                     {% empty %}
                         <strong>Leider keine Kategorien vorhanden.</strong> 
@@ -121,7 +139,6 @@
                     {% endautoescape %}
                 </tbody>
             </table>
-        </body>
-    </div>
+        </div>
+    </body>
 {% endblock %}
-

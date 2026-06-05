@@ -18,9 +18,8 @@ from django.db.models import Max, Sum, Count, F, Q
 from django.db.models import Sum, Case, When, IntegerField
 from django.db import connection
 
-
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_Gruppe, Start_Datum, End_Datum
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_neu, Start_Datum, End_Datum
 
 from .models import Profil, Schule, Lerngruppe, Geloescht
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
@@ -503,81 +502,115 @@ def protokoll_zeit_filter(protokoll, auswahl):
         protokoll = protokoll.filter(sj = sj) 
     return protokoll
 
+from datetime import date, datetime, time, timedelta
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.db.models import Sum, Max, F, Case, When, IntegerField
+
+# Alle benötigten Formulare werden jetzt zentral aus accounts importiert
+from accounts.forms import ProtokollFilter_neu, Start_Datum, End_Datum
+
 def gruppe_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
         req.session['gruppe_id'] = gruppe_id 
         return redirect('duell_uebersicht', gruppe_id)
+        
     from core.views import soll_berechnung, bewertung_kat, bewertung_hj
     sj, hj = name_hj()
     jg = gruppe.jg
     aufgaben_pro_woche = gruppe.aufgaben_pro_woche
     if aufgaben_pro_woche < 1:
         aufgaben_pro_woche = 10 * jg
-    wahl = "aktuelles Halbjahr"
-    form_filter = ProtokollFilter_Gruppe
+        
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
+        
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
     gesamtzeit_text = ""
+    
     if gruppe.name != "keine Gruppe":
-        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = gruppe)               # alle Protokollobjekte der Gruppe
+        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = gruppe)
     else:
-        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)                 # alle Protokollobjekte der Schülerinnen und Schüler ohne Gruppenzugehörigkeit
+        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)
+        
     if req.method == 'POST':
+        # Instanzen erstellen und mit POST-Daten binden
+        form_filter = ProtokollFilter_neu(req.POST)
         start_datum = Start_Datum(req.POST)
         end_datum = End_Datum(req.POST)
-        auswahl = form_filter(req.POST)
-        filter = auswahl.fields['auswahl'].choices
-        auswahl_liste = dict(filter)
-        if auswahl.is_valid(): 
-            auswahl = auswahl.cleaned_data['auswahl']
+        
+        if form_filter.is_valid(): 
+            auswahl = form_filter.cleaned_data['auswahl']
+            choices = form_filter.fields['auswahl'].choices
+            wahl = dict(choices)[auswahl]
+            
+            # Nutzt die zeitliche Filter-Funktion
             protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
-            wahl = auswahl_liste[auswahl]
+            
         elif start_datum.is_valid() and end_datum.is_valid():
             start_raw = start_datum.cleaned_data['aufgaben_seit']
             ende_raw = end_datum.cleaned_data['aufgaben_bis']
-
-            start = start_raw.date() if hasattr(start_raw, "date") else start_raw
-            ende = ende_raw.date() if hasattr(ende_raw, "date") else ende_raw
-
-
-            protokoll_zeitraum =  protokoll_gruppe.filter(start__date__gte = start, start__date__lte = ende)
-            wahl = start.strftime("%d.%m.%y") + " bis " + ende.strftime("%d.%m.%y")
+            
+            # Taggenaue Uhrzeit-Abdeckung: 00:00:00 Uhr bis 23:59:59 Uhr
+            dt_von = datetime.combine(start_raw, time.min)
+            dt_bis = datetime.combine(ende_raw, time.max)
+            
+            protokoll_zeitraum = protokoll_gruppe.filter(start__gte=dt_von, start__lte=dt_bis)
+            wahl = start_raw.strftime("%d.%m.%y") + " bis " + ende_raw.strftime("%d.%m.%y")
+            
+            # Damit sich das Template den Zustand "individuelle Auswahl" merkt
+            form_filter = ProtokollFilter_neu(initial={'auswahl': 'individuell'})
+        else:
+            wahl = "aktuelles Halbjahr"
+            protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
     else:
+        # Normaler GET-Aufruf: Standard-Instanzen mit "Halbjahr" als Vorauswahl belegen
         wahl = "aktuelles Halbjahr"
+        form_filter = ProtokollFilter_neu(initial={'auswahl': 'Halbjahr'})
+        start_datum = Start_Datum(initial={'aufgaben_seit': date.today()})
+        end_datum = End_Datum(initial={'aufgaben_bis': date.today()})
         protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
-    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)                    # berechnet den Aufgabensoll für das Halbjahr
+        
+    # --- Ab hier folgt die Berechnungs- und Tabellenlogik ---
+    schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)
     prozent_summe = 0
     prozent_summe_farbe = False
     richtig_gesamt = falsch_gesamt = 0
+    
     katmax_max = protokoll_zeitraum.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
+    
+    # Defaults setzen, falls noch gar keine Daten da sind
+    kategorien = []
+    aufgaben_der_schueler = []
+    kategorie_summen = [(0, "-")]
+    gesamtzeit_text = "-"
+    
     if not katmax_max:
-        kategorien = []
-        summen = []
-        aufgaben_der_schueler = []
-        kategorie_summen = [(0, "-")]
-        gesamtzeit_text = "-"
         katmax_max = 0
+        
     if protokoll_gruppe.count() > 0:
         kategorien = list(Kategorie.objects.filter(zeile__lt=katmax_max + 1).order_by('zeile', 'pk'))
         kategorie_summen = [(0, "-")] * (katmax_max+1) 
         kategorie_fehler = [(0)] * (katmax_max+1) 
         gesamtzeit = timedelta()
+        
         if gruppe.name != "keine Gruppe":
             schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("vorname")
         else:
             schueler_liste = (Profil.objects.filter(gruppe__isnull=True).order_by("vorname"))
+            
         aufgaben_der_schueler = []
         for profil in schueler_liste:
             richtig_profil = falsch_profil = 0
             hj_stimmt = profil.sj == sj and profil.hj == hj
-            protokoll_profil = protokoll_zeitraum.filter(profil = profil)                  # die Gesamtsummen der einzelnen User
+            protokoll_profil = protokoll_zeitraum.filter(profil = profil)
+            
             summen = (
-            protokoll_profil
-            .values("profil")
-            .annotate(zeit_profil=Sum(F('end') - F('start')))
+                protokoll_profil
+                .values("profil")
+                .annotate(zeit_profil=Sum(F('end') - F('start')))
             ) 
             dauer_text = "0:00"
             for g in summen:
@@ -590,8 +623,9 @@ def gruppe_uebersicht(req, gruppe_id):
                     gesamtzeit = gesamtzeit + dauer
                 except:
                     dauer_text = "---"
+                    
             aufgaben = [(0, "-")] * (katmax_max+1)
-            kategorie_werte = (                                                     # die Summen der einzelnen Kategoren des jeweiligen Users
+            kategorie_werte = (
                 protokoll_profil
                 .values("kategorie__zeile")
                 .annotate(richtig_kat=Sum(
@@ -601,17 +635,17 @@ def gruppe_uebersicht(req, gruppe_id):
                         output_field=IntegerField(),
                     )
                 ),)
-                )
+            )
             for k in kategorie_werte:
                 index = int(k['kategorie__zeile'])
                 richtig_kat = k['richtig_kat']
                 kat_name = Kategorie.objects.get(zeile = index)
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(profil = profil, kategorie = kat_name)
-                protokoll_profil_fehler = protokoll_gruppe.filter(profil = profil)             # benötigt man um die Fehler seit Zurücksetzen des Fehlerzählers zu bestimmen
+                protokoll_profil_fehler = protokoll_gruppe.filter(profil = profil)
 
                 protokoll_profil_kategorie = protokoll_profil_fehler.filter(kategorie = kat_name)
-                if zaehler.count()== 0:
+                if zaehler.count() == 0:
                     fehler, created = Geloescht.objects.get_or_create(benutzername = str(profil.user))
                     if created:
                         fehler.text = "folgende Zählerobjekte wurden angelegt: "
@@ -635,18 +669,10 @@ def gruppe_uebersicht(req, gruppe_id):
                             protokoll_fehler
                             .values("kategorie__zeile")
                             .annotate(
-                                falsch_kat=Sum(
-                                    Case(When(falsch=True, then=1), default=0, output_field=IntegerField())
-                                ),
-                                abbr_kat=Sum(
-                                    Case(When(abbr=True, then=1), default=0, output_field=IntegerField())
-                                ),
-                                lsg_kat=Sum(
-                                    Case(When(lsg=True, then=1), default=0, output_field=IntegerField())
-                                ),
-                                hilfe_kat=Sum(
-                                    Case(When(hilfe=True, then=1), default=0, output_field=IntegerField())
-                                ),
+                                falsch_kat=Sum(Case(When(falsch=True, then=1), default=0, output_field=IntegerField())),
+                                abbr_kat=Sum(Case(When(abbr=True, then=1), default=0, output_field=IntegerField())),
+                                lsg_kat=Sum(Case(When(lsg=True, then=1), default=0, output_field=IntegerField())),
+                                hilfe_kat=Sum(Case(When(hilfe=True, then=1), default=0, output_field=IntegerField())),
                             )
                         )
 
@@ -672,9 +698,9 @@ def gruppe_uebersicht(req, gruppe_id):
                 kategorie_fehler[index] += falsch_kat
                 quote = quote_farbe(richtig_kat, falsch_kat)
                 aufgaben[index] = (quote, richtig_kat)
-                prozent_kat, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)      # berechnet die Wertung der Kategorie
+                prozent_kat, prozent_kat = bewertung_kat(soll_kat, richtig_kat, falsch_kat, lsg_kat, abbr_kat, profil.stufe)
                 prozent_summe += prozent_kat
-            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe, False)                         # Berechnung der Gesamtnote
+            prozent_summe_farbe, prozent_summe, note = bewertung_hj(prozent_summe, pflicht_kat, profil.stufe, False)
             if soll_hj < 10*pflicht_kat and prozent_summe < 50:
                 note = "-"
                 prozent_summe_farbe = None
@@ -683,34 +709,35 @@ def gruppe_uebersicht(req, gruppe_id):
             aufgaben_der_schueler.append((
                 profil, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer_text, aufgaben
             ))
-            seconds = int(gesamtzeit.total_seconds())
-            mm = int(seconds/60)
-            hh, mm = divmod(mm, 60)
-            gesamtzeit_text = f"{hh}:{mm:02d}" 
-            gesamtsummen = (
-                protokoll_zeitraum
-                .values("kategorie__zeile")
-                .annotate(
-                    richtig_sum=Sum(
-                        Case(
-                            When(richtig=True, then=1),
-                            default=0,
-                            output_field=IntegerField(),
-                        )
-                    )
-                )
-                .annotate(zeit_sum=Sum(F('end') - F('start')))
-            ) 
+            
+        seconds = int(gesamtzeit.total_seconds())
+        mm = int(seconds/60)
+        hh, mm = divmod(mm, 60)
+        gesamtzeit_text = f"{hh}:{mm:02d}" 
+        
+        gesamtsummen = (
+            protokoll_zeitraum
+            .values("kategorie__zeile")
+            .annotate(richtig_sum=Sum(Case(When(richtig=True, then=1), default=0, output_field=IntegerField())))
+            .annotate(zeit_sum=Sum(F('end') - F('start')))
+        ) 
         for k in gesamtsummen: 
             index = int(k['kategorie__zeile'])
             richtig_sum = k['richtig_sum']
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
-    quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)                      # die Gesamtsumme und deren Farbe
+            
+    quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
-    context={'gruppe': gruppe, 'gruppe_id': gruppe_id,  'wahl': wahl, 'form_filter': form_filter, 'startdatum': Start_Datum, 'enddatum': End_Datum,
-        'aufgaben_der_schueler':aufgaben_der_schueler, 'kategorien': kategorien, 'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
-        'note_anzeigen': note_anzeigen}  
+    
+    # Das return steht jetzt absolut sicher auf der Grundebene der Funktion
+    context = {
+        'gruppe': gruppe, 'gruppe_id': gruppe_id, 'wahl': wahl, 
+        'form_filter': form_filter, 'startdatum': start_datum, 'enddatum': end_datum,
+        'aufgaben_der_schueler': aufgaben_der_schueler, 'kategorien': kategorien, 
+        'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
+        'note_anzeigen': note_anzeigen
+    }  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 
 def neue_gruppe(req):

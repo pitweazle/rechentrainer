@@ -56,12 +56,6 @@ class AuswahlForm(forms.Form):
                 bis_stufe__gte=profil.stufe
             )
 
-class ProtokollFilter(forms.Form):
-    auswahl = forms.ChoiceField(label='Filter', choices=[('heute','heute'), ('Woche','Woche'), ("Halbjahr",'aktuelles Halbjahr'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),("all",'Alle Aufgaben'),])
- 
-class ProtokollFilter_neu(forms.Form):
-    auswahl = forms.ChoiceField(label='Filter', choices=[("next",'nächstes Halbjahr'), ("Halbjahr",'aktuelles Halbjahr'), ('heute','heute'), ('Woche','Woche'), ("Schuljahr",'aktuelles Schuljahr'),("all",'Alle Aufgaben'),])
-
 class UebersichtHalbjahr(forms.Form):
     auswahl = forms.ChoiceField(choices=[("Halbjahr",'aktuelles Halbjahr'), ("alle",'alle Aufgaben'),])
 

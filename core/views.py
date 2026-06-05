@@ -5,7 +5,7 @@ from math import gcd
 
 from py_expression_eval import Parser
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, time
 
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from .forms import AufgabeFormZahl, AufgabeFormStr, AufgabeFormTab, AufgabeFormTerm
-from .forms import AuswahlForm, ProtokollFilter, ProtokollFilter_neu, UebersichtHalbjahr
+from .forms import AuswahlForm, UebersichtHalbjahr
 
 from .models import Kategorie, Protokoll, Zaehler, Hilfe, Sachaufgabe
 from .models import Profil, Auswahl
@@ -36,6 +36,7 @@ from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hy
 from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
 
 from django.db.models import Sum, F,  Max, Q
+from accounts.forms import ProtokollFilter, ProtokollFilter_neu, Start_Datum, End_Datum
 from accounts.services import check_hj, name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -8242,22 +8243,35 @@ def uebersicht(req, schueler_id=0):
     else:
         return render(req, 'core/uebersicht_ohne_details.html', context)
 
-def protokoll_zeit_filter(protokoll, auswahl):
+def protokoll_zeit_filter(protokoll, auswahl, form_start=None, form_end=None):
     sj, hj = name_hj()
     next_sj, next_hj = name_next_hj()
+    
     if auswahl == "next":
         protokoll = protokoll.filter(sj=next_sj, hj=next_hj)  
-    if auswahl == "Halbjahr":
-        protokoll = protokoll.filter(sj=sj, hj=hj)                               
+    elif auswahl == "Halbjahr":
+        protokoll = protokoll.filter(sj=sj, hj=hj)                                 
     elif auswahl == "heute":
         protokoll = protokoll.filter(start__date = date.today())
     elif auswahl == "Woche":
-        protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 7))
-    elif auswahl =="Schuljahr":
+        # Die letzten 7 Tage
+        protokoll = protokoll.filter(start__date__gte = date.today() - timedelta(days = 7))
+    elif auswahl == "Schuljahr":
         protokoll = protokoll.filter(sj = sj) 
+    elif auswahl == "individuell" and form_start and form_end:
+        # Falls die Formulare valide Daten enthalten, filtern wir taggenau
+        if form_start.is_valid() and form_end.is_valid():
+            d_von = form_start.cleaned_data['aufgaben_seit']
+            d_bis = form_end.cleaned_data['aufgaben_bis']
+            
+            # datetime erstellen: von 00:00:00 Uhr am Starttag bis 23:59:59 Uhr am Endtag
+            dt_von = datetime.combine(d_von, time.min)
+            dt_bis = datetime.combine(d_bis, time.max)
+            
+            protokoll = protokoll.filter(start__gte=dt_von, start__lte=dt_bis)
     return protokoll
 
-#Hier werden die Aufgaben protokolliert
+# Hier werden die Aufgaben protokolliert
 def protokoll(req, schueler_id=0):
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
@@ -8268,56 +8282,65 @@ def protokoll(req, schueler_id=0):
                 loeschen = True            
         else:
             profil = get_object_or_404(Profil, id = schueler_id)               # Schülerin oder Schüler
-        if req.user.is_superuser:
-            pass
-        else:
-            if(profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
+        if not req.user.is_superuser:
+            if (profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
                 return HttpResponse("Zugriff verweigert")
-        protokoll = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()  # Protokoll des Users
+        # Grund-Queryset holen
+        protokoll = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()
         next_sj, next_hj = name_next_hj()
-        auswahl = "heute"
+        # Bestimmen, welche Haupt-Form-Klasse genutzt wird
+        FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
+        # Standard-Werte setzen
+        auswahl_wert = "heute"
         wahl = "heute"
-        protokoll = protokoll.filter(start__date = date.today())
-        if next_hj == profil.hj and next_sj == profil.sj:
-            form = ProtokollFilter_neu
+        wochenziel = None
+        wochenziel_anzeigen = False
+        if req.method == 'POST':    
+            # Hier nutzen wir jetzt die korrekte Klasse passend zum Profil!
+            FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
+            form = FormKlasse(req.POST)
+            form_start = Start_Datum(req.POST)
+            form_end = End_Datum(req.POST)
+            if form.is_valid(): 
+                auswahl_wert = form.cleaned_data['auswahl']
+                choices = form.fields['auswahl'].choices
+                wahl = dict(choices)[auswahl_wert]
+                # Filter anwenden
+                protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
+                # Schmankerl-Logik: Wochenaufgabe auswerten
+                if auswahl_wert in ("Woche", "individuell") and profil.gruppe:
+                    if profil.gruppe.aufgaben_pro_woche > 0:
+                        wochenziel = profil.gruppe.aufgaben_pro_woche
+                        wochenziel_anzeigen = True
         else:
-            form = ProtokollFilter
-        if req.method == 'POST':
-            protokoll = Protokoll.objects.filter(profil=profil).order_by('id').reverse()
-            auswahl = form(req.POST)
-            choices = auswahl.fields['auswahl'].choices
-            auswahl_liste = dict(choices)
-            if auswahl.is_valid(): 
-                auswahl = auswahl.cleaned_data['auswahl']
-                protokoll = protokoll_zeit_filter(protokoll, auswahl)
-                wahl = auswahl_liste[auswahl]
+            # Bei normalem GET-Aufruf: "heute" voreinstellen und Datumsfelder dynamisch mit HEUTE belegen
+            form = FormKlasse(initial={'auswahl': 'heute'})
+            form_start = Start_Datum(initial={'aufgaben_seit': date.today()})
+            form_end = End_Datum(initial={'aufgaben_bis': date.today()})
+            protokoll = protokoll.filter(start__date = date.today())
+        # Berechnungen für die Statistik-Tabelle
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
-        richtig = temp if temp else  0
-        zaehler_profil = Zaehler.objects.filter(profil = profil)
-        # bonus_summe = zaehler_profil.aggregate(sum=Sum('bonus'))['sum']
-        # if bonus_summe != None:
-        #     if auswahl in ("Halbjahr", "Schuljahr", "all"):
-        #         richtig += bonus_summe 
-        # else:
-        #     pass
+        richtig = temp if temp else 0
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
-        falsch = temp if temp else  0
+        falsch = temp if temp else 0
         abbr = protokoll.filter(abbr=True).count()
-        try:                                                        # wenn keine Aufgaben gerechnet wurden steht 'None# in richtig und falsch und führt zu einem Fehler
+        try:                                                                        
             quote = int(falsch/(richtig+falsch)*100)
         except:
             quote = "-"
-        qfarbe =  quote_farbe(richtig, falsch) 
+        qfarbe = quote_farbe(richtig, falsch) 
         lsg = protokoll.filter(lsg=True).count()
         hilfe = protokoll.filter(hilfe=True).count()
-        #protokoll = protokoll.exclude(end__isnull=True, abbr__isnull=True, eingabe__exact="")
         exclude = ["", " Hilfe "]
-        # Die folgende Zeile sorgt dafür, dass eine Aufgabe im Protokoll nicht angezeigt wird, wenn keine Eingabe erfolgt. 
-        # Dadurch kann man sich nicht die Lösung der aktuellen Aufgabe in einem parallel göffneten Fenster anzeigen lassen.
-        # Dadurch werden aber auch Aufgaben die mit F5 (Seite erneuern) abgebrochen wurden nicht angezeigt
         protokoll = protokoll.exclude(eingabe__in = exclude)
-        context = dict(lehrer= lehrer, loeschen= loeschen, schueler = profil, protokoll= protokoll, form= form, wahl= wahl, 
-            richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, abbr=abbr, lsg=lsg, hilfe = hilfe)
+        
+        context = dict(
+            lehrer=lehrer, loeschen=loeschen, schueler=profil, protokoll=protokoll, 
+            form=form, form_start=form_start, form_end=form_end, wahl=wahl, 
+            richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, 
+            abbr=abbr, lsg=lsg, hilfe=hilfe,
+            wochenziel=wochenziel, wochenziel_anzeigen=wochenziel_anzeigen
+        )
         return render(req, 'core/protokoll.html', context)
     else:
         return redirect('anmelden')
