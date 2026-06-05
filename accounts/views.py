@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, time
+
 from decimal import Decimal
 
 import json
@@ -19,7 +20,8 @@ from django.db.models import Sum, Case, When, IntegerField
 from django.db import connection
 
 from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
-from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form, ProtokollFilter_neu, Start_Datum, End_Datum
+from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
+from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
 from .models import Profil, Schule, Lerngruppe, Geloescht
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
@@ -494,83 +496,63 @@ def protokoll_zeit_filter(protokoll, auswahl):
         protokoll = protokoll.filter(start__date = date.today())
     elif auswahl == "Woche":
         protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 7))
-    elif auswahl == "8 Tage":
-        protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 8))    
-    elif auswahl == "9 Tage":
-        protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 9))    
+    # elif auswahl == "8 Tage":
+    #     protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 8))    
+    # elif auswahl == "9 Tage":
+    #     protokoll =  protokoll.filter(start__date__gte = date.today() - timedelta(days = 9))    
     elif auswahl =="Schuljahr":
         protokoll = protokoll.filter(sj = sj) 
     return protokoll
-
-from datetime import date, datetime, time, timedelta
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.db.models import Sum, Max, F, Case, When, IntegerField
-
-# Alle benötigten Formulare werden jetzt zentral aus accounts importiert
-from accounts.forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
 def gruppe_uebersicht(req, gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
     if gruppe.temp:
         req.session['gruppe_id'] = gruppe_id 
         return redirect('duell_uebersicht', gruppe_id)
-        
     from core.views import soll_berechnung, bewertung_kat, bewertung_hj
     sj, hj = name_hj()
     jg = gruppe.jg
     aufgaben_pro_woche = gruppe.aufgaben_pro_woche
     if aufgaben_pro_woche < 1:
         aufgaben_pro_woche = 10 * jg
-        
     if gruppe.lehrer != req.user and not req.user.is_superuser:
         return HttpResponse("Zugriff verweigert")
-        
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
     gesamtzeit_text = ""
-    
     if gruppe.name != "keine Gruppe":
         protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = gruppe)
     else:
         protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)
-        
     if req.method == 'POST':
-        # Instanzen erstellen und mit POST-Daten binden
-        form_filter = ProtokollFilter_neu(req.POST)
-        start_datum = Start_Datum(req.POST)
-        end_datum = End_Datum(req.POST)
-        
-        if form_filter.is_valid(): 
-            auswahl = form_filter.cleaned_data['auswahl']
-            choices = form_filter.fields['auswahl'].choices
-            wahl = dict(choices)[auswahl]
-            
-            # Nutzt die zeitliche Filter-Funktion
-            protokoll_zeitraum = protokoll_zeit_filter(protokoll_gruppe, auswahl)
-            
-        elif start_datum.is_valid() and end_datum.is_valid():
-            start_raw = start_datum.cleaned_data['aufgaben_seit']
-            ende_raw = end_datum.cleaned_data['aufgaben_bis']
-            
-            # Taggenaue Uhrzeit-Abdeckung: 00:00:00 Uhr bis 23:59:59 Uhr
-            dt_von = datetime.combine(start_raw, time.min)
-            dt_bis = datetime.combine(ende_raw, time.max)
-            
-            protokoll_zeitraum = protokoll_gruppe.filter(start__gte=dt_von, start__lte=dt_bis)
-            wahl = start_raw.strftime("%d.%m.%y") + " bis " + ende_raw.strftime("%d.%m.%y")
-            
-            # Damit sich das Template den Zustand "individuelle Auswahl" merkt
-            form_filter = ProtokollFilter_neu(initial={'auswahl': 'individuell'})
-        else:
-            wahl = "aktuelles Halbjahr"
-            protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
+            form_filter = ProtokollFilter_neu(req.POST)
+            startdatum_form = Start_Datum(req.POST)
+            enddatum_form = End_Datum(req.POST)
+            if form_filter.is_valid():
+                auswahl_wert = form_filter.cleaned_data['auswahl']
+                if auswahl_wert == "individuell":
+                    wahl = "individuelle Auswahl"
+                    if startdatum_form.is_valid() and enddatum_form.is_valid():
+                        von = startdatum_form.cleaned_data['aufgaben_seit']
+                        bis = enddatum_form.cleaned_data['aufgaben_bis']
+                        protokoll_gruppe = protokoll_gruppe.filter(start__date__range=[von, bis])
+                    else:
+                        sj, hj = name_hj()
+                        protokoll_gruppe = protokoll_gruppe.filter(sj=sj, hj=hj)
+                else:
+                    wahl = auswahl_wert
+                    protokoll_gruppe = protokoll_zeit_filter(protokoll_gruppe, auswahl_wert)
+            else:
+                wahl = "heute"
+                form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
+                startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
+                enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
+                protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
     else:
-        # Normaler GET-Aufruf: Standard-Instanzen mit "Halbjahr" als Vorauswahl belegen
-        wahl = "aktuelles Halbjahr"
-        form_filter = ProtokollFilter_neu(initial={'auswahl': 'Halbjahr'})
-        start_datum = Start_Datum(initial={'aufgaben_seit': date.today()})
-        end_datum = End_Datum(initial={'aufgaben_bis': date.today()})
-        protokoll_zeitraum = protokoll_gruppe.filter(sj=sj, hj=hj)
+        wahl = "heute"
+        form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
+        startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
+        enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
+        protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
         
     # --- Ab hier folgt die Berechnungs- und Tabellenlogik ---
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)
@@ -578,7 +560,7 @@ def gruppe_uebersicht(req, gruppe_id):
     prozent_summe_farbe = False
     richtig_gesamt = falsch_gesamt = 0
     
-    katmax_max = protokoll_zeitraum.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
+    katmax_max = protokoll_gruppe.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
     
     # Defaults setzen, falls noch gar keine Daten da sind
@@ -605,7 +587,7 @@ def gruppe_uebersicht(req, gruppe_id):
         for profil in schueler_liste:
             richtig_profil = falsch_profil = 0
             hj_stimmt = profil.sj == sj and profil.hj == hj
-            protokoll_profil = protokoll_zeitraum.filter(profil = profil)
+            protokoll_profil = protokoll_gruppe.filter(profil = profil)
             
             summen = (
                 protokoll_profil
@@ -709,14 +691,12 @@ def gruppe_uebersicht(req, gruppe_id):
             aufgaben_der_schueler.append((
                 profil, hj_stimmt, prozent_summe_farbe, prozent_summe, note, dauer_text, aufgaben
             ))
-            
         seconds = int(gesamtzeit.total_seconds())
         mm = int(seconds/60)
         hh, mm = divmod(mm, 60)
         gesamtzeit_text = f"{hh}:{mm:02d}" 
-        
         gesamtsummen = (
-            protokoll_zeitraum
+            protokoll_gruppe
             .values("kategorie__zeile")
             .annotate(richtig_sum=Sum(Case(When(richtig=True, then=1), default=0, output_field=IntegerField())))
             .annotate(zeit_sum=Sum(F('end') - F('start')))
@@ -733,10 +713,14 @@ def gruppe_uebersicht(req, gruppe_id):
     # Das return steht jetzt absolut sicher auf der Grundebene der Funktion
     context = {
         'gruppe': gruppe, 'gruppe_id': gruppe_id, 'wahl': wahl, 
-        'form_filter': form_filter, 'startdatum': start_datum, 'enddatum': end_datum,
+        # 'form_filter': form_filter, 'startdatum': start_datum, 'enddatum': end_datum,
         'aufgaben_der_schueler': aufgaben_der_schueler, 'kategorien': kategorien, 
         'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
-        'note_anzeigen': note_anzeigen
+        'note_anzeigen': note_anzeigen,
+        'form_filter': form_filter,      # Das Haupt-Dropdown
+        'startdatum': startdatum_form,   # Das gebundene "von"-Formular
+        'enddatum': enddatum_form,       # Das gebundene "bis"-Formular
+        'wahl': wahl,
     }  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 

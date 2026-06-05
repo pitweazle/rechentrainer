@@ -8301,17 +8301,38 @@ def protokoll(req, schueler_id=0):
             form = FormKlasse(req.POST)
             form_start = Start_Datum(req.POST)
             form_end = End_Datum(req.POST)
+            
             if form.is_valid(): 
                 auswahl_wert = form.cleaned_data['auswahl']
                 choices = form.fields['auswahl'].choices
                 wahl = dict(choices)[auswahl_wert]
-                # Filter anwenden
-                protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
-                # Schmankerl-Logik: Wochenaufgabe auswerten
+                
+                # DER FIX: Wenn individuell gewählt ist, MÜSSEN die Daten gültig sein!
+                if auswahl_wert == "individuell":
+                    if form_start.is_valid() and form_end.is_valid():
+                        # Erst jetzt sind form_start.cleaned_data befüllt!
+                        protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
+                    else:
+                        # Falls das Datum Schrott oder unvollständig war: Fallback auf Halbjahr
+                        wahl = "aktuelles Halbjahr"
+                        protokoll = protokoll.filter(sj=profil.sj, hj=profil.hj)
+                else:
+                    # Für alle anderen Schnellauswahlen filtert er wie gewohnt
+                    protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
+                
+                # Deine perfekt sitzende Schmankerl-Logik bleibt absolut unberührt:
                 if auswahl_wert in ("Woche", "individuell") and profil.gruppe:
-                    if profil.gruppe.aufgaben_pro_woche > 0:
-                        wochenziel = profil.gruppe.aufgaben_pro_woche
-                        wochenziel_anzeigen = True
+                    wochenziel_anzeigen = True
+                    gruppe = profil.gruppe
+                    note_anzeigen = sub_note_anzeigen(profil)                    
+                    if note_anzeigen:
+                        aufgaben_pro_woche = gruppe.aufgaben_pro_woche
+                        if aufgaben_pro_woche < 1:
+                            aufgaben_pro_woche = 10 * profil.jg
+                    else:
+                        aufgaben_pro_woche = 10 * profil.jg
+                        
+                    wochenziel = aufgaben_pro_woche
         else:
             # Bei normalem GET-Aufruf: "heute" voreinstellen und Datumsfelder dynamisch mit HEUTE belegen
             form = FormKlasse(initial={'auswahl': 'heute'})

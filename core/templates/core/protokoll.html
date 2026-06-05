@@ -49,7 +49,7 @@
             {% if wochenziel_anzeigen %}
                 <div style="background-color: #f0f8ff; padding: 12px; border-left: 5px solid #2196F3; border-radius: 4px; margin-bottom: 15px; text-align: left;">
                     <p style="margin: 0 0 5px 0;">Geforderte Aufgaben pro Woche: <strong>{{ wochenziel }}</strong></p>
-                    <p style="margin: 0;">Du hast im gewählten Zeitraum bisher <strong>{{ richtig }}</strong> richtige Aufgaben gelöst.</p>
+                    <p style="margin: 0;">Du hast im gewählten Zeitraum bisher <strong>{{ richtig|floatformat:0 }}</strong> Aufgaben richtig gelöst.</p>
                 </div>
             {% endif %}
 

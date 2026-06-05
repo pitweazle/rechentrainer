@@ -33,25 +33,24 @@
 </header>
 <br>
 <body>
-    <form action="{% url 'gruppe_uebersicht' gruppe_id %}" method="POST">
+    <form method="POST" style="display: inline;">
         {% csrf_token %}
-        <h2 style= "text-align: left;"> 
+        <h2 style="text-align: left;"> Zeitraum: 
+            <button type="button">
+                {{ form_filter.auswahl }}
+            </button>
+            
             {% if "individuelle Auswahl" in wahl %}
                 <button type="button">
-                    {{startdatum}}
-                </button type="button">
+                    {{ startdatum }}
+                </button>
                 
                 <button type="button">
-                    {{enddatum}}
-                </button type="button">
-            {% else %}
-                <button type="button">
-                    {{form_filter.auswahl}}
-                </button type="button">
+                    {{ enddatum }}
+                </button>
             {% endif %}
-            <button type="button">
-                <input name="filter" type="submit" value="anwenden">
-            </button type="button">
+            
+            <input name="filter" type="submit" value="anwenden" style="font-size: 0.8em; padding: 4px 10px; cursor: pointer;">
         </h2>
     </form>
     <br> 
