@@ -35,7 +35,7 @@ from .geometrie import sub_figuren, sub_koerper, sub_koordinatensystem, sub_punk
 from .geometrie import viereck, sub_dreieck, sub_dreiecke, sub_hypo_oben, sub_hypo_unten, sub_rechtwinklig_hypo_unten, sub_dreiecksseiten, sub_py_tripel 
 from .geometrie import sub_segment, sub_winkel_koordinaten, sub_kreissegment, sub_kreisring, sub_restflaeche, sub_zylinder
 
-from django.db.models import Sum, F,  Max
+from django.db.models import Sum, F,  Max, Q
 from accounts.services import check_hj, name_hj, name_next_hj, quote_farbe, sub_note_anzeigen
 
 #Hier kommen zunächst die einzelnen Funktionen für die Kategorien (default dient als Beispiel für den Aufbau):<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -7983,24 +7983,28 @@ def uebersicht(req, schueler_id=0):
                 form.fields['auswahl'].initial = 'alle' 
     richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
     #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
-    alle_kat= False
+
+    alle_kat = False
     if "Details ausblenden" in req.POST:
         profil.details = False
-        profil.save()
+        profil.save(update_fields=['details'])
     if "Details anzeigen" in req.POST:
         profil.details = True
-        profil.save()
+        profil.save(update_fields=['details'])
     if "alle Kategorien" in req.POST:
-        alle_kat= True
+        alle_kat = True
+
     if profil.jg >= 7 or alle_kat:
-        kategorien = Kategorie.objects.all().order_by('zeile')                                      # alle_kat egorien
-        alle_kat= True
+        kategorien = Kategorie.objects.all().order_by('zeile')
+        alle_kat = True
     elif profil.jg >= 6:
-        kategorien = Kategorie.objects.filter(zeile__lt = 22)
+        # Sieht regulär alles < 22, ODER alles bis zu seinem persönlichen katmax
+        kategorien = Kategorie.objects.filter(Q(zeile__lt=22) | Q(zeile__lte=profil.katmax)).order_by('zeile')
     elif profil.jg >= 5:
-        kategorien = Kategorie.objects.filter(zeile__lt = 15)
+        # Emil (Jg 5) sieht regulär alles < 15, ODER alles bis zu seinem persönlichen katmax
+        kategorien = Kategorie.objects.filter(Q(zeile__lt=15) | Q(zeile__lte=profil.katmax)).order_by('zeile')
     else:
-        kategorien = Kategorie.objects.filter(zeile__lt = 8)
+        kategorien = Kategorie.objects.filter(Q(zeile__lt=8) | Q(zeile__lte=profil.katmax)).order_by('zeile')
     zeilen = []
     zeit_gesamt = 0
     bearbeitet = 0

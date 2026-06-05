@@ -91,13 +91,15 @@
                 </tr>
             {% endfor %}
             <tr>
-            {% if not alle_kat %}
-                <td  colspan="3", align="left">
-                    <form action="{% url 'uebersicht' %}" method="POST">
-                        {% csrf_token %}
-                        <button type="submit" name="alle Kategorien"><b>alle Kategorien anzeigen</b></button>
-                    </form>
-                </td>
+            {% if not lehrer %}
+                {% if not alle_kat %}
+                    <td  colspan="3", align="left">
+                        <form action="{% url 'uebersicht' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" name="alle Kategorien"><b>alle Kategorien anzeigen</b></button>
+                        </form>
+                    </td>
+                {% endif %}
             {% endif %}
             </tr>          
         </tbody>
