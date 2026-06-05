@@ -524,29 +524,33 @@ def gruppe_uebersicht(req, gruppe_id):
     else:
         protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)
     if req.method == 'POST':
-            form_filter = ProtokollFilter_neu(req.POST)
-            startdatum_form = Start_Datum(req.POST)
-            enddatum_form = End_Datum(req.POST)
-            if form_filter.is_valid():
-                auswahl_wert = form_filter.cleaned_data['auswahl']
-                if auswahl_wert == "individuell":
-                    wahl = "individuelle Auswahl"
+        form_filter = ProtokollFilter_neu(req.POST)
+        if form_filter.is_valid():
+            auswahl_wert = form_filter.cleaned_data['auswahl']
+            if auswahl_wert == "individuell":
+                wahl = "individuelle Auswahl"
+                if 'aufgaben_seit_day' in req.POST:
+                    startdatum_form = Start_Datum(req.POST)
+                    enddatum_form = End_Datum(req.POST)
                     if startdatum_form.is_valid() and enddatum_form.is_valid():
                         von = startdatum_form.cleaned_data['aufgaben_seit']
                         bis = enddatum_form.cleaned_data['aufgaben_bis']
                         protokoll_gruppe = protokoll_gruppe.filter(start__date__range=[von, bis])
-                    else:
-                        sj, hj = name_hj()
-                        protokoll_gruppe = protokoll_gruppe.filter(sj=sj, hj=hj)
                 else:
-                    wahl = auswahl_wert
-                    protokoll_gruppe = protokoll_zeit_filter(protokoll_gruppe, auswahl_wert)
+                    startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
+                    enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
+                    protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
             else:
-                wahl = "heute"
-                form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
+                wahl = auswahl_wert
                 startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
                 enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
-                protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
+                protokoll_gruppe = protokoll_zeit_filter(protokoll_gruppe, auswahl_wert)
+        else:
+            wahl = "heute"
+            form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
+            startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
+            enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
+            protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
     else:
         wahl = "heute"
         form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})

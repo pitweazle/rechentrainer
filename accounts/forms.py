@@ -1,7 +1,8 @@
 from django import forms
 from django.db import models
-from datetime import datetime
+from datetime import datetime, date
 
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.admin.widgets import AdminSplitDateTime
@@ -136,10 +137,10 @@ class ProtokollFilter_neu(forms.Form):
     )
 
 class Start_Datum(forms.Form):
-    aufgaben_seit = forms.DateField(label="von", widget = forms.SelectDateWidget(years=range(datetime.now().year-1, datetime.now().year+1)), initial=datetime.today())
-
+    aufgaben_seit = forms.DateField(label="von", widget=forms.SelectDateWidget(years=range(date.today().year, date.today().year+1)), initial=date.today)
+    
 class End_Datum(forms.Form):
-    aufgaben_bis = forms.DateField(label="bis", widget = forms.SelectDateWidget(years=range(datetime.now().year-1, datetime.now().year+1)), initial=datetime.today())
+    aufgaben_bis = forms.DateField(label="bis", widget=forms.SelectDateWidget(years=range(date.today().year, date.today().year+1)), initial=date.today)
 
 class Schueler_Aendern_Form(forms.ModelForm):
     class Meta:
