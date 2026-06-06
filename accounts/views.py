@@ -520,79 +520,73 @@ def gruppe_uebersicht(req, gruppe_id):
     titel = f"{gruppe.name}, {gruppe.lehrer.profil.vorname} {gruppe.lehrer.profil.nachname}"
     gesamtzeit_text = ""
     if gruppe.name != "keine Gruppe":
-        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = gruppe)
+        protokoll_basis = Protokoll.objects.filter(profil__gruppe = gruppe)
     else:
-        protokoll_gruppe = Protokoll.objects.filter(profil__gruppe = None)
+        protokoll_basis = Protokoll.objects.filter(profil__gruppe = None)
     if req.method == 'POST':
         form_filter = ProtokollFilter_neu(req.POST)
         if form_filter.is_valid():
             auswahl_wert = form_filter.cleaned_data['auswahl']
             if auswahl_wert == "individuell":
                 wahl = "individuelle Auswahl"
-                if 'aufgaben_seit_day' in req.POST:
+                if 'aufgaben_seit' in req.POST:
                     startdatum_form = Start_Datum(req.POST)
                     enddatum_form = End_Datum(req.POST)
                     if startdatum_form.is_valid() and enddatum_form.is_valid():
                         von = startdatum_form.cleaned_data['aufgaben_seit']
                         bis = enddatum_form.cleaned_data['aufgaben_bis']
-                        protokoll_gruppe = protokoll_gruppe.filter(start__date__range=[von, bis])
+                        protokoll_gruppe = protokoll_basis.filter(start__date__range=[von, bis])
+                    else:
+                        protokoll_gruppe = protokoll_basis.filter(start__date=date.today())
                 else:
-                    startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
-                    enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
-                    protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
+                    startdatum_form = Start_Datum()
+                    enddatum_form = End_Datum()
+                    protokoll_gruppe = protokoll_basis.filter(start__date=date.today())
             else:
-                wahl = auswahl_wert
-                startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
-                enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
-                protokoll_gruppe = protokoll_zeit_filter(protokoll_gruppe, auswahl_wert)
+                choices = form_filter.fields['auswahl'].choices
+                wahl = dict(choices)[auswahl_wert]
+                if auswahl_wert == "Halbjahr":
+                    wahl = "aktuelles Halbjahr"
+                startdatum_form = Start_Datum()
+                enddatum_form = End_Datum()
+                protokoll_gruppe = protokoll_zeit_filter(protokoll_basis, auswahl_wert)
         else:
-            wahl = "heute"
-            form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
-            startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
-            enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
-            protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
+            wahl = "aktuelles Halbjahr"
+            form_filter = ProtokollFilter_neu(initial={'auswahl': 'Halbjahr'})
+            startdatum_form = Start_Datum()
+            enddatum_form = End_Datum()
+            protokoll_gruppe = protokoll_zeit_filter(protokoll_basis, "Halbjahr")
     else:
-        wahl = "heute"
-        form_filter = ProtokollFilter_neu(initial={'auswahl': 'heute'})
-        startdatum_form = Start_Datum(initial={'aufgaben_seit': date.today()})
-        enddatum_form = End_Datum(initial={'aufgaben_bis': date.today()})
-        protokoll_gruppe = protokoll_gruppe.filter(start__date=date.today())
-        
-    # --- Ab hier folgt die Berechnungs- und Tabellenlogik ---
+        wahl = "aktuelles Halbjahr"
+        form_filter = ProtokollFilter_neu(initial={'auswahl': 'Halbjahr'})
+        startdatum_form = Start_Datum()
+        enddatum_form = End_Datum()
+        protokoll_gruppe = protokoll_zeit_filter(protokoll_basis, "Halbjahr")
     schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, jg, aufgaben_pro_woche, gruppe.erstellt_am)
     prozent_summe = 0
     prozent_summe_farbe = False
     richtig_gesamt = falsch_gesamt = 0
-    
     katmax_max = protokoll_gruppe.aggregate(Max('kategorie__zeile'))['kategorie__zeile__max']
     note_anzeigen = True if wahl == "aktuelles Halbjahr" else False
-    
-    # Defaults setzen, falls noch gar keine Daten da sind
     kategorien = []
     aufgaben_der_schueler = []
     kategorie_summen = [(0, "-")]
     gesamtzeit_text = "-"
-    
     if not katmax_max:
         katmax_max = 0
-        
     if protokoll_gruppe.count() > 0:
         kategorien = list(Kategorie.objects.filter(zeile__lt=katmax_max + 1).order_by('zeile', 'pk'))
         kategorie_summen = [(0, "-")] * (katmax_max+1) 
         kategorie_fehler = [(0)] * (katmax_max+1) 
         gesamtzeit = timedelta()
-        
         if gruppe.name != "keine Gruppe":
             schueler_liste = Profil.objects.filter(gruppe=gruppe).order_by("vorname")
         else:
             schueler_liste = (Profil.objects.filter(gruppe__isnull=True).order_by("vorname"))
-            
-        aufgaben_der_schueler = []
         for profil in schueler_liste:
             richtig_profil = falsch_profil = 0
             hj_stimmt = profil.sj == sj and profil.hj == hj
             protokoll_profil = protokoll_gruppe.filter(profil = profil)
-            
             summen = (
                 protokoll_profil
                 .values("profil")
@@ -609,7 +603,6 @@ def gruppe_uebersicht(req, gruppe_id):
                     gesamtzeit = gesamtzeit + dauer
                 except:
                     dauer_text = "---"
-                    
             aufgaben = [(0, "-")] * (katmax_max+1)
             kategorie_werte = (
                 protokoll_profil
@@ -629,7 +622,6 @@ def gruppe_uebersicht(req, gruppe_id):
                 falsch_kat = lsg_kat = abbr_kat = 0
                 zaehler = Zaehler.objects.filter(profil = profil, kategorie = kat_name)
                 protokoll_profil_fehler = protokoll_gruppe.filter(profil = profil)
-
                 protokoll_profil_kategorie = protokoll_profil_fehler.filter(kategorie = kat_name)
                 if zaehler.count() == 0:
                     fehler, created = Geloescht.objects.get_or_create(benutzername = str(profil.user))
@@ -650,7 +642,6 @@ def gruppe_uebersicht(req, gruppe_id):
                     else:
                         fehler_ab = zaehler.fehler_ab
                         protokoll_fehler = protokoll_profil_kategorie.filter(start__gt=fehler_ab)
-
                         protokoll_fehler = (
                             protokoll_fehler
                             .values("kategorie__zeile")
@@ -661,7 +652,6 @@ def gruppe_uebersicht(req, gruppe_id):
                                 hilfe_kat=Sum(Case(When(hilfe=True, then=1), default=0, output_field=IntegerField())),
                             )
                         )
-
                         for f in protokoll_fehler:
                             falsch_kat = f['falsch_kat'] 
                             abbr_kat = f['abbr_kat']
@@ -710,21 +700,16 @@ def gruppe_uebersicht(req, gruppe_id):
             richtig_sum = k['richtig_sum']
             quote = quote_farbe(richtig_sum, kategorie_fehler[index])
             kategorie_summen[index] = (quote, richtig_sum)
-            
     quote_gesamt = quote_farbe(richtig_gesamt, falsch_gesamt)
     kategorie_summen[0] = (quote_gesamt, int(richtig_gesamt))
-    
-    # Das return steht jetzt absolut sicher auf der Grundebene der Funktion
     context = {
         'gruppe': gruppe, 'gruppe_id': gruppe_id, 'wahl': wahl, 
-        # 'form_filter': form_filter, 'startdatum': start_datum, 'enddatum': end_datum,
         'aufgaben_der_schueler': aufgaben_der_schueler, 'kategorien': kategorien, 
         'titel': titel, 'summen': kategorie_summen, 'gesamtzeit': gesamtzeit_text,
         'note_anzeigen': note_anzeigen,
-        'form_filter': form_filter,      # Das Haupt-Dropdown
-        'startdatum': startdatum_form,   # Das gebundene "von"-Formular
-        'enddatum': enddatum_form,       # Das gebundene "bis"-Formular
-        'wahl': wahl,
+        'form_filter': form_filter,      
+        'startdatum': startdatum_form,   
+        'enddatum': enddatum_form,       
     }  
     return render(req, 'lehrer/gruppe_uebersicht.html', context)
 

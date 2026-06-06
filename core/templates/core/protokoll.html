@@ -23,27 +23,22 @@
                 {% endif %}
             </h2>
 
-            <form action="{% url 'protokoll' schueler.id %}" method="POST">
+<form action="{% url 'protokoll' schueler.id %}" method="POST">
                 {% csrf_token %}
-                <h2 style="text-align: left;"> Zeitraum: 
+                <h2 style="text-align: left; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;"> 
+                    <span>Zeitraum:</span>
+                    {{ form.auswahl }}
                     {% if "individuelle Auswahl" in wahl %}
-                        <button type="button">
-                            {{ form_start }}
-                        </button>
-                        
-                        <button type="button">
-                            {{ form_end }}
-                        </button>
-                    {% else %}
-                        <button type="button">
-                            {{ form.auswahl }}
-                        </button>
+                        <span style="font-size: 0.9em; font-weight: normal;">
+                            von: {{ startdatum.aufgaben_seit }}
+                        </span>
+                        <span style="font-size: 0.9em; font-weight: normal;">
+                            bis: {{ enddatum.aufgaben_bis }}
+                        </span>
                     {% endif %}
-                    
                     <input name="filter" type="submit" value="anwenden">
                 </h2>
-            </form> 
-            
+            </form>
             <br> 
 
             {% if wochenziel_anzeigen %}

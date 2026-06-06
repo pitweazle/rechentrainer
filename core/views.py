@@ -8271,56 +8271,45 @@ def protokoll_zeit_filter(protokoll, auswahl, form_start=None, form_end=None):
             protokoll = protokoll.filter(start__gte=dt_von, start__lte=dt_bis)
     return protokoll
 
-# Hier werden die Aufgaben protokolliert
 def protokoll(req, schueler_id=0):
     if req.user.is_authenticated:
         lehrer = User.objects.filter(pk=req.user.id, groups__name='Lehrer').exists()
         loeschen = False 
         if schueler_id == 0:
-            profil = get_object_or_404(Profil, user_id = req.user.id)          # der Lehrer
+            profil = get_object_or_404(Profil, user_id = req.user.id)
             if lehrer:
                 loeschen = True            
         else:
-            profil = get_object_or_404(Profil, id = schueler_id)               # Schülerin oder Schüler
+            profil = get_object_or_404(Profil, id = schueler_id)
         if not req.user.is_superuser:
             if (profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
                 return HttpResponse("Zugriff verweigert")
-        # Grund-Queryset holen
-        protokoll = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()
+        protokoll_basis = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()
         next_sj, next_hj = name_next_hj()
-        # Bestimmen, welche Haupt-Form-Klasse genutzt wird
         FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
-        # Standard-Werte setzen
         auswahl_wert = "heute"
         wahl = "heute"
         wochenziel = None
         wochenziel_anzeigen = False
         if req.method == 'POST':    
-            # Hier nutzen wir jetzt die korrekte Klasse passend zum Profil!
             FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
             form = FormKlasse(req.POST)
             form_start = Start_Datum(req.POST)
             form_end = End_Datum(req.POST)
-            
             if form.is_valid(): 
                 auswahl_wert = form.cleaned_data['auswahl']
                 choices = form.fields['auswahl'].choices
                 wahl = dict(choices)[auswahl_wert]
-                
-                # DER FIX: Wenn individuell gewählt ist, MÜSSEN die Daten gültig sein!
                 if auswahl_wert == "individuell":
                     if form_start.is_valid() and form_end.is_valid():
-                        # Erst jetzt sind form_start.cleaned_data befüllt!
-                        protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
+                        von = form_start.cleaned_data['aufgaben_seit']
+                        bis = form_end.cleaned_data['aufgaben_bis']
+                        protokoll = protokoll_basis.filter(start__date__range=[von, bis])
                     else:
-                        # Falls das Datum Schrott oder unvollständig war: Fallback auf Halbjahr
-                        wahl = "aktuelles Halbjahr"
-                        protokoll = protokoll.filter(sj=profil.sj, hj=profil.hj)
+                        wahl = "individuelle Auswahl"
+                        protokoll = protokoll_basis.filter(start__date=date.today())
                 else:
-                    # Für alle anderen Schnellauswahlen filtert er wie gewohnt
-                    protokoll = protokoll_zeit_filter(protokoll, auswahl_wert, form_start, form_end)
-                
-                # Deine perfekt sitzende Schmankerl-Logik bleibt absolut unberührt:
+                    protokoll = protokoll_zeit_filter(protokoll_basis, auswahl_wert)
                 if auswahl_wert in ("Woche", "individuell") and profil.gruppe:
                     wochenziel_anzeigen = True
                     gruppe = profil.gruppe
@@ -8331,21 +8320,23 @@ def protokoll(req, schueler_id=0):
                             aufgaben_pro_woche = 10 * profil.jg
                     else:
                         aufgaben_pro_woche = 10 * profil.jg
-                        
                     wochenziel = aufgaben_pro_woche
+            else:
+                form = FormKlasse(initial={'auswahl': 'heute'})
+                form_start = Start_Datum()
+                form_end = End_Datum()
+                protokoll = protokoll_basis.filter(start__date = date.today())
         else:
-            # Bei normalem GET-Aufruf: "heute" voreinstellen und Datumsfelder dynamisch mit HEUTE belegen
             form = FormKlasse(initial={'auswahl': 'heute'})
-            form_start = Start_Datum(initial={'aufgaben_seit': date.today()})
-            form_end = End_Datum(initial={'aufgaben_bis': date.today()})
-            protokoll = protokoll.filter(start__date = date.today())
-        # Berechnungen für die Statistik-Tabelle
+            form_start = Start_Datum()
+            form_end = End_Datum()
+            protokoll = protokoll_basis.filter(start__date = date.today())
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else 0
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
         falsch = temp if temp else 0
         abbr = protokoll.filter(abbr=True).count()
-        try:                                                                        
+        try:                                                                                                                                                                                                            
             quote = int(falsch/(richtig+falsch)*100)
         except:
             quote = "-"
@@ -8354,10 +8345,12 @@ def protokoll(req, schueler_id=0):
         hilfe = protokoll.filter(hilfe=True).count()
         exclude = ["", " Hilfe "]
         protokoll = protokoll.exclude(eingabe__in = exclude)
-        
         context = dict(
             lehrer=lehrer, loeschen=loeschen, schueler=profil, protokoll=protokoll, 
-            form=form, form_start=form_start, form_end=form_end, wahl=wahl, 
+            form=form, 
+            startdatum=form_start,  # <-- Hier exakt wie in gruppe_uebersicht
+            enddatum=form_end,      # <-- Hier exakt wie in gruppe_uebersicht
+            wahl=wahl, 
             richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, 
             abbr=abbr, lsg=lsg, hilfe=hilfe,
             wochenziel=wochenziel, wochenziel_anzeigen=wochenziel_anzeigen

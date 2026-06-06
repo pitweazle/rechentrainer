@@ -137,10 +137,10 @@ class ProtokollFilter_neu(forms.Form):
     )
 
 class Start_Datum(forms.Form):
-    aufgaben_seit = forms.DateField(label="von", widget=forms.SelectDateWidget(years=range(date.today().year, date.today().year+1)), initial=date.today)
-    
+    aufgaben_seit = forms.DateField(label="von", widget=forms.DateInput(attrs={'type': 'date'}), initial=date.today)
+
 class End_Datum(forms.Form):
-    aufgaben_bis = forms.DateField(label="bis", widget=forms.SelectDateWidget(years=range(date.today().year, date.today().year+1)), initial=date.today)
+    aufgaben_bis = forms.DateField(label="bis", widget=forms.DateInput(attrs={'type': 'date'}), initial=date.today)
 
 class Schueler_Aendern_Form(forms.ModelForm):
     class Meta:
