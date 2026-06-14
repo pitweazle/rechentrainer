@@ -7,25 +7,25 @@ from accounts.models import Geloescht
 
 
 class Command(BaseCommand):
-    help = "Löscht verwaiste Lerngruppen, protokolliert sie in der Geloescht-Datenbank und gibt eine Übersicht aus."
+    help = "Löscht verwaiste Lerngruppen (älter als 30 Tage) und protokolliert sie in der Geloescht-Datenbank."
 
     def add_arguments(self, parser):
-        # Ein Sicherheits-Flag, damit man nicht aus Versehen löscht
+        # Nur noch das Testrun-Argument bleibt
         parser.add_argument(
-            '--commit',
+            '--testrun',
             action='store_true',
-            help='Führt das Löschen und Protokollieren tatsächlich aus. Ohne dieses Flag läuft nur ein Test.',
+            help='Führt nur eine Trockenübung aus, ohne wirklich zu löschen.',
         )
 
     def handle(self, *args, **options):
-        # Sicherheits-Zeitraum
-        TAGE_GRENZE = 90  
-        commit = options['commit']
+        TAGE_GRENZE = 30  
+        # Logik für den Testlauf: Standardmäßig wird gelöscht
+        commit = not options['testrun']
         
         gesamtzahl_gruppen = Lerngruppe.objects.count()
         grenze = timezone.now().date() - timedelta(days=TAGE_GRENZE)
         
-        # Alle Lerngruppen, die älter als X Tage sind
+        # Alle Lerngruppen, die älter als 30 Tage sind
         alte_lerngruppen = Lerngruppe.objects.filter(erstellt_am__lt=grenze)
         
         kandidaten_anzahl = 0
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 gruppen_ohne_schüler.append(gruppe)
                 kandidaten_anzahl += 1
         
-        # Ausgabe der Übersicht
+        # Ausgabe der Ergebnisse
         self.stdout.write("\n---------------------------------------------------")
         self.stdout.write(f"Gesamtzahl aller Lerngruppen im System:      {gesamtzahl_gruppen}")
         self.stdout.write(f"Davon älter als {TAGE_GRENZE} Tage:                    {alte_lerngruppen.count()}")
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         self.stdout.write("---------------------------------------------------")
         
         if not commit:
-            self.stdout.write("\n*** TOCKENÜBUNG: Es wurde nichts gelöscht. Nutze --commit zum Löschen. ***")
+            self.stdout.write("\n*** TROCKENÜBUNG: Es wird nichts gelöscht! ***")
         
         if gruppen_ohne_schüler:
             action_word = "Gelöscht" if commit else "Kandidat"
@@ -56,7 +56,6 @@ class Command(BaseCommand):
             for gruppe in gruppen_ohne_schüler:
                 lehrer = gruppe.lehrer
                 
-                # Klarnamen für das Terminal holen
                 try:
                     lehrer_klarname = f"{lehrer.profil.vorname} {lehrer.profil.nachname}".strip()
                 except Profil.DoesNotExist:
@@ -65,26 +64,22 @@ class Command(BaseCommand):
                 if not lehrer_klarname or lehrer_klarname == " ":
                     lehrer_klarname = lehrer.username
 
-                # Text für deine Geloescht-Datenbank vorbereiten
                 log_text = (
-                    f"Lerngruppe gelöscht: '{gruppe.name}' (ID: {gruppe.id}). "
+                    f"Lerngruppe automatisch gelöscht: '{gruppe.name}' (ID: {gruppe.id}). "
                     f"Erstellt am: {gruppe.erstellt_am}. "
                     f"Lehrer: {lehrer_klarname} (Username: {lehrer.username})."
                 )
                 
                 if commit:
-                    # 1. Eintrag in die 'Geloescht' DB schreiben
                     Geloescht.objects.create(
                         benutzername=lehrer.username,
                         grund="Inaktivität Lerngruppe",
                         text=log_text,
                         erstellt_am=timezone.now()
                     )
-                    # 2. Lerngruppe endgültig löschen
                     gruppe.delete()
                 
-                # Ausgabe im Terminal
-                self.stdout.write(f"- \"{gruppe.name}\" (Lehrer: {lehrer_klarname}) -> In DB 'Geloescht' aufgenommen.")
+                self.stdout.write(f"- \"{gruppe.name}\" (Lehrer: {lehrer_klarname})")
                 
             if commit:
                 self.stdout.write(f"\nErfolgreich {kandidaten_anzahl} Lerngruppen gelöscht und protokolliert.")
