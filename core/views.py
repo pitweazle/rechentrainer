@@ -4017,6 +4017,7 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             typ = random.randint(typ_anf, typ_end) 
         else:
             typ = random.randint(1,6)*2
+        typ=9
         typ2 = 0
         titel = "Titel" 
         text = "default{}"
@@ -4069,7 +4070,7 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             text = "({}) · ({})"
         elif typ == 9:                                                  # * vereinf. Schreibweise Kommazahl
             erg = round(zahl1*zahl2,2)
-            variable = [format_zahl(zahl1,1), format_zahl(zahl2,1)]
+            variable = [format_zahl(zahl1,1), format_zahl(zahl2,0)]
             if zahl2 < 0:
                 text = "{} · ({})"
             else:
