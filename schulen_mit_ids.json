@@ -1,0 +1,524 @@
+[
+{
+  "model": "accounts.schule",
+  "pk": 1,
+  "fields": {
+    "ort": 1,
+    "schulname": "IGS Kelsterbach",
+    "dienststellen_nr": "DE-HE-6072"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 2,
+  "fields": {
+    "ort": 2,
+    "schulname": "Goetheschule",
+    "dienststellen_nr": "DE-HE-5204"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 3,
+  "fields": {
+    "ort": 3,
+    "schulname": "Heinrich-Böll-Schule",
+    "dienststellen_nr": "DE-HE-6018"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 4,
+  "fields": {
+    "ort": 4,
+    "schulname": "Limesschule",
+    "dienststellen_nr": "DE-HE-4115"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 5,
+  "fields": {
+    "ort": 5,
+    "schulname": "Jacob-Grimm-Schule",
+    "dienststellen_nr": "DE-HE-8613"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 6,
+  "fields": {
+    "ort": 5,
+    "schulname": "Heinrich-Schütz-Schule",
+    "dienststellen_nr": "DE-HE-8611"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 7,
+  "fields": {
+    "ort": 6,
+    "schulname": "Martin-Luther-Schule",
+    "dienststellen_nr": "DE-HE-4684"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 8,
+  "fields": {
+    "ort": 7,
+    "schulname": "Elisabeth-Selbert-Schule",
+    "dienststellen_nr": "DE-HE-9240"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 9,
+  "fields": {
+    "ort": 8,
+    "schulname": "Uplandschule",
+    "dienststellen_nr": "DE-HE-7576"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 10,
+  "fields": {
+    "ort": 9,
+    "schulname": "Beruflichen Schulen",
+    "dienststellen_nr": "DE-HE-9701"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 11,
+  "fields": {
+    "ort": 10,
+    "schulname": "Adolf-Reichwein-Schule",
+    "dienststellen_nr": "DE-HE-9722"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 12,
+  "fields": {
+    "ort": 11,
+    "schulname": "Georg-Büchner-Gymnasium",
+    "dienststellen_nr": "DE-HE-5171"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 13,
+  "fields": {
+    "ort": 12,
+    "schulname": "Mauszentrum Lauterbach",
+    "dienststellen_nr": null
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 16,
+  "fields": {
+    "ort": 14,
+    "schulname": "Holderbergschule",
+    "dienststellen_nr": "DE-HE-3568"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 17,
+  "fields": {
+    "ort": 15,
+    "schulname": "Limesschule",
+    "dienststellen_nr": "DE-HE-3417"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 18,
+  "fields": {
+    "ort": 16,
+    "schulname": "IGS Peine",
+    "dienststellen_nr": "DE-NI-174987"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 19,
+  "fields": {
+    "ort": 17,
+    "schulname": "Friedrich-Ebert-Schule",
+    "dienststellen_nr": "DE-HE-6082"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 20,
+  "fields": {
+    "ort": 5,
+    "schulname": "Johann Hinrich Wichern Realschule",
+    "dienststellen_nr": "DE-HE-7681"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 21,
+  "fields": {
+    "ort": 18,
+    "schulname": "Ludwig-Börne-Schule",
+    "dienststellen_nr": "DE-HE-4385"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 23,
+  "fields": {
+    "ort": 5,
+    "schulname": "Wilhelm_Lückert_Schule",
+    "dienststellen_nr": "DE-HE-8210"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 24,
+  "fields": {
+    "ort": 20,
+    "schulname": "Lichtenbergschule",
+    "dienststellen_nr": "DE-HE-5125"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 25,
+  "fields": {
+    "ort": 22,
+    "schulname": "Helmut von Bracken Schule",
+    "dienststellen_nr": "DE-HE-4630"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 26,
+  "fields": {
+    "ort": 21,
+    "schulname": "Geschwister-Scholl-Schule",
+    "dienststellen_nr": "DE-HE-4259"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 27,
+  "fields": {
+    "ort": 23,
+    "schulname": "IGS",
+    "dienststellen_nr": "DE-HE-9219"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 28,
+  "fields": {
+    "ort": 25,
+    "schulname": "Philipp-Reis-Schule",
+    "dienststellen_nr": "DE-HE-6110"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 29,
+  "fields": {
+    "ort": 24,
+    "schulname": "Graf-Stauffenberg-Gymnasium",
+    "dienststellen_nr": "DE-HE-6095"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 30,
+  "fields": {
+    "ort": 26,
+    "schulname": "Marianne-Frostig-Schule",
+    "dienststellen_nr": "DE-HE-4300"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 31,
+  "fields": {
+    "ort": 27,
+    "schulname": "Söderblom-Gymnasium",
+    "dienststellen_nr": "DE-NW-168340"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 32,
+  "fields": {
+    "ort": 29,
+    "schulname": "Produktionsschule Neumühle",
+    "dienststellen_nr": null
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 33,
+  "fields": {
+    "ort": 30,
+    "schulname": "Heiligenstockschule",
+    "dienststellen_nr": "DE-HE-3931"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 34,
+  "fields": {
+    "ort": 31,
+    "schulname": "Gesamtschule Melsungen",
+    "dienststellen_nr": "DE-HE-9242"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 35,
+  "fields": {
+    "ort": 10,
+    "schulname": "Kaufmännische Schulen",
+    "dienststellen_nr": "DE-HE-9720"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 36,
+  "fields": {
+    "ort": 26,
+    "schulname": "Leibnizschule",
+    "dienststellen_nr": "DE-HE-5137"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 37,
+  "fields": {
+    "ort": 32,
+    "schulname": "Martinus-Schule",
+    "dienststellen_nr": "DE-HE-3687"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 38,
+  "fields": {
+    "ort": 33,
+    "schulname": "Hinterlandschule",
+    "dienststellen_nr": "DE-HE-4308"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 40,
+  "fields": {
+    "ort": 36,
+    "schulname": "Mädchenrealschule St. Josef",
+    "dienststellen_nr": "DE-HE-5027"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 41,
+  "fields": {
+    "ort": 37,
+    "schulname": "Johannes-Gutenberg-Schule",
+    "dienststellen_nr": "DE-HE-6040"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 42,
+  "fields": {
+    "ort": 38,
+    "schulname": "Gymnasium Rahlstedt",
+    "dienststellen_nr": "DE-HH-6146"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 43,
+  "fields": {
+    "ort": 39,
+    "schulname": "Freiherr-vom-Stein Schule",
+    "dienststellen_nr": "DE-HE-3898"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 44,
+  "fields": {
+    "ort": 40,
+    "schulname": "Freiherr-vom-Stein-Schule",
+    "dienststellen_nr": "DE-HE-4192"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 45,
+  "fields": {
+    "ort": 41,
+    "schulname": "Melibokusschule",
+    "dienststellen_nr": "DE-HE-6099"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 46,
+  "fields": {
+    "ort": 42,
+    "schulname": "Konrad-Adenauer-Gymnasium",
+    "dienststellen_nr": "DE-RP-40411"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 47,
+  "fields": {
+    "ort": 28,
+    "schulname": "Gewerblichen Schulen",
+    "dienststellen_nr": "DE-HE-6287"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 48,
+  "fields": {
+    "ort": 43,
+    "schulname": "Geschwister-Scholl-Schule",
+    "dienststellen_nr": "DE-HE-3662"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 49,
+  "fields": {
+    "ort": 44,
+    "schulname": "Grundschule Hannover Marienwerder",
+    "dienststellen_nr": "DE-NI-110304"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 51,
+  "fields": {
+    "ort": 45,
+    "schulname": "Geschwister-Scholl-Schule",
+    "dienststellen_nr": "DE-HE-6053"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 52,
+  "fields": {
+    "ort": 47,
+    "schulname": "Winfriedschule",
+    "dienststellen_nr": "DE-HE-8606"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 53,
+  "fields": {
+    "ort": 48,
+    "schulname": "IGS Mainspitze",
+    "dienststellen_nr": "DE-HE-6063"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 54,
+  "fields": {
+    "ort": 26,
+    "schulname": "Marienschule",
+    "dienststellen_nr": "DE-HE-6073"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 55,
+  "fields": {
+    "ort": 49,
+    "schulname": "Walter-Lübcke-Schule, Wolfhagen",
+    "dienststellen_nr": "DE-HE-9211"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 56,
+  "fields": {
+    "ort": 20,
+    "schulname": "LGG",
+    "dienststellen_nr": "DE-HE-5126"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 57,
+  "fields": {
+    "ort": 18,
+    "schulname": "IGS Süd",
+    "dienststellen_nr": "DE-HE-4399"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 58,
+  "fields": {
+    "ort": 50,
+    "schulname": "Gymnasium Michelstadt",
+    "dienststellen_nr": "DE-HE-5169"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 59,
+  "fields": {
+    "ort": 51,
+    "schulname": "Schulhaus Wiesenthal",
+    "dienststellen_nr": "CH-9450"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 61,
+  "fields": {
+    "ort": 52,
+    "schulname": "Wilhelm-Leuschner-Schule",
+    "dienststellen_nr": "DE-HE-6017"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 62,
+  "fields": {
+    "ort": 53,
+    "schulname": "Gustav-Heinemann-Schule",
+    "dienststellen_nr": "DE-HE-9251"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 63,
+  "fields": {
+    "ort": 54,
+    "schulname": "Kaulbach-Schule",
+    "dienststellen_nr": "DE-HE-7532"
+  }
+},
+{
+  "model": "accounts.schule",
+  "pk": 64,
+  "fields": {
+    "ort": 55,
+    "schulname": "Rupert-Neudeck-Gesamtschule",
+    "dienststellen_nr": "DE-NW-198642"
+  }
+}
+]
