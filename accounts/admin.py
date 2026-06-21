@@ -22,8 +22,11 @@ class OrtAdmin(admin.ModelAdmin):
     ordering = ['plz',]
 
 class SchuleAdmin(admin.ModelAdmin):
-    list_filter=("ort",)
+    list_display = ('id', 'schulname', 'ort', 'dienststellen_nr')
+    list_display_links = ('id', 'schulname')
+    list_filter = ("ort",)
     ordering = ['ort__plz',]
+    search_fields = ('schulname', 'dienststellen_nr')
 
 class LerngruppeAdmin(admin.ModelAdmin):
     list_filter=(
