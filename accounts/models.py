@@ -17,6 +17,7 @@ class Ort(models.Model):
 class Schule(models.Model):
     ort = models.ForeignKey(Ort, null=True, on_delete=models.SET_NULL)
     schulname = models.CharField(max_length=50)
+    dienststellen_nr = models.CharField(max_length=20, unique=True, null=True, blank=True)
     
     def __str__(self):
         return f"{self.schulname}, {self.ort}"
@@ -63,6 +64,7 @@ class Profil(models.Model):
     vorname = models.CharField(max_length=30)
     
     klasse = models.CharField(max_length=10)
+    sso_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     # diese Felder werden erst ausgefüllt, wenn ein Schüler seine Lerngruppe wählt
     schule = models.ForeignKey(Schule, related_name='schule1', null= True, blank=True, on_delete = models.SET_NULL)
     zweite_schule = models.ForeignKey(Schule, related_name='schule2',null= True, blank=True, on_delete = models.SET_NULL)
