@@ -7,6 +7,7 @@ urlpatterns = [
     #path("uebersicht/<int:profil_id>/", views.uebersicht, name="uebersicht"),
 
     # Anmeldung & Registrierung
+    path('lti/launch/', views.lti_launch, name='lti_launch'),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
     path("registrieren/", views.registrieren, name="registrieren"),

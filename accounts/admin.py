@@ -28,6 +28,24 @@ class SchuleAdmin(admin.ModelAdmin):
     ordering = ['ort__plz',]
     search_fields = ('schulname', 'dienststellen_nr')
 
+from .models import ExterneSchnittstelleConfig
+
+@admin.register(ExterneSchnittstelleConfig)
+class ExterneSchnittstelleConfigAdmin(admin.ModelAdmin):
+    list_display = ('schulname', 'typ', 'consumer_key', 'schule')
+    list_filter = ('typ', 'schule')
+    search_fields = ('schulname', 'consumer_key')
+
+    fieldsets = (
+        ('Allgemeine Infos', {
+            'fields': ('schulname', 'typ', 'schule')
+        }),
+        ('Sicherheits-Schlüssel (Credentials)', {
+            'fields': ('consumer_key', 'shared_secret'),
+            'description': 'Gibe diese Daten an den Moodle-Admin der Schule weiter.'
+        }),
+    )
+
 class LerngruppeAdmin(admin.ModelAdmin):
     list_filter=(
         ("lehrer", admin.RelatedOnlyFieldListFilter), 

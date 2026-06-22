@@ -2,18 +2,25 @@ from datetime import date, datetime, timedelta, time
 
 from decimal import Decimal
 
+import string
+import random
+
 import json
 from pathlib import Path
 
 from django.utils import timezone
 
 from django.shortcuts import render, redirect, get_object_or_404
+
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
-from django.http import HttpResponse, FileResponse, Http404
+
+from django.http import HttpResponse, HttpResponseBadRequest, FileResponse, Http404
 from django.conf import settings
+
+from django.views.decorators.csrf import csrf_exempt
 
 from django.db.models import Max, Sum, Count, F, Q
 from django.db.models import Sum, Case, When, IntegerField
@@ -23,12 +30,14 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Lerngruppe, Geloescht
+from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
 
 from mathetests.models import Test
+
+
 
 # Dies ist die Startseite:
 def index(req):
@@ -134,6 +143,90 @@ def anmelden(req):
     form = Login_Form()
     context = {'form' : form, 'titel': titel} 
     return render(req, 'anmelden.html', context)
+
+
+
+# Hilfsfunktion, um ein zufälliges Passwort für den neuen Django-User zu generieren
+def generiere_zufaelliges_passwort():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=24))
+
+@csrf_exempt # Wichtig: Erlaubt Moodle, Daten an uns zu senden
+def lti_launch(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
+
+    # 1. Welcher Consumer Key klopft an?
+    consumer_key = request.POST.get('oauth_consumer_key')
+    
+    try:
+        # Konfiguration aus der Datenbank holen
+        config = ExterneSchnittstelleConfig.objects.get(consumer_key=consumer_key, typ='moodle')
+    except ExterneSchnittstelleConfig.DoesNotExist:
+        return HttpResponseBadRequest("Unbekannter oder ungültiger Consumer Key.")
+
+    # 2. HIER WÜRDE NUN DIE SIGNATUR-PRÜFUNG MIT PYLTI STATTFINDEN
+    # (Für den allerersten lokalen Strukturtest überspringen wir die Mathe kurz, 
+    # damit du siehst, wie die User-Erstellung läuft)
+    
+    # 3. Daten aus dem Moodle-Paket auslesen
+    moodle_uid = request.POST.get('user_id') # Eindeutige ID des Schülers in Moodle
+    vorname = request.POST.get('lis_person_name_given', 'Moodle')
+    nachname = request.POST.get('lis_person_name_family', 'Schüler')
+    
+    if not moodle_uid:
+        return HttpResponseBadRequest("Moodle hat keine user_id übermittelt.")
+    # 4. Existiert der Moodle-User schon bei uns?
+    user = None
+    
+    # SCHRITT A: Erst schauen, ob wir die Moodle-ID schon kennen
+    try:
+        profil = Profil.objects.get(moodle_uid=moodle_uid)
+        user = profil.user
+        print("user: ", user)
+    except Profil.DoesNotExist:
+            
+        # Direkt ohne Splitting oder Änderungen suchen
+        schule_objekt = Schule.objects.filter(dienststellen_nr=consumer_key).first()
+        
+        if not schule_objekt:
+            return HttpResponseBadRequest(f"Keine Schule mit der Dienststellennummer '{consumer_key}' gefunden.")
+
+        # Jetzt suchen wir Franz anhand von Vorname, Nachname und seiner eindeutigen Schule
+        profil = Profil.objects.filter(
+            vorname=vorname,
+            nachname=nachname,
+            schule=schule_objekt
+        ).first()
+        if profil:
+            # Franz über seine Dienststelle und Namen gefunden!
+            user = profil.user
+            # Moodle-ID für das nächste Mal (Schritt A) eintragen
+            profil.moodle_uid = moodle_uid
+            profil.save()
+        else:
+            # SCHRITT C: Fallback für neue Schüler dieser Schule
+            username = f"moodle_{moodle_uid[:20]}"
+            user = User.objects.create_user(username=username, password=generiere_zufaelliges_passwort())
+            
+            jahrgang = request.POST.get('custom_jg', request.POST.get('jg', 5))
+            profil = Profil.objects.create(
+                user=user,
+                moodle_uid=moodle_uid,
+                vorname=vorname,
+                nachname=nachname,
+                schule=schule_objekt,
+                jg=jahrgang
+            )
+
+    # 5. Den User einloggen
+    if user:
+        login(request, user)
+        return redirect('index')
+    else:
+        return HttpResponseBadRequest("Benutzer konnte nicht zugeordnet werden.")
+
+    # 6. Ab auf das Dashboard / die Startseite des Rechentrainers!
+    return redirect('dashboard') # Passe den Namen deiner Startseite/View an
 
 def account_loeschen(req):
     try:    
