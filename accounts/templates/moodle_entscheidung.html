@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 30px;">
+    <h2>Moodle-Verbindung prüfen</h2>
+    <p>Hallo <strong>{{ moodle_vorname }} {{ moodle_nachname }}</strong>,</p>
+    <p>du versuchst dich über Moodle anzumelden. Dein Name weicht jedoch von deinem Namen im Rechentrainer ab, oder du bist das erste Mal hier.</p>
+
+    {% if error_message %}
+        <div style="color: red; background-color: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <hr>
+
+    <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+        <h3>Option A: Ich bin neu hier</h3>
+        <p>Du hast noch keinen Account im Rechentrainer? Dann lege jetzt einen neuen an.</p>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="neu_registrieren">
+            <button type="submit" style="background-color: #28a745; color: white; padding: 8px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                Neuen Account registrieren
+            </button>
+        </form>
+    </div>
+
+    <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+        <h3>Option B: Ich habe schon einen Account</h3>
+        <p>Du bist im Rechentrainer z.B. als "Herr Doll" registriert? Gib deine normalen Rechentrainer-Zugangsdaten ein, um die Konten dauerhaft zu verknüpfen.</p>
+        
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="verknuepfen">
+            
+            <div style="margin-bottom: 10px;">
+                <label style="display: block;">Rechentrainer-Benutzername:</label>
+                <input type="text" name="username_eingabe" required style="width: 100%; padding: 6px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block;">Passwort:</label>
+                <input type="password" name="passwort_eingabe" required style="width: 100%; padding: 6px; box-sizing: border-box;">
+            </div>
+            
+            <button type="submit" style="background-color: #007bff; color: white; padding: 8px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                Einloggen & Moodle-ID verknüpfen
+            </button>
+        </form>
+    </div>
+
+    <div style="text-align: right;">
+        <form action="" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="abbrechen">
+            <button type="submit" style="background-color: #dc3545; color: white; padding: 6px 12px; border: none; cursor: pointer; border-radius: 4px;">
+                Vorgang abbrechen
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -37,8 +37,6 @@ from core.models import Zaehler, Profil, Kategorie, Protokoll
 
 from mathetests.models import Test
 
-
-
 # Dies ist die Startseite:
 def index(req):
     if 'duell' in req.session:
@@ -74,7 +72,6 @@ def stufen(req):
     return render(req, 'lehrer/stufen.html', context={'titel': "Was bedeuten die Stufen?",})
 
 # registrieren und anmelden:
-
 def registrieren(req):
     reg_form = Register_Form()
     profil_form = Profil_Form()  
@@ -144,89 +141,215 @@ def anmelden(req):
     context = {'form' : form, 'titel': titel} 
     return render(req, 'anmelden.html', context)
 
-
-
 # Hilfsfunktion, um ein zufälliges Passwort für den neuen Django-User zu generieren
 def generiere_zufaelliges_passwort():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=24))
 
-@csrf_exempt # Wichtig: Erlaubt Moodle, Daten an uns zu senden
+@csrf_exempt
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
 
-    # 1. Welcher Consumer Key klopft an?
     consumer_key = request.POST.get('oauth_consumer_key')
-    
     try:
-        # Konfiguration aus der Datenbank holen
         config = ExterneSchnittstelleConfig.objects.get(consumer_key=consumer_key, typ='moodle')
     except ExterneSchnittstelleConfig.DoesNotExist:
         return HttpResponseBadRequest("Unbekannter oder ungültiger Consumer Key.")
 
-    # 2. HIER WÜRDE NUN DIE SIGNATUR-PRÜFUNG MIT PYLTI STATTFINDEN
-    # (Für den allerersten lokalen Strukturtest überspringen wir die Mathe kurz, 
-    # damit du siehst, wie die User-Erstellung läuft)
+    # Moodle-Daten auslesen
+    moodle_uid = request.POST.get('user_id') 
+    vorname = request.POST.get('lis_person_name_given', '').strip()
+    nachname = request.POST.get('lis_person_name_family', '').strip()
+    moodle_email = request.POST.get('lis_person_contact_email_primary', '').strip()
+    moodle_rollen = request.POST.get('roles', 'Learner')
     
-    # 3. Daten aus dem Moodle-Paket auslesen
-    moodle_uid = request.POST.get('user_id') # Eindeutige ID des Schülers in Moodle
-    vorname = request.POST.get('lis_person_name_given', 'Moodle')
-    nachname = request.POST.get('lis_person_name_family', 'Schüler')
-    
-    if not moodle_uid:
-        return HttpResponseBadRequest("Moodle hat keine user_id übermittelt.")
-    # 4. Existiert der Moodle-User schon bei uns?
-    user = None
-    
-    # SCHRITT A: Erst schauen, ob wir die Moodle-ID schon kennen
+    if 'Instructor' in moodle_rollen or 'Teacher' in moodle_rollen:
+        ziel_gruppen_name = "Lehrer"
+    else:
+        ziel_gruppen_name = "Schüler"
+
+    # 1. WENN DATEN VON MOODLE FEHLERHAFT -> Fehlermeldung "falsche Daten"
+    if not moodle_uid or not vorname or not nachname:
+        return HttpResponseBadRequest("Falsche oder unvollständige Moodle-Daten übermittelt.")
+        
+    # 2. WENN ID SCHON IM PROFIL -> Einloggen
     try:
         profil = Profil.objects.get(moodle_uid=moodle_uid)
         user = profil.user
-        print("user: ", user)
-    except Profil.DoesNotExist:
-            
-        # Direkt ohne Splitting oder Änderungen suchen
-        schule_objekt = Schule.objects.filter(dienststellen_nr=consumer_key).first()
         
-        if not schule_objekt:
-            return HttpResponseBadRequest(f"Keine Schule mit der Dienststellennummer '{consumer_key}' gefunden.")
-
-        # Jetzt suchen wir Franz anhand von Vorname, Nachname und seiner eindeutigen Schule
-        profil = Profil.objects.filter(
-            vorname=vorname,
-            nachname=nachname,
-            schule=schule_objekt
-        ).first()
-        if profil:
-            # Franz über seine Dienststelle und Namen gefunden!
-            user = profil.user
-            # Moodle-ID für das nächste Mal (Schritt A) eintragen
-            profil.moodle_uid = moodle_uid
-            profil.save()
-        else:
-            # SCHRITT C: Fallback für neue Schüler dieser Schule
-            username = f"moodle_{moodle_uid[:20]}"
-            user = User.objects.create_user(username=username, password=generiere_zufaelliges_passwort())
+        # Gruppe und E-Mail pflegen
+        gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+        if gruppe_obj:
+            user.groups.add(gruppe_obj)
+        if moodle_email and user.email != moodle_email:
+            user.email = moodle_email
+            user.save()
             
-            jahrgang = request.POST.get('custom_jg', request.POST.get('jg', 5))
-            profil = Profil.objects.create(
-                user=user,
-                moodle_uid=moodle_uid,
-                vorname=vorname,
-                nachname=nachname,
-                schule=schule_objekt,
-                jg=jahrgang
-            )
-
-    # 5. Den User einloggen
-    if user:
         login(request, user)
         return redirect('index')
-    else:
-        return HttpResponseBadRequest("Benutzer konnte nicht zugeordnet werden.")
+    except Profil.DoesNotExist:
+        pass
 
-    # 6. Ab auf das Dashboard / die Startseite des Rechentrainers!
-    return redirect('dashboard') # Passe den Namen deiner Startseite/View an
+    # Schule für die Namensprüfung holen
+    schule_objekt = Schule.objects.filter(dienststellen_nr=consumer_key).first()
+    if not schule_objekt:
+        return HttpResponseBadRequest(f"Keine Schule mit ID '{consumer_key}' gefunden.")
+
+    # 3. WENN KEINE ID, ABER NAME STIMMT ÜBEREIN -> ID eintragen und einloggen
+    profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_objekt).first()
+    if profil:
+        user = profil.user
+        profil.moodle_uid = moodle_uid
+        profil.save()
+        
+        gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+        if gruppe_obj:
+            user.groups.add(gruppe_obj)
+        if moodle_email and user.email != moodle_email:
+            user.email = moodle_email
+            user.save()
+            
+        login(request, user)
+        return redirect('index')
+
+    # 4. WENN KEINE ID UND KEINE NAMENSÜBEREINSTIMMUNG -> Daten merken und ab zur Frage!
+    request.session['moodle_launch_data'] = {
+        'moodle_uid': moodle_uid,
+        'vorname': vorname,
+        'nachname': nachname,
+        'email': moodle_email,
+        'schule_id': schule_objekt.id,
+        'gruppe': ziel_gruppen_name,
+        'jg': request.POST.get('custom_jg', request.POST.get('jg', 5)),
+        'klasse': request.POST.get('context_title', 'Moodle-Kurs')[:10]
+    }
+    
+    return redirect('moodle_entscheidung')
+
+
+@csrf_exempt
+def moodle_entscheidung_view(request):
+    moodle_data = request.session.get('moodle_launch_data')
+    if not moodle_data:
+        return redirect('index')
+
+    error_message = ""
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+
+        # a) Ich bin neu hier, bitte registrieren
+        if aktion == 'neu_registrieren':
+            zeichen = string.ascii_letters + string.digits
+            zufalls_passwort = ''.join(random.choice(zeichen) for i in range(16))
+            username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+            
+            user = User.objects.create_user(
+                username=username, 
+                email=moodle_data['email'],
+                password=zufalls_passwort
+            )
+            
+            gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
+            if gruppe_obj:
+                user.groups.add(gruppe_obj)
+            
+            schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
+            Profil.objects.create(
+                user=user,
+                moodle_uid=moodle_data['moodle_uid'],
+                vorname=moodle_data['vorname'],
+                nachname=moodle_data['nachname'],
+                schule=schule_obj,
+                jg=moodle_data['jg'],
+                klasse=moodle_data['klasse']
+            )
+            
+            login(request, user)
+            del request.session['moodle_launch_data']
+            
+            html_erfolg = f"""
+            <h2>Registrierung erfolgreich!</h2>
+            <p>Dein neuer Benutzername lautet: <b>{user.username}</b>. Bitte notiere dir diesen Namen genau!</p>
+            """
+            if user.email:
+                html_erfolg += f"<p>Deine E-Mail-Adresse ({user.email}) wurde hinterlegt. Du kannst dir damit jederzeit über 'Passwort vergessen' ein Passwort einrichten.</p>"
+            html_erfolg += '<br><a href="/">Weiter zum Rechentrainer</a>'
+            return HttpResponse(html_erfolg)
+
+        # b) Ich habe schon einen Account -> Einloggen und Moodle-ID eintragen
+        elif aktion == 'verknuepfen':
+            user_input = request.POST.get('username_eingabe')
+            pass_input = request.POST.get('passwort_eingabe')
+            
+            alter_user = authenticate(request, username=user_input, password=pass_input)
+            
+            if alter_user is not None:
+                try:
+                    alter_profil = alter_user.profil
+                    
+                    alter_profil.moodle_uid = moodle_data['moodle_uid']
+                    alter_profil.save()
+                    
+                    gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
+                    if gruppe_obj:
+                        alter_user.groups.add(gruppe_obj)
+                    
+                    if moodle_data['email'] and alter_user.email != moodle_data['email']:
+                        alter_user.email = moodle_data['email']
+                        
+                    alter_user.save()
+                    
+                    login(request, alter_user)
+                    del request.session['moodle_launch_data']
+                    
+                    return HttpResponse(f"<h2>Verknüpfung erfolgreich!</h2><p>Konto <b>{alter_user.username}</b> ist jetzt mit Moodle verbunden.</p><a href='/'>Weiter zum Rechentrainer</a>")
+                except Profil.DoesNotExist:
+                    error_message = '<div style="color:red;">Dieser Benutzer hat kein gültiges Profil.</div>'
+            else:
+                error_message = '<div style="color:red;">Ungültiger Benutzername oder Passwort.</div>'
+
+        # c) Abbrechen
+        elif aktion == 'abbrechen':
+            del request.session['moodle_launch_data']
+            return HttpResponse("Vorgang abgebrochen.")
+
+    # GET-Request: Zeigt das Formular direkt als HTML-String an
+    html_weiche = f"""
+    <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+        <h2>Moodle-Anmeldung</h2>
+        <p>Hallo <b>{moodle_data['vorname']} {moodle_data['nachname']}</b>,</p>
+        <p>dein Moodle-Name weicht vom Rechentrainer ab oder du bist neu hier. Bitte wähle eine Option:</p>
+        
+        {error_message}
+        <hr>
+        
+        <h3>Option A: Ich bin neu hier</h3>
+        <form method="POST">
+            <input type="hidden" name="aktion" value="neu_registrieren">
+            <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Neuen Account erstellen</button>
+        </form>
+        
+        <hr>
+        
+        <h3>Option B: Ich habe schon einen Account</h3>
+        <p>Gib deine normalen Rechentrainer-Daten ein (z.B. von "Herr Doll"), um die Accounts zu verknüpfen:</p>
+        <form method="POST">
+            <input type="hidden" name="aktion" value="verknuepfen">
+            <label>RT-Benutzername:<br><input type="text" name="username_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
+            <label>RT-Passwort:<br><input type="password" name="passwort_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
+            <button type="submit" style="background:#007bff; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Einloggen & verknüpfen</button>
+        </form>
+        
+        <hr>
+        <form method="POST" style="text-align:right;">
+            <input type="hidden" name="aktion" value="abbrechen">
+            <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
+        </form>
+    </div>
+    """
+    return HttpResponse(html_weiche)
+
 
 def account_loeschen(req):
     try:    

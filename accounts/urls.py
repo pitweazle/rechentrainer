@@ -8,6 +8,7 @@ urlpatterns = [
 
     # Anmeldung & Registrierung
     path('lti/launch/', views.lti_launch, name='lti_launch'),
+    path('moodle-entscheidung/', views.moodle_entscheidung_view, name='moodle_entscheidung'),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
     path("registrieren/", views.registrieren, name="registrieren"),
