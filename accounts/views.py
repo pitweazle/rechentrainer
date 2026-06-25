@@ -30,7 +30,7 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht
+from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht, wahl_kurs
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
@@ -239,53 +239,43 @@ def moodle_entscheidung_view(request):
 
         # a) "Neuen Account erstellen" wurde geklickt -> Formular zur Abfrage anzeigen
         if aktion == 'neu_registrieren':
+            # Daten aus der Session holen
             default_vorname = moodle_data.get('vorname', '')
             default_nachname = moodle_data.get('nachname', '')
-            default_jg = moodle_data.get('jg', 5)
-            default_klasse = moodle_data.get('klasse', '')
+            # Leere Klasse/JG, damit der Schüler das aktiv ausfüllen muss
+            default_jg = "" 
+            default_klasse = ""
 
-            # Wir bauen das Formular basierend auf den Feldern deiner Profil_Form
+            # Kurs-Optionen aus wahl_kurs generieren
+            kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+
             html_profil_abfrage = f"""
             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
                 <h2>Registrierung abschließen</h2>
-                <p>Bitte überprüfe deine Daten und ergänze die fehlenden Angaben:</p>
-                
                 <form method="POST">
                     <input type="hidden" name="aktion" value="registrierung_speichern">
                     
-                    <div style="margin-bottom: 12px;">
-                        <label>Vorname:</label><br>
-                        <input type="text" name="reg_vorname" value="{default_vorname}" required style="width:100%; padding:5px; box-sizing:border-box;">
-                    </div>
+                    <label>Vorname:</label><br>
+                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
                     
-                    <div style="margin-bottom: 12px;">
-                        <label>Nachname:</label><br>
-                        <input type="text" name="reg_nachname" value="{default_nachname}" required style="width:100%; padding:5px; box-sizing:border-box;">
-                    </div>
+                    <label>Nachname:</label><br>
+                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
                     
-                    <div style="margin-bottom: 12px;">
-                        <label>Klasse:</label><br>
-                        <input type="text" name="reg_klasse" value="{default_klasse}" required size="10" style="padding:5px; box-sizing:border-box;">
-                    </div>
+                    <label>Klasse:</label><br>
+                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;">
                     
-                    <div style="margin-bottom: 12px;">
-                        <label>Jahrgang:</label><br>
-                        <input type="text" name="reg_jg" value="{default_jg}" required size="2" style="padding:5px; box-sizing:border-box;">
-                    </div>
+                    <label>Jahrgang:</label><br>
+                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;">
                     
-                    <div style="margin-bottom: 20px;">
-                        <label>Kurs (optional):</label><br>
-                        <input type="text" name="reg_kurs" value="" style="width:100%; padding:5px; box-sizing:border-box;">
-                    </div>
+                    <label>Kurs:</label><br>
+                    <select name="reg_kurs" required style="width:100%; padding:5px;">
+                        <option value="" disabled selected>Bitte auswählen...</option>
+                        {kurs_options}
+                    </select>
                     
-                    <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px; width:100%; font-size:16px;">
+                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">
                         Account jetzt erstellen
                     </button>
-                </form>
-                <br>
-                <form method="POST" style="text-align:right;">
-                    <input type="hidden" name="aktion" value="abbrechen">
-                    <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
                 </form>
             </div>
             """
@@ -332,11 +322,25 @@ def moodle_entscheidung_view(request):
             del request.session['moodle_launch_data']
             
             html_erfolg = f"""
-            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-                <h2 style="color: #28a745;">Registrierung erfolgreich!</h2>
-                <p>Dein neuer Benutzername lautet: <b>{user.username}</b>. Bitte notiere dir diesen Namen genau!</p>
-                <br>
-                <a href="/" style="display:inline-block; background:#007bff; color:white; padding:10px 15px; text-decoration:none; border-radius:4px;">Weiter zum Rechentrainer</a>
+            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 style="color: #28a745; margin-top: 0;">Registrierung erfolgreich!</h2>
+                
+                <div style="background-color: #f8f9fa; padding: 15px; border-left: 5px solid #28a745; margin: 20px 0;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">Dein Rechentrainer-Benutzername:</p>
+                    <code style="font-size: 20px; background: #eee; padding: 5px 10px; display: block; border-radius: 4px;">{user.username}</code>
+                </div>
+
+                <div style="margin: 20px 0; color: #555;">
+                    <p><strong>E-Mail-Adresse:</strong> {user.email if user.email else 'Keine hinterlegt'}</p>
+                    <p style="font-size: 0.9em; line-height: 1.4;">
+                        <em>Hinweis:</em> Falls du dein Passwort einmal vergessen solltest, kannst du über diese E-Mail-Adresse eine Passwort-Zurücksetzung anfordern. 
+                        {"" if user.email else "<strong>Bitte trage nach dem Login in deinem Profil unbedingt eine E-Mail-Adresse nach!</strong>"}
+                    </p>
+                </div>
+                
+                <a href="/" style="display:inline-block; background:#007bff; color:white; padding:12px 20px; text-decoration:none; border-radius:4px; font-weight:bold; width:100%; text-align:center; box-sizing:border-box;">
+                    Weiter zum Rechentrainer
+                </a>
             </div>
             """
             return HttpResponse(html_erfolg)
