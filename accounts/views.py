@@ -226,7 +226,6 @@ def lti_launch(request):
     
     return redirect('moodle_entscheidung')
 
-
 @csrf_exempt
 def moodle_entscheidung_view(request):
     moodle_data = request.session.get('moodle_launch_data')
@@ -238,12 +237,74 @@ def moodle_entscheidung_view(request):
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
 
-        # a) Ich bin neu hier, bitte registrieren
+        # a) "Neuen Account erstellen" wurde geklickt -> Formular zur Abfrage anzeigen
         if aktion == 'neu_registrieren':
+            default_vorname = moodle_data.get('vorname', '')
+            default_nachname = moodle_data.get('nachname', '')
+            default_jg = moodle_data.get('jg', 5)
+            default_klasse = moodle_data.get('klasse', '')
+
+            # Wir bauen das Formular basierend auf den Feldern deiner Profil_Form
+            html_profil_abfrage = f"""
+            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <h2>Registrierung abschließen</h2>
+                <p>Bitte überprüfe deine Daten und ergänze die fehlenden Angaben:</p>
+                
+                <form method="POST">
+                    <input type="hidden" name="aktion" value="registrierung_speichern">
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label>Vorname:</label><br>
+                        <input type="text" name="reg_vorname" value="{default_vorname}" required style="width:100%; padding:5px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label>Nachname:</label><br>
+                        <input type="text" name="reg_nachname" value="{default_nachname}" required style="width:100%; padding:5px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label>Klasse:</label><br>
+                        <input type="text" name="reg_klasse" value="{default_klasse}" required size="10" style="padding:5px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label>Jahrgang:</label><br>
+                        <input type="text" name="reg_jg" value="{default_jg}" required size="2" style="padding:5px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label>Kurs (optional):</label><br>
+                        <input type="text" name="reg_kurs" value="" style="width:100%; padding:5px; box-sizing:border-box;">
+                    </div>
+                    
+                    <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px; width:100%; font-size:16px;">
+                        Account jetzt erstellen
+                    </button>
+                </form>
+                <br>
+                <form method="POST" style="text-align:right;">
+                    <input type="hidden" name="aktion" value="abbrechen">
+                    <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
+                </form>
+            </div>
+            """
+            return HttpResponse(html_profil_abfrage)
+
+        # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
+        elif aktion == 'registrierung_speichern':
+            reg_vorname = request.POST.get('reg_vorname', '').strip()
+            reg_nachname = request.POST.get('reg_nachname', '').strip()
+            reg_klasse = request.POST.get('reg_klasse', '')[:10]
+            reg_jg = request.POST.get('reg_jg', '').strip()
+            reg_kurs = request.POST.get('reg_kurs', '').strip()
+
+            # Username und Passwort generieren
             zeichen = string.ascii_letters + string.digits
             zufalls_passwort = ''.join(random.choice(zeichen) for i in range(16))
             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
             
+            # 1. User erstellen
             user = User.objects.create_user(
                 username=username, 
                 email=moodle_data['email'],
@@ -254,27 +315,30 @@ def moodle_entscheidung_view(request):
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
             
+            # 2. Profil erstellen mit den Werten aus dem Formular
             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
             Profil.objects.create(
                 user=user,
                 moodle_uid=moodle_data['moodle_uid'],
-                vorname=moodle_data['vorname'],
-                nachname=moodle_data['nachname'],
+                vorname=reg_vorname,
+                nachname=reg_nachname,
                 schule=schule_obj,
-                jg=moodle_data['jg'],
-                klasse=moodle_data['klasse']
+                jg=reg_jg,
+                klasse=reg_klasse,
+                kurs=reg_kurs
             )
             
             login(request, user)
             del request.session['moodle_launch_data']
             
             html_erfolg = f"""
-            <h2>Registrierung erfolgreich!</h2>
-            <p>Dein neuer Benutzername lautet: <b>{user.username}</b>. Bitte notiere dir diesen Namen genau!</p>
+            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <h2 style="color: #28a745;">Registrierung erfolgreich!</h2>
+                <p>Dein neuer Benutzername lautet: <b>{user.username}</b>. Bitte notiere dir diesen Namen genau!</p>
+                <br>
+                <a href="/" style="display:inline-block; background:#007bff; color:white; padding:10px 15px; text-decoration:none; border-radius:4px;">Weiter zum Rechentrainer</a>
+            </div>
             """
-            if user.email:
-                html_erfolg += f"<p>Deine E-Mail-Adresse ({user.email}) wurde hinterlegt. Du kannst dir damit jederzeit über 'Passwort vergessen' ein Passwort einrichten.</p>"
-            html_erfolg += '<br><a href="/">Weiter zum Rechentrainer</a>'
             return HttpResponse(html_erfolg)
 
         # b) Ich habe schon einen Account -> Einloggen und Moodle-ID eintragen
@@ -287,7 +351,6 @@ def moodle_entscheidung_view(request):
             if alter_user is not None:
                 try:
                     alter_profil = alter_user.profil
-                    
                     alter_profil.moodle_uid = moodle_data['moodle_uid']
                     alter_profil.save()
                     
@@ -314,7 +377,7 @@ def moodle_entscheidung_view(request):
             del request.session['moodle_launch_data']
             return HttpResponse("Vorgang abgebrochen.")
 
-    # GET-Request: Zeigt das Formular direkt als HTML-String an
+    # GET-Request: Zeigt das Haupt-Auswahlformular an
     html_weiche = f"""
     <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
         <h2>Moodle-Anmeldung</h2>
@@ -349,7 +412,6 @@ def moodle_entscheidung_view(request):
     </div>
     """
     return HttpResponse(html_weiche)
-
 
 def account_loeschen(req):
     try:    
