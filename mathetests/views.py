@@ -508,16 +508,6 @@ def test(req, slug):
                 protokoll.richtig = richtig
                 protokoll.save(update_fields=['wertung', 'falsch', 'richtig'])
                 messages.info(req, f'{rueckmeldung}')
-                # color_wertung = (str(wertung)[1:]).replace("1","richtig,").replace("0","falsch,").replace("2","leer,")
-                # color_wertung =color_wertung[:-1].split(",")
-                # y_farbe = {}
-                # if tabelle >3:
-                #     for n in range (0,tabelle):
-                #         y_farbe["color" + str(n)] = color_wertung[tabelle-1-n]
-                # else:
-                #     for n in range (0,tabelle):
-                #         y_farbe["color" + str(n+2)] = color_wertung[tabelle-1-n]
-                # parameter.update(y_farbe)
             else:
                 protokoll.wertung = "f"
                 protokoll.falsch = 1
@@ -532,7 +522,24 @@ def test(req, slug):
                     if not "tab" in protokoll.parameter["name"]:
                         messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
             protokoll.save(update_fields=['falsch', 'wertung'])
-            text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(protokoll.loesung[0],str(protokoll.eingabe).replace(".",","))
+
+            # raus: text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(protokoll.loesung[0],str(protokoll.eingabe).replace(".",","))
+            # rein:
+			# 2. SICHERHEITS-CHECK FÜR DIE LÖSUNG:
+            # Wir holen den Wert und schützen das Protokoll-Objekt vor Django-Zerschneidung
+            aktuelle_loesung = protokoll.loesung
+            if isinstance(aktuelle_loesung, list):
+                loesung_text = aktuelle_loesung[0]  # Bei Termen das erste Element nehmen
+            else:
+                loesung_text = aktuelle_loesung     # Bei allen anderen (Strings/Zahlen) direkt nutzen
+
+            # 3. Die Nachricht mit der sicheren lokalen Variable bauen
+            text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(
+                loesung_text, 
+                str(protokoll.eingabe).replace(".", ",")
+            )  
+            # Ende der Ersetzung          
+
             messages.info(req, text) 
             # nächste Aufgabe
             return redirect(f"{req.path}?test={test.id}")
