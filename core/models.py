@@ -176,6 +176,8 @@ class Zaehler(models.Model):
     letzter_typ = models.SmallIntegerField(default=0)
     reihenfolge = models.JSONField(null=True, blank=True, default=list)
 
+    geloeschte_aufgaben = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return f"({self.id}, {self.profil}, {self.profil.user}, {self.kategorie}, {self.sj})/{self.hj})"
     
