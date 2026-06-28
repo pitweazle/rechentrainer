@@ -523,22 +523,9 @@ def test(req, slug):
                         messages.info(req, f'{rueckmeldung}')   #gibt eine Rückmeldung wenn "indiv" bei Lösung steht  
             protokoll.save(update_fields=['falsch', 'wertung'])
 
-            # raus: text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(protokoll.loesung[0],str(protokoll.eingabe).replace(".",","))
-            # rein:
-			# 2. SICHERHEITS-CHECK FÜR DIE LÖSUNG:
-            # Wir holen den Wert und schützen das Protokoll-Objekt vor Django-Zerschneidung
-            aktuelle_loesung = protokoll.loesung
-            if isinstance(aktuelle_loesung, list):
-                loesung_text = aktuelle_loesung[0]  # Bei Termen das erste Element nehmen
-            else:
-                loesung_text = aktuelle_loesung     # Bei allen anderen (Strings/Zahlen) direkt nutzen
-
-            # 3. Die Nachricht mit der sicheren lokalen Variable bauen
-            text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(
-                loesung_text, 
-                str(protokoll.eingabe).replace(".", ",")
-            )  
-            # Ende der Ersetzung          
+            richtige_loesung = protokoll.loesung[0]
+            text = "Richtig wäre die Lösung: {0}<br>Deine Eingabe: {1}.".format(richtige_loesung,str(protokoll.eingabe).replace(".",","))
+                   
 
             messages.info(req, text) 
             # nächste Aufgabe
@@ -569,7 +556,14 @@ def test(req, slug):
     typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, \
     lsg, hilfe_id, ergebnis, parameter = aufgaben(kategorie.zeile, jg=jg, stufe=stufe, aufgnr=aufgnr, typ_anf=typ_anf, typ_end=typ_end, reihenfolge=reihenfolge, optionen="",)
     slots = slots_pro_tabelle(kategorie)
-    if slots > 1:
+    is_wertetabelle = (
+        isinstance(lsg, (list, tuple))
+        and lsg
+        and isinstance(lsg[0], (list, tuple))
+    )
+
+    # Die Lösung wird NUR DANN verändert, wenn es eine echte Wertetabelle ist!
+    if is_wertetabelle and slots > 1:
         lsg = ([lsg[0][:slots]])
     if kategorie.slug == "sachaufgaben":
         zaehler.letzter_typ = typ
