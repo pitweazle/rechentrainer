@@ -69,6 +69,7 @@ __pycache__/
 *.db-journal
 *.sik
 *.bak
+# Achtung! diese *.json niemals rausnehmen, wegen dem Stand der gelöschten Aufgaben
 *.json
 staticfiles/
 
