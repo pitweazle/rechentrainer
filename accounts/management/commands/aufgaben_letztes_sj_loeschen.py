@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 # Imports passend zu deiner Struktur
-from core.models import Protokoll
+from core.models import Protokoll, Zaehler
 from accounts.models import Geloescht
 from accounts.services import get_today 
 
@@ -36,13 +36,12 @@ class Command(BaseCommand):
 
         try:
             json_daten = json.loads(json_pfad.read_text(encoding='utf-8'))
-            # JETZT RICHTIG: Wir holen den Wert über 'anzahl'
             zaehler_vorher = json_daten.get('anzahl', 0)
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Fehler beim Lesen der JSON: {e}"))
             return
 
-        # 2. Stichtag berechnen (1. Juni des Vorjahres)
+        # 2. Stichtag berechnen: 1. Juni des VORJAHRES (heute.year - 1 -> 01.06.2025)
         stichtag_jahr = heute.year - 1
         stichtag = datetime(stichtag_jahr, 6, 1, 0, 0, tzinfo=timezone.get_current_timezone())
 
@@ -68,7 +67,7 @@ class Command(BaseCommand):
 
         zaehler_nachher = zaehler_vorher + gesamt_anzahl
 
-        # 5. Daten im Speicher nach Schüler gruppieren für die Terminal-Anzeige
+        # 5. Daten im Speicher nach Schüler gruppieren für die Terminal-Anzeige und Schüler-Logs
         schueler_logs = {}
         from accounts.models import Profil
 
@@ -103,15 +102,20 @@ class Command(BaseCommand):
                     'gruppe': gruppe_name,
                     'lehrer': lehrer_nachname,
                     'kategorien': [],
+                    'kategorien_rohdaten': [],
                     'schueler_gesamt': 0
                 }
             
             schueler_logs[pid]['kategorien'].append(f"({kid}/{anzahl_geloescht})")
+            schueler_logs[pid]['kategorien_rohdaten'].append((kid, anzahl_geloescht))
             schueler_logs[pid]['schueler_gesamt'] += anzahl_geloescht
 
         # Jeder Schüler wird sauber im Terminal aufgelistet
         self.stdout.write("\nEINZELAUFLISTUNG DER BETROFFENEN SCHÜLER:")
         self.stdout.write("-" * 85)
+        
+        missing_counters_found = False
+
         for pid, info in schueler_logs.items():
             kat_text = ", ".join(info['kategorien'])
             gruppe_lehrer_display = f"{info['gruppe']}/{info['lehrer']}"
@@ -121,6 +125,14 @@ class Command(BaseCommand):
                 f"Gesamt: {info['schueler_gesamt']:<4} | "
                 f"Kategorien: {kat_text}"
             )
+            
+            # ÜBERPRÜFUNG IM TROCKENLAUF: Existieren alle Zähler?
+            for kid, _ in info['kategorien_rohdaten']:
+                if not Zaehler.objects.filter(profil_id=pid, kategorie_id=kid).exists():
+                    self.stdout.write(self.style.ERROR(
+                        f"   [WARNUNG] Fehlender Zähler für Schüler '{info['name_display']}' (ID: {pid}) bei Kategorie {kid}!"
+                    ))
+                    missing_counters_found = True
 
         # Der exakte Text für deinen EINEN globalen Sicherheits-Eintrag
         globaler_log_text = (
@@ -136,10 +148,57 @@ class Command(BaseCommand):
         self.stdout.write(globaler_log_text)
         self.stdout.write("="*85 + "\n")
 
+        if missing_counters_found and not commit:
+            self.stdout.write(self.style.ERROR("!!! ACHTUNG: Es wurden fehlende Zähler-Objekte im Trockenlauf entdeckt (siehe rote Warnungen oben) !!!\n"))
+
         # 6. Datenbank-Transaktion starten & gebündelt schreiben
         if commit:
             try:
                 with transaction.atomic():
+                    # Einzelergebnisse in Zaehler verbuchen & Log pro Schüler schreiben
+                    for pid, info in schueler_logs.items():
+                        # A) Zähler pro Kategorie erhöhen (Strikte Existenzprüfung via .get())
+                        for kid, anzahl_geloescht in info['kategorien_rohdaten']:
+                            try:
+                                zaehler_objekt = Zaehler.objects.get(profil_id=pid, kategorie_id=kid)
+                                zaehler_objekt.geloeschte_aufgaben += anzahl_geloescht
+                                zaehler_objekt.save()
+                            except Zaehler.DoesNotExist:
+                                # HIER GEHOLT: Wir laden das Kategorie-Objekt über die kid,
+                                # damit Python weiß, was "kategorie.zeile" ist!
+                                from core.models import Kategorie
+                                try:
+                                    kategorie = Kategorie.objects.get(id=kid)
+                                except Kategorie.DoesNotExist:
+                                    continue # Falls die Kategorie selbst nicht mehr existiert
+
+                                # Zähler reparieren
+                                Zaehler.objects.create(
+                                    profil_id=pid,
+                                    kategorie_id=kid,
+                                    geloeschte_aufgaben=anzahl_geloescht,
+                                    aufgnr=1,
+                                )
+                                
+                                # Jetzt funktioniert es fehlerfrei:
+                                if schueler.katmax <= kategorie.zeile:
+                                    schueler.katmax = kategorie.zeile
+                                    schueler.save()
+                                    
+                                self.stdout.write(self.style.WARNING(
+                                    f"   [REPARIERT] Fehlender Zähler für Schüler '{info['name_display']}' (Kategorie {kid}) wurde automatisch erzeugt."
+                                ))
+                        # B) Schüler-Log in Geloescht schreiben
+                        kat_text = ", ".join(info['kategorien'])
+                        gruppe_lehrer_display = f"{info['gruppe']}/{info['lehrer']}"
+                        db_benutzername = f"{info['name_display']} ({gruppe_lehrer_display})"[:50]
+                        
+                        Geloescht.objects.create(
+                            benutzername=db_benutzername,
+                            grund="Aufgaben aus dem letzten Schuljahr gelöscht",
+                            text=f"Gesamt gelöscht: {info['schueler_gesamt']} | Details (Kategorie/Anzahl): {kat_text}"
+                        )
+
                     # DER EINE GLOBALE EINTRAG IN DIE DATENBANK
                     Geloescht.objects.create(
                         benutzername="system",
@@ -159,6 +218,6 @@ class Command(BaseCommand):
                     
                 self.stdout.write(self.style.SUCCESS(f"[LIVE] Archivierung erfolgreich durchgeführt. {gesamt_anzahl} Zeilen gelöscht."))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Kritischer Fehler beim Speichern: {e}"))
+                self.stdout.write(self.style.ERROR(f"Kritischer Fehler beim Speichern (Transaktion abgebrochen): {e}"))
         else:
             self.stdout.write(self.style.WARNING("!!! NUR SIMULATION (TROCKENLAUF) - ES WURDE NICHTS GESPEICHERT ODER GEÄNDERT !!!"))

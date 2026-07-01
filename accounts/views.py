@@ -1141,7 +1141,7 @@ def suchen(req, gruppe_id=None):
                                         ziele = Zaehler.objects.filter(profil = user_ziel.profil, kategorie = q.kategorie)
                                         if ziele.count() == 0:
                                             nachricht = nachricht + '"' + str(q.kategorie) + '", '
-                                            q.user = user_ziel.profil
+                                            q.profil = user_ziel.profil
                                             q.save()
                                         else:
                                             ziel = ziele.first()
@@ -1155,20 +1155,21 @@ def suchen(req, gruppe_id=None):
                                                 if ziel.letzte < q.letzte:
                                                     ziel.letzte = q.letzte
                                                 ziel.save()
-                                            if nachricht != "Der/die Zähler: ":
-                                                nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
-                                                verschoben.text += nachricht
-                                                verschoben.grund = "zaehler_verschoben"
-                                                verschoben.save()                            
+                                            q.delete() 
+                                    if nachricht != "Der/die Zähler: ":
+                                        nachricht += ' wurde(n) am {} von Account "{}" übernommen.<br>'.format(heute, user_quelle.profil)
+                                        verschoben.text += nachricht
+                                        verschoben.grund = "zaehler_verschoben"
+                                        verschoben.save()
                                     n = 0
                                     for protokoll in protokolle:
-                                        n +=1
+                                        n += 1
                                         protokoll.profil = user_ziel.profil
                                         protokoll.anmerkung = "übertragen von user ID: ", quelle
                                         protokoll.save()
                                     nachricht = 'am {} wurden {} Aufgaben von Account "{}" auf Account "{}" übertragen.'.format(heute, n, user_quelle.profil, user_ziel.profil)
                                     verschoben.text += nachricht
-                                    verschoben.save()                            
+                                    verschoben.save()                  
             abmelden_form = Abmelden_Form(req.POST)
             if abmelden_form.is_valid():
                 abmelden = abmelden_form.cleaned_data['abmelden']
