@@ -1,16 +1,16 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
     <body>
-        {%  if aktuelles_hj == "True" %}
+        {% comment %} {%  if aktuelles_hj == "True" %} {% endcomment %}
             <br>
             <form action="/uebersicht/{{schueler.id}}/" method="POST">
                 {% csrf_token %}
                 <input type="submit" name="zurück" value="Arbeitsergebnisse anzeigen">
             </form> 
             <br> 
-        {% else %}
+        {% comment %} {% else %}
             <p>keine Aufgaben im aktuellen Halbjahr</p>
-        {% endif %}
+        {% endif %} {% endcomment %}
         <form action="/protokoll/{{schueler.id}}/" method="GET">        
             <input type="submit" name="zurueck" value="Protokoll anzeigen">
         </form>

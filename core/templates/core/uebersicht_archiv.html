@@ -1,5 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
 <style>
-    .archiv-container { max-width: 1100px; margin: 20px auto; font-family: sans-serif; padding: 0 15px; }
+    .archiv-container { 
+        max-width: 1200px; 
+        margin: 20px auto; 
+        font-family: sans-serif; 
+        padding: 0 15px; 
+    }
+    
+    .filter-zeile {
+        margin: 15px auto 25px auto;
+        padding: 12px 15px;
+        background-color: #eee;
+        border-radius: 4px;
+        max-width: 1170px;
+    }
+
     .gruppen-zeile { 
         display: grid; 
         grid-template-columns: repeat(7, 1fr); 
@@ -8,7 +24,7 @@
     }
     
     .kachel { 
-        padding: 15px 10px; 
+        padding: 12px 8px; 
         border-radius: 6px; 
         text-align: center; 
         box-shadow: 0 2px 4px rgba(0,0,0,0.08);
@@ -16,22 +32,39 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 90px;
+        min-height: 105px;
+    }
+    
+    .kachel-leer {
+        opacity: 0.4;
     }
     
     .kachel-name { font-size: 0.85em; font-weight: bold; color: #333; line-height: 1.2; }
-    .kachel-wert { font-size: 1.4em; font-weight: 800; color: #111; margin-top: 5px; }
+    .kachel-wert { font-size: 1.4em; font-weight: 800; color: #111; margin: 3px 0; }
+    .kachel-datum { font-size: 0.68em; color: #555; font-weight: normal; }
     
     .kachel-gesamt { 
         background-color: #2b303a; 
         color: #fff; 
-        grid-column: span 2; /* Füllt die 2 fehlenden Kacheln in der 5. Reihe perfekt aus */
+        grid-column: span 2; 
         justify-content: center;
+        padding: 12px;
     }
 </style>
 
 <div class="archiv-container">
-    <h2 style="text-align: center; margin-bottom: 30px; color: #444;">Deine archivierten Erfolge</h2>
+    
+    <div class="filter-zeile">
+        <form method="post">
+            {% csrf_token %}
+            <strong>Zeitraum:</strong> {{ form.auswahl }}
+            <button type="submit" name="anwenden">anwenden</button>
+        </form>
+    </div>
+
+    <h2 style="text-align: center; margin-bottom: 25px; color: #333;">
+        Alle Aufgaben von {{ schueler.vorname }} {{ schueler.nachname }}
+    </h2>
     
     {% for gruppe in gruppen %}
         <div class="gruppen-zeile">
@@ -39,19 +72,24 @@
                 <div class="kachel {% if item.anzahl == 0 %}kachel-leer{% endif %}" style="{{ item.kategorie.farbe }}">
                     <div class="kachel-name">{{ item.kategorie.name }}</div>
                     <div class="kachel-wert">{{ item.anzahl }}</div>
+                    
+                    <div class="kachel-datum">
+                        {% if item.letzte %}{{ item.letzte }}{% else %}-{% endif %}
+                    </div>
                 </div>
             {% endfor %}
             
-            {# Wenn wir in der allerletzten Schleife (Reihe 5) sind, hängen wir die Gesamt-Kachel an #}
+            {# Füllkachel am Ende der 5. Reihe #}
             {% if forloop.last %}
                 <div class="kachel kachel-gesamt">
                     <div style="font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #a0aab2;">Gesamtzahl</div>
                     <div style="font-size: 1.6em; font-weight: bold; color: #4caf50; margin: 2px 0;">{{ gesamtzahl }}</div>
-                    {% if letztes_datum %}
-                        <div style="font-size: 0.65em; color: #88929a;">Bis: {{ letztes_datum|date:"d.m.Y" }}</div>
+                    {% if letzte %}
+                        <div style="font-size: 0.65em; color: #cbd5e1;">Letzte Aktivität: {{ letzte }}</div>
                     {% endif %}
                 </div>
             {% endif %}
         </div>
     {% endfor %}
 </div>
+{% endblock %}

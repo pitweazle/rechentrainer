@@ -7974,29 +7974,18 @@ def uebersicht(req, schueler_id=0):
         aufgaben_pro_woche = 10 * profil.jg
     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
     form = UebersichtHalbjahr
-
-
-    
     if req.method == 'POST':
         auswahl = form(req.POST)
         if auswahl.is_valid(): 
             auswahl = auswahl.cleaned_data['auswahl']
-            
-            # --- HIER IST DIE WEICHE FÜR DAS ARCHIV ---
-
-
             if auswahl == "alle":
-                from django.db.models import Sum, Max
-                
                 # 1. Wir holen ALLE Kategorien für das feste 5x7 Raster
                 kategorien = Kategorie.objects.all().order_by('zeile')
-                
                 # 2. Zähler für die gelöschten Aufgaben als Dictionary parat legen
                 zaehler_dict = {
                     z.kategorie_id: z 
                     for z in Zaehler.objects.filter(profil=profil)
                 }
-                
                 # 3. Aktuelle Protokolle (dieses Halbjahr) nach Kategorien gruppiert aggregieren
                 aktuell_werte = (
                     Protokoll.objects.filter(profil=profil)
@@ -8004,41 +7993,31 @@ def uebersicht(req, schueler_id=0):
                     .annotate(richtig_sum=Sum('richtig'))
                 )
                 aktuell_dict = {item['kategorie_id']: item['richtig_sum'] for item in aktuell_werte}
-                
                 # 4. Gesamtsummen über die Datenbank berechnen
                 archiv_gesamt = Zaehler.objects.filter(profil=profil).aggregate(sum=Sum('geloeschte_aufgaben'))['sum'] or 0
                 aktuell_gesamt = Protokoll.objects.filter(profil=profil).aggregate(sum=Sum('richtig'))['sum'] or 0
-                
                 # Das absolute Gesamtergebnis (Archiv + Live-Protokolle)
                 echte_gesamtzahl = archiv_gesamt + aktuell_gesamt
-                
                 # Das absolut letzte Bearbeitungsdatum (entweder aus Zähler oder Protokoll)
                 letzte_archiv = Zaehler.objects.filter(profil=profil).aggregate(max_date=Max('letzte'))['max_date']
                 letzte_aktuell = Protokoll.objects.filter(profil=profil).aggregate(max_date=Max('end'))['max_date']
-                
                 letztes_datum = letzte_aktuell or letzte_archiv
-                
                 # 5. Die Kategorien in die 5 festen 7er-Blöcke schneiden
                 gruppen = []
                 for i in range(0, len(kategorien), 7):
                     kat_block = kategorien[i:i+7]
-                    
                     block_daten = []
                     for kat in kat_block:
                         z = zaehler_dict.get(kat.id)
-                        
                         archiviert = z.geloeschte_aufgaben if z else 0
                         aktuell = aktuell_dict.get(kat.id, 0)
-                        
                         # In der Kachel selbst zeigen wir auch die kombinierte Summe dieser Kategorie an
                         kategorie_gesamt = archiviert + aktuell
-                        
                         block_daten.append({
                             'kategorie': kat,
                             'anzahl': kategorie_gesamt
                         })
                     gruppen.append(block_daten)
-                
                 context = {
                     'lehrer': lehrer,
                     'loeschen': loeschen,
@@ -8051,15 +8030,9 @@ def uebersicht(req, schueler_id=0):
                 }
                 if letztes_datum:
                     context["letzte"] = letztes_datum.strftime("%d.%m.%y %H:%M")
-                
                 return render(req, 'core/uebersicht_archiv.html', context)
-
-
-
-
     richtig_gesamt = falsch_gesamt= abbr_gesamt= lsg_gesamt= hilfe_gesamt= 0
     #     durchschnitt, richtig_gesamt, falsch_gesamt, abbr_gesamt, lsg_gesamt, hilfe_gesamt = durchschnitt_aufgaben(profil)
-
     alle_kat = False
     if "Details ausblenden" in req.POST:
         profil.details = False
