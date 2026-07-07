@@ -1,5 +1,5 @@
 import math, decimal, string, random, re
-
+from decimal import Decimal, DivisionUndefined
 from fractions import Fraction
 from math import gcd
 
@@ -7973,6 +7973,64 @@ def uebersicht(req, schueler_id=0):
     else:
         aufgaben_pro_woche = 10 * profil.jg
     protokoll = Protokoll.objects.filter(profil=profil, sj=profil.sj, hj=profil.hj)
+    # form = UebersichtHalbjahr
+    # if req.method == 'POST':
+    #     auswahl = form(req.POST)
+    #     if auswahl.is_valid(): 
+    #         auswahl = auswahl.cleaned_data['auswahl']
+    #         if auswahl == "alle":
+    #             # 1. Wir holen ALLE Kategorien für das feste 5x7 Raster
+    #             kategorien = Kategorie.objects.all().order_by('zeile')
+    #             # 2. Zähler für die gelöschten Aufgaben als Dictionary parat legen
+    #             zaehler_dict = {
+    #                 z.kategorie_id: z 
+    #                 for z in Zaehler.objects.filter(profil=profil)
+    #             }
+    #             # 3. Aktuelle Protokolle (dieses Halbjahr) nach Kategorien gruppiert aggregieren
+    #             aktuell_werte = (
+    #                 Protokoll.objects.filter(profil=profil)
+    #                 .values('kategorie_id')
+    #                 .annotate(richtig_sum=Sum('richtig'))
+    #             )
+    #             aktuell_dict = {item['kategorie_id']: item['richtig_sum'] for item in aktuell_werte}
+    #             # 4. Gesamtsummen über die Datenbank berechnen
+    #             archiv_gesamt = Zaehler.objects.filter(profil=profil).aggregate(sum=Sum('geloeschte_aufgaben'))['sum'] or 0
+    #             aktuell_gesamt = Protokoll.objects.filter(profil=profil).aggregate(sum=Sum('richtig'))['sum'] or 0
+    #             # Das absolute Gesamtergebnis (Archiv + Live-Protokolle)
+    #             echte_gesamtzahl = archiv_gesamt + aktuell_gesamt
+    #             # Das absolut letzte Bearbeitungsdatum (entweder aus Zähler oder Protokoll)
+    #             letzte_archiv = Zaehler.objects.filter(profil=profil).aggregate(max_date=Max('letzte'))['max_date']
+    #             letzte_aktuell = Protokoll.objects.filter(profil=profil).aggregate(max_date=Max('end'))['max_date']
+    #             letztes_datum = letzte_aktuell or letzte_archiv
+    #             # 5. Die Kategorien in die 5 festen 7er-Blöcke schneiden
+    #             gruppen = []
+    #             for i in range(0, len(kategorien), 7):
+    #                 kat_block = kategorien[i:i+7]
+    #                 block_daten = []
+    #                 for kat in kat_block:
+    #                     z = zaehler_dict.get(kat.id)
+    #                     archiviert = z.geloeschte_aufgaben if z else 0
+    #                     aktuell = aktuell_dict.get(kat.id, 0)
+    #                     # In der Kachel selbst zeigen wir auch die kombinierte Summe dieser Kategorie an
+    #                     kategorie_gesamt = archiviert + aktuell
+    #                     block_daten.append({
+    #                         'kategorie': kat,
+    #                         'anzahl': kategorie_gesamt
+    #                     })
+    #                 gruppen.append(block_daten)
+    #             context = {
+    #                 'lehrer': lehrer,
+    #                 'loeschen': loeschen,
+    #                 'form': UebersichtHalbjahr(initial={'auswahl': 'alle'}),
+    #                 'profil': profil,
+    #                 'schueler': profil,
+    #                 'schueler_id': schueler_id,
+    #                 'gruppen': gruppen,
+    #                 'gesamtzahl': echte_gesamtzahl,
+    #             }
+    #             if letztes_datum:
+    #                 context["letzte"] = letztes_datum.strftime("%d.%m.%y %H:%M")
+    #             return render(req, 'core/uebersicht_archiv.html', context)
     form = UebersichtHalbjahr
     if req.method == 'POST':
         auswahl = form(req.POST)
@@ -7993,15 +8051,34 @@ def uebersicht(req, schueler_id=0):
                     .annotate(richtig_sum=Sum('richtig'))
                 )
                 aktuell_dict = {item['kategorie_id']: item['richtig_sum'] for item in aktuell_werte}
-                # 4. Gesamtsummen über die Datenbank berechnen
+                
+                # 4. Gesamtsummen über die Datenbank berechnen (ERWEITERT FÜR FALSCHE AUFGABEN)
                 archiv_gesamt = Zaehler.objects.filter(profil=profil).aggregate(sum=Sum('geloeschte_aufgaben'))['sum'] or 0
                 aktuell_gesamt = Protokoll.objects.filter(profil=profil).aggregate(sum=Sum('richtig'))['sum'] or 0
-                # Das absolute Gesamtergebnis (Archiv + Live-Protokolle)
-                echte_gesamtzahl = archiv_gesamt + aktuell_gesamt
+                echte_gesamtzahl = archiv_gesamt + aktuell_gesamt  # Das sind die Richtigen!
+
+                # --- NEU: Falsche Aufgaben für "Alle Aufgaben" berechnen ---
+                # Wir holen die Summe aller Fehlerzähler aus den Zählern (das beinhaltet auch die archivierten)
+                falsch_gesamt = Zaehler.objects.filter(profil=profil).aggregate(sum=Sum('fehler_zaehler'))['sum'] or 0
+                # Plus die historischen Fehler aus dem Profil, falls beim Schuljahres-Löschen dort etwas abgelegt wurde
+                falsch_gesamt += profil.historische_aufgaben_falsch
+
+                # Absolute Gesamtzahl aller Versuche (Richtig + Falsch)
+                aufgaben_absolut_gesamt = echte_gesamtzahl + falsch_gesamt
+
+                # Fehlerquote berechnen
+                try:
+                    quote = int(falsch_gesamt / aufgaben_absolut_gesamt * 100)
+                except ZeroDivisionError:
+                    quote = "-"
+                qfarbe = quote_farbe(echte_gesamtzahl, falsch_gesamt)
+                # -----------------------------------------------------------
+
                 # Das absolut letzte Bearbeitungsdatum (entweder aus Zähler oder Protokoll)
                 letzte_archiv = Zaehler.objects.filter(profil=profil).aggregate(max_date=Max('letzte'))['max_date']
                 letzte_aktuell = Protokoll.objects.filter(profil=profil).aggregate(max_date=Max('end'))['max_date']
                 letztes_datum = letzte_aktuell or letzte_archiv
+                
                 # 5. Die Kategorien in die 5 festen 7er-Blöcke schneiden
                 gruppen = []
                 for i in range(0, len(kategorien), 7):
@@ -8009,15 +8086,38 @@ def uebersicht(req, schueler_id=0):
                     block_daten = []
                     for kat in kat_block:
                         z = zaehler_dict.get(kat.id)
+                        # Richtige Aufgaben (Archiv + Live)
                         archiviert = z.geloeschte_aufgaben if z else 0
                         aktuell = aktuell_dict.get(kat.id, 0)
-                        # In der Kachel selbst zeigen wir auch die kombinierte Summe dieser Kategorie an
-                        kategorie_gesamt = archiviert + aktuell
+                        kategorie_richtig = archiviert + aktuell
+                        kategorie_falsch = z.fehler_zaehler if z else 0
+                        kategorie_gesamt = kategorie_richtig + kategorie_falsch
+                        int_falsch = int(kategorie_falsch or 0)
+                        int_gesamt = int(kategorie_gesamt or 0)
+                        try:
+                            kategorie_quote = int(int_falsch / int_gesamt * 100)
+                            kategorie_qfarbe = quote_farbe(kategorie_richtig, kategorie_falsch)
+                        except ZeroDivisionError:
+                            kategorie_quote = "-"
+                            kategorie_qfarbe = ""
+
                         block_daten.append({
                             'kategorie': kat,
-                            'anzahl': kategorie_gesamt
+                            'anzahl': kategorie_richtig, # bleibt für die Hauptanzeige
+                            'falsch': kategorie_falsch,
+                            'quote': kategorie_quote,
+                            'qfarbe': kategorie_qfarbe,
+                            'letzte': z.letzte.strftime("%d.%m.%y") if (z and z.letzte) else None
                         })
                     gruppen.append(block_daten)
+                    fehler_aus_zaehler = Zaehler.objects.filter(profil=profil).aggregate(sum=Sum('fehler_zaehler'))['sum'] or 0
+                    historisch_aus_profil = profil.historische_aufgaben_falsch or 0
+                    int_fehler_gesamt = int(fehler_aus_zaehler) + int(historisch_aus_profil)
+                    int_aufgaben_gesamt = int(aufgaben_absolut_gesamt or 0)
+                    try:
+                        quote = int(int_fehler_gesamt / int_aufgaben_gesamt * 100)
+                    except ZeroDivisionError:
+                        quote = "-"               
                 context = {
                     'lehrer': lehrer,
                     'loeschen': loeschen,
@@ -8026,7 +8126,11 @@ def uebersicht(req, schueler_id=0):
                     'schueler': profil,
                     'schueler_id': schueler_id,
                     'gruppen': gruppen,
-                    'gesamtzahl': echte_gesamtzahl,
+                    'gesamtzahl': echte_gesamtzahl,  # Bleibt für die "richtigen" Aufgaben stehen
+                    # NEU: Zusätzliche Statistik-Werte für das Archiv-Template
+                    'falsch': falsch_gesamt,
+                    'quote': quote,
+                    'qfarbe': qfarbe,
                 }
                 if letztes_datum:
                     context["letzte"] = letztes_datum.strftime("%d.%m.%y %H:%M")
@@ -8291,7 +8395,7 @@ def uebersicht(req, schueler_id=0):
     else:
         return render(req, 'core/uebersicht_ohne_details.html', context)
 
-def archiv_uebersicht(request):
+def sik_archiv_uebersicht(request):
     profil = request.user.profil
     
     # Alle Zähler des Schülers sauber nach der Zeilen-Nummer (1-35) sortiert
@@ -8316,6 +8420,43 @@ def archiv_uebersicht(request):
     }
     return render(request, 'archiv_template.html', context)
 
+def archiv_uebersicht(request):
+    profil = request.user.profil
+    zaehler_liste = Zaehler.objects.filter(profil=profil).select_related('kategorie').order_by('kategorie__zeile')
+    stats = zaehler_liste.aggregate(
+        gesamt=Sum('geloeschte_aufgaben'),
+        fehler_live=Sum('fehler_zaehler'),
+        letzte_bearbeitung=Max('letzte')
+    )
+    richtig_gesamt = stats['gesamt'] or 0
+    fehler_gesamt = (stats['fehler_live'] or 0) + profil.historische_aufgaben_falsch
+    
+    aufgaben_absolut_gesamt = richtig_gesamt + fehler_gesamt
+    
+    try:
+        quote = int(fehler_gesamt / aufgaben_absolut_gesamt * 100)
+    except (ZeroDivisionError, DivisionUndefined):
+        quote = "-"
+        
+    qfarbe = quote_farbe(richtig_gesamt, fehler_gesamt)
+    # -------------------------------------------------------------------------------------
+    
+    # Die 33 Kategorien in 7er-Blöcke schneiden
+    gruppen = []
+    for i in range(0, len(zaehler_liste), 7):
+        gruppen.append(zaehler_liste[i:i+7])
+        
+    context = {
+        'gruppen': gruppen,
+        'gesamtzahl': richtig_gesamt,
+        'letztes_datum': stats['letzte_bearbeitung'],
+        # NEU: Variablen für das Template bereitstellen
+        'falsch': fehler_gesamt,
+        'quote': quote,
+        'qfarbe': qfarbe,
+    }
+    return render(request, 'archiv_template.html', context)
+
 def protokoll_zeit_filter(protokoll, auswahl, form_start=None, form_end=None):
     sj, hj = name_hj()
     next_sj, next_hj = name_next_hj()
@@ -8323,24 +8464,21 @@ def protokoll_zeit_filter(protokoll, auswahl, form_start=None, form_end=None):
     if auswahl == "next":
         protokoll = protokoll.filter(sj=next_sj, hj=next_hj)  
     elif auswahl == "Halbjahr":
-        protokoll = protokoll.filter(sj=sj, hj=hj)                                 
+        protokoll = protokoll.filter(sj=sj, hj=hj)                                                 
     elif auswahl == "heute":
         protokoll = protokoll.filter(start__date = date.today())
     elif auswahl == "Woche":
-        # Die letzten 7 Tage
         protokoll = protokoll.filter(start__date__gte = date.today() - timedelta(days = 7))
     elif auswahl == "Schuljahr":
         protokoll = protokoll.filter(sj = sj) 
+    elif auswahl == "all":
+        pass
     elif auswahl == "individuell" and form_start and form_end:
-        # Falls die Formulare valide Daten enthalten, filtern wir taggenau
         if form_start.is_valid() and form_end.is_valid():
             d_von = form_start.cleaned_data['aufgaben_seit']
             d_bis = form_end.cleaned_data['aufgaben_bis']
-            
-            # datetime erstellen: von 00:00:00 Uhr am Starttag bis 23:59:59 Uhr am Endtag
             dt_von = datetime.combine(d_von, time.min)
             dt_bis = datetime.combine(d_bis, time.max)
-            
             protokoll = protokoll.filter(start__gte=dt_von, start__lte=dt_bis)
     return protokoll
 
@@ -8357,6 +8495,7 @@ def protokoll(req, schueler_id=0):
         if not req.user.is_superuser:
             if (profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
                 return HttpResponse("Zugriff verweigert")
+        
         protokoll_basis = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()
         next_sj, next_hj = name_next_hj()
         FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
@@ -8364,8 +8503,8 @@ def protokoll(req, schueler_id=0):
         wahl = "heute"
         wochenziel = None
         wochenziel_anzeigen = False
+        
         if req.method == 'POST':    
-            FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
             form = FormKlasse(req.POST)
             form_start = Start_Datum(req.POST)
             form_end = End_Datum(req.POST)
@@ -8404,12 +8543,32 @@ def protokoll(req, schueler_id=0):
             form_start = Start_Datum()
             form_end = End_Datum()
             protokoll = protokoll_basis.filter(start__date = date.today())
+            
         temp = protokoll.aggregate(Sum('richtig'))['richtig__sum']
         richtig = temp if temp else 0
         temp = protokoll.aggregate(Sum('falsch'))['falsch__sum']
         falsch = temp if temp else 0
+        
+        # --- NEU: LOGIK FÜR HISTORISCHE DATEN BEI "ALLE AUFGABEN" ---
+        anzahl_geloescht = 0
+        archiv_datum = None
+        
+        if auswahl_wert == "all":
+            # 1. Historische Werte aus dem Profil zu den Live-Werten addieren
+            richtig += profil.historische_aufgaben_richtig
+            falsch += profil.historische_aufgaben_falsch
+            
+            # 2. Gesamtzahl gelöschter Aufgaben für den Hinweistext berechnen
+            anzahl_geloescht = profil.historische_aufgaben_richtig + profil.historische_aufgaben_falsch
+            
+            # 3. Ältestes noch vorhandenes Protokoll-Datum für den Hinweistext ermitteln
+            aeltestes_protokoll = protokoll.order_by('start').first()
+            if aeltestes_protokoll:
+                archiv_datum = aeltestes_protokoll.start
+        # -------------------------------------------------------------
+
         abbr = protokoll.filter(abbr=True).count()
-        try:                                                                                                                                                                                                            
+        try:                                                                                                                                                                                                                                                                                                                                                                    
             quote = int(falsch/(richtig+falsch)*100)
         except:
             quote = "-"
@@ -8418,15 +8577,19 @@ def protokoll(req, schueler_id=0):
         hilfe = protokoll.filter(hilfe=True).count()
         exclude = ["", " Hilfe "]
         protokoll = protokoll.exclude(eingabe__in = exclude)
+        
         context = dict(
             lehrer=lehrer, loeschen=loeschen, schueler=profil, protokoll=protokoll, 
             form=form, 
-            startdatum=form_start,  # <-- Hier exakt wie in gruppe_uebersicht
-            enddatum=form_end,      # <-- Hier exakt wie in gruppe_uebersicht
+            startdatum=form_start,  
+            enddatum=form_end,      
             wahl=wahl, 
             richtig=richtig, falsch=falsch, quote=quote, qfarbe=qfarbe, 
             abbr=abbr, lsg=lsg, hilfe=hilfe,
-            wochenziel=wochenziel, wochenziel_anzeigen=wochenziel_anzeigen
+            wochenziel=wochenziel, wochenziel_anzeigen=wochenziel_anzeigen,
+            # NEU: Werte für das Info-Banner im Template übergeben
+            anzahl_geloescht=anzahl_geloescht,
+            archiv_datum=archiv_datum
         )
         return render(req, 'core/protokoll.html', context)
     else:

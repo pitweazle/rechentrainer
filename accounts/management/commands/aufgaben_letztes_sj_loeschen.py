@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Sum  # NEU: Zum Aufsummieren der richtigen/falschen Aufgaben
 from django.conf import settings
 
 import json
@@ -12,6 +12,7 @@ from pathlib import Path
 from core.models import Protokoll, Zaehler
 from accounts.models import Geloescht
 from accounts.services import get_today 
+from core.models import Profil 
 
 class Command(BaseCommand):
     help = 'Archiviert alte Protokolle vor dem 1. Juni des letzten Schuljahres (wird am 1.8. ausgeführt)'
@@ -41,7 +42,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Fehler beim Lesen der JSON: {e}"))
             return
 
-        # 2. Stichtag berechnen: 1. Juni des VORJAHRES (heute.year - 1 -> 01.06.2025)
+        # 2. Stichtag berechnen: 1. Juni des VORJAHRES
         stichtag_jahr = heute.year - 1
         stichtag = datetime(stichtag_jahr, 6, 1, 0, 0, tzinfo=timezone.get_current_timezone())
 
@@ -57,24 +58,30 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Keine alten Protokolle zum Archivieren gefunden."))
             return
 
-        # 4. Aggregieren nach Schüler (Profil) und Kategorie (Alle gelöschten Aufgaben)
+        # 4. Aggregieren nach Schüler (Profil) und Kategorie
+        # ANPASSUNG: Wir zählen nicht nur die Zeilen, sondern addieren die Werte aus 'richtig' und 'falsch' auf!
         daten_schleife = (
             alte_protokolle
             .values('profil_id', 'kategorie_id')
-            .annotate(anzahl=Count('id'))
+            .annotate(
+                anzahl_zeilen=Sum(1),  # Wie viele Zeilen werden gelöscht
+                summe_richtig=Sum('richtig'),
+                summe_falsch=Sum('falsch')
+            )
             .order_by('profil_id', 'kategorie_id')
         )
 
         zaehler_nachher = zaehler_vorher + gesamt_anzahl
 
-        # 5. Daten im Speicher nach Schüler gruppieren für die Terminal-Anzeige und Schüler-Logs
+        # 5. Daten im Speicher nach Schüler gruppieren
         schueler_logs = {}
-        from accounts.models import Profil
 
         for eintrag in daten_schleife:
             pid = eintrag['profil_id']
             kid = eintrag['kategorie_id']
-            anzahl_geloescht = eintrag['anzahl']
+            anzahl_geloescht = eintrag['anzahl_zeilen']
+            r_sum = int(eintrag['summe_richtig'] or 0)
+            f_sum = int(eintrag['summe_falsch'] or 0)
 
             if not pid:
                 continue
@@ -98,17 +105,22 @@ class Command(BaseCommand):
                     lehrer_nachname = "Unbekannt"
 
                 schueler_logs[pid] = {
+                    'profil_objekt': schueler if 'schueler' in locals() else None,
                     'name_display': schueler_name,
                     'gruppe': gruppe_name,
                     'lehrer': lehrer_nachname,
                     'kategorien': [],
                     'kategorien_rohdaten': [],
-                    'schueler_gesamt': 0
+                    'schueler_gesamt': 0,
+                    'total_richtig': 0,  # Summenspeicher für das Profil
+                    'total_falsch': 0    # Summenspeicher für das Profil
                 }
             
             schueler_logs[pid]['kategorien'].append(f"({kid}/{anzahl_geloescht})")
             schueler_logs[pid]['kategorien_rohdaten'].append((kid, anzahl_geloescht))
             schueler_logs[pid]['schueler_gesamt'] += anzahl_geloescht
+            schueler_logs[pid]['total_richtig'] += r_sum
+            schueler_logs[pid]['total_falsch'] += f_sum
 
         # Jeder Schüler wird sauber im Terminal aufgelistet
         self.stdout.write("\nEINZELAUFLISTUNG DER BETROFFENEN SCHÜLER:")
@@ -122,7 +134,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"Schüler: {info['name_display']:<25} | "
                 f"Gruppe/Lehrer: {gruppe_lehrer_display:<20} | "
-                f"Gesamt: {info['schueler_gesamt']:<4} | "
+                f"Zeilen: {info['schueler_gesamt']:<4} (r: {info['total_richtig']}/f: {info['total_falsch']}) | "
                 f"Kategorien: {kat_text}"
             )
             
@@ -157,15 +169,21 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     # Einzelergebnisse in Zaehler verbuchen & Log pro Schüler schreiben
                     for pid, info in schueler_logs.items():
-                        # A) Zähler pro Kategorie erhöhen (Strikte Existenzprüfung via .get())
+                        
+                        # ANPASSUNG: Historische Werte direkt im Profil aufaddieren
+                        if info['profil_objekt']:
+                            schueler = info['profil_objekt']
+                            schueler.historische_aufgaben_richtig += info['total_richtig']
+                            schueler.historische_aufgaben_falsch += info['total_falsch']
+                            schueler.save()
+
+                        # A) Zähler pro Kategorie erhöhen
                         for kid, anzahl_geloescht in info['kategorien_rohdaten']:
                             try:
                                 zaehler_objekt = Zaehler.objects.get(profil_id=pid, kategorie_id=kid)
                                 zaehler_objekt.geloeschte_aufgaben += anzahl_geloescht
                                 zaehler_objekt.save()
                             except Zaehler.DoesNotExist:
-                                # HIER GEHOLT: Wir laden das Kategorie-Objekt über die kid,
-                                # damit Python weiß, was "kategorie.zeile" ist!
                                 from core.models import Kategorie
                                 try:
                                     kategorie = Kategorie.objects.get(id=kid)
@@ -180,14 +198,14 @@ class Command(BaseCommand):
                                     aufgnr=1,
                                 )
                                 
-                                # Jetzt funktioniert es fehlerfrei:
-                                if schueler.katmax <= kategorie.zeile:
+                                if info['profil_objekt'] and schueler.katmax <= kategorie.zeile:
                                     schueler.katmax = kategorie.zeile
                                     schueler.save()
                                     
                                 self.stdout.write(self.style.WARNING(
                                     f"   [REPARIERT] Fehlender Zähler für Schüler '{info['name_display']}' (Kategorie {kid}) wurde automatisch erzeugt."
                                 ))
+
                         # B) Schüler-Log in Geloescht schreiben
                         kat_text = ", ".join(info['kategorien'])
                         gruppe_lehrer_display = f"{info['gruppe']}/{info['lehrer']}"
@@ -196,17 +214,17 @@ class Command(BaseCommand):
                         Geloescht.objects.create(
                             benutzername=db_benutzername,
                             grund="Aufgaben aus dem letzten Schuljahr gelöscht",
-                            text=f"Gesamt gelöscht: {info['schueler_gesamt']} | Details (Kategorie/Anzahl): {kat_text}"
+                            text=f"Zeilen gelöscht: {info['schueler_gesamt']} (richtig: {info['total_richtig']}, falsch: {info['total_falsch']}) | Details: {kat_text}"
                         )
 
                     # DER EINE GLOBALE EINTRAG IN DIE DATENBANK
                     Geloescht.objects.create(
-                        benutzername="system",
+                        benutzername="cronjob",
                         grund="Aufgaben aus dem letzten Schuljahr gelöscht",
                         text=globaler_log_text
                     )
 
-                    # Den neuen Wert zurück in die JSON-Datei schreiben (mit Key 'anzahl')
+                    # Den neuen Wert zurück in die JSON-Datei schreiben
                     neue_json_daten = {
                         'anzahl': zaehler_nachher
                     }

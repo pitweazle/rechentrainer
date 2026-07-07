@@ -32,7 +32,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 105px;
+        min-height: 115px; /* Leicht erhöht für die Extra-Zeile */
     }
     
     .kachel-leer {
@@ -40,7 +40,18 @@
     }
     
     .kachel-name { font-size: 0.85em; font-weight: bold; color: #333; line-height: 1.2; }
-    .kachel-wert { font-size: 1.4em; font-weight: 800; color: #111; margin: 3px 0; }
+    
+    /* Klassen für die neuen Mini-Werte */
+    .kachel-werte-box {
+        display: flex;
+        justify-content: space-around;
+        align-items: baseline;
+        margin: 5px 0;
+    }
+    .wert-richtig { font-size: 1.3em; font-weight: 800; color: #2e7d32; }
+    .wert-falsch { font-size: 1.0em; font-weight: 700; color: #c62828; }
+    .kachel-quote { font-size: 0.75em; font-weight: bold; margin-bottom: 2px; }
+    
     .kachel-datum { font-size: 0.68em; color: #555; font-weight: normal; }
     
     .kachel-gesamt { 
@@ -69,9 +80,21 @@
     {% for gruppe in gruppen %}
         <div class="gruppen-zeile">
             {% for item in gruppe %}
-                <div class="kachel {% if item.anzahl == 0 %}kachel-leer{% endif %}" style="{{ item.kategorie.farbe }}">
+                <div class="kachel {% if item.anzahl == 0 and item.falsch == 0 %}kachel-leer{% endif %}" style="{{ item.kategorie.farbe }}">
                     <div class="kachel-name">{{ item.kategorie.name }}</div>
-                    <div class="kachel-wert">{{ item.anzahl }}</div>
+                    
+                    <div class="kachel-werte-box">
+                        <div class="wert-richtig" title="Richtig">{{ item.anzahl }}</div>
+                        <div class="wert-falsch" title="Falsch">{{ item.falsch }}</div>
+                    </div>
+
+                    <div class="kachel-quote">
+                        {% if item.quote != "-" %}
+                            <span class="{{ item.qfarbe }}">Quote: {{ item.quote }}%</span>
+                        {% else %}
+                            <span style="color: #999;">-</span>
+                        {% endif %}
+                    </div>
                     
                     <div class="kachel-datum">
                         {% if item.letzte %}{{ item.letzte }}{% else %}-{% endif %}
@@ -79,13 +102,22 @@
                 </div>
             {% endfor %}
             
-            {# Füllkachel am Ende der 5. Reihe #}
+            {# Füllkachel am Ende der letzten Reihe für das Gesamtergebnis #}
             {% if forloop.last %}
                 <div class="kachel kachel-gesamt">
-                    <div style="font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #a0aab2;">Gesamtzahl</div>
-                    <div style="font-size: 1.6em; font-weight: bold; color: #4caf50; margin: 2px 0;">{{ gesamtzahl }}</div>
+                    <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; color: #a0aab2; margin-bottom: 3px;">Gesamt-Statistik</div>
+                    
+                    <div style="font-size: 0.9em; color: #fff; margin-bottom: 2px;">
+                        Richtig: <strong style="color: #4caf50;">{{ gesamtzahl }}</strong> | 
+                        Falsch: <strong style="color: #ff5252;">{{ falsch }}</strong>
+                    </div>
+                    
+                    <div style="font-size: 1.2em; font-weight: bold; margin: 2px 0;" class="{{ qfarbe }}">
+                        Quote: {{ quote }}%
+                    </div>
+                    
                     {% if letzte %}
-                        <div style="font-size: 0.65em; color: #cbd5e1;">Letzte Aktivität: {{ letzte }}</div>
+                        <div style="font-size: 0.6em; color: #cbd5e1;">Letzte Aktivität: {{ letzte }}</div>
                     {% endif %}
                 </div>
             {% endif %}

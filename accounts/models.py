@@ -88,6 +88,9 @@ class Profil(models.Model):
     #voreinst = models.JSONField(blank=True, null=True, default=dict)
     keine_hj_frage = models.BooleanField(default = False)
 
+    historische_aufgaben_richtig = models.PositiveIntegerField(default=0)
+    historische_aufgaben_falsch = models.PositiveIntegerField(default=0)   
+
     def __str__(self):
         return f"Username: {self.user}: ({self.id}) {self.vorname} {self.nachname}, {self.klasse}"
 

@@ -23,7 +23,7 @@
                 {% endif %}
             </h2>
 
-            <form action="{% url 'protokoll' schueler.id %}" method="POST">
+<form action="{% url 'protokoll' schueler.id %}" method="POST">
                 {% csrf_token %}
                 <h2 style="text-align: left; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;"> 
                     <span>Zeitraum:</span>
@@ -55,25 +55,19 @@
                         <th>richtig</th>
                         <th>falsch</th>
                         <th>%</th>
-                        {% if wahl != "Alle Aufgaben" %}
-                            <th>abbrechen</th>
-                            <th>Lsg.</th>
-                            <th>Hilfe</th>
-                        {% endif %}
+                        <th>abbrechen</th>
+                        <th>Lsg.</th>
+                        <th>Hilfe</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>{{ wahl }}:</td>
-                        <td>{{ richtig }}</td>
-                        <td>{{ falsch }}</td>
-                        <td class="{{ qfarbe }}">{{ quote }}%</td>        
-                        {% if wahl != "Alle Aufgaben" %}
-                            <td>{{ abbr }}</td>
-                            <td>{{ lsg }}</td>
-                            <td>{{ hilfe }}</td>
-                        {% endif %}
-                    </tr>
+                    <td>{{ wahl }}:</td>
+                    <td>{{ richtig }}</td>
+                    <td>{{ falsch }}</td>
+                    <td class="{{ qfarbe }}">{{ quote }}%</td>        
+                    <td>{{ abbr }}</td>
+                    <td>{{ lsg }}</td>
+                    <td>{{ hilfe }}</td>
                 </tbody>
             </table>
 
@@ -89,11 +83,9 @@
                         <th width="150"> Eingabe</th>
                         <th>r</th>
                         <th>f</th>
-                        {% if wahl != "Alle Aufgaben" %}
-                            <th>abbr</th>
-                            <th>L</th>
-                            <th>H</th>
-                        {% endif %}
+                        <th>abbr</th>
+                        <th>L</th>
+                        <th>H</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +95,7 @@
                             <td>
                                 {{ zeile.start|date:"d.m.y H:i" }}
                                 {% if wahl == "Alle Aufgaben" %} 
-                                    <br><small>{{ zeile.sj }}/{{ zeile.hj }}</small>
+                                    {{ zeile.sj }}/{{ zeile.hj }} 
                                 {% endif %}
                             </td>
                             <td>{{ zeile.kategorie.name }} <br>({{ zeile.typ }}/{{ zeile.typ2 }})</td>
@@ -125,7 +117,6 @@
                                 {% else %}
                                     <td class="rot">{{ zeile.zweigabe }}</td>
                                 {% endif %}
-                            </td>
                             {% elif zeile.richtig > 0 %}
                                 <td class="gruen">{{ zeile.zweigabe }}</td>
                             {% else %}
@@ -133,31 +124,16 @@
                             {% endif %}
                             <td>{{ zeile.richtig.normalize }}</td>
                             <td>{{ zeile.falsch }}</td>                
-                            {% if wahl != "Alle Aufgaben" %}
-                                <td>{% if zeile.abbr %}x{% endif %}</td>                
-                                <td>{% if zeile.lsg %}x{% endif %}</td>                 
-                                <td>{% if zeile.hilfe %}x{% endif %}</td> 
-                            {% endif %}
+                            <td>{% if zeile.abbr %}x{% endif %}</td>                
+                            <td>{% if zeile.lsg %}x{% endif %}</td>                 
+                            <td>{% if zeile.hilfe %}x{% endif %}</td> 
                         </tr>
                     {% empty %}
-                        <tr>
-                            <td colspan="11" style="text-align: center; padding: 15px;">
-                                <strong>Keine Protokolleinträge für diesen Zeitraum vorhanden.</strong>
-                            </td>
-                        </tr>
+                        <strong>Leider keine Kategorien vorhanden.</strong> 
                     {% endfor %}
                     {% endautoescape %}
                 </tbody>
             </table>
-
-            {% if wahl == "Alle Aufgaben" and anzahl_geloescht > 0 %}
-                <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 4px; text-align: left;">
-                    <p style="margin: 0; color: #856404;">
-                        ℹ️ Die <strong>{{ anzahl_geloescht }}</strong> Aufgaben vor dem 
-                        <strong>{{ archiv_datum|date:"d.m.Y" }}</strong> wurden archiviert und können im Detail nicht mehr angezeigt werden.
-                    </p>
-                </div>
-            {% endif %}
         </div>
     </body>
 {% endblock %}
