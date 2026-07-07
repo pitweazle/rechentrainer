@@ -153,9 +153,9 @@
             {% if wahl == "Alle Aufgaben" and anzahl_geloescht > 0 %}
                 <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 4px; text-align: left;">
                     <p style="margin: 0; color: #856404;">
-                        ℹ️ Die <strong>{{ anzahl_geloescht }}</strong> Aufgaben vor dem 
-                        <strong>{{ archiv_datum|date:"d.m.Y" }}</strong> wurden archiviert und können im Detail nicht mehr angezeigt werden.
-                    </p>
+                        ℹ️ Du hast bereits <strong>{{ anzahl_geloescht }}</strong> ältere Aufgaben absolviert. 
+                        Detaillierte Protokolle sind für den Zeitraum <strong>vor dem {{ archiv_datum|date:"d.m.Y" }}</strong> nicht mehr verfügbar.
+                    </p></p>
                 </div>
             {% endif %}
         </div>

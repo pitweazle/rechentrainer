@@ -8395,31 +8395,6 @@ def uebersicht(req, schueler_id=0):
     else:
         return render(req, 'core/uebersicht_ohne_details.html', context)
 
-def sik_archiv_uebersicht(request):
-    profil = request.user.profil
-    
-    # Alle Zähler des Schülers sauber nach der Zeilen-Nummer (1-35) sortiert
-    zaehler_liste = Zaehler.objects.filter(profil=profil).select_related('kategorie').order_by('kategorie__zeile')
-    
-    # Wir berechnen die Gesamtzahl und das letzte Datum direkt über die Datenbank
-    stats = zaehler_liste.aggregate(
-        gesamt=Sum('geloeschte_aufgaben'),
-        letzte_bearbeitung=Max('letzte')
-    )
-    
-    # Die 33 Kategorien in 7er-Blöcke schneiden
-    # Block 1: 1-7, Block 2: 8-14, Block 3: 15-21, Block 4: 22-28, Block 5: 29-33
-    gruppen = []
-    for i in range(0, len(zaehler_liste), 7):
-        gruppen.append(zaehler_liste[i:i+7])
-        
-    context = {
-        'gruppen': gruppen,
-        'gesamtzahl': stats['gesamt'] or 0,
-        'letztes_datum': stats['letzte_bearbeitung'],
-    }
-    return render(request, 'archiv_template.html', context)
-
 def archiv_uebersicht(request):
     profil = request.user.profil
     zaehler_liste = Zaehler.objects.filter(profil=profil).select_related('kategorie').order_by('kategorie__zeile')
@@ -8561,10 +8536,14 @@ def protokoll(req, schueler_id=0):
             # 2. Gesamtzahl gelöschter Aufgaben für den Hinweistext berechnen
             anzahl_geloescht = profil.historische_aufgaben_richtig + profil.historische_aufgaben_falsch
             
-            # 3. Ältestes noch vorhandenes Protokoll-Datum für den Hinweistext ermitteln
-            aeltestes_protokoll = protokoll.order_by('start').first()
-            if aeltestes_protokoll:
-                archiv_datum = aeltestes_protokoll.start
+            # 3. Stichtag für den Hinweistext passend zum Lösch-Rhythmus berechnen
+            heute = timezone.now()
+            if heute.month < 8:
+                stichtag_jahr = heute.year - 1
+            else:
+                stichtag_jahr = heute.year
+
+            archiv_datum = datetime(stichtag_jahr, 6, 1, 0, 0, tzinfo=timezone.get_current_timezone())
         # -------------------------------------------------------------
 
         abbr = protokoll.filter(abbr=True).count()
