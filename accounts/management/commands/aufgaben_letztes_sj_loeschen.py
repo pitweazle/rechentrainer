@@ -2,11 +2,13 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
-from django.db.models import Sum  # NEU: Zum Aufsummieren der richtigen/falschen Aufgaben
+from django.db.models import Sum
 from django.conf import settings
 
 import json
 from pathlib import Path
+import os
+import subprocess  # NEU: Für den pg_dump Systemaufruf
 
 # Imports passend zu deiner Struktur
 from core.models import Protokoll, Zaehler
@@ -59,7 +61,6 @@ class Command(BaseCommand):
             return
 
         # 4. Aggregieren nach Schüler (Profil) und Kategorie
-        # ANPASSUNG: Wir zählen nicht nur die Zeilen, sondern addieren die Werte aus 'richtig' und 'falsch' auf!
         daten_schleife = (
             alte_protokolle
             .values('profil_id', 'kategorie_id')
@@ -112,8 +113,8 @@ class Command(BaseCommand):
                     'kategorien': [],
                     'kategorien_rohdaten': [],
                     'schueler_gesamt': 0,
-                    'total_richtig': 0,  # Summenspeicher für das Profil
-                    'total_falsch': 0    # Summenspeicher für das Profil
+                    'total_richtig': 0,
+                    'total_falsch': 0
                 }
             
             schueler_logs[pid]['kategorien'].append(f"({kid}/{anzahl_geloescht})")
@@ -165,12 +166,50 @@ class Command(BaseCommand):
 
         # 6. Datenbank-Transaktion starten & gebündelt schreiben
         if commit:
+            # =================================================================
+            # NEU: AUTOMATISCHES PG_DUMP BACKUP VOR DEM LÖSCHEN
+            # =================================================================
+            self.stdout.write("Starte automatische Datenbanksicherung vor dem Löschvorgang...")
+            
+            backup_dir = Path(settings.BASE_DIR) / "backups"
+            backup_dir.mkdir(exist_ok=True)
+            
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_file = backup_dir / f"auto_backup_vor_loeschen_{timestamp}.sql"
+            
+            db_config = settings.DATABASES['default']
+            
+            # Umgebungsvariablen für das Postgres-Passwort vorbereiten
+            env = os.environ.copy()
+            if db_config.get('PASSWORD'):
+                env['PGPASSWORD'] = db_config['PASSWORD']
+                
+            dump_cmd = [
+                'pg_dump',
+                '-U', db_config['USER'],
+                '-h', db_config.get('HOST') or 'localhost',
+                '-p', str(db_config.get('PORT') or 5432),
+                '-F', 'c',  # Custom Format (komprimiert & flexibel)
+                '-f', str(backup_file),
+                db_config['NAME']
+            ]
+            
+            try:
+                subprocess.run(dump_cmd, env=env, check=True, capture_output=True)
+                self.stdout.write(self.style.SUCCESS(f"Sicherung erfolgreich erstellt unter: {backup_file}"))
+            except subprocess.CalledProcessError as e:
+                self.stdout.write(self.style.ERROR(f"KRITISCHER FEHLER: Datenbanksicherung fehlgeschlagen!"))
+                self.stdout.write(self.style.ERROR(f"Details: {e.stderr.decode().strip()}"))
+                self.stdout.write(self.style.ERROR("Abbruch des Löschvorgangs aus Sicherheitsgründen."))
+                return  # HIER BRICHT DAS SKRIPT AB – ES WIRD NICHTS GELÖSCHT
+            # =================================================================
+
             try:
                 with transaction.atomic():
                     # Einzelergebnisse in Zaehler verbuchen & Log pro Schüler schreiben
                     for pid, info in schueler_logs.items():
                         
-                        # ANPASSUNG: Historische Werte direkt im Profil aufaddieren
+                        # Historische Werte direkt im Profil aufaddieren
                         if info['profil_objekt']:
                             schueler = info['profil_objekt']
                             schueler.historische_aufgaben_richtig += info['total_richtig']
@@ -188,7 +227,7 @@ class Command(BaseCommand):
                                 try:
                                     kategorie = Kategorie.objects.get(id=kid)
                                 except Kategorie.DoesNotExist:
-                                    continue # Falls die Kategorie selbst nicht mehr existiert
+                                    continue
 
                                 # Zähler reparieren
                                 Zaehler.objects.create(
