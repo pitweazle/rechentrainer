@@ -164,10 +164,10 @@ class Command(BaseCommand):
         if missing_counters_found and not commit:
             self.stdout.write(self.style.ERROR("!!! ACHTUNG: Es wurden fehlende Zähler-Objekte im Trockenlauf entdeckt (siehe rote Warnungen oben) !!!\n"))
 
-        # 6. Datenbank-Transaktion starten & gebündelt schreiben
+# 6. Daten schreiben (Krisensicher, da schülerweise committet wird)
         if commit:
             # =================================================================
-            # NEU: AUTOMATISCHES PG_DUMP BACKUP VOR DEM LÖSCHEN
+            # AUTOMATISCHES PG_DUMP BACKUP VOR DEM LÖSCHEN (Unverändert)
             # =================================================================
             self.stdout.write("Starte automatische Datenbanksicherung vor dem Löschvorgang...")
             
@@ -179,7 +179,6 @@ class Command(BaseCommand):
             
             db_config = settings.DATABASES['default']
             
-            # Umgebungsvariablen für das Postgres-Passwort vorbereiten
             env = os.environ.copy()
             if db_config.get('PASSWORD'):
                 env['PGPASSWORD'] = db_config['PASSWORD']
@@ -189,7 +188,7 @@ class Command(BaseCommand):
                 '-U', db_config['USER'],
                 '-h', db_config.get('HOST') or 'localhost',
                 '-p', str(db_config.get('PORT') or 5432),
-                '-F', 'c',  # Custom Format (komprimiert & flexibel)
+                '-F', 'c',
                 '-f', str(backup_file),
                 db_config['NAME']
             ]
@@ -201,22 +200,25 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"KRITISCHER FEHLER: Datenbanksicherung fehlgeschlagen!"))
                 self.stdout.write(self.style.ERROR(f"Details: {e.stderr.decode().strip()}"))
                 self.stdout.write(self.style.ERROR("Abbruch des Löschvorgangs aus Sicherheitsgründen."))
-                return  # HIER BRICHT DAS SKRIPT AB – ES WIRD NICHTS GELÖSCHT
+                return
             # =================================================================
 
-            try:
-                with transaction.atomic():
-                    # Einzelergebnisse in Zaehler verbuchen & Log pro Schüler schreiben
-                    for pid, info in schueler_logs.items():
-                        
-                        # Historische Werte direkt im Profil aufaddieren
+            self.stdout.write("\nSchreibe Daten in die Datenbank (schülerweise)...")
+            
+            # Einzelergebnisse PRO SCHÜLER verbuchen & direkt committen
+            for pid, info in schueler_logs.items():
+                try:
+                    with transaction.atomic():
+                        # 1. Historische Werte direkt im Profil aufaddieren
                         if info['profil_objekt']:
                             schueler = info['profil_objekt']
+                            # Hole den aktuellen Zustand frisch aus der DB, um Race Conditions zu vermeiden
+                            schueler.refresh_from_db()
                             schueler.historische_aufgaben_richtig += info['total_richtig']
                             schueler.historische_aufgaben_falsch += info['total_falsch']
                             schueler.save()
 
-                        # A) Zähler pro Kategorie erhöhen
+                        # 2. Zähler pro Kategorie erhöhen
                         for kid, anzahl_geloescht in info['kategorien_rohdaten']:
                             try:
                                 zaehler_objekt = Zaehler.objects.get(profil_id=pid, kategorie_id=kid)
@@ -229,7 +231,6 @@ class Command(BaseCommand):
                                 except Kategorie.DoesNotExist:
                                     continue
 
-                                # Zähler reparieren
                                 Zaehler.objects.create(
                                     profil_id=pid,
                                     kategorie_id=kid,
@@ -245,7 +246,7 @@ class Command(BaseCommand):
                                     f"   [REPARIERT] Fehlender Zähler für Schüler '{info['name_display']}' (Kategorie {kid}) wurde automatisch erzeugt."
                                 ))
 
-                        # B) Schüler-Log in Geloescht schreiben
+                        # 3. Schüler-Log in Geloescht schreiben
                         kat_text = ", ".join(info['kategorien'])
                         gruppe_lehrer_display = f"{info['gruppe']}/{info['lehrer']}"
                         db_benutzername = f"{info['name_display']} ({gruppe_lehrer_display})"[:50]
@@ -256,6 +257,17 @@ class Command(BaseCommand):
                             text=f"Zeilen gelöscht: {info['schueler_gesamt']} (richtig: {info['total_richtig']}, falsch: {info['total_falsch']}) | Details: {kat_text}"
                         )
 
+                        # 4. Protokolle NUR für DIESEN Schüler löschen (Häppchenweise Entlastung für Postgres!)
+                        Protokoll.objects.filter(profil_id=pid, start__lt=stichtag).delete()
+                        
+                    self.stdout.write(f" -> Schüler '{info['name_display']}' erfolgreich verarbeitet und gelöscht.")
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"Fehler bei Schüler-ID {pid} ({info['name_display']}): {e}"))
+                    # Ein Fehler bei einem Schüler bricht so nicht mehr das gesamte Skript ab!
+
+            # Globale Einträge außerhalb der Schüler-Schleife abschließen
+            try:
+                with transaction.atomic():
                     # DER EINE GLOBALE EINTRAG IN DIE DATENBANK
                     Geloescht.objects.create(
                         benutzername="cronjob",
@@ -270,11 +282,8 @@ class Command(BaseCommand):
                     with open(json_pfad, 'w', encoding='utf-8') as f:
                         json.dump(neue_json_daten, f, indent=4)
                         
-                    # Jetzt werden die alten Protokolle physisch gelöscht
-                    alte_protokolle.delete()
-                    
-                self.stdout.write(self.style.SUCCESS(f"[LIVE] Archivierung erfolgreich durchgeführt. {gesamt_anzahl} Zeilen gelöscht."))
+                self.stdout.write(self.style.SUCCESS(f"\n[LIVE] Archivierung erfolgreich durchgeführt. {gesamt_anzahl} Zeilen gelöscht."))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Kritischer Fehler beim Speichern (Transaktion abgebrochen): {e}"))
+                self.stdout.write(self.style.ERROR(f"Fehler beim Schreiben des globalen Logs / JSON: {e}"))
         else:
             self.stdout.write(self.style.WARNING("!!! NUR SIMULATION (TROCKENLAUF) - ES WURDE NICHTS GESPEICHERT ODER GEÄNDERT !!!"))
