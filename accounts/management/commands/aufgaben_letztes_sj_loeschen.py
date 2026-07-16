@@ -205,6 +205,9 @@ class Command(BaseCommand):
 
             self.stdout.write("\nSchreibe Daten in die Datenbank (schülerweise)...")
             
+            # NEU: Wir zählen hier die wirklich in der DB gelöschten Zeilen live mit!
+            tatsaechlich_geloeschte_zeilen = 0
+            
             # Einzelergebnisse PRO SCHÜLER verbuchen & direkt committen
             for pid, info in schueler_logs.items():
                 try:
@@ -212,7 +215,6 @@ class Command(BaseCommand):
                         # 1. Historische Werte direkt im Profil aufaddieren
                         if info['profil_objekt']:
                             schueler = info['profil_objekt']
-                            # Hole den aktuellen Zustand frisch aus der DB, um Race Conditions zu vermeiden
                             schueler.refresh_from_db()
                             schueler.historische_aufgaben_richtig += info['total_richtig']
                             schueler.historische_aufgaben_falsch += info['total_falsch']
@@ -257,33 +259,51 @@ class Command(BaseCommand):
                             text=f"Zeilen gelöscht: {info['schueler_gesamt']} (richtig: {info['total_richtig']}, falsch: {info['total_falsch']}) | Details: {kat_text}"
                         )
 
-                        # 4. Protokolle NUR für DIESEN Schüler löschen (Häppchenweise Entlastung für Postgres!)
-                        Protokoll.objects.filter(profil_id=pid, start__lt=stichtag).delete()
+                        # 4. Protokolle NUR für DIESEN Schüler löschen
+                        anzahl_geloescht_db, _ = Protokoll.objects.filter(profil_id=pid, start__lt=stichtag).delete()
+                        # Wir addieren nur die Zeilen auf, die die Datenbank uns wirklich als gelöscht meldet!
+                        tatsaechlich_geloeschte_zeilen += anzahl_geloescht_db
                         
                     self.stdout.write(f" -> Schüler '{info['name_display']}' erfolgreich verarbeitet und gelöscht.")
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"Fehler bei Schüler-ID {pid} ({info['name_display']}): {e}"))
-                    # Ein Fehler bei einem Schüler bricht so nicht mehr das gesamte Skript ab!
 
             # Globale Einträge außerhalb der Schüler-Schleife abschließen
-            try:
-                with transaction.atomic():
-                    # DER EINE GLOBALE EINTRAG IN DIE DATENBANK
-                    Geloescht.objects.create(
-                        benutzername="cronjob",
-                        grund="Aufgaben aus dem letzten Schuljahr gelöscht",
-                        text=globaler_log_text
+            if tatsaechlich_geloeschte_zeilen > 0:
+                try:
+                    # Berechne den echten neuen Zählerstand basierend auf den realen DB-Löschungen
+                    echter_zaehler_nachher = zaehler_vorher + tatsaechlich_geloeschte_zeilen
+                    
+                    korrigierter_globaler_log_text = (
+                        f"Archivierung Schuljahr am {heute.strftime('%d.%m.%Y')}: "
+                        f"Zähler VORHER: {zaehler_vorher} | "
+                        f"JETZT gelöscht: {tatsaechlich_geloeschte_zeilen} | "
+                        f"Zähler NACHHER: {echter_zaehler_nachher}."
                     )
 
-                    # Den neuen Wert zurück in die JSON-Datei schreiben
-                    neue_json_daten = {
-                        'anzahl': zaehler_nachher
-                    }
-                    with open(json_pfad, 'w', encoding='utf-8') as f:
-                        json.dump(neue_json_daten, f, indent=4)
-                        
-                self.stdout.write(self.style.SUCCESS(f"\n[LIVE] Archivierung erfolgreich durchgeführt. {gesamt_anzahl} Zeilen gelöscht."))
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Fehler beim Schreiben des globalen Logs / JSON: {e}"))
+                    with transaction.atomic():
+                        # DER EINE GLOBALE EINTRAG IN DIE DATENBANK
+                        Geloescht.objects.create(
+                            benutzername="cronjob",
+                            grund="Aufgaben aus dem letzten Schuljahr gelöscht",
+                            text=korrigierter_globaler_log_text
+                        )
+
+                        # Erst wenn die DB-Transaktion steht, aktualisieren wir das JSON-File
+                        neue_json_daten = {
+                            'anzahl': echter_zaehler_nachher
+                        }
+                        with open(json_pfad, 'w', encoding='utf-8') as f:
+                            json.dump(neue_json_daten, f, indent=4)
+                            
+                    self.stdout.write(self.style.SUCCESS(
+                        f"\n[LIVE] Archivierung erfolgreich durchgeführt. "
+                        f"{tatsaechlich_geloeschte_zeilen} Zeilen gelöscht. "
+                        f"JSON-Zähler steht jetzt auf {echter_zaehler_nachher}."
+                    ))
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"Fehler beim Schreiben des globalen Logs / JSON: {e}"))
+            else:
+                self.stdout.write(self.style.WARNING("\nEs wurden keine Datensätze physisch gelöscht. JSON wurde nicht verändert."))
         else:
             self.stdout.write(self.style.WARNING("!!! NUR SIMULATION (TROCKENLAUF) - ES WURDE NICHTS GESPEICHERT ODER GEÄNDERT !!!"))
