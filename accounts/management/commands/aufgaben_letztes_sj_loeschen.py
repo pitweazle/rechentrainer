@@ -45,7 +45,7 @@ class Command(BaseCommand):
             return
 
         # 2. Stichtag berechnen: 1. Juni des VORJAHRES
-        stichtag_jahr = heute.year - 1
+        stichtag_jahr = heute.year 
         stichtag = datetime(stichtag_jahr, 6, 1, 0, 0, tzinfo=timezone.get_current_timezone())
 
         self.stdout.write(f"Starte Archivierung am: {heute.strftime('%d.%m.%Y')}")

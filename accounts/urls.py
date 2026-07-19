@@ -50,4 +50,6 @@ urlpatterns = [
 
     # Auth-URLs Django
     path("", include("django.contrib.auth.urls")),
+    path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
+    path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
 ]

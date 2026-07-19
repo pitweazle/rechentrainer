@@ -1,0 +1,32 @@
+<div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+    <h2>Moodle-Anmeldung</h2>
+    <p>Hallo <b>{{ vorname }} {{ nachname }}</b>,</p>
+    <p>dein Moodle-Name weicht vom Rechentrainer ab oder du bist neu hier. Bitte wähle eine Option:</p>
+    
+    {% if error_message %}
+        <div style="color:red; margin-bottom:15px;">{{ error_message|safe }}</div>
+    {% endif %}
+    
+    <hr>
+    <h3>Option A: Ich bin neu hier</h3>
+    <form method="POST">
+        <input type="hidden" name="aktion" value="neu_registrieren">
+        <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Neuen Account erstellen</button>
+    </form>
+    
+    <hr>
+    <h3>Option B: Ich habe schon einen Account</h3>
+    <p>Gib deine normalen Rechentrainer-Daten ein, um die Accounts zu verknüpfen:</p>
+    <form method="POST">
+        <input type="hidden" name="aktion" value="verknuepfen">
+        <label>RT-Benutzername:<br><input type="text" name="username_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
+        <label>RT-Passwort:<br><input type="password" name="passwort_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
+        <button type="submit" style="background:#007bff; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Einloggen & verknüpfen</button>
+    </form>
+    
+    <hr>
+    <form method="POST" style="text-align:right;">
+        <input type="hidden" name="aktion" value="abbrechen">
+        <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
+    </form>
+</div>

@@ -149,7 +149,6 @@ def generiere_zufaelliges_passwort():
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
-
     consumer_key = request.POST.get('oauth_consumer_key')
     try:
         config = ExterneSchnittstelleConfig.objects.get(consumer_key=consumer_key, typ='moodle')
@@ -232,190 +231,257 @@ def moodle_entscheidung_view(request):
     if not moodle_data:
         return redirect('index')
 
-    error_message = ""
-
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
 
-        # a) "Neuen Account erstellen" wurde geklickt -> Formular zur Abfrage anzeigen
+        # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
-            # Daten aus der Session holen
-            default_vorname = moodle_data.get('vorname', '')
-            default_nachname = moodle_data.get('nachname', '')
-            # Leere Klasse/JG, damit der Schüler das aktiv ausfüllen muss
-            default_jg = "" 
-            default_klasse = ""
-
-            # Kurs-Optionen aus wahl_kurs generieren
             kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
-
             html_profil_abfrage = f"""
             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
                 <h2>Registrierung abschließen</h2>
                 <form method="POST">
                     <input type="hidden" name="aktion" value="registrierung_speichern">
-                    
-                    <label>Vorname:</label><br>
-                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
-                    
-                    <label>Nachname:</label><br>
-                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
-                    
-                    <label>Klasse:</label><br>
-                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;">
-                    
-                    <label>Jahrgang:</label><br>
-                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;">
-                    
-                    <label>Kurs:</label><br>
-                    <select name="reg_kurs" required style="width:100%; padding:5px;">
-                        <option value="" disabled selected>Bitte auswählen...</option>
-                        {kurs_options}
-                    </select>
-                    
-                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">
-                        Account jetzt erstellen
-                    </button>
+                    <label>Vorname:</label><br><input type="text" name="reg_vorname" value="{moodle_data.get('vorname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+                    <label>Nachname:</label><br><input type="text" name="reg_nachname" value="{moodle_data.get('nachname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+                    <label>E-Mail-Adresse (optional für Passwort-Reset):</label><br>
+                    <input type="email" name="reg_email" style="width:100%; padding:5px;"><br>
+                    <label>Klasse:</label><br><input type="text" name="reg_klasse" required style="width:100%; padding:5px;"><br>
+                    <label>Jahrgang:</label><br><input type="number" name="reg_jg" required style="width:100%; padding:5px;"><br>
+                    <label>Kurs:</label><br><select name="reg_kurs" required style="width:100%; padding:5px;"><option value="" disabled selected>Bitte auswählen...</option>{kurs_options}</select>
+                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">Account jetzt erstellen</button>
                 </form>
-            </div>
-            """
+            </div>"""
             return HttpResponse(html_profil_abfrage)
 
-        # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
+        # B) Registrierung speichern und User/Profil anlegen
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
             reg_nachname = request.POST.get('reg_nachname', '').strip()
+            reg_email = request.POST.get('reg_email', '').strip()
             reg_klasse = request.POST.get('reg_klasse', '')[:10]
             reg_jg = request.POST.get('reg_jg', '').strip()
             reg_kurs = request.POST.get('reg_kurs', '').strip()
 
-            # Username und Passwort generieren
-            zeichen = string.ascii_letters + string.digits
-            zufalls_passwort = ''.join(random.choice(zeichen) for i in range(16))
             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+            zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(16))
             
-            # 1. User erstellen
-            user = User.objects.create_user(
-                username=username, 
-                email=moodle_data['email'],
-                password=zufalls_passwort
-            )
+            # User erstellen
+            user = User.objects.create_user(username=username, email=reg_email, password=zufalls_passwort)
             
+            # Gruppe zuweisen
             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
             
-            # 2. Profil erstellen mit den Werten aus dem Formular
+            # Profil erstellen
             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
             Profil.objects.create(
-                user=user,
-                moodle_uid=moodle_data['moodle_uid'],
-                vorname=reg_vorname,
-                nachname=reg_nachname,
-                schule=schule_obj,
-                jg=reg_jg,
-                klasse=reg_klasse,
+                user=user, 
+                moodle_uid=moodle_data['moodle_uid'], 
+                vorname=reg_vorname, 
+                nachname=reg_nachname, 
+                schule=schule_obj, 
+                jg=reg_jg, 
+                klasse=reg_klasse, 
                 kurs=reg_kurs
             )
             
             login(request, user)
             del request.session['moodle_launch_data']
             
-            html_erfolg = f"""
-            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2 style="color: #28a745; margin-top: 0;">Registrierung erfolgreich!</h2>
-                
-                <div style="background-color: #f8f9fa; padding: 15px; border-left: 5px solid #28a745; margin: 20px 0;">
-                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">Dein Rechentrainer-Benutzername:</p>
-                    <code style="font-size: 20px; background: #eee; padding: 5px 10px; display: block; border-radius: 4px;">{user.username}</code>
-                </div>
+            # Erfolgsmeldung
+            if reg_email:
+                hinweis = f'<p style="background-color: #d4edda; padding: 10px; border-radius: 4px;">Deine E-Mail <b>{reg_email}</b> ist gespeichert. Du kannst dich künftig direkt auf www.rechentrainer.app anmelden (via Passwort-Reset).</p>'
+            else:
+                hinweis = f'<p style="background-color: #fff3cd; padding: 10px; border-radius: 4px;">Du hast keine E-Mail angegeben. Ein direkter Login ohne Moodle ist aktuell nicht möglich.</p>'
 
-                <div style="margin: 20px 0; color: #555;">
-                    <p><strong>E-Mail-Adresse:</strong> {user.email if user.email else 'Keine hinterlegt'}</p>
-                    <p style="font-size: 0.9em; line-height: 1.4;">
-                        <em>Hinweis:</em> Falls du dein Passwort einmal vergessen solltest, kannst du über diese E-Mail-Adresse eine Passwort-Zurücksetzung anfordern. 
-                        {"" if user.email else "<strong>Bitte trage nach dem Login in deinem Profil unbedingt eine E-Mail-Adresse nach!</strong>"}
-                    </p>
-                </div>
-                
-                <a href="/" style="display:inline-block; background:#007bff; color:white; padding:12px 20px; text-decoration:none; border-radius:4px; font-weight:bold; width:100%; text-align:center; box-sizing:border-box;">
-                    Weiter zum Rechentrainer
-                </a>
-            </div>
-            """
-            return HttpResponse(html_erfolg)
+            return HttpResponse(f"<div style='max-width:500px; margin:40px auto; font-family:sans-serif;'><h2>Registrierung erfolgreich!</h2>{hinweis}<a href='/' style='display:block; padding:10px; background:#007bff; color:white; text-align:center; text-decoration:none; border-radius:4px;'>Weiter zum Rechentrainer</a></div>")
 
-        # b) Ich habe schon einen Account -> Einloggen und Moodle-ID eintragen
+        # C) Bestehenden User verknüpfen
         elif aktion == 'verknuepfen':
             user_input = request.POST.get('username_eingabe')
             pass_input = request.POST.get('passwort_eingabe')
-            
             alter_user = authenticate(request, username=user_input, password=pass_input)
             
             if alter_user is not None:
-                try:
-                    alter_profil = alter_user.profil
-                    alter_profil.moodle_uid = moodle_data['moodle_uid']
-                    alter_profil.save()
-                    
-                    gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
-                    if gruppe_obj:
-                        alter_user.groups.add(gruppe_obj)
-                    
-                    if moodle_data['email'] and alter_user.email != moodle_data['email']:
-                        alter_user.email = moodle_data['email']
-                        
+                alter_profil = alter_user.profil
+                alter_profil.moodle_uid = moodle_data['moodle_uid']
+                alter_profil.save()
+                
+                # E-Mail von Moodle übernehmen, falls User bisher keine hatte
+                if moodle_data.get('email') and not alter_user.email:
+                    alter_user.email = moodle_data['email']
                     alter_user.save()
-                    
-                    login(request, alter_user)
-                    del request.session['moodle_launch_data']
-                    
-                    return HttpResponse(f"<h2>Verknüpfung erfolgreich!</h2><p>Konto <b>{alter_user.username}</b> ist jetzt mit Moodle verbunden.</p><a href='/'>Weiter zum Rechentrainer</a>")
-                except Profil.DoesNotExist:
-                    error_message = '<div style="color:red;">Dieser Benutzer hat kein gültiges Profil.</div>'
+                
+                login(request, alter_user)
+                del request.session['moodle_launch_data']
+                return redirect('index')
             else:
-                error_message = '<div style="color:red;">Ungültiger Benutzername oder Passwort.</div>'
+                return render(request, 'sso_weiche.html', {'vorname': moodle_data['vorname'], 'nachname': moodle_data['nachname'], 'error_message': 'Ungültiger Benutzername oder Passwort.'})
 
-        # c) Abbrechen
+        # D) Abbrechen
         elif aktion == 'abbrechen':
             del request.session['moodle_launch_data']
-            return HttpResponse("Vorgang abgebrochen.")
+            return redirect('index')
 
-    # GET-Request: Zeigt das Haupt-Auswahlformular an
-    html_weiche = f"""
-    <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-        <h2>Moodle-Anmeldung</h2>
-        <p>Hallo <b>{moodle_data['vorname']} {moodle_data['nachname']}</b>,</p>
-        <p>dein Moodle-Name weicht vom Rechentrainer ab oder du bist neu hier. Bitte wähle eine Option:</p>
-        
-        {error_message}
-        <hr>
-        
-        <h3>Option A: Ich bin neu hier</h3>
-        <form method="POST">
-            <input type="hidden" name="aktion" value="neu_registrieren">
-            <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Neuen Account erstellen</button>
-        </form>
-        
-        <hr>
-        
-        <h3>Option B: Ich habe schon einen Account</h3>
-        <p>Gib deine normalen Rechentrainer-Daten ein (z.B. von "Herr Doll"), um die Accounts zu verknüpfen:</p>
-        <form method="POST">
-            <input type="hidden" name="aktion" value="verknuepfen">
-            <label>RT-Benutzername:<br><input type="text" name="username_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
-            <label>RT-Passwort:<br><input type="password" name="passwort_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
-            <button type="submit" style="background:#007bff; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Einloggen & verknüpfen</button>
-        </form>
-        
-        <hr>
-        <form method="POST" style="text-align:right;">
-            <input type="hidden" name="aktion" value="abbrechen">
-            <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
-        </form>
-    </div>
-    """
-    return HttpResponse(html_weiche)
+    return render(request, 'sso_weiche.html', {
+        'vorname': moodle_data['vorname'], 
+        'nachname': moodle_data['nachname']
+    })
+
+# @csrf_exempt
+# def moodle_entscheidung_view(request):
+#     moodle_data = request.session.get('moodle_launch_data')
+#     if not moodle_data:
+#         return redirect('index')
+
+#     error_message = ""
+#     context = {
+#         'vorname': moodle_data['vorname'],
+#         'nachname': moodle_data['nachname'],
+#         'error_message': ""
+#     }
+
+#     if request.method == 'POST':
+#         aktion = request.POST.get('aktion')
+
+#         # A) Registrierung vorbereiten
+#         if aktion == 'neu_registrieren':
+#             # Hier greift deine bisherige Logik für das Formular
+#             # Ich habe den alten Code für das Formular-HTML hier reingenommen
+#             kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+#             html_profil_abfrage = f"""
+#             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+#                 <h2>Registrierung abschließen</h2>
+#                 <form method="POST">
+#                     <input type="hidden" name="aktion" value="registrierung_speichern">
+#                     <label>Vorname:</label><br><input type="text" name="reg_vorname" value="{moodle_data.get('vorname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+#                     <label>Nachname:</label><br><input type="text" name="reg_nachname" value="{moodle_data.get('nachname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+#                     <label>Klasse:</label><br><input type="text" name="reg_klasse" required style="width:100%; padding:5px;"><br>
+#                     <label>Jahrgang:</label><br><input type="number" name="reg_jg" required style="width:100%; padding:5px;"><br>
+#                     <label>Kurs:</label><br><select name="reg_kurs" required style="width:100%; padding:5px;"><option value="" disabled selected>Bitte auswählen...</option>{kurs_options}</select>
+#                     <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">Account jetzt erstellen</button>
+#                 </form>
+#             </div>"""
+#             return HttpResponse(html_profil_abfrage)
+
+#         # B) Registrierung speichern
+#         elif aktion == 'registrierung_speichern':
+#             reg_vorname = request.POST.get('reg_vorname', '').strip()
+#             reg_nachname = request.POST.get('reg_nachname', '').strip()
+#             reg_klasse = request.POST.get('reg_klasse', '')[:10]
+#             reg_jg = request.POST.get('reg_jg', '').strip()
+#             reg_kurs = request.POST.get('reg_kurs', '').strip()
+
+#             zeichen = string.ascii_letters + string.digits
+#             zufalls_passwort = ''.join(random.choice(zeichen) for i in range(16))
+#             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+            
+#             user = User.objects.create_user(username=username, email=moodle_data['email'], password=zufalls_passwort)
+#             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
+#             if gruppe_obj: user.groups.add(gruppe_obj)
+            
+#             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
+#             Profil.objects.create(user=user, moodle_uid=moodle_data['moodle_uid'], vorname=reg_vorname, 
+#                                   nachname=reg_nachname, schule=schule_obj, jg=reg_jg, klasse=reg_klasse, kurs=reg_kurs)
+            
+#             login(request, user)
+#             del request.session['moodle_launch_data']
+            
+#             # A) Registrierung vorbereiten (mit optionaler E-Mail)
+#         if aktion == 'neu_registrieren':
+#             kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+#             html_profil_abfrage = f"""
+#             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+#                 <h2>Registrierung abschließen</h2>
+#                 <form method="POST">
+#                     <input type="hidden" name="aktion" value="registrierung_speichern">
+#                     <label>Vorname:</label><br><input type="text" name="reg_vorname" value="{moodle_data.get('vorname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+#                     <label>Nachname:</label><br><input type="text" name="reg_nachname" value="{moodle_data.get('nachname', '')}" readonly style="width:100%; padding:5px; background:#e9ecef;"><br>
+#                     <label>E-Mail-Adresse (optional für Passwort-Reset):</label><br>
+#                     <input type="email" name="reg_email" placeholder="Optional" style="width:100%; padding:5px;"><br>
+#                     <label>Klasse:</label><br><input type="text" name="reg_klasse" required style="width:100%; padding:5px;"><br>
+#                     <label>Jahrgang:</label><br><input type="number" name="reg_jg" required style="width:100%; padding:5px;"><br>
+#                     <label>Kurs:</label><br><select name="reg_kurs" required style="width:100%; padding:5px;"><option value="" disabled selected>Bitte auswählen...</option>{kurs_options}</select>
+#                     <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">Account jetzt erstellen</button>
+#                 </form>
+#             </div>"""
+#             return HttpResponse(html_profil_abfrage)
+
+#         # B) Registrierung speichern (mit dynamischem Hinweis)
+#         elif aktion == 'registrierung_speichern':
+#             reg_vorname = request.POST.get('reg_vorname', '').strip()
+#             reg_nachname = request.POST.get('reg_nachname', '').strip()
+#             reg_email = request.POST.get('reg_email', '').strip()
+#             reg_klasse = request.POST.get('reg_klasse', '')[:10]
+#             reg_jg = request.POST.get('reg_jg', '').strip()
+#             reg_kurs = request.POST.get('reg_kurs', '').strip()
+
+#             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+#             zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(16))
+            
+#             user = User.objects.create_user(username=username, email=reg_email, password=zufalls_passwort)
+            
+#             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
+#             if gruppe_obj: user.groups.add(gruppe_obj)
+            
+#             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
+#             Profil.objects.create(user=user, moodle_uid=moodle_data['moodle_uid'], vorname=reg_vorname, 
+#                                   nachname=reg_nachname, schule=schule_obj, jg=reg_jg, klasse=reg_klasse, kurs=reg_kurs)
+            
+#             login(request, user)
+#             del request.session['moodle_launch_data']
+            
+#             # Dynamischer Hinweis basierend auf der E-Mail
+#             if reg_email:
+#                 hinweis = f"""
+#                 <p style="background-color: #d4edda; padding: 10px; border-radius: 4px;">
+#                     Da du eine E-Mail angegeben hast, kannst du dich künftig auch direkt auf 
+#                     <a href="https://www.rechentrainer.app">www.rechentrainer.app</a> anmelden. 
+#                     Nutze dazu einfach die Funktion <b>"Passwort vergessen"</b> auf der Anmeldeseite, 
+#                     um dir ein eigenes Passwort festzulegen.
+#                 </p>"""
+#             else:
+#                 hinweis = f"""
+#                 <p style="background-color: #fff3cd; padding: 10px; border-radius: 4px;">
+#                     Da du keine E-Mail angegeben hast, ist ein direkter Login auf 
+#                     <a href="https://www.rechentrainer.app">www.rechentrainer.app</a> ohne Moodle 
+#                     derzeit nicht möglich. Du kannst deine E-Mail später jederzeit in deinem 
+#                     Profil nachholen, um diese Funktion freizuschalten.
+#                 </p>"""
+
+#             html_erfolg = f"""
+#             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 25px; border-radius: 8px;">
+#                 <h2 style="color: #28a745;">Registrierung erfolgreich!</h2>
+#                 <p>Benutzername: <b>{user.username}</b></p>
+#                 {hinweis}
+#                 <a href="/" style="display:block; background:#007bff; color:white; padding:12px; text-decoration:none; border-radius:4px; text-align:center;">Weiter</a>
+#             </div>"""
+#             return HttpResponse(html_erfolg)
+
+#         # C) Verknüpfen
+#         elif aktion == 'verknuepfen':
+#             user_input = request.POST.get('username_eingabe')
+#             pass_input = request.POST.get('passwort_eingabe')
+#             alter_user = authenticate(request, username=user_input, password=pass_input)
+            
+#             if alter_user is not None:
+#                 alter_profil = alter_user.profil
+#                 alter_profil.moodle_uid = moodle_data['moodle_uid']
+#                 alter_profil.save()
+#                 login(request, alter_user)
+#                 del request.session['moodle_launch_data']
+#                 return HttpResponse("<h2>Verknüpfung erfolgreich!</h2><a href='/'>Weiter</a>")
+#             else:
+#                 context['error_message'] = '<div style="color:red;">Ungültiger Benutzername oder Passwort.</div>'
+
+#         # D) Abbrechen
+#         elif aktion == 'abbrechen':
+#             del request.session['moodle_launch_data']
+#             return HttpResponse("Vorgang abgebrochen.")
+
+#     return render(request, 'sso_weiche.html', context)
 
 def account_loeschen(req):
     try:    
