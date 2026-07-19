@@ -226,14 +226,12 @@ def lti_launch(request):
     return redirect('moodle_entscheidung')
 
 @csrf_exempt
-def moodle_entscheidung_view(request):
+def moodle_entscheidung(request):
     moodle_data = request.session.get('moodle_launch_data')
     if not moodle_data:
         return redirect('index')
-
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
-
         # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
             context = {
@@ -242,8 +240,8 @@ def moodle_entscheidung_view(request):
                 'moodle_email': moodle_data.get('email', ''),
                 'kurs_choices': wahl_kurs.choices,
             }
+            request.session['moodle_launch_data'] = moodle_data
             return render(request, 'SSO/moodle_registrierung.html', context)
-
         # B) Registrierung speichern und User/Profil anlegen
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
@@ -278,7 +276,8 @@ def moodle_entscheidung_view(request):
             )
 
             login(request, user)
-            del request.session['moodle_launch_data']
+            if 'moodle_launch_data' in request.session:
+                del request.session['moodle_launch_data']
 
             # Erfolgsmeldung
             context = {
@@ -286,7 +285,6 @@ def moodle_entscheidung_view(request):
                 'email': reg_email,
             }
             return render(request, 'SSO/moodle_erfolg.html', context)
-
         # C) Bestehenden User verknüpfen
         elif aktion == 'verknuepfen':
             user_input = request.POST.get('username_eingabe')
@@ -304,7 +302,8 @@ def moodle_entscheidung_view(request):
                     alter_user.save()
 
                 login(request, alter_user)
-                del request.session['moodle_launch_data']
+                if 'moodle_launch_data' in request.session:
+                    del request.session['moodle_launch_data']
                 return redirect('index')
             else:
                 return render(request, 'SSO/sso_weiche.html', {
@@ -312,17 +311,91 @@ def moodle_entscheidung_view(request):
                     'nachname': moodle_data['nachname'],
                     'error_message': 'Ungültiger Benutzername oder Passwort.'
                 })
-
         # D) Abbrechen
         elif aktion == 'abbrechen':
-            del request.session['moodle_launch_data']
+            if 'moodle_launch_data' in request.session:
+                del request.session['moodle_launch_data']
             return redirect('index')
-
     # GET-Request: Hauptauswahl anzeigen
     return render(request, 'SSO/sso_weiche.html', {
         'vorname': moodle_data['vorname'],
         'nachname': moodle_data['nachname']
     })
+
+@csrf_exempt
+def simulation_view(request):
+    if request.method == 'POST':
+        # Erstelle eine Fake-POST-Anfrage für lti_launch
+        from django.http import HttpRequest
+        from accounts.views import lti_launch
+
+        # Fake-Request erstellen
+        fake_request = HttpRequest()
+        fake_request.method = 'POST'
+        fake_request.POST = {
+            'oauth_consumer_key': request.POST.get('schule_id', 'DE-HE-6072'),  # Consumer Key = Dienststellennr
+            'user_id': request.POST.get('uid', 'test_franz'),  # Moodle-UID
+            'lis_person_name_given': request.POST.get('vorname', 'Franz'),
+            'lis_person_name_family': request.POST.get('nachname', 'Musterschüler'),
+            'lis_person_contact_email_primary': request.POST.get('email', 'test@example.de'),
+            'roles': request.POST.get('gruppe', 'Learner'),  # Moodle-Rollen: "Learner" oder "Instructor"
+            'context_title': request.POST.get('klasse', 'Testklasse'),
+            'custom_jg': request.POST.get('jg', 6),
+        }
+        fake_request.session = request.session
+
+        # Rufe lti_launch auf und gib die Antwort zurück
+        return lti_launch(fake_request)
+
+    # HTML-Formular für die Simulation (direkt in der View)
+    return HttpResponse("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Moodle-LTI-Simulation (realistisch)</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+                input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+                button { background: #28a745; color: white; border: none; cursor: pointer; }
+            </style>
+        </head>
+        <body>
+            <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
+            <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
+            <form method="POST">
+                <label>Consumer Key (Dienststellennr):</label>
+                <input type="text" name="schule_id" value="DE-HE-6072"><br>
+
+                <label>Moodle UID:</label>
+                <input type="text" name="uid" value="test_franz"><br>
+
+                <label>Vorname:</label>
+                <input type="text" name="vorname" value="Franz"><br>
+
+                <label>Nachname:</label>
+                <input type="text" name="nachname" value="Musterschüler"><br>
+
+                <label>E-Mail:</label>
+                <input type="email" name="email" value="test@example.de"><br>
+
+                <label>Gruppe (Moodle-Rolle):</label>
+                <select name="gruppe">
+                    <option value="Learner">Schüler (Learner)</option>
+                    <option value="Instructor">Lehrer (Instructor)</option>
+                </select><br>
+
+                <label>Jahrgang:</label>
+                <input type="number" name="jg" value="6"><br>
+
+                <label>Klasse:</label>
+                <input type="text" name="klasse" value="Testklasse"><br>
+
+                <button type="submit">LTI-Anfrage an lti_launch senden</button>
+            </form>
+        </body>
+        </html>
+    """)
 
 def account_loeschen(req):
     try:    
