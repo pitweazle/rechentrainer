@@ -44,7 +44,10 @@
     <!-- E-Mail (optional) -->
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">E-Mail-Adresse (optional):</label>
-      <input type="email" name="reg_email" id="emailInput" value="{{ moodle_email|default:'' }}" placeholder="z.B. max@schule.de" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <input type="email" name="reg_email" id="emailInput" value="{{ moodle_email }}" placeholder="z.B. max@schule.de" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+        Ohne E-Mail kannst du dich später <strong>nur über Moodle</strong> anmelden.
+      </p>
     </div>
 
     <button type="submit" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Account erstellen</button>
