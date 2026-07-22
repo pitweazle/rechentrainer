@@ -246,10 +246,13 @@ def moodle_entscheidung(request):
         aktion = request.POST.get('aktion')
         # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
+            roh_email = moodle_data.get('email', '')
+            # Wenn keine da ist ODER es eine nrply-Adresse ist -> leer lassen für den Schüler
+            gueltige_email = '' if ('nrply' in roh_email.lower()) else roh_email
             context = {
                 'moodle_vorname': moodle_data.get('vorname', ''),
                 'moodle_nachname': moodle_data.get('nachname', ''),
-                'moodle_email': moodle_data.get('email', ''),
+                'moodle_email': gueltige_email,                
                 'kurs_choices': wahl_kurs.choices,
             }
             request.session['moodle_launch_data'] = moodle_data
