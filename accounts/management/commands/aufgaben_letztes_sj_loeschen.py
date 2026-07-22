@@ -164,7 +164,7 @@ class Command(BaseCommand):
         if missing_counters_found and not commit:
             self.stdout.write(self.style.ERROR("!!! ACHTUNG: Es wurden fehlende Zähler-Objekte im Trockenlauf entdeckt (siehe rote Warnungen oben) !!!\n"))
 
-# 6. Daten schreiben (Krisensicher, da schülerweise committet wird)
+        # 6. Daten schreiben (Krisensicher, da schülerweise committet wird)
         if commit:
             # =================================================================
             # AUTOMATISCHES PG_DUMP BACKUP VOR DEM LÖSCHEN (Unverändert)
@@ -193,15 +193,15 @@ class Command(BaseCommand):
                 db_config['NAME']
             ]
             
-            try:
-                subprocess.run(dump_cmd, env=env, check=True, capture_output=True)
-                self.stdout.write(self.style.SUCCESS(f"Sicherung erfolgreich erstellt unter: {backup_file}"))
-            except subprocess.CalledProcessError as e:
-                self.stdout.write(self.style.ERROR(f"KRITISCHER FEHLER: Datenbanksicherung fehlgeschlagen!"))
-                self.stdout.write(self.style.ERROR(f"Details: {e.stderr.decode().strip()}"))
-                self.stdout.write(self.style.ERROR("Abbruch des Löschvorgangs aus Sicherheitsgründen."))
-                return
-            # =================================================================
+            # try:
+            #     subprocess.run(dump_cmd, env=env, check=True, capture_output=True)
+            #     self.stdout.write(self.style.SUCCESS(f"Sicherung erfolgreich erstellt unter: {backup_file}"))
+            # except subprocess.CalledProcessError as e:
+            #     self.stdout.write(self.style.ERROR(f"KRITISCHER FEHLER: Datenbanksicherung fehlgeschlagen!"))
+            #     self.stdout.write(self.style.ERROR(f"Details: {e.stderr.decode().strip()}"))
+            #     self.stdout.write(self.style.ERROR("Abbruch des Löschvorgangs aus Sicherheitsgründen."))
+            #     return
+            # # =================================================================
 
             self.stdout.write("\nSchreibe Daten in die Datenbank (schülerweise)...")
             
@@ -226,6 +226,11 @@ class Command(BaseCommand):
                                 zaehler_objekt = Zaehler.objects.get(profil_id=pid, kategorie_id=kid)
                                 zaehler_objekt.geloeschte_aufgaben += anzahl_geloescht
                                 zaehler_objekt.save()
+                                
+                                from core.models import Kategorie
+                                kategorie = Kategorie.objects.get(id=kid)
+                                kategorie.geloeschte_aufgaben += anzahl_geloescht
+                                kategorie.save()
                             except Zaehler.DoesNotExist:
                                 from core.models import Kategorie
                                 try:

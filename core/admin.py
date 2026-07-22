@@ -9,7 +9,7 @@ class KategorieAdmin(admin.ModelAdmin):
     ordering = ["-zeile"]
     fieldsets = [
         (None,   {'fields': ['name', 'zeile', 'farbe', 'start_jg', 'start_sw']}),
-                ('weitere Infos', {'fields': ['eof'], 'classes': ['collapse']}),        
+                ('weitere Infos', {'fields': ['eof', 'geloeschte_aufgaben'], 'classes': ['collapse']}),        
     ]
     inlines = [AuswahlInline]
     

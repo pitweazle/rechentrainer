@@ -1,4 +1,5 @@
 {% extends 'auswahl.html' %}
+{% load name_utils %}
 {% load static %}
 
 {% block css_files %}
@@ -29,110 +30,56 @@
 {% endblock %}
 
 {% block content %}
-    <body>
-        <div class="container" >
-            <h2>Die fleißigsten Schülerinnen und Schüler in diesem Halbjahr:</h2>
-            <table>
-                <thead>
-                    <th>Aufgaben</th>
-                    <th >Schüler/in</th>
-                    <th>Lerngruppe</th>
-                </thead>
-                <tbody>
-                    <tr>
-                    {% for item in hjliste %}
-                        <tr>
-                            <td  style= "text-align: center;">{{item.hjsumme}}</td>
-                            <td > {{item.profil.vorname|truncatechars_html:2}} {{item.profil.nachname|truncatechars_html:2}}</td>
-                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
-            {% comment %} <h2>Die fleißigsten Schülerinnen und Schüler in diesem Schuljahr:</h2>
-            <table>
-                <thead>
-                    <th>Aufgaben</th>
-                    <th >Schüler/in</th>
-                    <th>Lerngruppe</th>
-                </thead>
-                <tbody>
-                    <tr>
-                    {% for item in hjliste %}
-                        <tr>
-                            <td  style= "text-align: center;">{{item.sjsumme}}</td>
-                            <td > {{item.profil.vorname}} {{item.profil.nachname}}</td>
-                            <td > {{item.profil.gruppe.name}}, {{item.gruppe.lehrer.profil.vorname}} {{item.gruppe.lehrer.profil.nachname}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </tbody>
-            </table> {% endcomment %}
-            <h2>Die ewige Bestenliste:</h2>
-            <table>
-                <thead>
-                    <th>Aufgaben</th>
-                    <th >Schüler/in</th>
-                    <th>Lerngruppe</th>
-                </thead>
-                <tbody>
-                    <tr>
-                    {% for item in gesamtliste %}
-                        <tr>
-                            <td  style= "text-align: center;">{{item.summe}}</td>
-                            <td > {{item.profil.vorname|truncatechars_html:2}} {{item.profil.nachname|truncatechars_html:2}}</td>
-                            <td > {{item.profil.gruppe.name}}, {{item.profil.gruppe.lehrer.profil.schule.schulname}}, {{item.profil.gruppe.lehrer.profil.schule.ort.name}}</td>
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
-            <h2>Das sind die fleißigsten Gruppen in diesem Halbjahr:</h2>
-            <table>
-                <thead>
-                    <th>Aufgaben</th>
-                    <th>pro Mitglied</th>
-                    <th >Gruppe</th>
-                    <th>Schule</th>
-                </thead>
-                <tbody>
-                    <tr>
-                    {% for item in hjgruppen %}
-                        <tr>
-                            <td  style= "text-align: center;">{{item.hjsumme}}</td>
-                            <td>/{{item.mitglieder}}={{item.hjschnitt}}</td>
-                            {% comment %} <td > {{item.gruppe.name}}, {{item.gruppe.lehrer.profil.vorname}} {{item.gruppe.lehrer.profil.nachname}}</td> {% endcomment %}
-                            <td > {{item.gruppe.name}}, </td>
-                            <td> {{item.gruppe.lehrer.profil.schule.schulname}}, {{item.gruppe.lehrer.profil.schule.ort.name}}</td>
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
-            <h2>Das sind die fleißigsten Gruppen überhaupt:</h2>
-            <table>
-                <thead>
-                    <th>Aufgaben</th>
-                    <th>pro Mitglied</th>
-                    <th >Gruppe</th>
-                    <th>Schule</th>
-                </thead>
-                <tbody>
-                    <tr>
-                    {% for item in bestgruppen %}
-                        <tr>
-                            <td  style= "text-align: center;">{{item.summe}}</td>
-                            <td>/{{item.mitglieder}}={{item.summeschnitt}}</td>
-                            <td > {{item.gruppe.name}},</td>
-                            <td> {{item.gruppe.lehrer.profil.schule.schulname}}, {{item.gruppe.lehrer.profil.schule.ort.name}}</td>
-                        </tr>
-                    {% endfor %}
-                    </tr>
-                </tbody>
-            </table>  
-            <h2><a href="{% url 'statistik' %}">Hier könnt ihr sehen, welche Aufgaben am häufigsten gerechnet wurden</a></h2>          
-        </div>
-    </body>
-{% endblock %}
+<div class="container">
+    <h2>Die fleißigsten Schülerinnen und Schüler in diesem Halbjahr:</h2>
+    <table>
+        <thead>
+            <th>Aufgaben</th><th>Schüler/in</th><th>Lerngruppe / Schule</th>
+        </thead>
+        <tbody>
+            {% for item in hjliste %}
+                <tr>
+                    <td style="text-align: center;">{{ item.hjsumme }}</td>
+                    <td>{{ item.initialen }}</td>
+                    <td>{{ item.gruppe }}, {{ item.schule }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
+    <h2>Die ewige Bestenliste:</h2>
+    <table>
+        <thead>
+            <th>Aufgaben</th><th>Schüler/in</th><th>Lerngruppe / Schule</th>
+        </thead>
+        <tbody>
+            {% for item in ewigeliste %}
+                <tr>
+                    <td style="text-align: center;">{{ item.punkte }}</td>
+                    <td>{{ item.name|name_kuerzen:1 }}</td> <!-- Dein Command speichert hier bereits Initialen -->
+                    <td>{{ item.lehrer }}, {{ item.schule }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Die fleißigsten Gruppen (Halbjahr):</h2>
+    <table>
+        <thead>
+            <th>Aufgaben</th><th>pro Mitglied</th><th>Gruppe</th><th>Schule</th>
+        </thead>
+        <tbody>
+            {% for item in hjgruppen %}
+                <tr>
+                    <td style="text-align: center;">{{ item.hjsumme }}</td>
+                    <td>/{{ item.mitglieder }}={{ item.hjschnitt }}</td>
+                    <td>{{ item.gruppe.name }}</td>
+                    <td>{{ item.gruppe.lehrer.profil.schule.schulname }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2><a href="{% url 'statistik' %}">Hier könnt ihr sehen, welche Aufgaben am häufigsten gerechnet wurden</a></h2>          
+
+</div>
+{% endblock %}

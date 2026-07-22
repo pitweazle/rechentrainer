@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 
                 if commit:
                     Geloescht.objects.create(
-                        benutzername=lehrer.username,
+                        benutzername="cronjob",
                         grund="Inaktivität Lerngruppe",
                         text=log_text,
                         erstellt_am=timezone.now()

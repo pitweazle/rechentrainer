@@ -1,11 +1,12 @@
+import string
+import random
+import json
+import logging
+
 from datetime import date, datetime, timedelta, time
 
 from decimal import Decimal
 
-import string
-import random
-
-import json
 from pathlib import Path
 
 from django.utils import timezone
@@ -30,10 +31,11 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht, wahl_kurs
+from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht, wahl_kurs, EwigeBestenliste, LoginLog
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
+from core.views import soll_berechnung
 
 from mathetests.models import Test
 
@@ -149,7 +151,6 @@ def generiere_zufaelliges_passwort():
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
-
     consumer_key = request.POST.get('oauth_consumer_key')
     try:
         config = ExterneSchnittstelleConfig.objects.get(consumer_key=consumer_key, typ='moodle')
@@ -157,11 +158,21 @@ def lti_launch(request):
         return HttpResponseBadRequest("Unbekannter oder ungültiger Consumer Key.")
 
     # Moodle-Daten auslesen
+    logger = logging.getLogger(__name__)
+    logger.warning(f"MOODLE POST DATEN: {request.POST.dict()}")
     moodle_uid = request.POST.get('user_id') 
     vorname = request.POST.get('lis_person_name_given', '').strip()
     nachname = request.POST.get('lis_person_name_family', '').strip()
     moodle_email = request.POST.get('lis_person_contact_email_primary', '').strip()
     moodle_rollen = request.POST.get('roles', 'Learner')
+
+    LoginLog.objects.create(
+        quelle='moodle',
+        consumer_key=request.POST.get('oauth_consumer_key'),
+        user_id=request.POST.get('user_id'),
+        institution_name=request.POST.get('tool_consumer_instance_name'),
+        rohdaten=str(request.POST.dict())
+    )
     
     if 'Instructor' in moodle_rollen or 'Teacher' in moodle_rollen:
         ziel_gruppen_name = "Lehrer"
@@ -227,85 +238,43 @@ def lti_launch(request):
     return redirect('moodle_entscheidung')
 
 @csrf_exempt
-def moodle_entscheidung_view(request):
+def moodle_entscheidung(request):
     moodle_data = request.session.get('moodle_launch_data')
     if not moodle_data:
         return redirect('index')
-
-    error_message = ""
-
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
-
-        # a) "Neuen Account erstellen" wurde geklickt -> Formular zur Abfrage anzeigen
+        # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
-            # Daten aus der Session holen
-            default_vorname = moodle_data.get('vorname', '')
-            default_nachname = moodle_data.get('nachname', '')
-            # Leere Klasse/JG, damit der Schüler das aktiv ausfüllen muss
-            default_jg = "" 
-            default_klasse = ""
-
-            # Kurs-Optionen aus wahl_kurs generieren
-            kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
-
-            html_profil_abfrage = f"""
-            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-                <h2>Registrierung abschließen</h2>
-                <form method="POST">
-                    <input type="hidden" name="aktion" value="registrierung_speichern">
-                    
-                    <label>Vorname:</label><br>
-                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
-                    
-                    <label>Nachname:</label><br>
-                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
-                    
-                    <label>Klasse:</label><br>
-                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;">
-                    
-                    <label>Jahrgang:</label><br>
-                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;">
-                    
-                    <label>Kurs:</label><br>
-                    <select name="reg_kurs" required style="width:100%; padding:5px;">
-                        <option value="" disabled selected>Bitte auswählen...</option>
-                        {kurs_options}
-                    </select>
-                    
-                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">
-                        Account jetzt erstellen
-                    </button>
-                </form>
-            </div>
-            """
-            return HttpResponse(html_profil_abfrage)
-
-        # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
+            context = {
+                'moodle_vorname': moodle_data.get('vorname', ''),
+                'moodle_nachname': moodle_data.get('nachname', ''),
+                'moodle_email': moodle_data.get('email', ''),
+                'kurs_choices': wahl_kurs.choices,
+            }
+            request.session['moodle_launch_data'] = moodle_data
+            return render(request, 'SSO/moodle_registrierung.html', context)
+        # B) Registrierung speichern und User/Profil anlegen
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
             reg_nachname = request.POST.get('reg_nachname', '').strip()
+            reg_email = request.POST.get('reg_email', '').strip()
             reg_klasse = request.POST.get('reg_klasse', '')[:10]
             reg_jg = request.POST.get('reg_jg', '').strip()
             reg_kurs = request.POST.get('reg_kurs', '').strip()
 
-            # Username und Passwort generieren
-            zeichen = string.ascii_letters + string.digits
-            zufalls_passwort = ''.join(random.choice(zeichen) for i in range(16))
             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
-            
-            # 1. User erstellen
-            user = User.objects.create_user(
-                username=username, 
-                email=moodle_data['email'],
-                password=zufalls_passwort
-            )
-            
+            zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
+
+            # User erstellen
+            user = User.objects.create_user(username=username, email=reg_email, password=zufalls_passwort)
+
+            # Gruppe zuweisen
             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
-            
-            # 2. Profil erstellen mit den Werten aus dem Formular
+
+            # Profil erstellen
             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
             Profil.objects.create(
                 user=user,
@@ -317,105 +286,128 @@ def moodle_entscheidung_view(request):
                 klasse=reg_klasse,
                 kurs=reg_kurs
             )
-            
+
             login(request, user)
-            del request.session['moodle_launch_data']
-            
-            html_erfolg = f"""
-            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2 style="color: #28a745; margin-top: 0;">Registrierung erfolgreich!</h2>
-                
-                <div style="background-color: #f8f9fa; padding: 15px; border-left: 5px solid #28a745; margin: 20px 0;">
-                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">Dein Rechentrainer-Benutzername:</p>
-                    <code style="font-size: 20px; background: #eee; padding: 5px 10px; display: block; border-radius: 4px;">{user.username}</code>
-                </div>
+            if 'moodle_launch_data' in request.session:
+                del request.session['moodle_launch_data']
 
-                <div style="margin: 20px 0; color: #555;">
-                    <p><strong>E-Mail-Adresse:</strong> {user.email if user.email else 'Keine hinterlegt'}</p>
-                    <p style="font-size: 0.9em; line-height: 1.4;">
-                        <em>Hinweis:</em> Falls du dein Passwort einmal vergessen solltest, kannst du über diese E-Mail-Adresse eine Passwort-Zurücksetzung anfordern. 
-                        {"" if user.email else "<strong>Bitte trage nach dem Login in deinem Profil unbedingt eine E-Mail-Adresse nach!</strong>"}
-                    </p>
-                </div>
-                
-                <a href="/" style="display:inline-block; background:#007bff; color:white; padding:12px 20px; text-decoration:none; border-radius:4px; font-weight:bold; width:100%; text-align:center; box-sizing:border-box;">
-                    Weiter zum Rechentrainer
-                </a>
-            </div>
-            """
-            return HttpResponse(html_erfolg)
-
-        # b) Ich habe schon einen Account -> Einloggen und Moodle-ID eintragen
+            # Erfolgsmeldung
+            context = {
+                'username': username,
+                'email': reg_email,
+            }
+            return render(request, 'SSO/moodle_erfolg.html', context)
+        # C) Bestehenden User verknüpfen
         elif aktion == 'verknuepfen':
             user_input = request.POST.get('username_eingabe')
             pass_input = request.POST.get('passwort_eingabe')
-            
             alter_user = authenticate(request, username=user_input, password=pass_input)
-            
+
             if alter_user is not None:
-                try:
-                    alter_profil = alter_user.profil
-                    alter_profil.moodle_uid = moodle_data['moodle_uid']
-                    alter_profil.save()
-                    
-                    gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
-                    if gruppe_obj:
-                        alter_user.groups.add(gruppe_obj)
-                    
-                    if moodle_data['email'] and alter_user.email != moodle_data['email']:
-                        alter_user.email = moodle_data['email']
-                        
+                alter_profil = alter_user.profil
+                alter_profil.moodle_uid = moodle_data['moodle_uid']
+                alter_profil.save()
+
+                # E-Mail von Moodle übernehmen, falls User bisher keine hatte
+                if moodle_data.get('email') and not alter_user.email:
+                    alter_user.email = moodle_data['email']
                     alter_user.save()
-                    
-                    login(request, alter_user)
+
+                login(request, alter_user)
+                if 'moodle_launch_data' in request.session:
                     del request.session['moodle_launch_data']
-                    
-                    return HttpResponse(f"<h2>Verknüpfung erfolgreich!</h2><p>Konto <b>{alter_user.username}</b> ist jetzt mit Moodle verbunden.</p><a href='/'>Weiter zum Rechentrainer</a>")
-                except Profil.DoesNotExist:
-                    error_message = '<div style="color:red;">Dieser Benutzer hat kein gültiges Profil.</div>'
+                return redirect('index')
             else:
-                error_message = '<div style="color:red;">Ungültiger Benutzername oder Passwort.</div>'
-
-        # c) Abbrechen
+                return render(request, 'SSO/sso_weiche.html', {
+                    'vorname': moodle_data['vorname'],
+                    'nachname': moodle_data['nachname'],
+                    'error_message': 'Ungültiger Benutzername oder Passwort.'
+                })
+        # D) Abbrechen
         elif aktion == 'abbrechen':
-            del request.session['moodle_launch_data']
-            return HttpResponse("Vorgang abgebrochen.")
+            if 'moodle_launch_data' in request.session:
+                del request.session['moodle_launch_data']
+            return redirect('index')
+    # GET-Request: Hauptauswahl anzeigen
+    return render(request, 'SSO/sso_weiche.html', {
+        'vorname': moodle_data['vorname'],
+        'nachname': moodle_data['nachname']
+    })
 
-    # GET-Request: Zeigt das Haupt-Auswahlformular an
-    html_weiche = f"""
-    <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-        <h2>Moodle-Anmeldung</h2>
-        <p>Hallo <b>{moodle_data['vorname']} {moodle_data['nachname']}</b>,</p>
-        <p>dein Moodle-Name weicht vom Rechentrainer ab oder du bist neu hier. Bitte wähle eine Option:</p>
-        
-        {error_message}
-        <hr>
-        
-        <h3>Option A: Ich bin neu hier</h3>
-        <form method="POST">
-            <input type="hidden" name="aktion" value="neu_registrieren">
-            <button type="submit" style="background:#28a745; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Neuen Account erstellen</button>
-        </form>
-        
-        <hr>
-        
-        <h3>Option B: Ich habe schon einen Account</h3>
-        <p>Gib deine normalen Rechentrainer-Daten ein (z.B. von "Herr Doll"), um die Accounts zu verknüpfen:</p>
-        <form method="POST">
-            <input type="hidden" name="aktion" value="verknuepfen">
-            <label>RT-Benutzername:<br><input type="text" name="username_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
-            <label>RT-Passwort:<br><input type="password" name="passwort_eingabe" required style="width:100%; padding:5px; box-sizing:border-box;"></label><br><br>
-            <button type="submit" style="background:#007bff; color:white; border:none; padding:10px; cursor:pointer; border-radius:4px;">Einloggen & verknüpfen</button>
-        </form>
-        
-        <hr>
-        <form method="POST" style="text-align:right;">
-            <input type="hidden" name="aktion" value="abbrechen">
-            <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Abbrechen</button>
-        </form>
-    </div>
-    """
-    return HttpResponse(html_weiche)
+@csrf_exempt
+def simulation_view(request):
+    if request.method == 'POST':
+        # Erstelle eine Fake-POST-Anfrage für lti_launch
+        from django.http import HttpRequest
+        from accounts.views import lti_launch
+
+        # Fake-Request erstellen
+        fake_request = HttpRequest()
+        fake_request.method = 'POST'
+        fake_request.POST = {
+            'oauth_consumer_key': request.POST.get('schule_id', 'DE-HE-6072'),  # Consumer Key = Dienststellennr
+            'user_id': request.POST.get('uid', 'test_franz'),  # Moodle-UID
+            'lis_person_name_given': request.POST.get('vorname', 'Franz'),
+            'lis_person_name_family': request.POST.get('nachname', 'Musterschüler'),
+            'lis_person_contact_email_primary': request.POST.get('email', 'test@example.de'),
+            'roles': request.POST.get('gruppe', 'Learner'),  # Moodle-Rollen: "Learner" oder "Instructor"
+            'context_title': request.POST.get('klasse', 'Testklasse'),
+            'custom_jg': request.POST.get('jg', 6),
+        }
+        fake_request.session = request.session
+
+        # Rufe lti_launch auf und gib die Antwort zurück
+        return lti_launch(fake_request)
+
+    # HTML-Formular für die Simulation (direkt in der View)
+    return HttpResponse("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Moodle-LTI-Simulation (realistisch)</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+                input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+                button { background: #28a745; color: white; border: none; cursor: pointer; }
+            </style>
+        </head>
+        <body>
+            <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
+            <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
+            <form method="POST">
+                <label>Consumer Key (Dienststellennr):</label>
+                <input type="text" name="schule_id" value="DE-HE-6072"><br>
+
+                <label>Moodle UID:</label>
+                <input type="text" name="uid" value="test_franz"><br>
+
+                <label>Vorname:</label>
+                <input type="text" name="vorname" value="Franz"><br>
+
+                <label>Nachname:</label>
+                <input type="text" name="nachname" value="Musterschüler"><br>
+
+                <label>E-Mail:</label>
+                <input type="email" name="email" value="test@example.de"><br>
+
+                <label>Gruppe (Moodle-Rolle):</label>
+                <select name="gruppe">
+                    <option value="Learner">Schüler (Learner)</option>
+                    <option value="Instructor">Lehrer (Instructor)</option>
+                </select><br>
+
+                <label>Jahrgang:</label>
+                <input type="number" name="jg" value="6"><br>
+
+                <label>Klasse:</label>
+                <input type="text" name="klasse" value="Testklasse"><br>
+
+                <button type="submit">LTI-Anfrage an lti_launch senden</button>
+            </form>
+        </body>
+        </html>
+    """)
 
 def account_loeschen(req):
     try:    
@@ -552,111 +544,101 @@ def profil(req):
 
 #Statistik
 def bestenliste(req):
-    from core.views import soll_berechnung
-    sj, hj = name_hj()
+    sj, hj = name_hj() # Stellt sicher, dass diese Funktion in deinem Scope existiert
+    
+    # 1. Schülerauswertung
     alleschueler = []
-    schueler = Profil.objects.all()
+    schueler = Profil.objects.select_related('gruppe__lehrer__profil').all()
     for s in schueler:
-        profil_gruppe = s.gruppe
-        if profil_gruppe:
-            startdatum = s.gruppe.erstellt_am
-        else:
-            startdatum = s.user.date_joined
+        startdatum = s.gruppe.erstellt_am if s.gruppe else s.user.date_joined
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, s.jg, s.jg*10, startdatum) 
-        protokoll = Protokoll.objects.filter(profil = s)
-        summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
+        
+        protokolle = Protokoll.objects.filter(profil=s)
+        hjsumme_val = protokolle.filter(sj=sj, hj=hj).aggregate(sum=Sum('richtig'))['sum']
+        hjsumme = int(hjsumme_val) if isinstance(hjsumme_val, Decimal) else (hjsumme_val or 0)
 
-        protokoll = protokoll.filter(sj = sj)
-        # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        # sjsumme = int(summe) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+        if hjsumme > soll_hj: # Nur die Aktiven
+            alleschueler.append({
+                "initialen": f"{s.vorname[0]}. {s.nachname[0]}.",
+                "hjsumme": hjsumme,
+                "gruppe": s.gruppe.name if s.gruppe else "n.a.",
+                "schule": s.gruppe.lehrer.profil.schule.schulname if (s.gruppe and s.gruppe.lehrer) else "n.a."
+            })
+    
+    hjschueler = sorted(alleschueler, key=lambda x: x["hjsumme"], reverse=True)[:10]
 
-        protokoll = protokoll.filter(hj = hj)
-        hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-        hjsumme = int(summe) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
-
-
-        schuelerliste = {"profil": s, "hjsumme": hjsumme, "summe": summe, "soll": soll_hj}
-        alleschueler.append(schuelerliste)
-    hjschueler = sorted(
-        [entry for entry in alleschueler if entry["hjsumme"] > entry["soll"]], 
-        key=lambda x: x["hjsumme"], 
-        reverse=True
-        )[:10] 
-    # sjschueler = sorted(
-    #     [entry for entry in alleschueler if entry["sjsumme"] > 0], 
-    #     key=lambda x: x["sjsumme"], 
-    #     reverse=True
-    #     )[:10]
-    gesamtschueler = sorted(
-        [entry for entry in alleschueler if entry["summe"] > 0], 
-        key=lambda x: x["summe"], 
-        reverse=True
-        )[:10]
-
-    gruppe = Lerngruppe.objects.all()
+    # 2. Gruppenauswertung (Aktuelles Halbjahr)
     hjgruppen = []
-    bestgruppen = []
-    for g in gruppe:
+    for g in Lerngruppe.objects.all():
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
-        mitglieder = Profil.objects.filter(gruppe = g).count()
+        mitglieder = Profil.objects.filter(gruppe=g).count()
+        
         if mitglieder > 0:
-            protokoll = Protokoll.objects.filter(profil__gruppe=g)
-            summe = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            summe = int(summe) if isinstance(summe, Decimal) else (summe or 0)
-            #if summe>0:
-                #print(g, soll_hj, int(summe/mitglieder))
-            protokoll = protokoll.filter(sj = sj)
-            # sjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            # sjsumme = int(sjsumme) if isinstance(sjsumme, Decimal) else (sjsumme or 0)
+            protokoll_hj = Protokoll.objects.filter(profil__gruppe=g, sj=sj, hj=hj)
+            hjsumme_val = protokoll_hj.aggregate(sum=Sum('richtig'))['sum']
+            hjsumme = int(hjsumme_val) if isinstance(hjsumme_val, Decimal) else (hjsumme_val or 0)
 
-            protokoll = protokoll.filter(hj = hj)
-            hjsumme = protokoll.aggregate(sum=Sum('richtig'))['sum']
-            hjsumme = int(hjsumme) if isinstance(hjsumme, Decimal) else (hjsumme or 0)
+            if hjsumme > (mitglieder * soll_hj * 0.5):
+                hjgruppen.append({
+                    "gruppe": g, 
+                    "mitglieder": mitglieder,
+                    "hjsumme": hjsumme, 
+                    "hjschnitt": round(hjsumme / mitglieder)
+                })
 
-            if hjsumme > mitglieder*soll_hj*0.5:
-                gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
-                                "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
-                                "summe": summe, "summeschnitt": round(summe/mitglieder)}
-                hjgruppen.append(gruppenliste)
+    hjgruppen = sorted(hjgruppen, key=lambda x: x["hjsumme"], reverse=True)[:10]
 
-            if summe/mitglieder > soll_hj:
-                gruppenliste = {"gruppe": g, "mitglieder": mitglieder, 
-                                "hjsumme": hjsumme, "hjschnitt": round(hjsumme/mitglieder), 
-                                "summe": summe, "summeschnitt": round(summe/mitglieder)}
-                bestgruppen.append(gruppenliste)
-
-        
-        hjgruppen = sorted(
-            [entry for entry in hjgruppen], 
-            key=lambda x: x["hjsumme"], 
-            reverse=True
-            )[:10]
-        
-        bestgruppen = sorted(
-            [entry for entry in bestgruppen], 
-            key=lambda x: x["summe"], 
-            reverse=True
-            )[:10]
-
-    context= {'hjliste': hjschueler, 'gesamtliste': gesamtschueler, 'hjgruppen': hjgruppen, 'bestgruppen': bestgruppen}
+    context = {
+        'hjliste': hjschueler, 
+        'ewigeliste': EwigeBestenliste.objects.all().order_by('-punkte')[:10],
+        'hjgruppen': hjgruppen
+    }
     return render(req, 'bestenliste.html', context)
 
 def statistik(req):
     kategorien = Kategorie.objects.all().order_by('zeile')
-    protokoll = Protokoll.objects.all()
-    gesamt = protokoll.count()
     kategorienliste = []
-    max = 0
+    max_count = 0
+    
+    # 1. JSON-Zähler einlesen
+    json_pfad = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
+    json_wert = 0
+    if json_pfad.exists():
+        try:
+            with open(json_pfad, 'r', encoding='utf-8') as f:
+                json_daten = json.load(f)
+                json_wert = json_daten.get('anzahl', 0)
+        except:
+            json_wert = 0
+            
+    # 2. Datenbank-Daten sammeln
+    gesamt_protokolle = Protokoll.objects.count()
+    gesamt_geloescht_in_kategorien = sum(k.geloeschte_aufgaben for k in kategorien)
+    
+    # 3. Gesamtsumme = JSON-Altbestand + Kategorie-Gelöschte + Aktuelle Protokolle
+    gesamt = json_wert + gesamt_protokolle + gesamt_geloescht_in_kategorien
+    
     for kategorie in kategorien:
-        protokoll = Protokoll.objects.filter(kategorie = kategorie)
-        anzahl = [kategorie, protokoll.count(), ]
-        kategorienliste.append(anzahl)
-        if protokoll.count() > max:
-            max = protokoll.count()
-    for kategorie in kategorienliste:
-        kategorie.append("width:"+str(kategorie[1]/max*100)+"%")
-    return render(req, 'statistik.html', context= {'gesamt': gesamt, 'kategorien': kategorienliste})
+        aktuelle_anzahl = Protokoll.objects.filter(kategorie=kategorie).count()
+        # Hinweis: Hier nutzen wir nur die datenbankseitigen gelöschten Aufgaben, 
+        # da wir den JSON-Wert nicht auf einzelne Kategorien runterbrechen können.
+        summe_mit_geloeschten = aktuelle_anzahl + kategorie.geloeschte_aufgaben
+        
+        kategorienliste.append([kategorie, summe_mit_geloeschten])
+        
+        if summe_mit_geloeschten > max_count:
+            max_count = summe_mit_geloeschten
+            
+    # Prozentuale Breite berechnen
+    if max_count > 0:
+        for eintrag in kategorienliste:
+            prozent = (eintrag[1] / max_count) * 100
+            eintrag.append(f"width:{round(prozent, 1)}%")
+    else:
+        for eintrag in kategorienliste:
+            eintrag.append("width:0%")
+            
+    return render(req, 'statistik.html', context={'gesamt': gesamt, 'kategorien': kategorienliste})
   
 # wird nur bei der Registrierung aufgerufen
 def ort_wahl(req):

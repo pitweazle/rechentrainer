@@ -25,6 +25,8 @@ class Kategorie(models.Model):
     name = models.CharField(max_length=30)
     farbe= models.CharField(max_length=25, choices=wahl_farbe.choices)
 
+    geloeschte_aufgaben = models.IntegerField(default=0)
+
     start_jg = models.PositiveSmallIntegerField(default=5, verbose_name="Start in Jahrgang")
     start_sw = models.PositiveSmallIntegerField(default=1, verbose_name="Start in Schulwoche")
 

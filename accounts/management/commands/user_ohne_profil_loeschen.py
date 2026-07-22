@@ -20,7 +20,7 @@ class Command(BaseCommand):
                 f"und wurde am {timezone.now().date()} als unvollständige Anmeldung gelöscht."
             )
             Geloescht.objects.create(
-                benutzername=user.username,
+                benutzername="cronjob",
                 grund="unvollstaendig - kein Profil",
                 text=text,
             )

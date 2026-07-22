@@ -3,15 +3,15 @@ from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User, Group
 from django.conf import settings
+from django.db.models import Sum
 
 from accounts.models import Profil, Geloescht
-from core.models import Protokoll
+from core.models import Protokoll, Kategorie
 
 import json
 from pathlib import Path
 
 heute = timezone.now().date()
-# JSON-Zähler für gelöschte Aufgaben
 COUNTER_FILE = Path(settings.BASE_DIR) / "core" / "zaehler_geloeschte_aufgaben.json"
 
 if not COUNTER_FILE.exists():
@@ -25,21 +25,16 @@ def add_geloeschte_aufgaben(n):
 
 
 class Command(BaseCommand):
-    help = "Löscht SCHÜLER mit >366 Tagen Inaktivität (Lehrer/Admins bleiben)"
+    help = "Löscht SCHÜLER mit >366 Tagen Inaktivität (Lehrer/Admins bleiben) und aktualisiert Kategorie-Zähler"
 
     def handle(self, *args, **options):
-
-        # Grenze: heute - 366 Tage
-        grenze = timezone.now().date() - timedelta(days=366)
-
-        # Lehrer-Gruppe holen
+        grenze = timezone.now().date() - timedelta(days=366)  
         try:
             gruppe_lehrer = Group.objects.get(name="Lehrer")
         except Group.DoesNotExist:
             self.stdout.write("WARNUNG: Gruppe 'Lehrer' existiert nicht.")
             return
 
-        # Nur Schüler
         schueler_profile = (
             Profil.objects
             .exclude(user__groups=gruppe_lehrer)
@@ -61,27 +56,44 @@ class Command(BaseCommand):
                 .first()
             )
 
-            # NIE gerechnet → über Anmeldung
             if letzte is None:
                 if user.date_joined.date() >= grenze:
                     continue
                 letzte_datum = None
-
-            # Hat gerechnet → über letzte Aufgabe
             else:
                 if letzte.start.date() >= grenze:
                     continue
                 letzte_datum = letzte.start.date()
 
-            # Aufgaben zählen & löschen
             protokolle = Protokoll.objects.filter(profil=profil)
             anzahl_aufgaben = protokolle.count()
+
+            # --- NEU: ZUERST die Kategorien-Zähler aktualisieren, solange die Protokolle da sind ---
+            kategorien_verteilung = (
+                protokolle
+                .values('kategorie_id')
+                .annotate(anzahl=Sum(1))
+            )
+
+            for eintrag in kategorien_verteilung:
+                kid = eintrag['kategorie_id']
+                count = eintrag['anzahl']
+                
+                if not kid:
+                    continue
+
+                try:
+                    kat = Kategorie.objects.get(id=kid)
+                    kat.geloeschte_aufgaben += count
+                    kat.save()
+                except Kategorie.DoesNotExist:
+                    pass
+            # --------------------------------------------------------------------------------------
 
             gesamt_geloeschte_aufgaben += anzahl_aufgaben
             add_geloeschte_aufgaben(anzahl_aufgaben)
             protokolle.delete()
 
-            # Text für Geloescht
             gruppe = profil.gruppe.name if profil.gruppe else "–"
             lehrer = profil.gruppe.lehrer.username if profil.gruppe else "–"
 
@@ -98,16 +110,14 @@ class Command(BaseCommand):
             )
 
             Geloescht.objects.create(
-                benutzername=user.username,
+                benutzername="cronjob",
                 grund="schueler_inaktiv",
                 text=text,
             )
 
             profil.delete()
             user.delete()
-
             geloeschte_profile += 1
-            #self.stdout.write(text)
 
         self.stdout.write("")
         self.stdout.write("-----------------------------------------------------")
@@ -115,8 +125,9 @@ class Command(BaseCommand):
         self.stdout.write(f"Insgesamt gelöschte Aufgaben: {gesamt_geloeschte_aufgaben}")
         self.stdout.write("-----------------------------------------------------")
         self.stdout.write("")
+        
         Geloescht.objects.create(
             benutzername="cronjob",
-            grund="cronjob",
+            grund="inaktive Schüler",
             text=(f"{heute} insgesamt gelöscht: {geloeschte_profile} Schüler, {gesamt_geloeschte_aufgaben} Aufgaben"),
-            )
+        )

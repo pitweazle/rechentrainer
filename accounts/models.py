@@ -146,7 +146,41 @@ class Geloescht(models.Model):
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
     def __str__(self):
-        return f"{self.benutzername}: {self.text}"
+        return f"{self.erstellt_am}: {self.benutzername}: {self.grund}: {self.text}"
+
+class EwigeBestenliste(models.Model):
+    profil_id = models.IntegerField(unique=True, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    lehrer = models.CharField(max_length=100)
+    schule = models.CharField(max_length=100)
+    
+    # Leistungs-Daten
+    punkte = models.IntegerField(default=0)
+    letztes_datum = models.DateField()
+    
+    class Meta:
+        # Sorgt dafür, dass es nur einen Eintrag pro Schüler-Kombination gibt
+        unique_together = ('name', 'lehrer', 'schule')
+        ordering = ['-punkte']
+        indexes = [
+            models.Index(fields=['punkte']),
+        ]
+        verbose_name = "Ewige Bestenliste"
+        verbose_name_plural = "Ewige Bestenliste"
+
+    def __str__(self):
+        return f"{self.name} ({self.punkte} Punkte)"
+
+class LoginLog(models.Model):
+    zeitpunkt = models.DateTimeField(auto_now_add=True)
+    quelle = models.CharField(max_length=50, default='moodle') # z.B. 'moodle' oder 'eduplaces'
+    consumer_key = models.CharField(max_length=100, blank=True, null=True)
+    user_id = models.CharField(max_length=100, blank=True, null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    rohdaten = models.TextField()
+
+    def __str__(self):
+        return f"[{self.quelle.upper}] {self.institution_name or self.consumer_key} - User: {self.user_id}"
 
 from django.db.models.signals import pre_save
 from django.dispatch import receiver

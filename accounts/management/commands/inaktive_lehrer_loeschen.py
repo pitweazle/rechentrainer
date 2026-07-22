@@ -112,7 +112,7 @@ class Command(BaseCommand):
             )
 
             Geloescht.objects.create(
-                benutzername=lehrer.username,
+                benutzername="cronjob",
                 grund="lehrer_inaktiv",
                 text=text,
             )
@@ -139,6 +139,6 @@ class Command(BaseCommand):
         self.stdout.write("")
         Geloescht.objects.create(
             benutzername="cronjob",
-            grund="cronjob",
+            grund="inaktive Lehrer",
             text=(f"{heute} insgesamt gelöscht: {geloeschte_lehrer} Lehrer, {geloeschte_gruppen} Gruppen, {gesamt_geloeschte_aufgaben} Aufgaben"),
             )

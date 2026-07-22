@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht
+from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht, EwigeBestenliste, LoginLog
 
 class GruppeFilter(admin.SimpleListFilter):
     title = 'Lerngruppe'
@@ -92,8 +92,26 @@ class BenutzerAdmin(UserAdmin):
 
 class GeloeschtAdmin(admin.ModelAdmin):
     search_fields = ['benutzername',]
-    list_filter = ['grund',]
+    list_filter = ['grund','benutzername',]
 
+@admin.register(LoginLog)
+class LoginLogAdmin(admin.ModelAdmin):
+    list_display = ('zeitpunkt', 'consumer_key')
+    ordering = ('-zeitpunkt',)
+
+@admin.register(EwigeBestenliste)
+class EwigeBestenlisteAdmin(admin.ModelAdmin):
+    # Damit du in der Übersicht direkt sortieren kannst
+    list_display = ('name', 'schule', 'lehrer', 'punkte', 'letztes_datum')
+    
+    # Damit du bei vielen Einträgen schnell suchen kannst
+    search_fields = ('name', 'schule', 'lehrer')
+    
+    # Damit du direkt nach Punkten oder Datum filtern kannst
+    list_filter = ('schule', 'lehrer', 'letztes_datum')
+    
+    # Optional: Damit die Liste automatisch absteigend nach Punkten sortiert ist
+    ordering = ('-punkte',)
 
 admin.site.unregister(User)
 admin.site.register(User,  BenutzerAdmin)  
