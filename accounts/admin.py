@@ -96,7 +96,7 @@ class GeloeschtAdmin(admin.ModelAdmin):
 
 @admin.register(LoginLog)
 class LoginLogAdmin(admin.ModelAdmin):
-    list_display = ('zeitpunkt', 'consumer_key', 'user_id')
+    list_display = ('zeitpunkt', 'consumer_key', 'user_name', 'rolle')
     ordering = ('-zeitpunkt',)
 
 @admin.register(EwigeBestenliste)

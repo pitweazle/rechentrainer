@@ -170,6 +170,8 @@ def lti_launch(request):
         quelle='moodle',
         consumer_key=request.POST.get('oauth_consumer_key'),
         user_id=request.POST.get('user_id'),
+        user_name=request.POST.get('lis_person_name_full'),
+        rolle=request.POST.get('roles'),
         institution_name=request.POST.get('tool_consumer_instance_name'),
         rohdaten=str(request.POST.dict())
     )

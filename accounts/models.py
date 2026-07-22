@@ -176,6 +176,8 @@ class LoginLog(models.Model):
     quelle = models.CharField(max_length=50, default='moodle') # z.B. 'moodle' oder 'eduplaces'
     consumer_key = models.CharField(max_length=100, blank=True, null=True)
     user_id = models.CharField(max_length=100, blank=True, null=True)
+    user_name = models.CharField(max_length=255, blank=True, null=True)
+    rolle = models.CharField(max_length=100, blank=True, null=True)
     institution_name = models.CharField(max_length=255, blank=True, null=True)
     rohdaten = models.TextField()
 
