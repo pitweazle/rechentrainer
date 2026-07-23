@@ -8,11 +8,7 @@ urlpatterns = [
 
     # Anmeldung & Registrierung
     path('lti/launch/', views.lti_launch, name='lti_launch'),
-<<<<<<< HEAD
     path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
-=======
-    path('moodle_entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
->>>>>>> feature/sso-vorbereitung
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
     path("registrieren/", views.registrieren, name="registrieren"),
