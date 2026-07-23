@@ -20,11 +20,11 @@ DEBUG = getenv("DEBUG", "0") == "1"
 # Application definition
 ALLOWED_HOSTS = getenv("ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
-#ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.dev', '*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.dev', '*']
 
 CSRF_TRUSTED_ORIGINS = getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
-#CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev',]
+CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev',]
 
 
 INSTALLED_APPS = [

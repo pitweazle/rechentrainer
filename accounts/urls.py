@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views
+from .import views
 
 urlpatterns = [
     path('', views.index, name='index'),  # Startseite Accounts
@@ -8,7 +8,11 @@ urlpatterns = [
 
     # Anmeldung & Registrierung
     path('lti/launch/', views.lti_launch, name='lti_launch'),
+<<<<<<< HEAD
     path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
+=======
+    path('moodle_entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
+>>>>>>> feature/sso-vorbereitung
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
     path("registrieren/", views.registrieren, name="registrieren"),
@@ -50,4 +54,7 @@ urlpatterns = [
 
     # Auth-URLs Django
     path("", include("django.contrib.auth.urls")),
+    path('sim/', views.simulation_view, name='simulation')
+    #path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
+    #path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
 ]
