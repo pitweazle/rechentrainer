@@ -7,6 +7,8 @@ from datetime import date, datetime, timedelta, time
 
 from decimal import Decimal
 
+from itertools import groupby
+
 from pathlib import Path
 
 from django.utils import timezone
@@ -23,7 +25,7 @@ from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
 
-from django.db.models import Max, Sum, Count, F, Q
+from django.db.models import Max, Sum, Count, F, Q, Prefetch
 from django.db.models import Sum, Case, When, IntegerField
 from django.db import connection
 
@@ -689,7 +691,53 @@ def statistik(req):
             eintrag.append("width:0%")
             
     return render(req, 'statistik.html', context={'gesamt': gesamt, 'kategorien': kategorienliste})
-  
+
+def alle_lehrer(req):
+    if not req.user.is_superuser:
+        return HttpResponse("Zugriff verweigert")
+
+    lerngruppen_qs = Lerngruppe.objects.annotate(
+        schueler_anzahl=Count('profile')
+    ).order_by('name')
+
+    lehrer_qs = (
+        User.objects.filter(groups__name="Lehrer")
+        .select_related('profil__schule__ort')
+        .prefetch_related(Prefetch('lerngruppen', queryset=lerngruppen_qs))
+        .distinct()
+        .order_by(
+            'profil__schule__ort__plz',
+            'profil__schule__ort__name',
+            'profil__schule__schulname',
+            'profil__nachname',
+            'profil__vorname',
+        )
+    )
+
+    def schul_key(u):
+        schule = u.profil.schule
+        if schule:
+            ort = schule.ort
+            plz = ort.plz if ort else ""
+            ort_name = ort.name if ort else ""
+            return (plz, ort_name, schule.schulname)
+        return ("", "", "")
+
+    schulen = []
+    for (plz, ort_name, schulname), gruppe in groupby(lehrer_qs, key=schul_key):
+        schulen.append({
+            'plz': plz or None,
+            'ort': ort_name or None,
+            'schule': schulname or None,
+            'lehrer': list(gruppe),
+        })
+
+    return render(
+        req,
+        'admin/alle_lehrer.html',
+        context={'schulen': schulen, 'titel': "Lehrerübersicht"},
+    )
+
 # wird nur bei der Registrierung aufgerufen
 def ort_wahl(req):
     ort_form = Ort_Form()

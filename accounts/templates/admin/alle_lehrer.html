@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'accounts/meine_gruppen.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ titel }}</h2>
+
+    {% for s in schulen %}
+        <div class="schule-block">
+            <h3>
+                {% if s.schule %}
+                    {{ s.schule }}{% if s.ort %} ({% if s.plz %}{{ s.plz }} {% endif %}{{ s.ort }}){% endif %}
+                {% else %}
+                    <em>keine Schule hinterlegt</em>
+                {% endif %}
+            </h3>
+
+            {% for l in s.lehrer %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th colspan="3">
+                                {{ l.profil.vorname }} {{ l.profil.nachname }}
+                                {% if l.profil.moodle_uid or l.profil.eduplaces_uid %}
+                                    &nbsp;–&nbsp;
+                                {% endif %}
+                                {% if l.profil.moodle_uid %}<span style="color:red;">Moodle</span>{% endif %}
+                                {% if l.profil.moodle_uid and l.profil.eduplaces_uid %} / {% endif %}
+                                {% if l.profil.eduplaces_uid %}<span style="color:red;">Eduplaces</span>{% endif %}
+                                {% comment %} {% if not l.profil.moodle_uid and not l.profil.eduplaces_uid %}
+                                    <em>keine SSO-ID</em>
+                                {% endif %} {% endcomment %}
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>Lerngruppe</th>
+                            <th>Typ</th>
+                            <th>Schüler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in l.lerngruppen.all %}
+                            <tr>
+                                <td>{{ g.name }}</td>
+                                <td>{% if g.temp %}temporär{% else %}Mathegruppe{% endif %}</td>
+                                <td>{{ g.schueler_anzahl }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">Keine Lerngruppen vorhanden.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <p>Keine Lehrkräfte gefunden.</p>
+    {% endfor %}
+</div>
+{% endblock %}

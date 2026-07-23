@@ -48,6 +48,7 @@ urlpatterns = [
     path("stimmen/", views.stimmen, name="stimmen"),
     path("bestenliste/", views.bestenliste, name="bestenliste"),
     path("statistik/", views.statistik, name="statistik"),
+    path("alle_lehrer/", views.alle_lehrer, name="alle_lehrer"),
 
     # Auth-URLs Django
     path("", include("django.contrib.auth.urls")),
