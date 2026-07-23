@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 30px;">
+  <h2>Registrierung erfolgreich!</h2>
+
+  <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #28a745; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0; font-weight: bold;">Dein Rechentrainer-Benutzername:</p>
+    <code style="font-size: 1.2em; background: #eee; padding: 5px 10px; display: block; border-radius: 4px;">{{ username }}</code>
+    <p style="margin: 10px 0 0 0; font-style: italic;">Schreibe ihn dir auf!</p>
+  </div>
+
+  {% if email %}
+    <div style="margin: 20px 0;">
+      <p><strong>E-Mail-Adresse:</strong> {{ email }}</p>
+      <p>Du kannst dich in Zukunft <strong>direkt beim Rechentrainer anmelden</strong> (ohne Moodle).</p>
+      <p>Da dein Passwort automatisch generiert wurde, <strong>kennst du es nicht</strong>.</p>
+      <p>Um dich direkt anzumelden, musst du <strong>zuerst dein Passwort zurücksetzen</strong>:</p>
+      <ol>
+        <li>Klicke auf der Anmeldeseite auf <em>"Passwort vergessen?"</em>.</li>
+        <li>Gib deine E-Mail-Adresse (<code>{{ email }}</code>) ein.</li>
+        <li>Du erhältst einen Link, um ein neues Passwort zu erstellen.</li>
+      </ol>
+    </div>
+  {% else %}
+    <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+      <p><strong>Hinweis:</strong> Ohne E-Mail-Adresse kannst du dich <strong>nur über Moodle</strong> anmelden.</p>
+    </div>
+  {% endif %}
+
+  <a href="/" style="display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 20px;">Weiter zum Rechentrainer</a>
+</div>
+{% endblock %}

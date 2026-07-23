@@ -246,18 +246,49 @@ def moodle_entscheidung(request):
         aktion = request.POST.get('aktion')
         # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
-            roh_email = moodle_data.get('email', '')
-            # Wenn keine da ist ODER es eine nrply-Adresse ist -> leer lassen für den Schüler
-            gueltige_email = '' if ('nrply' in roh_email.lower()) else roh_email
-            context = {
-                'moodle_vorname': moodle_data.get('vorname', ''),
-                'moodle_nachname': moodle_data.get('nachname', ''),
-                'moodle_email': gueltige_email,                
-                'kurs_choices': wahl_kurs.choices,
-            }
-            request.session['moodle_launch_data'] = moodle_data
-            return render(request, 'SSO/moodle_registrierung.html', context)
-        # B) Registrierung speichern und User/Profil anlegen
+            # Daten aus der Session holen
+            default_vorname = moodle_data.get('vorname', '')
+            default_nachname = moodle_data.get('nachname', '')
+            # Leere Klasse/JG, damit der Schüler das aktiv ausfüllen muss
+            default_jg = "" 
+            default_klasse = ""
+
+            # Kurs-Optionen aus wahl_kurs generieren
+            kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+
+            html_profil_abfrage = f"""
+            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <h2>Registrierung abschließen</h2>
+                <form method="POST">
+                    <input type="hidden" name="aktion" value="registrierung_speichern">
+                    
+                    <label>Vorname:</label><br>
+                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
+                    
+                    <label>Nachname:</label><br>
+                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
+                    
+                    <label>Klasse:</label><br>
+                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;">
+                    
+                    <label>Jahrgang:</label><br>
+                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;">
+                    
+                    <label>Kurs:</label><br>
+                    <select name="reg_kurs" required style="width:100%; padding:5px;">
+                        <option value="" disabled selected>Bitte auswählen...</option>
+                        {kurs_options}
+                    </select>
+                    
+                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">
+                        Account jetzt erstellen
+                    </button>
+                </form>
+            </div>
+            """
+            return HttpResponse(html_profil_abfrage)
+
+        # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
             reg_nachname = request.POST.get('reg_nachname', '').strip()
