@@ -143,6 +143,10 @@ def anmelden(req):
     context = {'form' : form, 'titel': titel} 
     return render(req, 'anmelden.html', context)
 
+def custom_logout(request):
+    logout(request)
+    return redirect('index')
+
 # Hilfsfunktion, um ein zufälliges Passwort für den neuen Django-User zu generieren
 def generiere_zufaelliges_passwort():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=24))

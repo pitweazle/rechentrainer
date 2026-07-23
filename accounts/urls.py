@@ -11,6 +11,7 @@ urlpatterns = [
     path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
+    path('logout/', views.custom_logout, name='logout'),
     path("registrieren/", views.registrieren, name="registrieren"),
     path("profil/", views.profil, name="profil"),
     path("account_loeschen/", views.account_loeschen, name="account_loeschen"),

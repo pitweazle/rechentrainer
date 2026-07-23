@@ -35,9 +35,8 @@
                     <a href="{% url 'profil' %}">mein Profil</a>
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
-                        <a><input type="submit"  value= "abmelden"></a>
+                        <button type="submit" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer; padding: 0;">abmelden</button>
                     </form>
-
                 </div>
             {% endif %}
         </div>  
