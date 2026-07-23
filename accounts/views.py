@@ -255,12 +255,40 @@ def moodle_entscheidung(request):
             # Daten aus der Session holen
             default_vorname = moodle_data.get('vorname', '')
             default_nachname = moodle_data.get('nachname', '')
+            is_lehrer = (moodle_data.get('gruppe') == 'Lehrer')
             # Leere Klasse/JG, damit der Schüler das aktiv ausfüllen muss
             default_jg = "" 
             default_klasse = ""
 
             # Kurs-Optionen aus wahl_kurs generieren
             kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+
+            if is_lehrer:
+                schüler_felder = f"""
+                    <div style="margin-bottom: 15px;">
+                        <label>Rolle:</label><br>
+                        <select name="reg_klasse" style="width:100%; padding:5px;">
+                            <option value="Lehrer">Lehrer</option>
+                            <option value="Lehrerin" selected>Lehrerin</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="reg_jg" value="0">
+                    <input type="hidden" name="reg_kurs" value="">
+                """
+            else:
+                schüler_felder = f"""
+                    <label>Klasse:</label><br>
+                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;"><br><br>
+                    
+                    <label>Jahrgang:</label><br>
+                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;"><br><br>
+                    
+                    <label>Kurs:</label><br>
+                    <select name="reg_kurs" required style="width:100%; padding:5px;">
+                        <option value="" disabled selected>Bitte auswählen...</option>
+                        {kurs_options}
+                    </select>
+                """
 
             html_profil_abfrage = f"""
             <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
@@ -269,24 +297,14 @@ def moodle_entscheidung(request):
                     <input type="hidden" name="aktion" value="registrierung_speichern">
                     
                     <label>Vorname:</label><br>
-                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
+                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;"><br><br>
                     
                     <label>Nachname:</label><br>
-                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;">
+                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;"><br><br>
                     
-                    <label>Klasse:</label><br>
-                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="z.B. 6R" style="width:100%; padding:5px;">
+                    {schüler_felder}
                     
-                    <label>Jahrgang:</label><br>
-                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;">
-                    
-                    <label>Kurs:</label><br>
-                    <select name="reg_kurs" required style="width:100%; padding:5px;">
-                        <option value="" disabled selected>Bitte auswählen...</option>
-                        {kurs_options}
-                    </select>
-                    
-                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none;">
+                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none; cursor:pointer;">
                         Account jetzt erstellen
                     </button>
                 </form>
