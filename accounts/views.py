@@ -149,19 +149,19 @@ def custom_logout(request):
     logout(request)
     return redirect('index')
 
-# Hilfsfunktion, um ein zufälliges Passwort für den neuen Django-User zu generieren
-def generiere_zufaelliges_passwort():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=24))
-
 @csrf_exempt
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
+    
+    # Consumer Key aus dem Request ist jetzt die Dienststellennummer der Schule
     consumer_key = request.POST.get('oauth_consumer_key')
+    
+    # 1. Schule direkt über die Dienststellennummer (consumer_key) finden
     try:
-        config = ExterneSchnittstelleConfig.objects.get(consumer_key=consumer_key, typ='moodle')
-    except ExterneSchnittstelleConfig.DoesNotExist:
-        return HttpResponseBadRequest("Unbekannter oder ungültiger Consumer Key.")
+        schule_objekt = Schule.objects.get(dienststellen_nr=consumer_key)
+    except Schule.DoesNotExist:
+        return HttpResponseBadRequest(f"Unbekannte oder ungültige Dienststellennummer: '{consumer_key}'.")
 
     # Moodle-Daten auslesen
     logger = logging.getLogger(__name__)
@@ -174,10 +174,10 @@ def lti_launch(request):
 
     LoginLog.objects.create(
         quelle='moodle',
-        consumer_key=request.POST.get('oauth_consumer_key'),
-        user_id=request.POST.get('user_id'),
+        consumer_key=consumer_key,
+        user_id=moodle_uid,
         user_name=request.POST.get('lis_person_name_full'),
-        rolle=request.POST.get('roles'),
+        rolle=moodle_rollen,
         institution_name=request.POST.get('tool_consumer_instance_name'),
         rohdaten=str(request.POST.dict())
     )
@@ -187,11 +187,11 @@ def lti_launch(request):
     else:
         ziel_gruppen_name = "Schüler"
 
-    # 1. WENN DATEN VON MOODLE FEHLERHAFT -> Fehlermeldung "falsche Daten"
+    # WENN DATEN VON MOODLE FEHLERHAFT -> Fehlermeldung
     if not moodle_uid or not vorname or not nachname:
         return HttpResponseBadRequest("Falsche oder unvollständige Moodle-Daten übermittelt.")
         
-    # 2. WENN ID SCHON IM PROFIL -> Einloggen
+    # WENN ID SCHON IM PROFIL -> Einloggen
     try:
         profil = Profil.objects.get(moodle_uid=moodle_uid)
         user = profil.user
@@ -209,12 +209,7 @@ def lti_launch(request):
     except Profil.DoesNotExist:
         pass
 
-    # Schule für die Namensprüfung holen
-    schule_objekt = Schule.objects.filter(dienststellen_nr=consumer_key).first()
-    if not schule_objekt:
-        return HttpResponseBadRequest(f"Keine Schule mit ID '{consumer_key}' gefunden.")
-
-    # 3. WENN KEINE ID, ABER NAME STIMMT ÜBEREIN -> ID eintragen und einloggen
+    # WENN KEINE ID, ABER NAME STIMMT ÜBEREIN -> ID eintragen und einloggen
     profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_objekt).first()
     if profil:
         user = profil.user
@@ -231,7 +226,7 @@ def lti_launch(request):
         login(request, user)
         return redirect('index')
 
-    # 4. WENN KEINE ID UND KEINE NAMENSÜBEREINSTIMMUNG -> Daten merken und ab zur Frage!
+    # WENN KEINE ID UND KEINE NAMENSÜBEREINSTIMMUNG -> Daten merken und ab zur Frage!
     request.session['moodle_launch_data'] = {
         'moodle_uid': moodle_uid,
         'vorname': vorname,
@@ -386,32 +381,34 @@ def moodle_entscheidung(request):
         'nachname': moodle_data['nachname']
     })
 
+from django.http import HttpResponse, HttpRequest, QueryDict
+from django.views.decorators.csrf import csrf_exempt
+from accounts.views import lti_launch
+
 @csrf_exempt
 def simulation_view(request):
     if request.method == 'POST':
-        # Erstelle eine Fake-POST-Anfrage für lti_launch
-        from django.http import HttpRequest
-        from accounts.views import lti_launch
+        # Echtes QueryDict für POST-Daten erstellen, damit .dict() im lti_launch funktioniert
+        q = QueryDict('', mutable=True)
+        q.setlist('oauth_consumer_key', [request.POST.get('schule_id', 'DE-HE-6072')])
+        q.setlist('user_id', [request.POST.get('uid', 'test_franz')])
+        q.setlist('lis_person_name_given', [request.POST.get('vorname', 'Franz')])
+        q.setlist('lis_person_name_family', [request.POST.get('nachname', 'Musterschüler')])
+        q.setlist('lis_person_contact_email_primary', [request.POST.get('email', 'test@example.de')])
+        q.setlist('roles', [request.POST.get('gruppe', 'Learner')])
+        q.setlist('context_title', [request.POST.get('klasse', 'Testklasse')])
+        q.setlist('custom_jg', [request.POST.get('jg', '6')])
 
-        # Fake-Request erstellen
+        # Fake-Request zusammenbauen
         fake_request = HttpRequest()
         fake_request.method = 'POST'
-        fake_request.POST = {
-            'oauth_consumer_key': request.POST.get('schule_id', 'DE-HE-6072'),  # Consumer Key = Dienststellennr
-            'user_id': request.POST.get('uid', 'test_franz'),  # Moodle-UID
-            'lis_person_name_given': request.POST.get('vorname', 'Franz'),
-            'lis_person_name_family': request.POST.get('nachname', 'Musterschüler'),
-            'lis_person_contact_email_primary': request.POST.get('email', 'test@example.de'),
-            'roles': request.POST.get('gruppe', 'Learner'),  # Moodle-Rollen: "Learner" oder "Instructor"
-            'context_title': request.POST.get('klasse', 'Testklasse'),
-            'custom_jg': request.POST.get('jg', 6),
-        }
+        fake_request.POST = q
         fake_request.session = request.session
 
         # Rufe lti_launch auf und gib die Antwort zurück
         return lti_launch(fake_request)
 
-    # HTML-Formular für die Simulation (direkt in der View)
+    # HTML-Formular für die Simulation
     return HttpResponse("""
         <!DOCTYPE html>
         <html>

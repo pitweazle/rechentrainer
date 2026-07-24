@@ -14,11 +14,23 @@ class Ort(models.Model):
     class Meta:
         verbose_name_plural = 'Orte'
     
+import uuid
+import secrets
+import string
+
 class Schule(models.Model):
     ort = models.ForeignKey(Ort, null=True, on_delete=models.SET_NULL)
     schulname = models.CharField(max_length=50)
     dienststellen_nr = models.CharField(max_length=20, unique=True, null=True, blank=True)
     
+    shared_secret = models.CharField(max_length=100, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.shared_secret:
+            self.shared_secret = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(24))
+            
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.schulname}, {self.ort}"
     
