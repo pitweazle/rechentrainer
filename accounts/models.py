@@ -113,42 +113,6 @@ class Profil(models.Model):
             models.Index(fields=["gruppe"], name="profil_gruppe"),
         ]
 
-class ExterneSchnittstelleConfig(models.Model):
-    TYP_CHOICES = [
-        ('moodle', 'SchulMoodle (LTI)'),
-        ('eduplaces', 'EduPlaces Integration'),
-    ]
-
-    schulname = models.CharField(max_length=100)
-    typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='moodle')
-    
-    # Die IDs/Keys, die die fremde Plattform mitschickt
-    consumer_key = models.CharField(
-        max_length=100, 
-        unique=True, 
-        help_text="Der Key/ID für die Authentifizierung (z.B. rechentrainer_schule_6072 oder eduplaces_client_id)"
-    )
-    
-    # Das Passwort für die Verschlüsselung / Signatur-Prüfung
-    shared_secret = models.CharField(
-        max_length=256, 
-        help_text="Das geheime Passwort (Secret) für die digitale Signatur"
-    )
-    
-    # Die Verknüpfung zu deiner bestehenden Schule-Tabelle
-    schule = models.ForeignKey(
-        'Schule',  # Passe das an, falls dein Modell für die Schule anders heißt
-        on_delete=models.CASCADE,
-        related_name='externe_konfigurationen'
-    )
-
-    class Meta:
-        verbose_name = "Externe Schnittstellen-Konfiguration"
-        verbose_name_plural = "Externe Schnittstellen-Konfigurationen"
-
-    def __str__(self):
-        return f"{self.get_typ_display()} - {self.schulname}"
-
 class Geloescht(models.Model):
     benutzername = models.CharField(max_length=50, blank=True)
     grund = models.CharField(max_length=50, null=True, blank=True)

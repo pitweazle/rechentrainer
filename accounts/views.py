@@ -20,7 +20,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
 
-from django.http import HttpResponse, HttpResponseBadRequest, FileResponse, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404
 from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
@@ -380,10 +380,6 @@ def moodle_entscheidung(request):
         'vorname': moodle_data['vorname'],
         'nachname': moodle_data['nachname']
     })
-
-from django.http import HttpResponse, HttpRequest, QueryDict
-from django.views.decorators.csrf import csrf_exempt
-from accounts.views import lti_launch
 
 @csrf_exempt
 def simulation_view(request):
