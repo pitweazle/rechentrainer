@@ -3,6 +3,9 @@ import random
 import json
 import logging
 
+import base64
+import requests
+
 from datetime import date, datetime, timedelta, time
 
 from decimal import Decimal
@@ -33,7 +36,7 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Lerngruppe, ExterneSchnittstelleConfig, Geloescht, wahl_kurs, EwigeBestenliste, LoginLog
+from .models import Profil, Schule, Ort, Lerngruppe, Geloescht, wahl_kurs, EwigeBestenliste, LoginLog
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll
@@ -258,48 +261,18 @@ def moodle_entscheidung(request):
             default_jg = "" 
             default_klasse = ""
 
-            # Kurs-Optionen aus wahl_kurs generieren
-            kurs_options = "".join([f'<option value="{w}">{l}</option>' for w, l in wahl_kurs.choices])
+            # Den Context zusammenbauen, den das Template erwartet
+            context = {
+                'moodle_vorname': default_vorname,
+                'moodle_nachname': default_nachname,
+                'moodle_email': moodle_data.get('email', ''),
+                'is_lehrer': is_lehrer,
+                'default_jg': default_jg,
+                'kurs_choices': wahl_kurs.choices,  # Übergibt die Liste direkt für die {% for %}-Schleife im Template
+                'rollen_label': "Rolle (z.B. Lehrer / Lehrerin):" if is_lehrer else "Klasse:",
+            }
 
-            # Dynamische Beschriftung für das erste Feld je nach Rolle
-            if is_lehrer:
-                rollen_label = "Rolle (z.B. Lehrer / Lehrerin):"
-                rollen_placeholder = "z.B. Lehrer"
-            else:
-                rollen_label = "Klasse:"
-                rollen_placeholder = "z.B. 6R"
-
-            html_profil_abfrage = f"""
-            <div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-                <h2>Registrierung abschließen</h2>
-                <form method="POST">
-                    <input type="hidden" name="aktion" value="registrierung_speichern">
-                    
-                    <label>Vorname:</label><br>
-                    <input type="text" name="reg_vorname" value="{default_vorname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;"><br><br>
-                    
-                    <label>Nachname:</label><br>
-                    <input type="text" name="reg_nachname" value="{default_nachname}" readonly style="width:100%; padding:5px; background-color:#e9ecef; border:1px solid #ccc;"><br><br>
-                    
-                    <label>{rollen_label}</label><br>
-                    <input type="text" name="reg_klasse" value="{default_klasse}" required placeholder="{rollen_placeholder}" style="width:100%; padding:5px;"><br><br>
-                    
-                    <label>Jahrgang:</label><br>
-                    <input type="number" name="reg_jg" value="{default_jg}" required placeholder="z.B. 6" style="width:100%; padding:5px;"><br><br>
-                    
-                    <label>Kurs:</label><br>
-                    <select name="reg_kurs" required style="width:100%; padding:5px;">
-                        <option value="" disabled selected>Bitte auswählen...</option>
-                        {kurs_options}
-                    </select><br><br>
-                    
-                    <button type="submit" style="margin-top:15px; background:#28a745; color:white; width:100%; padding:10px; border:none; cursor:pointer;">
-                        Account jetzt erstellen
-                    </button>
-                </form>
-            </div>
-            """
-            return HttpResponse(html_profil_abfrage)
+            return render(request, 'sso/sso_registrierung.html', context)
 
         # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
         elif aktion == 'registrierung_speichern':
@@ -383,76 +356,389 @@ def moodle_entscheidung(request):
 
 @csrf_exempt
 def simulation_view(request):
-    if request.method == 'POST':
-        # Echtes QueryDict für POST-Daten erstellen, damit .dict() im lti_launch funktioniert
-        q = QueryDict('', mutable=True)
-        q.setlist('oauth_consumer_key', [request.POST.get('schule_id', 'DE-HE-6072')])
-        q.setlist('user_id', [request.POST.get('uid', 'test_franz')])
-        q.setlist('lis_person_name_given', [request.POST.get('vorname', 'Franz')])
-        q.setlist('lis_person_name_family', [request.POST.get('nachname', 'Musterschüler')])
-        q.setlist('lis_person_contact_email_primary', [request.POST.get('email', 'test@example.de')])
-        q.setlist('roles', [request.POST.get('gruppe', 'Learner')])
-        q.setlist('context_title', [request.POST.get('klasse', 'Testklasse')])
-        q.setlist('custom_jg', [request.POST.get('jg', '6')])
+  if request.method == 'POST':
+    # Wir füttern die Session direkt mit den Simulationsdaten,
+    # genau so, wie sie normalerweise von Eduplaces kommen würden.
+    request.session['ed_pending'] = {
+        'eduplaces_uid': request.POST.get('uid', 'sim_user_123'),
+        'vorname': request.POST.get('vorname', 'Max'),
+        'nachname': request.POST.get('nachname', 'Mustermann'),
+        'rolle': request.POST.get('rolle', 'student'),
+        'schule_id': None,  # Wird über die offizielle ID verknüpft
+    }
 
-        # Fake-Request zusammenbauen
-        fake_request = HttpRequest()
-        fake_request.method = 'POST'
-        fake_request.POST = q
-        fake_request.session = request.session
+    # Wir simulieren direkt die Daten, die sonst aus dem Userinfo-Endpoint kämen,
+    # und legen Ort & Schule direkt an:
+    school_name = request.POST.get('schulname', 'IGS Kelsterbach')
+    school_location = request.POST.get('ort', 'Kelsterbach')
+    school_official_id = request.POST.get('school_official_id', 'D_HE_6072')
 
-        # Rufe lti_launch auf und gib die Antwort zurück
-        return lti_launch(fake_request)
+    ort_obj, _ = Ort.objects.get_or_create(name=school_location)
+    schule_obj, _ = Schule.objects.get_or_create(
+        dienststellen_nr=school_official_id,
+        defaults={'schulname': school_name, 'ort': ort_obj}
+    )
 
-    # HTML-Formular für die Simulation
-    return HttpResponse("""
+    # Aktualisiere die Session mit der echten Schul-ID
+    pending = request.session['ed_pending']
+    pending['schule_id'] = schule_obj.id
+    request.session['ed_pending'] = pending
+
+    # Stufe 1 Prüfung direkt hier oder Weiterleitung zur Zuordnung:
+    # Versuche direkt, ob ein Profil mit dieser UID existiert
+    try:
+      profil = Profil.objects.get(eduplaces_uid=pending['eduplaces_uid'])
+      login(request, profil.user)
+      messages.success(request, f'Simulation: Erfolgreich eingeloggt als {profil.vorname}!')
+      return redirect('index')
+    except Profil.DoesNotExist:
+      pass
+
+    # Wenn kein Profil da ist, leiten wir zur Zuordnungsmaske weiter (Stufe 2-4)
+    return redirect('eduplaces_zuordnung')
+
+  # HTML-Formular für die Eduplaces-Simulation
+  return HttpResponse("""
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Moodle-LTI-Simulation (realistisch)</title>
+            <title>Eduplaces-Login-Simulation</title>
             <style>
                 body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+                form { background: #f0f8ff; padding: 20px; border-radius: 8px; border: 1px solid #b0c4de; }
                 input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-                button { background: #28a745; color: white; border: none; cursor: pointer; }
+                button { background: #007bff; color: white; border: none; cursor: pointer; }
             </style>
         </head>
         <body>
-            <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
-            <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
+            <h1>Eduplaces-Login-Simulation</h1>
+            <p>Simuliert den Rücksprung und die Datenübergabe von der Eduplaces-Sandbox.</p>
             <form method="POST">
-                <label>Consumer Key (Dienststellennr):</label>
-                <input type="text" name="schule_id" value="DE-HE-6072"><br>
-
-                <label>Moodle UID:</label>
-                <input type="text" name="uid" value="test_franz"><br>
+                <label>Eduplaces UID / Pseudonym:</label>
+                <input type="text" name="uid" value="edu_test_lehrer1"><br>
 
                 <label>Vorname:</label>
-                <input type="text" name="vorname" value="Franz"><br>
+                <input type="text" name="vorname" value="Anna"><br>
 
                 <label>Nachname:</label>
-                <input type="text" name="nachname" value="Musterschüler"><br>
+                <input type="text" name="nachname" value="Lehrerin"><br>
 
-                <label>E-Mail:</label>
-                <input type="email" name="email" value="test@example.de"><br>
-
-                <label>Gruppe (Moodle-Rolle):</label>
-                <select name="gruppe">
-                    <option value="Learner">Schüler (Learner)</option>
-                    <option value="Instructor">Lehrer (Instructor)</option>
+                <label>Rolle:</label>
+                <select name="rolle">
+                    <option value="teacher">Lehrkraft (teacher)</option>
+                    <option value="student">Schüler (student)</option>
                 </select><br>
 
-                <label>Jahrgang:</label>
-                <input type="number" name="jg" value="6"><br>
+                <label>Schulname:</label>
+                <input type="text" name="schulname" value="IGS Kelsterbach"><br>
 
-                <label>Klasse:</label>
-                <input type="text" name="klasse" value="Testklasse"><br>
+                <label>Ort:</label>
+                <input type="text" name="ort" value="Kelsterbach"><br>
 
-                <button type="submit">LTI-Anfrage an lti_launch senden</button>
+                <label>Offizielle Schul-ID (dienststellen_nr):</label>
+                <input type="text" name="school_official_id" value="D_HE_6072"><br>
+
+                <button type="submit">Eduplaces-Login simulieren</button>
             </form>
         </body>
         </html>
     """)
+
+# Konfigurationswerte
+EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
+EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
+OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
+
+def get_oidc_endpoints():
+  """Lädt die Discovery-Endpunkte von Eduplaces."""
+  try:
+    response = requests.get(OIDC_CONFIG_URL, timeout=5)
+    if response.status_code == 200:
+      data = response.json()
+      return data.get("authorization_endpoint"), data.get("token_endpoint"), data.get("userinfo_endpoint")
+  except requests.RequestException:
+    pass
+  return (
+      "https://auth.sandbox.eduplaces.dev/oauth/authorize",
+      "https://auth.sandbox.eduplaces.dev/oauth/token",
+      "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
+  )
+
+def eduplaces_login(request):
+    """Leitet den Nutzer zum Eduplaces-Login weiter."""
+    auth_endpoint, _, _ = get_oidc_endpoints()
+    scopes = (
+        "openid role pseudony groups school schooling_level school_name"
+        " school_location school_official_id"
+    )
+    redirect_url = (
+        f"{auth_endpoint}?response_type=code&client_id={EDUPLACES_CLIENT_ID}"
+        f"&redirect_uri={EDUPLACES_REDIRECT_URI}&scope={scopes}"
+    )
+    return redirect(redirect_url)
+
+
+def eduplaces_callback(request):
+    """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
+    code = request.GET.get("code")
+    error = request.GET.get("error")
+
+    if error or not code:
+        messages.error(request, "Der Login über Eduplaces wurde abgebrochen oder ist fehlgeschlagen.")
+        return redirect("index")
+
+    _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+
+    # 1. Code gegen Token tauschen (mit Basic Auth)
+    credentials = f"{EDUPLACES_CLIENT_ID}:{EDUPLACES_CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": EDUPLACES_REDIRECT_URI,
+    }
+
+    token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
+    if token_response.status_code != 200:
+        messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
+        return redirect("index")
+
+    token_data = token_response.json()
+    access_token = token_data.get("access_token")
+
+    # 2. Benutzerdaten (UserInfo) von Eduplaces abrufen
+    userinfo_headers = {"Authorization": f"Bearer {access_token}"}
+    userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
+    
+    if userinfo_response.status_code != 200:
+        messages.error(request, "Fehler beim Abrufen der Benutzerdaten von Eduplaces.")
+        return redirect("index")
+
+    ed_data = userinfo_response.json()
+
+# Daten aus Eduplaces extrahieren
+    eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudony")
+    vorname = ed_data.get("given_name", "").strip()
+    nachname = ed_data.get("family_name", "").strip()
+    
+    # 1. ROBUSTE ROLLEN-ERKENNUNG (Wird genau hier einmal gemacht und nie wieder überschrieben)
+    roh_rolle = str(ed_data.get("role", ed_data.get("rolle", "student"))).lower()
+    if any(r in roh_rolle for r in ["lehrer", "teacher", "instructor"]):
+        ziel_gruppen_name = "Lehrer"
+    else:
+        ziel_gruppen_name = "Schüler"
+
+    # Eduplaces schickt keine E-Mail -> leer lassen
+    email = "" 
+    
+    school_name = ed_data.get("school_name", "Unbekannte Schule")
+    school_location = ed_data.get("school_location", "Unbekannter Ort")
+    school_official_id = ed_data.get("school_official_id", None)
+
+    # 3. Ort & Schule in der eigenen Datenbank prüfen / anlegen
+    ort_obj, _ = Ort.objects.get_or_create(
+        name=school_location
+    )
+    
+    schule_neu = False
+    schule_obj = None
+    if school_official_id:
+        schule_obj, schule_neu = Schule.objects.get_or_create(
+            dienststellen_nr=school_official_id,
+            defaults={"schulname": school_name, "ort": ort_obj}
+        )
+    else:
+        schule_obj, schule_neu = Schule.objects.get_or_create(
+            schulname=school_name,
+            ort=ort_obj
+        )
+
+    # LoginLog schreiben
+    LoginLog.objects.create(
+        quelle='eduplaces',
+        consumer_key=school_official_id if school_official_id else 'unbekannt',
+        user_id=eduplaces_uid,
+        user_name=f"{vorname} {nachname}".strip(),
+        rolle=ziel_gruppen_name,
+        institution_name=school_name,
+        rohdaten=str(ed_data)
+    )
+
+    # Wenn es eine ganz neue Schule im System ist, Mail an dich senden
+    if schule_neu:
+        try:
+            send_mail(
+                subject="Neue Schule über Eduplaces registriert",
+                message=f"Eine neue Schule hat sich über Eduplaces angemeldet:\n\nName: {school_name}\nOrt: {school_location}\nOffizielle ID: {school_official_id}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ADMINS[0][1] if hasattr(settings, "ADMINS") and settings.ADMINS else "deine-email@example.com"],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+    # 4. Stufen-Logik
+
+    # STUFE 1: Ist die eduplaces_uid bereits in einem Profil gespeichert?
+    try:
+        profil = Profil.objects.get(eduplaces_uid=eduplaces_uid)
+        user = profil.user
+        
+        gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+        if gruppe_obj:
+            user.groups.add(gruppe_obj)
+        if email and user.email != email:
+            user.email = email
+            user.save()
+
+        login(request, user)
+        return redirect("index")
+    except Profil.DoesNotExist:
+        pass
+
+    # STUFE 2: Keine ID, aber Name & Schule stimmen überein
+    if schule_obj:
+        profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
+        if profil:
+            user = profil.user
+            profil.eduplaces_uid = eduplaces_uid
+            profil.save()
+            
+            gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+            if gruppe_obj:
+                user.groups.add(gruppe_obj)
+            if email and user.email != email:
+                user.email = email
+                user.save()
+                
+            login(request, user)
+            return redirect("index")
+
+    # STUFE 3 & 4: Ab in die Session (Hier landet jetzt garantiert "Lehrer" oder "Schüler")
+    request.session["ed_pending"] = {
+        "eduplaces_uid": eduplaces_uid,
+        "vorname": vorname,
+        "nachname": nachname,
+        "email": email,
+        "rolle": ziel_gruppen_name,
+        "schule_id": schule_obj.id if schule_obj else None,
+        "jg": 5,
+    }
+
+    return redirect("eduplaces_zuordnung")
+
+
+def eduplaces_zuordnung(request):
+    ed_data = request.session.get('ed_pending')
+    if not ed_data:
+        return redirect('index')
+
+    vorname = ed_data.get('vorname')
+    nachname = ed_data.get('nachname')
+    rohe_rolle = str(ed_data.get('rolle', 'Schüler')).lower()
+    if any(r in rohe_rolle for r in ['lehrer', 'teacher', 'instructor']):
+        rolle = 'Lehrer'
+    else:
+        rolle = 'Schüler'
+
+    is_lehrer = (rolle == 'Lehrer')
+
+    error_message = None
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+
+        if aktion == 'registrierung_speichern':
+            if is_lehrer:
+                reg_klasse = request.POST.get('reg_klasse', 'Lehrer')
+                reg_jg = 0
+            else:
+                reg_klasse = request.POST.get('reg_klasse')
+                reg_jg = request.POST.get('reg_jg')
+
+            reg_kurs = request.POST.get('reg_kurs')
+            reg_email = request.POST.get('reg_email', '').strip()
+
+            base_username = f'edu_{ed_data["eduplaces_uid"][:10]}'
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f'{base_username}_{counter}'
+                counter += 1
+
+            new_user = User.objects.create_user(
+                username=username,
+                email=reg_email if reg_email else '',
+                password=User.objects.make_random_password(),
+            )
+
+            gruppe_obj = Group.objects.filter(name=rolle).first()
+            if gruppe_obj:
+                new_user.groups.add(gruppe_obj)
+
+            Profil.objects.create(
+                user=new_user,
+                vorname=vorname,
+                nachname=nachname,
+                klasse=reg_klasse,
+                jg=reg_jg if reg_jg else 0,
+                kurs=reg_kurs,
+                eduplaces_uid=ed_data['eduplaces_uid'],
+                schule_id=ed_data.get('schule_id'),
+            )
+
+            login(request, new_user)
+            if 'ed_pending' in request.session:
+                del request.session['ed_pending']
+
+            return redirect('index')
+
+        elif aktion == 'verknuepfen':
+            u_eingabe = request.POST.get('username_eingabe')
+            p_eingabe = request.POST.get('passwort_eingabe')
+
+            user = authenticate(request, username=u_eingabe, password=p_eingabe)
+            if user is not None:
+                profil, _ = Profil.objects.get_or_create(user=user)
+                profil.eduplaces_uid = ed_data['eduplaces_uid']
+                if ed_data.get('schule_id'):
+                    profil.schule_id = ed_data.get('schule_id')
+                profil.save()
+
+                gruppe_obj = Group.objects.filter(name=rolle).first()
+                if gruppe_obj:
+                    user.groups.add(gruppe_obj)
+
+                login(request, user)
+                if 'ed_pending' in request.session:
+                    del request.session['ed_pending']
+                return redirect('index')
+            else:
+                error_message = 'Benutzername oder Passwort war falsch.'
+
+    context = {
+        'moodle_vorname': vorname,
+        'moodle_nachname': nachname,
+        'moodle_email': ed_data.get('email', ''),
+        'kurs_choices': wahl_kurs.choices,
+        'error_message': error_message,
+        'is_lehrer': is_lehrer,
+        'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+        'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
+    }
+
+    return render(request, 'sso/sso_registrierung.html', context)
+
+def eduplaces_logout(request):
+  """Loggt den Benutzer lokal aus."""
+  from django.contrib.auth import logout
+  logout(request)
+  return redirect("home")
 
 def account_loeschen(req):
     try:    

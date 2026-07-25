@@ -7,14 +7,22 @@ urlpatterns = [
     #path("uebersicht/<int:profil_id>/", views.uebersicht, name="uebersicht"),
 
     # Anmeldung & Registrierung
-    path('lti/launch/', views.lti_launch, name='lti_launch'),
-    path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"), 
     path('logout/', views.custom_logout, name='logout'),
     path("registrieren/", views.registrieren, name="registrieren"),
     path("profil/", views.profil, name="profil"),
     path("account_loeschen/", views.account_loeschen, name="account_loeschen"),
+
+    # SSO Einbindung
+    path('lti/launch/', views.lti_launch, name='lti_launch'),
+    path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
+    path('eduplaces/login/', views.eduplaces_login, name='eduplaces_login'),
+    path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
+    path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
+    path('eduplaces/zuordnung/', views.eduplaces_zuordnung, name='eduplaces_zuordnung'),
+    path('sim/', views.simulation_view, name='simulation'),
+
 
     # Halbjahres-Operationen
     #path("hj_pruefen/", views.hj_pruefen, name="hj_pruefen"),
@@ -52,7 +60,4 @@ urlpatterns = [
 
     # Auth-URLs Django
     path("", include("django.contrib.auth.urls")),
-    path('sim/', views.simulation_view, name='simulation')
-    #path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
-    #path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
-]
+ ]

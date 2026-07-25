@@ -20,17 +20,22 @@
       <input type="text" name="reg_nachname" value="{{ moodle_nachname }}" readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;">
     </div>
 
-    <!-- Pflichtfelder -->
+    <!-- Klasse / Rolle (Dynamisch für Schüler oder Lehrer) -->
     <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px;">Klasse:</label>
-      <input type="text" name="reg_klasse" required placeholder="z.B. 6R" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <label style="display: block; margin-bottom: 5px;">{{ rollen_label|default:"Klasse:" }}</label>
+      <input type="text" name="reg_klasse" 
+             value="{% if is_lehrer %}Lehrer{% endif %}" 
+             {% if not is_lehrer %}required placeholder="z.B. 6R"{% else %}placeholder="z.B. Lehrer / Lehrerin"{% endif %} 
+             style="width: 100%; padding: 8px; border: 1px solid #ddd;">
     </div>
 
+    <!-- Jahrgang -->
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">Jahrgang:</label>
-      <input type="number" name="reg_jg" required min="1" max="13" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <input type="number" name="reg_jg" value="{{ default_jg }}" required min="1" max="13" placeholder="z.B. 6" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
     </div>
 
+    <!-- Kurs -->
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">Kurs:</label>
       <select name="reg_kurs" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
@@ -39,6 +44,12 @@
           <option value="{{ value }}">{{ label }}</option>
         {% endfor %}
       </select>
+      
+      {% if is_lehrer %}
+        <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+          Hinweis: Jahrgang und Kurs bestimmen den Schwierigkeitsgrad der Aufgaben und können von dir später jederzeit im <strong>Profil</strong> geändert werden.
+        </p>
+      {% endif %}
     </div>
 
     <!-- E-Mail (optional) -->
