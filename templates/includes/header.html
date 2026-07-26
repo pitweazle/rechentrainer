@@ -20,26 +20,30 @@
                 {% endif %}
             {% endif %}
 
-        <div class="dropdown">
+<div class="dropdown">
             <button class="dropbtn"> 
                 {% if user.is_authenticated %}
                     Hallo {{ user.username }}
                 {% else %}
-                    <a href="{% url 'anmelden' %}">Anmelden</a>
+                    Anmelden ▼
                 {% endif %}
-                {% comment %} <i class="fa fa-caret-down"></i> {% endcomment %}
             </button>
-            {% if user.is_authenticated %}
-                <div class="dropdown-content">
+            
+            <div class="dropdown-content">
+                {% if user.is_authenticated %}
                     <a href="{% url 'password_reset' %}">Passwort zurücksetzen</a>
                     <a href="{% url 'profil' %}">mein Profil</a>
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer; padding: 0;">abmelden</button>
                     </form>
-                </div>
-            {% endif %}
-        </div>  
+                {% else %}
+                    <!-- Hier sind beide Optionen für den Login -->
+                    <a href="{% url 'anmelden' %}">Beim Rechentrainer anmelden</a>
+                    <a href="{% url 'eduplaces_login' %}">Mit Eduplaces anmelden</a>
+                {% endif %}
+            </div>
+        </div>
     </div> 
 </header>
 

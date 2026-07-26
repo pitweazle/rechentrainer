@@ -154,6 +154,7 @@ def custom_logout(request):
     logout(request)
     return redirect('index')
 
+# moodle:
 @csrf_exempt
 def lti_launch(request):
     if request.method != 'POST':
@@ -429,6 +430,7 @@ def simulation_moodle(request):
         </html>
     """)
 
+# Eduplaces:
 # Konfigurationswerte
 EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
 EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
@@ -449,17 +451,31 @@ def get_oidc_endpoints():
       "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
   )
 
+import secrets
+import urllib.parse
+
 def eduplaces_login(request):
     """Leitet den Nutzer zum Eduplaces-Login weiter."""
     auth_endpoint, _, _ = get_oidc_endpoints()
+    
+    # 1. Sicheren State mit ausreichend Länge generieren und in der Session merken
+    state = secrets.token_urlsafe(16)
+    request.session['eduplaces_state'] = state
+    
     scopes = (
-        "openid role pseudony groups school schooling_level school_name"
+        "openid role groups school schooling_level school_name"
         " school_location school_official_id"
     )
-    redirect_url = (
-        f"{auth_endpoint}?response_type=code&client_id={EDUPLACES_CLIENT_ID}"
-        f"&redirect_uri={EDUPLACES_REDIRECT_URI}&scope={scopes}"
-    )
+    
+    params = {
+        'response_type': 'code',
+        'client_id': EDUPLACES_CLIENT_ID,
+        'redirect_uri': EDUPLACES_REDIRECT_URI,
+        'scope': scopes,
+        'state': state,  # Hier wird der State übergeben
+    }
+    
+    redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
     return redirect(redirect_url)
 
 def eduplaces_callback(request):
