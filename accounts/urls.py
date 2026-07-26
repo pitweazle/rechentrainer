@@ -21,7 +21,8 @@ urlpatterns = [
     path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
     path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
     path('eduplaces/zuordnung/', views.eduplaces_zuordnung, name='eduplaces_zuordnung'),
-    path('sim/', views.simulation_view, name='simulation'),
+    path('sim_moodle/', views.simulation_moodle, name='simulation_moodle'),
+    path('sim_eduplaces/', views.simulation_eduplaces, name='simulation_eduplaces'),
 
 
     # Halbjahres-Operationen

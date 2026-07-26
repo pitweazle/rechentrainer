@@ -14,6 +14,8 @@ from itertools import groupby
 
 from pathlib import Path
 
+from django.core.mail import send_mail
+
 from django.utils import timezone
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -355,90 +357,73 @@ def moodle_entscheidung(request):
     })
 
 @csrf_exempt
-def simulation_view(request):
-  if request.method == 'POST':
-    # Wir füttern die Session direkt mit den Simulationsdaten,
-    # genau so, wie sie normalerweise von Eduplaces kommen würden.
-    request.session['ed_pending'] = {
-        'eduplaces_uid': request.POST.get('uid', 'sim_user_123'),
-        'vorname': request.POST.get('vorname', 'Max'),
-        'nachname': request.POST.get('nachname', 'Mustermann'),
-        'rolle': request.POST.get('rolle', 'student'),
-        'schule_id': None,  # Wird über die offizielle ID verknüpft
-    }
+def simulation_moodle(request):
+    if request.method == 'POST':
+        # Echtes QueryDict für POST-Daten erstellen, damit .dict() im lti_launch funktioniert
+        q = QueryDict('', mutable=True)
+        q.setlist('oauth_consumer_key', [request.POST.get('schule_id', 'DE-HE-6072')])
+        q.setlist('user_id', [request.POST.get('uid', 'test_franz')])
+        q.setlist('lis_person_name_given', [request.POST.get('vorname', 'Franz')])
+        q.setlist('lis_person_name_family', [request.POST.get('nachname', 'Musterschüler')])
+        q.setlist('lis_person_contact_email_primary', [request.POST.get('email', 'test@example.de')])
+        q.setlist('roles', [request.POST.get('gruppe', 'Learner')])
+        q.setlist('context_title', [request.POST.get('klasse', 'Testklasse')])
+        q.setlist('custom_jg', [request.POST.get('jg', '6')])
 
-    # Wir simulieren direkt die Daten, die sonst aus dem Userinfo-Endpoint kämen,
-    # und legen Ort & Schule direkt an:
-    school_name = request.POST.get('schulname', 'IGS Kelsterbach')
-    school_location = request.POST.get('ort', 'Kelsterbach')
-    school_official_id = request.POST.get('school_official_id', 'D_HE_6072')
+        # Fake-Request zusammenbauen
+        fake_request = HttpRequest()
+        fake_request.method = 'POST'
+        fake_request.POST = q
+        fake_request.session = request.session
 
-    ort_obj, _ = Ort.objects.get_or_create(name=school_location)
-    schule_obj, _ = Schule.objects.get_or_create(
-        dienststellen_nr=school_official_id,
-        defaults={'schulname': school_name, 'ort': ort_obj}
-    )
+        # Rufe lti_launch auf und gib die Antwort zurück
+        return lti_launch(fake_request)
 
-    # Aktualisiere die Session mit der echten Schul-ID
-    pending = request.session['ed_pending']
-    pending['schule_id'] = schule_obj.id
-    request.session['ed_pending'] = pending
-
-    # Stufe 1 Prüfung direkt hier oder Weiterleitung zur Zuordnung:
-    # Versuche direkt, ob ein Profil mit dieser UID existiert
-    try:
-      profil = Profil.objects.get(eduplaces_uid=pending['eduplaces_uid'])
-      login(request, profil.user)
-      messages.success(request, f'Simulation: Erfolgreich eingeloggt als {profil.vorname}!')
-      return redirect('index')
-    except Profil.DoesNotExist:
-      pass
-
-    # Wenn kein Profil da ist, leiten wir zur Zuordnungsmaske weiter (Stufe 2-4)
-    return redirect('eduplaces_zuordnung')
-
-  # HTML-Formular für die Eduplaces-Simulation
-  return HttpResponse("""
+    # HTML-Formular für die Simulation
+    return HttpResponse("""
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Eduplaces-Login-Simulation</title>
+            <title>Moodle-LTI-Simulation (realistisch)</title>
             <style>
                 body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-                form { background: #f0f8ff; padding: 20px; border-radius: 8px; border: 1px solid #b0c4de; }
+                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
                 input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-                button { background: #007bff; color: white; border: none; cursor: pointer; }
+                button { background: #28a745; color: white; border: none; cursor: pointer; }
             </style>
         </head>
         <body>
-            <h1>Eduplaces-Login-Simulation</h1>
-            <p>Simuliert den Rücksprung und die Datenübergabe von der Eduplaces-Sandbox.</p>
+            <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
+            <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
             <form method="POST">
-                <label>Eduplaces UID / Pseudonym:</label>
-                <input type="text" name="uid" value="edu_test_lehrer1"><br>
+                <label>Consumer Key (Dienststellennr):</label>
+                <input type="text" name="schule_id" value="DE-HE-6072"><br>
+
+                <label>Moodle UID:</label>
+                <input type="text" name="uid" value="test_franz"><br>
 
                 <label>Vorname:</label>
-                <input type="text" name="vorname" value="Anna"><br>
+                <input type="text" name="vorname" value="Franz"><br>
 
                 <label>Nachname:</label>
-                <input type="text" name="nachname" value="Lehrerin"><br>
+                <input type="text" name="nachname" value="Musterschüler"><br>
 
-                <label>Rolle:</label>
-                <select name="rolle">
-                    <option value="teacher">Lehrkraft (teacher)</option>
-                    <option value="student">Schüler (student)</option>
+                <label>E-Mail:</label>
+                <input type="email" name="email" value="test@example.de"><br>
+
+                <label>Gruppe (Moodle-Rolle):</label>
+                <select name="gruppe">
+                    <option value="Learner">Schüler (Learner)</option>
+                    <option value="Instructor">Lehrer (Instructor)</option>
                 </select><br>
 
-                <label>Schulname:</label>
-                <input type="text" name="schulname" value="IGS Kelsterbach"><br>
+                <label>Jahrgang:</label>
+                <input type="number" name="jg" value="6"><br>
 
-                <label>Ort:</label>
-                <input type="text" name="ort" value="Kelsterbach"><br>
+                <label>Klasse:</label>
+                <input type="text" name="klasse" value="Testklasse"><br>
 
-                <label>Offizielle Schul-ID (dienststellen_nr):</label>
-                <input type="text" name="school_official_id" value="D_HE_6072"><br>
-
-                <button type="submit">Eduplaces-Login simulieren</button>
+                <button type="submit">LTI-Anfrage an lti_launch senden</button>
             </form>
         </body>
         </html>
@@ -476,7 +461,6 @@ def eduplaces_login(request):
         f"&redirect_uri={EDUPLACES_REDIRECT_URI}&scope={scopes}"
     )
     return redirect(redirect_url)
-
 
 def eduplaces_callback(request):
     """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
@@ -576,7 +560,7 @@ def eduplaces_callback(request):
                 subject="Neue Schule über Eduplaces registriert",
                 message=f"Eine neue Schule hat sich über Eduplaces angemeldet:\n\nName: {school_name}\nOrt: {school_location}\nOffizielle ID: {school_official_id}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.ADMINS[0][1] if hasattr(settings, "ADMINS") and settings.ADMINS else "deine-email@example.com"],
+                recipient_list=[settings.ADMINS[0][1] if hasattr(settings, "ADMINS") and settings.ADMINS else "info@rechentrainer.app"],
                 fail_silently=True,
             )
         except Exception:
@@ -631,7 +615,6 @@ def eduplaces_callback(request):
     }
 
     return redirect("eduplaces_zuordnung")
-
 
 def eduplaces_zuordnung(request):
     ed_data = request.session.get('ed_pending')
@@ -739,6 +722,96 @@ def eduplaces_logout(request):
   from django.contrib.auth import logout
   logout(request)
   return redirect("home")
+
+@csrf_exempt
+def simulation_eduplaces(request):
+  if request.method == 'POST':
+    # Wir füttern die Session direkt mit den Simulationsdaten,
+    # genau so, wie sie normalerweise von Eduplaces kommen würden.
+    request.session['ed_pending'] = {
+        'eduplaces_uid': request.POST.get('uid', 'sim_user_123'),
+        'vorname': request.POST.get('vorname', 'Max'),
+        'nachname': request.POST.get('nachname', 'Mustermann'),
+        'rolle': request.POST.get('rolle', 'student'),
+        'schule_id': None,  # Wird über die offizielle ID verknüpft
+    }
+
+    # Wir simulieren direkt die Daten, die sonst aus dem Userinfo-Endpoint kämen,
+    # und legen Ort & Schule direkt an:
+    school_name = request.POST.get('schulname', 'IGS Kelsterbach')
+    school_location = request.POST.get('ort', 'Kelsterbach')
+    school_official_id = request.POST.get('school_official_id', 'D_HE_6072')
+
+    ort_obj, _ = Ort.objects.get_or_create(name=school_location)
+    schule_obj, _ = Schule.objects.get_or_create(
+        dienststellen_nr=school_official_id,
+        defaults={'schulname': school_name, 'ort': ort_obj}
+    )
+
+    # Aktualisiere die Session mit der echten Schul-ID
+    pending = request.session['ed_pending']
+    pending['schule_id'] = schule_obj.id
+    request.session['ed_pending'] = pending
+
+    # Stufe 1 Prüfung direkt hier oder Weiterleitung zur Zuordnung:
+    # Versuche direkt, ob ein Profil mit dieser UID existiert
+    try:
+      profil = Profil.objects.get(eduplaces_uid=pending['eduplaces_uid'])
+      login(request, profil.user)
+      messages.success(request, f'Simulation: Erfolgreich eingeloggt als {profil.vorname}!')
+      return redirect('index')
+    except Profil.DoesNotExist:
+      pass
+
+    # Wenn kein Profil da ist, leiten wir zur Zuordnungsmaske weiter (Stufe 2-4)
+    return redirect('eduplaces_zuordnung')
+
+  # HTML-Formular für die Eduplaces-Simulation
+  return HttpResponse("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Eduplaces-Login-Simulation</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+                form { background: #f0f8ff; padding: 20px; border-radius: 8px; border: 1px solid #b0c4de; }
+                input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+                button { background: #007bff; color: white; border: none; cursor: pointer; }
+            </style>
+        </head>
+        <body>
+            <h1>Eduplaces-Login-Simulation</h1>
+            <p>Simuliert den Rücksprung und die Datenübergabe von der Eduplaces-Sandbox.</p>
+            <form method="POST">
+                <label>Eduplaces UID / Pseudonym:</label>
+                <input type="text" name="uid" value="edu_test_lehrer1"><br>
+
+                <label>Vorname:</label>
+                <input type="text" name="vorname" value="Anna"><br>
+
+                <label>Nachname:</label>
+                <input type="text" name="nachname" value="Lehrerin"><br>
+
+                <label>Rolle:</label>
+                <select name="rolle">
+                    <option value="teacher">Lehrkraft (teacher)</option>
+                    <option value="student">Schüler (student)</option>
+                </select><br>
+
+                <label>Schulname:</label>
+                <input type="text" name="schulname" value="IGS Kelsterbach"><br>
+
+                <label>Ort:</label>
+                <input type="text" name="ort" value="Kelsterbach"><br>
+
+                <label>Offizielle Schul-ID (dienststellen_nr):</label>
+                <input type="text" name="school_official_id" value="D_HE_6072"><br>
+
+                <button type="submit">Eduplaces-Login simulieren</button>
+            </form>
+        </body>
+        </html>
+    """)
 
 def account_loeschen(req):
     try:    
