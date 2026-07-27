@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Physiktrainer{% endblock %}</title>
+    {% load static %}
+    {% block css_files %}{% endblock %}
+</head>
+
+<body>
+<nav class="navbar main">
+    <a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
+    <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
+    {% if user.is_authenticated %}
+        <span>Eingeloggt als: <strong>{{ user.username }}</strong></span> 
+        <a href="/accounts/logout/" >Abmelden</a>
+    {% else %}
+        <a href="/accounts/login/" >Anmelden</a>
+    {% endif %}
+
+</nav>
+    <header>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

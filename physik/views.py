@@ -23,7 +23,7 @@ from django.http import JsonResponse
 def ist_mitarbeiter(user):
     if not user.is_authenticated:
         return False
-    return hasattr(user, 'profil') and user.profil.ist_physiklehrer
+    return user.groups.filter(name='Physiklehrer').exists()
 
 def berechne_sperre(total, f1_bestand, f2_bestand, ziel_fach, f3_bestand=0):
     ready = True
@@ -51,22 +51,18 @@ def index(request):
     # Reset Session
     for k in ("aufgaben_ids", "index", "p_richtig", "letzte_antwort", "warte_auf_weiter"):
         request.session.pop(k, None)
-
     themenbereiche = ThemenBereich.objects.filter(eingeblendet=True).prefetch_related("kapitel").order_by("ordnung")
-
     # 1. Die kapitel_map für das JavaScript-Modal
     kapitel_map = {
             str(tb.id): [{"zeile": k.zeile, "name": k.kapitel} for k in tb.kapitel.all().order_by("zeile")]
             for tb in themenbereiche
         }
-
     # 2. Alle Aufgaben zählen (Gesamtbestand)
     qs_gesamt = (
         Aufgabe.objects.filter(thema__in=themenbereiche)
         .values("thema_id", "kapitel_id", "schwierigkeit")
         .annotate(cnt=Count("id"))
     )
-
     # 3. Lernstand des Users abrufen (nur wenn eingeloggt)
     user_protokoll = {}
     profil = None
@@ -84,7 +80,6 @@ def index(request):
             f = r["fach"]
             user_protokoll.setdefault(t_id, {}).setdefault(k_id, {}).setdefault(s, {})
             user_protokoll[t_id][k_id][s][f] = r["cnt"]
-
     # 4. Counts-Dict aufbauen
     counts = {}
     for r in qs_gesamt:
@@ -104,7 +99,6 @@ def index(request):
         counts[t_id][k_id][s] = {
             '0': f0, '1': f2, '2': f3, '3': f4, 'total': gesamt
         }
-
     # 5. tb_totals berechnen (Summen für die Kopfzeile)
     tb_totals = {}
     for tb in themenbereiche:
@@ -160,7 +154,6 @@ def index(request):
         t_stats["sum_em"] = t_stats["s1"]["total"] + t_stats["s2"]["total"]
         t_stats["sum_all"] = t_stats["sum_em"] + t_stats["s3"]["total"]
         tb_totals[tb.id] = t_stats
-
     return render(request, "physik/index.html", {
             "themenbereiche": themenbereiche,
             "counts": counts,

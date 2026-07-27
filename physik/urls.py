@@ -6,7 +6,7 @@ from . import views
 app_name = "physik"
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path('', views.index, name='index'),
     path('accounts/logout/', views.force_logout, name='logout'),
     path('view-einstellung/<str:slug>/', views.update_view_settings, name='update_view_settings'),
     path('row-einstellung/<str:slug>/', views.update_row_settings, name='update_row_settings'),
