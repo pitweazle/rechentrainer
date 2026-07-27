@@ -311,7 +311,7 @@ def moodle_entscheidung(request):
                 'rollen_label': "Rolle (z.B. Lehrer / Lehrerin):" if is_lehrer else "Klasse:",
             }
 
-            return render(request, 'sso/sso_registrierung.html', context)
+            return render(request, 'SSO/sso_registrierung.html', context)
 
         # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
         elif aktion == 'registrierung_speichern':
@@ -762,7 +762,7 @@ def eduplaces_zuordnung(request):
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
 
-    return render(request, 'sso/sso_registrierung.html', context)
+    return render(request, 'SSO/sso_registrierung.html', context)
 
 def eduplaces_logout(request):
   """Loggt den Benutzer lokal aus."""
