@@ -1,0 +1,388 @@
+        :root {
+            --main-background: #f2f2f2;
+            --secondary-background: #726b67;
+            --accent-backround-color: #615a56;
+        }
+
+        /* Grundlayout */
+        body {
+            background: var(--main-background);
+            margin: 0px;
+            /* z.B. hellgrau, kannst du ändern */
+        }
+
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 16px;
+            background: var(--main-background);
+            transition: max-width 0.3s ease;
+            /* NEU: sanfter Übergang */
+        }
+
+        /* NEU: Container-Breite anpassen je nach sichtbaren Spalten */
+        .hide-profi .page-container {
+            max-width: 1000px;
+        }
+
+        .hide-mittel .page-container {
+            max-width: 700px;
+        }
+
+        .physik-tabelle {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .physik-tabelle th,
+        .physik-tabelle td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+
+        /* Linien nur dort, wo sie gewollt sind */
+        .physik-tabelle thead th,
+        td.box,
+        td.summe,
+        td.kapitel-name {
+            border: 1px solid #000;
+        }
+
+        /* Erste Spalte */
+        .physik-tabelle th:first-child,
+        .physik-tabelle td:first-child {
+            width: 25%;
+            /* Anteilig am Desktop */
+            min-width: 100px;
+            /* Verhindert völliges Verschwinden */
+            max-width: 280px;
+            text-align: left;
+            word-wrap: break-word;
+            /* Text bricht um, wenn zu lang */
+            hyphens: auto;
+            /* Trennt Wörter sauber */
+        }
+
+        /* Speziell für schmale Handys */
+        @media (max-width: 600px) {
+            .physik-tabelle {
+                font-size: 12px;
+                /* Schrift etwas kleiner */
+            }
+
+            .physik-tabelle th:first-child,
+            .physik-tabelle td:first-child {
+                width: 120px;
+                /* Fixer Platz fürs Thema auf dem Handy */
+            }
+        }
+
+        /* Header sauberer */
+        .physik-tabelle thead th {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* echte Abstandsspalten – komplett linienlos */
+        td.spacer,
+        th.spacer {
+            width: 20px;
+            min-width: 20px;
+            border: none !important;
+            background: transparent !important;
+            padding: 0;
+        }
+
+        /* spalten ausblenden über body-klassen */
+        .hide-mittel .col-mittel {
+            display: none;
+        }
+
+        .hide-profi .col-profi {
+            display: none;
+        }
+
+        .table-controls {
+            margin: 8px 0 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Themenbereich-Zeilen */
+        .themenbereich td {
+            font-weight: bold;
+            cursor: pointer;
+            color: #000;
+        }
+
+        /* Kapitel-Zeilen */
+        .kapitel-name {
+            text-align: left;
+        }
+
+        .arrow-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #4a90e2;
+            /* Blau - oder #333 für neutrales Grau */
+            padding: 5px;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .arrow-btn:hover {
+            color: #000;
+        }
+
+        .hidden-button {
+            visibility: hidden;
+        }
+
+        .th-arrow {
+            border: none !important;
+            /* Entfernt den Rahmen */
+            padding: 0 !important;
+            /* Entfernt den Innenabstand, falls der Button dann besser sitzt */
+            background: transparent !important;
+            /* Falls die Zelle einen Hintergrund hat */
+        }
+
+        .start-btn {
+            background-color: var(--secondary-background);
+            /* Das Blau passt zu deinen Pfeilen */
+            color: white;
+            /* Weiße Schrift für guten Kontrast */
+            padding: 10px 25px;
+            /* Mehr Platz um den Text */
+            font-size: 1.1rem;
+            /* Etwas größer */
+            font-weight: bold;
+            /* Fett für bessere Lesbarkeit */
+            border: none;
+            /* Kein Rahmen */
+            border-radius: 8px;
+            /* Schöne abgerundete Ecken */
+            cursor: pointer;
+            /* Mauszeiger wird zur Hand */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Sanfter Schatten für Tiefe */
+            transition: transform 0.1s, background-color 0.2s;
+            margin: 20px;
+        }
+
+        /* Hover-Effekt: Der Button reagiert, wenn man drüberfährt */
+        .start-btn:hover {
+            background-color: var(--accent-backround-color);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Klick-Effekt: Der Button wirkt "gedrückt" */
+        .start-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Box-Zellen gleichmäßig schmal */
+        .box {
+            width: 25px;
+            text-align: center;
+        }
+
+        /* Summen-Spalten */
+        .summe {
+            width: 35px;
+            text-align: center;
+        }
+
+        /* Leere Boxen leicht grau */
+        .box.leer {
+            background: #f2f2f2;
+        }
+
+        /* Collapse */
+        .hidden {
+            display: none;
+        }
+
+
+
+        .hidden {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* sichtbar */
+        .modal-overlay:not(.hidden) {
+            display: flex;
+        }
+
+        /* versteckt */
+        .hidden {
+            display: none;
+        }
+
+        .modal {
+            background: #b7d8ff;
+            border: 1px solid #333;
+            width: 520px;
+            max-width: 95vw;
+            padding: 12px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .modal-close {
+            font-size: 22px;
+            line-height: 22px;
+            width: 32px;
+            height: 32px;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .modal-body select {
+            width: 100%;
+        }
+
+        .radio-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-footer {
+            margin-top: 12px;
+            text-align: right;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .navbar {
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: auto;
+            grid-auto-flow: column;
+            justify-items: center;
+            align-items: center;
+            height: 50px;
+            background: var(--secondary-background);
+
+            &.nav-links {
+                border-top: 2px solid #ffffff;
+            }
+
+            * {
+                height: 100%;
+                width: 100%;
+            }
+
+            a {
+                font-size: 20px;
+                color: white;
+                text-align: center;
+                align-content: center;
+                display: inline-block;
+                padding-left: 16px;
+                padding-right: 16px;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                text-decoration: none;
+            }
+
+            span {
+                font-size: 20px;
+                color: white;
+                text-align: center;
+                align-content: center;
+                display: inline-block;
+                padding-left: 16px;
+                padding-right: 16px;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                text-decoration: none;
+            }
+
+            button {
+                font-size: 20px;
+                color: white;
+                cursor: pointer;
+                border: none;
+                outline: none;
+                background-color: inherit;
+                padding-left: 16px;
+                padding-right: 16px;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                font-family: inherit;
+            }
+
+            a:hover,
+            .dropdown:hover .dropbtn {
+                background: var(--accent-backround-color);
+            }
+
+            .dropdown-content.footer {
+                justify-items: center;
+                display: none;
+                position: absolute;
+                background-color: #f9f9f9;
+                height: fit-content;
+                width: fit-content;
+                box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+                z-index: 1;
+                padding: 10px;
+            }
+
+            .dropdown-content a {
+                float: none;
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+            }
+
+            .dropdown-content a:hover {
+                background-color: #ddd;
+            }
+
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+        }
+
+
+        /* Wir schreiben im Head KEIN display:none mehr für die IDs!
+       Stattdessen nutzen wir die Klasse .hidden, die dein JS auch verwendet.
+    */
+        .hidden {
+            display: none !important;
+        }

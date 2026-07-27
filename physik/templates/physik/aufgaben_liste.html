@@ -1,0 +1,81 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'physik/admin_custom.css' %}">
+
+<div class="admin-header-bar">
+    <h1 style="margin: 0; font-size: 1.5rem;">Physik-Aufgaben: Bestandsliste</h1>
+</div>
+
+<a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
+<a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
+
+<div class="container mt-4">
+    <h2 class="no-print">Aufgaben-Bestand</h2>
+
+    <div class="row g-2 mb-4 no-print bg-light p-3 border rounded">
+        <form method="get" class="d-flex gap-3 w-100">
+            <select name="thema" class="form-select" onchange="this.form.submit()">
+                <option value="">Alle Themenbereiche</option>
+                {% for t in themenbereiche %}
+                <option value="{{ t.id }}" {% if request.GET.thema == t.id|stringformat:"i" %}selected{% endif %}>{{ t.thema }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="kapitel" class="form-select" onchange="this.form.submit()">
+                <option value="">Alle Kapitel</option>
+                {% for k in kapitel_liste %}
+                <option value="{{ k.id }}" {% if request.GET.kapitel == k.id|stringformat:"i" %}selected{% endif %}>
+                    {{ k.zeile }}: {{ k.kapitel }} </option>
+                {% endfor %}
+            </select>
+
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Suche (z.B. _Do)" value="{{ request.GET.q|default:'' }}">
+                <button class="btn btn-outline-secondary" type="submit">🔍</button>
+                {% if request.GET.q %}
+                    <a href="?{% if request.GET.thema %}thema={{ request.GET.thema }}&{% endif %}{% if request.GET.kapitel %}kapitel={{ request.GET.kapitel }}{% endif %}" class="btn btn-outline-danger">✕</a>
+                {% endif %}
+            </div>
+
+
+            <td><small>{{ a.kapitel.kapitel }}</small></td>
+            
+            <a href="?" class="btn btn-outline-secondary">Reset</a>
+            <button type="button" class="btn btn-primary" onclick="window.print()">Drucken</button>
+        </form>
+    </div>
+
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-secondary">
+            <tr>
+                <th>Thema</th>
+                <th>Kapitel</th>
+                <th>Nr.</th>
+                <th>Anzeigen</th>
+                <th>Aufgabetext</th>
+                <th>Typ</th>
+                <th>Lösung</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in aufgaben %}
+            <tr>
+                <td><small>{{ a.kapitel.thema.thema }}</small></td>
+                <td><small>{{ a.kapitel.kapitel }}</small></td>
+                <td>
+                    <a href="{% url 'physik:aufgabe_einstellungen' a.id %}" class="fw-bold text-decoration-none">
+                        {{ a.lfd_nr }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{% url 'physik:call' a.lfd_nr %}" class="btn btn-sm btn-primary">
+                        Anzeigen
+                    </a>
+                </td>
+                <td>{{ a.frage|truncatechars:80 }}</td>
+                <td><code>{{ a.typ }}</code></td>
+                <td><span class="badge bg-light text-dark border">{{ a.loesung }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

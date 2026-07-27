@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css_files %}
+    {% comment %} <link rel="stylesheet" href="{% static 'physik/aufgabe.css' %}"> {% endcomment %}
+    <style>
+      .task-dialog {
+        width: 460px;
+        max-width: 90vw;
+        margin: 40px auto;
+        border: 1px solid #b6b3b3;
+        padding: 10px;
+        background: #eee;
+      }
+
+      .task-header {
+        border-bottom: 1px solid #444;
+        margin-bottom: 6px;
+        padding-bottom: 4px;
+      }
+
+      .task-title {
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .task-kapitel {
+        font-size: 0.9em;
+        color: #333;
+      }
+
+      .task-frage {
+        background: #fff;
+        border: 1px solid #333;
+        padding: 10px;
+        min-height: 60px;
+        margin-bottom: 10px;
+      }
+
+      .task-antwort {
+        background: #dde;
+        border: 1px solid #333;
+        padding: 10px;
+        min-height: 60px;
+        margin-bottom: 10px;
+      }
+
+      .task-option {
+        margin: 5px 0;
+      }
+
+      .task-input {
+        width: 300px;
+        font-size: 1.2em;
+      }
+
+      .task-image {
+        max-width: 48%;  /* Sorgt dafür, dass zwei Bilder nebeneinander passen */
+        max-height: 250px; /* Verhindert, dass ein einzelnes Bild zu hoch wird */
+        width: auto;     /* WICHTIG: Nicht mehr stur auf 100% erzwingen */
+        height: auto;
+        object-fit: contain;
+        display: block;
+        border: 1px solid #aaa;
+        background: white;
+      }
+
+      .task-images {
+        display: flex;
+        flex-wrap: wrap;   /* Falls die Bilder mal zu breit werden, brechen sie um */
+        gap: 10px;
+        width: 100%;
+        justify-content: center; /* Zentriert die Bilder, wenn nur eines da ist */
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+
+      .task-buttons {
+        display: flex !important;
+        justify-content: flex-start !important;
+        gap: 10px;
+      }
+
+      .task-buttons button {
+        margin: 0;
+      }
+
+      .task-image.selected {
+        outline: 3px solid blue;
+      }
+
+      .task-message {
+          margin-bottom: 10px;
+          padding: 8px 10px;
+          border-radius: 6px;
+          text-align: center;
+          font-weight: 500;
+      }
+
+      /* GRÜN */
+      .alert.success {
+          background: #e6ffe6;
+          color: #0f6b0f;
+          border: 1px solid #9ae79a;
+      }
+
+      /* ROT */
+      .alert.error {
+          background: #ffe6e6;
+          color: #7a0b0b;
+          border: 1px solid #ffb2b2;
+      }
+
+      /* GELB */
+      .alert.warning {
+          background: #fff6d6;
+          color: #7a5a05;
+          border: 1px solid #ffde7a;
+      }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+    {% csrf_token %}
+        <div class="task-dialog">
+            <!-- Kopfzeile -->
+            <div class="task-header">
+              <div class="task-title">
+                  {{ fragenummer }} von {{ anzahl }} Aufgaben
+              </div>
+              <div class="task-kapitel">
+                  {{ aufgabe.kapitel }}
+              </div>
+            </div>
+            {% if messages %}
+              {% for message in messages %}
+                  <div class="alert {{ message.tags }}">
+                  {{ message|safe }}
+                  </div>
+              {% endfor %}
+            {% endif %}
+
+            <!-- Frage -->
+            <div class="task-frage">
+                {{ aufgabe.frage }}
+            </div>
+
+            <!-- Antwortbereich -->
+            <div class="task-antwort">
+              {% if "a" in aufgabe.typ %}
+                {% for index, text in auswahl_optionen %}
+                  <div class="task-option">
+                    <label>
+                      <input type="radio" 
+                            name="user_antwort" 
+                            value="{{ index }}"
+                            {% if warte_auf_weiter %}disabled{% endif %}
+                            onchange="this.form.submit();"> 
+                      {{ text }}
+                    </label>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <span class="task-einheit">{{ aufgabe.zeichen }}</span>
+                <input type="text"
+                      name="antwort"
+                      class="task-input"
+                      value="{{ letzte_antwort }}"
+                      {% if warte_auf_weiter %}disabled{% endif %}>
+                <span class="task-einheit">{{ aufgabe.einheit }}</span>
+              {% endif %}
+              {% if anmerkung %}
+                  <div class="task-anmerkung" style="font-style: italic; color: #666; margin-bottom: 8px;">
+                      {{ anmerkung }}
+                  </div>
+              {% endif %}
+          </div>
+
+          <div id="solutionBox" style="display:none;" class="solution-box">
+            <strong>Lösung:</strong><br>
+            {{ aufgabe.loesung|safe }}<br><br>
+
+            {% if aufgabe.erklaerung %}
+                {{ aufgabe.erklaerung|linebreaks }}
+            {% endif %}
+          </div>
+
+          {% if bilder %}
+            {% with bilder_liste=bilder %}
+              
+              {# --- 1. Video-Bereich: Erscheint ganz oben, falls vorhanden --- #}
+              {% for b in bilder_liste %}
+                {% if b.video %} {# Hier jetzt nur 'video' #}
+                  <div class="video-container" style="margin-bottom: 20px; text-align: center;">
+                    <video width="100%" style="max-width: 500px;" autoplay muted loop playsinline controls>
+                      <source src="{{ b.video.url }}" type="video/mp4">
+                      Dein Browser unterstützt das Video-Tag nicht.
+                    </video>
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+          {# --- 2. Bilder-Reihe 1 (Die ersten zwei echten BILDER) --- #}
+          <div class="task-images row1" style="display: flex; justify-content: center; width: 100%;">
+            {% for b in bilder_liste %}
+              {% if b.bild %}
+                {% if forloop.counter <= 2 %}
+                  <img src="{{ b.bild.url }}" 
+                      class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}"
+                      data-id="{{ b.id }}"
+                      {% if bilder_liste|length == 1 %}
+                        {# Wir hebeln die max-width und max-height aus dem CSS aus #}
+                        style="width: 100%; max-width: 1000px !important; max-height: none !important; height: auto;" 
+                      {% else %}
+                        style="max-width: 45%; height: auto;"
+                      {% endif %}>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {# --- 3. Bilder-Reihe 2 (Restliche Bilder ab dem dritten Bild) --- #}
+          {% if bilder_liste|length > 2 %}
+            <div class="task-images row2" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+              {% for b in bilder_liste %}
+                {% if b.bild %}
+                  {% if forloop.counter > 2 %}
+                    <img src="{{ b.bild.url }}" 
+                        {# Auch hier: Klickbarkeit NUR bei Typ 'p' #}
+                        class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}" 
+                        data-id="{{ b.id }}"
+                        style="max-width: 45%; height: auto;">
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% endwith %}
+          <input type="hidden" name="bild_antwort" id="bild_antwort">
+        {% endif %}
+
+        <!-- Button-Leiste -->
+        <div class="task-buttons">
+            <button type="button" onclick="location.href='/'">zurück</button>
+            {% if aufgabe.hilfe and aufgabe.hilfe != "0" and aufgabe.hilfe != 0 %}
+                <button type="button" onclick="alert('{{ aufgabe.hilfe|escapejs }}')">
+                Hilfe
+                </button>
+            {% endif %}
+            <button type="button" id="showSolution">Lösung anzeigen</button>
+            <button type="submit">Weiter</button>
+        </div>
+      </div>
+  </form>
+
+  <script>
+    const warte = {{ warte_auf_weiter|yesno:"true,false" }};
+    document.addEventListener("DOMContentLoaded", function () {
+      if (!warte) {
+        document.querySelectorAll(".task-image.clickable").forEach(img => {
+          img.addEventListener("click", function () {
+            document.getElementById("bild_antwort").value = this.dataset.id;
+
+            document.querySelectorAll(".task-image")
+                    .forEach(i => i.classList.remove("selected"));
+
+            this.classList.add("selected");
+
+            this.closest("form").submit();
+          });
+        });
+      }
+    });
+  </script>
+
+  <script>
+  document.getElementById("showSolution").addEventListener("click", function () {
+    const box = document.getElementById("solutionBox");
+    box.style.display = (box.style.display === "none") ? "block" : "none";
+  });
+  </script>
+
+  <script>
+    document.getElementById("showSolution").addEventListener("click", function (e) {
+        e.preventDefault(); // Verhindert Neuladen
+        document.getElementById("solutionBox").style.display = "block";
+        
+        // Felder sperren
+        const input = document.querySelector('input[name="antwort"]');
+        if(input) input.disabled = true;
+        
+        const radios = document.querySelectorAll('input[name="user_antwort"]');
+        radios.forEach(r => r.disabled = true);
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const textInput = document.querySelector(
+        'input[type="text"][name="antwort"]:not([disabled])'
+      );
+      if (textInput) {
+        textInput.focus();
+      }
+    });
+  </script>
+{% endblock %}
+

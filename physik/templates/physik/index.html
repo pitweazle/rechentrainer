@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block body_classes %}
+    {% with profil=request.user.physik_profil %}
+        {% if 'mittel' in profil.details.versteckt %}hide-mittel hide-profi{% endif %}
+        {% if 'profi' in profil.details.versteckt and 'mittel' not in profil.details.versteckt %}hide-profi{% endif %}
+    {% endwith %}
+{% endblock %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'physik/index.css' %}">
+<script>
+    /* Wir setzen die Initial-Zustände so, wie dein JS sie erwartet:
+       Über Klassen, nicht über feste CSS-Regeln.
+    */
+    document.addEventListener("DOMContentLoaded", function() {
+        const body = document.body;
+        {% if profil and profil.physik_einstellungen %}
+            // 1. Spalten-Zustand wiederherstellen
+            {% if 'mittel' in profil.physik_einstellungen.versteckt %}
+                body.classList.add("hide-mittel", "hide-profi");
+            {% elif 'profi' in profil.physik_einstellungen.versteckt %}
+                body.classList.add("hide-profi");
+            {% endif %}
+
+            // 2. Zeilen-Zustand wiederherstellen
+            {% for id in profil.physik_einstellungen.zeilen_versteckt %}
+                document.querySelectorAll(".{{ id }}").forEach(el => {
+                    el.classList.add("hidden");
+                });
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+{% if user.is_staff %}
+<nav class="navbar nav-links">
+    <a href="{% url 'physik:aufgaben_liste' %}">📋 Inventar</a>
+    <a href="{% url 'physik:fehler_liste' %}">📊 Fehleranalyse</a>
+    <a href="{% static 'physik/howto.pdf' %}" target="_blank">❓ Anleitung</a>
+    <a href="/admin/physik/aufgabe/add/" target="_blank">➕ Neue Aufgabe</a>
+    <a href="#" class="btn-call" onclick="frageLfdNrAb()">🔍 Aufgabe direkt aufrufen</a>
+</nav>
+{% endif %}
+
+<button type="button" 
+        id="openModal" 
+        class="start-btn" 
+        title="Du kannst die Fragen auch starten, indem du im gewünschten Themenbereich, -Schwierigkeitsgrad und -Fachnummer auf das Endkapitel klickst">
+    Start
+</button>        {% comment %} <p>(Du kannst die Fragen auch starten, indem du im gewünschten Themenbereich, -Schwierigkeitsgrad und -Fachnummer auf das Endkapitel klickst)</p> {% endcomment %}
+
+
+
+        <script>
+        function frageLfdNrAb() {
+            // Öffnet ein Eingabefenster im Browser
+            let nr = prompt("Bitte die laufende Nummer eingeben (z. B. E025_Do):");
+            
+            // Wenn der User nicht auf "Abbrechen" geklickt hat und das Feld nicht leer ist
+            if (nr && nr.trim() !== "") {
+                window.location.href = "/call/" + encodeURIComponent(nr.trim()) + "/";
+            }
+        }
+        </script>
+    </nav>
+
+    <div class="page-container">
+      
+        <div id="overlay" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <div><strong>Wähle Themenbereich und Schwierigkeitsgrad</strong></div>
+                    <button type="button" id="closeModal" class="modal-close">×</button>
+                </div>
+                <form method="get" action="{% url 'physik:aufgaben' %}">
+                    <div class="modal-body">
+                        <label>Themenbereich</label>
+                        <select name="tb" id="tbSelect" required>
+                            <option value="">– bitte wählen –</option>
+                            {% for tb in themenbereiche %}
+                                <option value="{{ tb.id }}">{{ tb.thema }}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Start-Kapitel (fix)</label>
+                            <select id="startSelectDisplay" disabled></select>
+                            <input type="hidden" name="start" id="startSelect">
+                            <label>End-Kapitel</label>
+                        <select name="end" id="endSelect" required></select>
+                        <hr>
+                        <label>Schwierigkeitsgrad (bis:)</label>
+                        <div class="radio-row">
+                            <label><input type="radio" name="level" value="1"> Einfach</label>
+                            <label><input type="radio" name="level" value="2" required checked> Mittel</label>
+                            <label><input type="radio" name="level" value="3"> Profi</label>
+                        </div>
+                        <input type="hidden" name="fach" value="1">
+
+                        <div style="background-color: #f8f9fa; border-left: 4px solid #447e9b; padding: 10px; margin-top: 15px;">
+                            <p style="margin: 0; font-size: 0.9em; color: #555;">
+                                <strong>Hinweis:</strong> Du startest hier in <strong>Fach 1</strong>. 
+                                Um gezielt <i>Fach 2</i> oder <i>3</i> zu üben, wähle bitte die entsprechende Zahl direkt in der Übersichtstabelle aus.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit">weiter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="physik-tabelle">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Thema / Kapitel</th>
+                        <th class="spacer" rowspan="2"></th>
+                        <th colspan="5">einfach</th>
+                        <th rowspan="2" class="th-arrow" style="text-align: center;">
+                            <button type="button" 
+                                    id="toggle-mittel" 
+                                    class="arrow-btn" 
+                                    title="Mittel-Spalten ein-/ausblenden" 
+                                    aria-label="Mittel-Spalten ein-/ausblenden">◀</button>
+                        </th>               
+                        <th colspan="5" class="col-mittel">mittel</th>
+                        <th rowspan="2" class="col-mittel">Σ<br>E+M</th>
+                        <th rowspan="2" class="th-arrow" style="text-align: center;">
+                            <button type="button" id="toggle-profi" class="arrow-btn" title="Profi ein-/ausblenden">◀</button>
+                        </th>
+                        {% comment %} <th class="spacer" rowspan="2"></th> {% endcomment %}
+                        <th colspan="5" class="col-profi">profi</th>
+                        <th rowspan="2" class="col-profi">Σ<br>gesamt</th>
+                    </tr>
+                    <tr>
+                        <th style="text-align: center;">1</th><th>2</th><th>3</th><th>Archiv</th><th>Σ</th>
+                        <th class="col-mittel">1</th><th class="col-mittel">2</th><th class="col-mittel">3</th><th class="col-mittel">Archiv</th><th class="col-mittel">Σ</th>
+                        <th class="col-profi">1</th><th class="col-profi">2</th><th class="col-profi">3</th><th class="col-profi">Archiv</th><th class="col-profi">Σ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tb in themenbereiche %}
+                        {% with stats=tb_totals|get_item:tb.id %}
+                        <tr class="themenbereich thementitel" style="background: {{ tb.farbe }}; cursor: pointer;" data-target="tb-{{ tb.id }}">
+                            <td class="tb-title"><strong>{{ tb.thema }}</strong></td>
+                            <td class="spacer"></td>
+                            
+                            {# EINFACH - Alle Zahlen mittig #}
+                            <td style="text-align: center;">{{ stats.s1.0 }}</td>
+                            <td style="text-align: center;">{{ stats.s1.1 }}</td>
+                            <td style="text-align: center;">{{ stats.s1.2 }}</td>
+                            <td style="text-align: center;">{{ stats.s1.3 }}</td>
+                            <td style="text-align: center; background: rgba(255,255,255,0.2)"><strong>{{ stats.s1.total }}</strong></td>
+                            
+                            <td class="spacer col-mittel"></td>
+                            
+                            {# MITTEL - Alle Zahlen mittig #}
+                            <td class="col-mittel" style="text-align: center;">{{ stats.s2.0 }}</td>
+                            <td class="col-mittel" style="text-align: center;">{{ stats.s2.1 }}</td>
+                            <td class="col-mittel" style="text-align: center;">{{ stats.s2.2 }}</td>
+                            <td class="col-mittel" style="text-align: center;">{{ stats.s2.3 }}</td>
+                            <td class="col-mittel" style="text-align: center; background: rgba(255,255,255,0.2)"><strong>{{ stats.s2.total }}</strong></td>
+                            <td class="col-mittel" style="text-align: center; background: rgba(0,0,0,0.1)"><strong>{{ stats.sum_em }}</strong></td>
+
+                            <td class="spacer col-profi"></td>
+
+                            {# PROFI - Alle Zahlen mittig #}
+                            <td class="col-profi" style="text-align: center;">{{ stats.s3.0 }}</td>
+                            <td class="col-profi" style="text-align: center;">{{ stats.s3.1 }}</td>
+                            <td class="col-profi" style="text-align: center;">{{ stats.s3.2 }}</td>
+                            <td class="col-profi" style="text-align: center;">{{ stats.s3.3 }}</td>
+                            <td class="col-profi" style="text-align: center; background: rgba(255,255,255,0.2)"><strong>{{ stats.s3.total }}</strong></td>
+                            <td class="col-profi" style="text-align: center; background: rgba(0,0,0,0.15)"><strong>{{ stats.sum_all }}</strong></td>
+                        </tr>
+                        {% endwith %}
+                        {% for kap in tb.kapitel.all %}
+                            {% with tb_map=counts|get_item:tb.id %}
+                            {% with kap_data=tb_map|get_item:kap.id %}
+                                {% if kap_data %}
+                                    <tr class="kapitel tb-{{ tb.id }}">
+                                        <td class="kapitel-name">{{ kap.zeile }}. {{ kap.kapitel }}</td>
+                                        <td class="spacer"></td>
+                                        {# --- EINFACH (Level 1) --- #}
+                                        {% with s1=kap_data|get_item:"1" %}
+                                            {% with f1=s1|get_item:0|default:0 f2=s1|get_item:1|default:0 f3=s1|get_item:2|default:0 f4=s1|get_item:3|default:0 total=s1|get_item:"total"|default:0 %}
+                                            {# Wir berechnen, ob schon etwas "raus" ist (Summe von Fach 2, 3 und 4) #}
+                                            {% with weg=f2|add:f3|add:f4 %}
+                                                <td class="box" style="background-color: 
+                                                    {% if total == 0 %}transparent
+                                                    {% elif f1 == 0 %}#c8e6c9; /* GRÜN: Fach 1 ist leer */
+                                                    {% elif weg > 0 %}#fff9c4; /* GELB: In Arbeit (etwas ist in Fach 2+) */
+                                                    {% else %}#ffcc80; /* ORANGE: Noch nichts bewegt */
+                                                    {% endif %};">
+                                                    {% if f1 > 0 %}
+                                                        <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=1&fach=1" style="color: inherit; text-decoration: none; display: block;">
+                                                            {{ f1 }}
+                                                        </a>
+                                                    {% else %} 0 {% endif %}
+                                                </td>
+                                                <td class="box col-einfach">
+                                                    {% with s1=counts|get_item:tb.id|get_item:kap.id|get_item:"1" %}
+                                                        {% if s1.kum_f2 > 0 %}
+                                                            {% if s1.f2_ready %}
+                                                                <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=1&fach=2" 
+                                                                style="color: inherit; text-decoration: none; display: block;">
+                                                                    {{ f2 }}
+                                                                </a>
+                                                            {% else %}
+                                                                <span style="color: #bbb; display: block;" title="{{ s1.f2_hint }}">
+                                                                    {{ f2 }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% else %} 0 {% endif %}
+                                                    {% endwith %}
+                                                </td>
+                                                <td class="box col-einfach">
+                                                    {% with s1=counts|get_item:tb.id|get_item:kap.id|get_item:"1" %}
+                                                        {% if s1.kum_f3 > 0 %}
+                                                            {% if s1.f3_ready %}
+                                                                <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=1&fach=3" 
+                                                                style="color: inherit; text-decoration: none; display: block;">
+                                                                    {{ f3 }}
+                                                                </a>
+                                                            {% else %}
+                                                                <span style="color: #bbb; display: block;" title="{{ s1.f3_hint }}">
+                                                                    {{ f3 }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% else %} 0 {% endif %}
+                                                    {% endwith %}
+                                                </td>
+                                                {# Fach 4 (Das Ziel) #}
+                                                <td class="box" style="background-color: {% if total > 0 and f4 == total %}#4caf50{% elif f4 > 0 %}#c8e6c9{% else %}transparent{% endif %}; {% if total > 0 and f4 == total %}color: white;{% endif %}">
+                                                    {{ f4 }}
+                                                </td>
+                                                {# Summe Level 1 #}
+                                                <td class="summe" style="background: {{ tb.farbe }};">
+                                                    {{ total }}
+                                                </td>
+                                            {% endwith %}
+                                            {% endwith %}
+                                        {% endwith %}
+
+                                        <td class="spacer"></td>
+
+                                        {# --- MITTEL (Level 2) --- #}
+                                        {% with s2=kap_data|get_item:"2" %}
+                                            {% with f1=s2|get_item:0|default:0 f2=s2|get_item:1|default:0 f3=s2|get_item:2|default:0 f4=s2|get_item:3|default:0 total2=s2|get_item:"total"|default:0 %}
+                                            {# Hilfsvariable für Fach 1 Status #}
+                                            {% with weg_aus_f1=f2|add:f3|add:f4 %}
+
+                                            {# Fach 1 #}
+                                            <td class="box col-mittel" style="background-color: {% if total2 == 0 %}transparent{% elif f1 == 0 %}#c8e6c9{% elif weg_aus_f1 > 0 %}#fff9c4{% else %}#ffcc80{% endif %};">
+                                                {% if f1 > 0 %}
+                                                    <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=2&fach=1" style="color: inherit; text-decoration: none; display: block;">{{ f1 }}</a>
+                                                {% else %} 0 {% endif %}
+                                            </td>
+
+                                            {# Fach 2 #}
+                                            <td class="box col-mittel">
+                                                {% with s2=counts|get_item:tb.id|get_item:kap.id|get_item:"2" %}
+                                                    {% if s2.kum_f2 > 0 %}
+                                                        {% if s2.f2_ready %}
+                                                            <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=2&fach=2" 
+                                                            style="color: inherit; text-decoration: none; display: block;">
+                                                                {{ f2 }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span style="color: #bbb; display: block;" title="{{ s2.f2_hint }}">{{ f2 }}</span>
+                                                        {% endif %}
+                                                    {% else %} 0 {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            {# Fach 3 #}
+                                            <td class="box col-mittel">
+                                                {% with s2=counts|get_item:tb.id|get_item:kap.id|get_item:"2" %}
+                                                    {% if s2.kum_f3 > 0 %}
+                                                        {% if s2.f3_ready %}
+                                                            <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=2&fach=3" 
+                                                            style="color: inherit; text-decoration: none; display: block;">
+                                                                {{ f3 }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span style="color: #bbb; display: block;" title="{{ s2.f3_hint }}">{{ f3 }}</span>
+                                                        {% endif %}
+                                                    {% else %} 0 {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            {# Fach 4 (Archiv) #}
+                                            <td class="box col-mittel" style="background-color: {% if total2 > 0 and f4 == total2 %}#4caf50{% elif f4 > 0 %}#c8e6c9{% else %}transparent{% endif %}; {% if total2 > 0 and f4 == total2 %}color: white;{% endif %}">
+                                                {{ f4 }}
+                                            </td>
+
+                                            {# Summe Level 2 #}
+                                            <td class="summe col-mittel" style="background: {{ tb.farbe }};">
+                                                {{ total2 }}
+                                            </td>
+
+                                            {# Gesamtsumme (Level 1 + Level 2) #}
+                                            <td class="summe col-mittel" style="background: {{ tb.farbe }}; font-weight: bold; border-left: 2px solid rgba(0,0,0,0.1);">
+                                                {% with s1=kap_data|get_item:"1" %}
+                                                    {% with total1=s1|get_item:"total"|default:0 %}
+                                                        {{ total1|add:total2 }}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            </td>
+
+                                            {% endwith %}
+                                            {% endwith %}
+                                        {% endwith %}
+
+                                        <td class="spacer col-mittel"></td>
+
+                                        {# --- PROFI (Level 3) --- #}
+                                        {% with s3=kap_data|get_item:"3" %}
+                                            {% with f1=s3|get_item:0|default:0 f2=s3|get_item:1|default:0 f3=s3|get_item:2|default:0 f4=s3|get_item:3|default:0 total3=s3|get_item:"total"|default:0 %}
+                                            {# Hilfsvariable für Fach 1 Status #}
+                                            {% with weg_aus_f1=f2|add:f3|add:f4 %}
+                                                {# Fach 1 #}
+                                                <td class="box col-profi" style="background-color: {% if total3 == 0 %}transparent{% elif f1 == 0 %}#c8e6c9{% elif weg_aus_f1 > 0 %}#fff9c4{% else %}#ffcc80{% endif %};">
+                                                    {% if f1 > 0 %}
+                                                        <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=3&fach=1" style="color: inherit; text-decoration: none; display: block;">{{ f1 }}</a>
+                                                    {% else %} 0 {% endif %}
+                                                </td>
+
+                                                <td class="box col-profi">
+                                                    {% with s3=counts|get_item:tb.id|get_item:kap.id|get_item:"3" %}
+                                                        {% if s3.kum_f2 > 0 %}
+                                                            {% if s3.f2_ready %}
+                                                                <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=3&fach=2" 
+                                                                style="color: inherit; text-decoration: none; display: block;">
+                                                                    {{ f2 }}
+                                                                </a>
+                                                            {% else %}
+                                                                <span style="color: #bbb; display: block;" title="{{ s3.f2_hint }}">
+                                                                    {{ f2 }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% else %} 0 {% endif %}
+                                                    {% endwith %}
+                                                </td>
+
+                                                <td class="box col-profi">
+                                                    {% with s3=counts|get_item:tb.id|get_item:kap.id|get_item:"3" %}
+                                                        {% if s3.kum_f3 > 0 %}
+                                                            {% if s3.f3_ready %}
+                                                                <a href="{% url 'physik:aufgaben' %}?tb={{ tb.id }}&bis_kap={{ kap.zeile }}&level=3&fach=3" 
+                                                                style="color: inherit; text-decoration: none; display: block;">
+                                                                    {{ f3 }}
+                                                                </a>
+                                                            {% else %}
+                                                                <span style="color: #bbb; display: block;" title="{{ s3.f3_hint }}">
+                                                                    {{ f3 }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% else %} 0 {% endif %}
+                                                    {% endwith %}
+                                                </td>
+
+                                                {# Fach 4 (Archiv/Ziel) #}
+                                                <td class="box col-profi" style="background-color: {% if total3 > 0 and f4 == total3 %}#4caf50{% elif f4 > 0 %}#c8e6c9{% else %}transparent{% endif %}; {% if total3 > 0 and f4 == total3 %}color: white;{% endif %}">
+                                                    {{ f4 }}
+                                                </td>
+
+                                                {# Summe Level 3 #}
+                                                <td class="summe col-profi" style="background: {{ tb.farbe }};">
+                                                    {{ total3 }}
+                                                </td>
+
+                                                {# Gesamtsumme (Level 1 + Level 2 + Level 3) #}
+                                                <td class="summe col-profi" style="background: {{ tb.farbe }}; font-weight: bold; border-left: 2px solid rgba(0,0,0,0.1);">
+                                                    {% with s1=kap_data|get_item:"1" s2=kap_data|get_item:"2" %}
+                                                        {% with t1=s1|get_item:"total"|default:0 t2=s2|get_item:"total"|default:0 %}
+                                                            {{ t1|add:t2|add:total3 }}
+                                                        {% endwith %}
+                                                    {% endwith %}
+                                                </td>
+                                            {% endwith %}
+                                            {% endwith %}
+                                        {% endwith %}                                
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {{ kapitel_map|json_script:"kapitel-data" }}
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+
+        // --- 1. HILFSFUNKTIONEN (Sync) ---
+        function syncSpalten(slug) {
+            fetch(`/view-einstellung/${slug}/`) 
+                .then(response => response.json())
+                .then(data => console.log("Spalten gespeichert:", data))
+                .catch(error => console.error("Fehler beim Speichern der Spalten:", error));
+        }
+
+        function syncZeilen(slug) {
+            fetch(`/row-einstellung/${slug}/`)
+                .then(response => response.json())
+                .then(data => console.log("Zeile gespeichert:", data))
+                .catch(error => console.error("Fehler beim Speichern der Zeile:", error));
+        }
+
+// --- NEUE LOGIK: BUTTONS & PFEILE ---
+
+// Hilfsfunktion: Setzt Pfeile und Sichtbarkeit
+function updateAllArrows() {
+    const btnM = document.getElementById("toggle-mittel");
+    const btnP = document.getElementById("toggle-profi");
+    
+    // Status abfragen
+    const isMittelHidden = document.body.classList.contains("hide-mittel");
+    const isProfiHidden = document.body.classList.contains("hide-profi");
+
+    // Pfeile setzen: ▶ (zu) / ◀ (auf)
+    if (btnM) btnM.textContent = isMittelHidden ? "▶" : "◀";
+    if (btnP) {
+        btnP.textContent = isProfiHidden ? "▶" : "◀";
+        // Rechten Pfeil unsichtbar machen, wenn Mittel alles blockt
+        if (isMittelHidden) {
+            btnP.classList.add("hidden-button");
+        } else {
+            btnP.classList.remove("hidden-button");
+        }
+    }
+}
+
+// 1. Logik: Mittel-Button (Der Master-Regler)
+document.getElementById("toggle-mittel")?.addEventListener("click", function() {
+    const isHidden = document.body.classList.toggle("hide-mittel");
+    document.body.classList.toggle("hide-profi", isHidden);
+    
+    syncSpalten('mittel');
+    syncSpalten('profi');
+    updateAllArrows();
+});
+
+// 2. Logik: Profi-Button
+document.getElementById("toggle-profi")?.addEventListener("click", function() {
+    // Entriegelung: Wenn Mittel zu ist, alles aufmachen
+    if (document.body.classList.contains("hide-mittel")) {
+        document.body.classList.remove("hide-mittel");
+        document.body.classList.remove("hide-profi");
+    } else {
+        // Normaler Toggle
+        document.body.classList.toggle("hide-profi");
+    }
+    
+    syncSpalten('profi');
+    updateAllArrows();
+});
+
+// Initialer Aufruf beim Laden der Seite
+updateAllArrows();
+
+        // --- 4. LOGIK: THEMENBALKEN (Zeilen) ---
+        document.querySelectorAll(".thementitel").forEach(balken => {
+            balken.onclick = function() {
+                const slug = this.getAttribute("data-target"); 
+                document.querySelectorAll("." + slug).forEach(row => row.classList.toggle("hidden"));
+                syncZeilen(slug);
+            };
+        });
+
+        // --- 5. LOGIK: MODALS ---
+        const openBtn = document.getElementById('openModal');
+        const closeBtn = document.getElementById('closeModal');
+        const overlay = document.getElementById('overlay');
+
+        if (openBtn && closeBtn && overlay) {
+            openBtn.addEventListener('click', () => overlay.classList.remove('hidden'));
+            closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.add('hidden');
+            });
+        }
+
+        // --- 6. LOGIK: KAPITEL-DROPDOWN ---
+        const kapitelData = {{ kapitel_map|safe }};
+        const tbSelect = document.getElementById('tbSelect');
+        const endSelect = document.getElementById('endSelect');
+        const startDisplay = document.getElementById('startSelectDisplay');
+        const startHidden = document.getElementById('startSelect');
+
+        if (tbSelect) {
+            tbSelect.addEventListener('change', function() {
+                const selectedTbId = this.value;
+                const gefiltert = kapitelData[selectedTbId] || [];
+
+                endSelect.innerHTML = '<option value="">– bitte wählen –</option>';
+                
+                if (gefiltert.length > 0) {
+                    startDisplay.innerHTML = `<option>${gefiltert[0].name}</option>`;
+                    startHidden.value = gefiltert[0].zeile;
+
+                    gefiltert.forEach(k => {
+                        const opt = new Option(k.name, k.zeile);
+                        endSelect.add(opt);
+                    });
+                    endSelect.value = gefiltert[gefiltert.length - 1].zeile;
+                } else {
+                    startDisplay.innerHTML = '';
+                    startHidden.value = '';
+                }
+            });
+        }
+    });
+</script>
+
+    {% include 'includes/footer_physik.html' %} 
+{% endblock %}

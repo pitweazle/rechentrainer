@@ -1,0 +1,111 @@
+{% extends "physik/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'physik/admin_custom.css' %}">
+
+<div class="admin-header-bar">
+    <a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
+    <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
+    <h2 style="font-size: 1.1rem; margin: 0;">Aufgabe optimieren: {{ log.aufgabe.lfd_nr }}</h2>
+</div>
+
+<div class="container-fluid mb-5">
+    <div class="error-highlight-box shadow-sm mb-4">
+        <span class="error-label">Schülerantwort (war falsch):</span>
+        <div class="py-2" style="font-size: 1.6rem; color: #d32f2f;">"{{ log.eingegebene_antwort }}"</div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="admin-card-header">Allgemeine Daten</div>
+            <div class="card-body border">
+                <div class="mb-3">
+                    <label class="form-label-admin">FRAGE:</label>
+                    <textarea name="frage" class="form-control" rows="2">{{ log.aufgabe.frage }}</textarea>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-9">
+                        <label class="form-label-admin">OFFIZIELLE ANTWORT:</label>
+                        <input type="text" name="antwort" class="form-control" value="{{ log.aufgabe.loesung }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-admin">TYP (Logik):</label>
+                        <input type="text" name="typ" class="form-control fw-bold text-primary" value="{{ log.aufgabe.typ }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="admin-card-header text-uppercase small">Optionen / Schlagworte</div>
+            <div class="table-responsive border">
+                <table class="admin-table-clean mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;" class="text-center">POS</th>
+                            <th>TEXT (Löschen = Text entfernen)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opt in log.aufgabe.optionen.all %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-secondary">{{ opt.position }}</span>
+                            <td>
+                                <input type="text" name="opt_{{ opt.id }}" 
+                                    class="form-control form-control-sm" 
+                                    value="{{ opt.text }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <tr style="background-color: #f0f8ff;">
+                            <td colspan="2" class="p-1 px-3 small text-muted fw-bold">NEUE OPTIONEN ERGÄNZEN:</td>
+                        </tr>
+
+                        {% for i in "123" %}
+                        <tr style="background-color: #f0f8ff;">
+                            <td class="text-center text-muted">+</td>
+                            <td>
+                                <input type="text" name="new_opt_{{ forloop.counter }}" 
+                                    class="form-control form-control-sm" 
+                                    placeholder="Neues Schlagwort...">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="admin-card-header">Zusatzinformationen</div>
+            <div class="card-body border">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label-admin">ANMERKUNG (INTERN):</label>
+                        <textarea name="anmerkung" class="form-control form-control-sm" rows="3">{{ log.aufgabe.anmerkung }}</textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-admin">ERKLÄRUNG (NACHHER):</label>
+                        <textarea name="erklaerung" class="form-control form-control-sm" rows="3">{{ log.aufgabe.erklaerung }}</textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-admin">HILFE (VORHER):</label>
+                        <textarea name="hilfe" class="form-control form-control-sm" rows="3">{{ log.aufgabe.hilfe }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-light border rounded d-flex gap-3">
+            <button type="submit" name="save_and_delete" class="btn btn-success px-4 fw-bold">SPEICHERN & LOG LÖSCHEN</button>
+            <button type="submit" name="just_delete" class="btn btn-outline-danger">NUR LOG LÖSCHEN (IGNORIEREN)</button>
+            <a href="{% url 'physik:fehler_liste' %}" class="btn btn-link">Abbrechen</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

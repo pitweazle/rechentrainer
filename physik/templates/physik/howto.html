@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Der Physiktrainer – Hinweise für Lehrer</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    line-height: 1.6;
+}
+
+h1 {
+    text-align: center;
+}
+
+details {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+summary {
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+details[open] {
+    background-color: #eef6ff;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Der Physiktrainer – Hinweise für Lehrer</h1>
+
+<a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
+<a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
+
+<details>
+<summary>1. Einleitung</summary>
+<p>
+Ich habe diese App entwickelt, weil ich feststellen musste, dass die Stunden, die im Curriculum für den Physikunterricht zur Verfügung stehen, nicht ausreichen, um alle relevanten Themen zu behandeln. 
+Wenn es zusätzlich an Physiklehrern/innen mangelt, fällt der Unterricht möglicherweise ganz aus.
+</p>
+<p>
+Ich hoffe, dass Schülerinnen und Schüler – oder auch Interessierte außerhalb der Schule – mit dieser App nicht nur Unterrichtsinhalte üben, sondern auch zusätzliche Themen wie Akustik, Astronomie oder Elektronik selbstständig erarbeiten können.
+</p>
+</details>
+
+<details>
+<summary>2. 4-Fächer-Lernbox</summary>
+<p>
+Der Physiktrainer basiert auf dem Prinzip der bekannten 4-Fächer-Lernbox.
+</p>
+
+<p><strong>Prinzip:</strong></p>
+<ul>
+<li>Neue Karten kommen in Fach 1.</li>
+<li>Ist die Antwort richtig → Fach 2.</li>
+<li>Ist sie falsch → bleibt in Fach 1.</li>
+<li>Von Fach 2 geht es bei richtiger Antwort in Fach 3.</li>
+<li>Bei Fehler → zurück in Fach 1.</li>
+<li>Wird Fach 4 erfolgreich bearbeitet, sitzt der Stoff.</li>
+</ul>
+
+<p>
+Die Karten aus Fach 1 sollten täglich wiederholt werden.
+</p>
+</details>
+
+<details>
+<summary>3. Wie funktioniert die App?</summary>
+
+<p>
+Der Lernerfolg wird farbig dargestellt:
+</p>
+
+<ul>
+<li><strong>Grün:</strong> Alle Aufgaben korrekt gelöst</li>
+<li><strong>Gelb:</strong> In Bearbeitung</li>
+<li><strong>Rot:</strong> Noch zu bearbeiten</li>
+</ul>
+
+<p>
+Zusätzlich gibt es drei Schwierigkeitsstufen: leicht, mittel und profi.
+Die Stufen „mittel“ und „profi“ können ausgeblendet werden.
+</p>
+
+<p>
+Wichtig: Falsche Eingaben werden nicht gespeichert. Gespeichert wird nur der Fortschritt in höhere Fächer.
+</p>
+
+</details>
+
+<details>
+<summary>4. Eigene Aufgaben ergänzen</summary>
+
+<p>
+Freigeschaltete Nutzer können selbstständig Aufgaben in die Datenbank einpflegen.
+</p>
+
+<h3>Aufgabentypen (Auswahl)</h3>
+<ul>
+<li><strong>Typ=w</strong> → Wahr/Falsch</li>
+<li><strong>Typ=a</strong> → Multiple Choice</li>
+<li><strong>Typ=p</strong> → Bildauswahl</li>
+<li><strong>Typ=r</strong> → Rechenaufgabe mit Zufallswerten</li>
+<li><strong>Typ=Ganzzahl</strong> → Exakte Zahlenprüfung</li>
+<li><strong>Typ=1X, 2Y, 3Z</strong> → Textprüfung mit unterschiedlicher Fehlertoleranz (Fuzzy-Logik)</li>
+<li><strong>Typ=2u5 / 2o3</strong> → Boolesche Verknüpfungen von Begriffen</li>
+</ul>
+
+<p>
+Bei Falscheingaben werden Erklärung und Lösung angezeigt.
+</p>
+
+<h3>Lehrertools</h3>
+<ul>
+<li><strong>Inventar:</strong> Übersicht aller Aufgaben</li>
+<li><strong>Im Admin bearbeiten:</strong> Aufgabe ändern</li>
+<li><strong>Fehleranalyse:</strong> Sammlung falscher Eingaben</li>
+<li><strong>Neue Aufgabe:</strong> Neue Aufgabe erstellen</li>
+<li><strong>Aufgabe direkt aufrufen:</strong> Direktanzeige</li>
+
+</ul>
+
+</details>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% extends "layout_physik.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'physik/admin_custom.css' %}">
+
+<div class="admin-header-bar d-flex justify-content-between align-items-center">
+    <h2 style="font-size: 1.1rem; margin: 0;">Fehler-Analyse</h2>
+    <span class="badge bg-warning text-dark">{{ logs.count }} Einträge</span>
+</div>
+
+
+
+<div class="container-fluid">
+    <div class="bg-light border p-2 mb-3 shadow-sm d-flex flex-wrap gap-2 align-items-center">
+
+        <form method="GET" class="d-flex flex-wrap gap-2 w-100">
+            <input type="text" name="q" value="{{ query }}" class="form-control form-control-sm" style="width: 250px;" placeholder="Suche (Nr, Frage, Antwort)...">
+            <select name="sort" class="form-select form-select-sm" style="width: 160px;" onchange="this.form.submit()">
+                <option value="-id" {% if sort == '-id' %}selected{% endif %}>🕒 Neueste zuerst</option>
+                <option value="fachlich" {% if sort == 'fachlich' %}selected{% endif %}>📚 Nach Reihenfolge</option>
+            </select>            
+            <select name="thema" class="form-select form-select-sm" style="width: 180px;" onchange="this.form.submit()">
+                <option value="">-- Alle Themen --</option>
+                {% for t in themen %}
+                <option value="{{ t.id }}" {% if t.id == s_thema %}selected{% endif %}>{{ t.thema }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="kapitel" class="form-select form-select-sm" style="width: 180px;" onchange="this.form.submit()">
+                <option value="">-- Alle Kapitel --</option>
+                {% for k in kapitel %}
+                <option value="{{ k.id }}" {% if k.id == s_kapitel %}selected{% endif %}>{{ k.kapitel }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-sm btn-secondary">Filtern</button>
+            <a href="{% url 'physik:fehler_liste' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </form>
+    </div>
+
+    <div class="list-container shadow-sm">
+        <table class="admin-table-list">
+            <thead>
+                <tr>
+                    <th>Frage / Schülerantwort</th>
+                    <th style="width: 100px;">LFD_NR</th>
+                    <th style="width: 100px;">Typ</th>
+                    <th>Thema / Kapitel</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>
+                        <a href="{% url 'physik:fehler_edit' log.id %}" class="task-link">{{ log.aufgabe.frage|truncatechars:100 }}</a>
+                        <span class="error-preview">→ "{{ log.eingegebene_antwort }}"</span>
+                    </td>
+                    <td><span class="text-muted fw-bold">{{ log.aufgabe.lfd_nr }}</span></td>
+                    <td><span class="type-badge">{{ log.aufgabe.typ }}</span></td>
+                    <td>
+                        <div class="small text-muted text-uppercase" style="font-size: 0.65rem;">{{ log.aufgabe.thema.thema }}</div>
+                        <div class="small">{{ log.aufgabe.kapitel.kapitel|truncatechars:40 }}</div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4 text-muted">Keine passenden Fehler gefunden.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+        {% comment %} <h2 style="margin-top:0; color:#447e9b;">Referenz: Aufgabentypen</h2> {% endcomment %}
+        
+        <table class="hilfe-tabelle">
+            <thead>
+                <tr>
+                    <th>Typ</th>
+                    <th>Beispiel</th>
+                    <th>Vergleich</th>
+                    <th>Erklärung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan = "4"><b>Typen mit Texteingabe:</b></td></tr>
+                <tr><td><b>1-9</b></td><td>3</td><td>streng</td><td>Drei wörtliche, alternative Lösungen, im Lösungsfeld oder den beiden ersten Optionsfeldern.</td></tr>
+                <tr>
+                    <td><b>e</b></td>
+                    <td>Ein Amperemeter wird im Stromkreis immer in ... geschaltet, ein Voltmeter hingegen ... .</td><td>streng</td>
+                    <td>
+                        <strong>Lückentext:</strong> Erfordert die Begriffe in exakter Reihenfolge, getrennt durch ein Semikolon (<b>;</b>).<br>
+                        Die einzelnen Lösungen kommen in die Optionsfelder, dabei können die Felder 2, 3 usw. selbst Alternativbegriffe (getrennt durch Semikolon) enthalten. 
+                        Ein kompletter Lösungssatz steht im Lösungsfeld.
+                    </td>
+                </tr>
+                <tr><td><b>.o.</b></td><td>3o5</td><td>fuzzy</td><td>Einer der Inhalte in Spalten 3 bis 5 muss vorkommen.</td></tr>
+                <tr><td><b>.u.</b></td><td>2u4</td><td>fuzzy</td><td>Inhalte der Spalten 2 bis 4 müssen vorkommen.</td></tr>
+                <tr><td><b>.u.o.</b></td><td>(2u3)o(3u4)</td><td>fuzzy</td><td>Begriffe in 2+3 ODER 3+4 müssen vorkommen.</td></tr>
+
+                <tr><td colspan = "4"><b>Ergänzungen  bei Typen mit Texteingabe:</b></td></tr>
+                <tr><td><b>.f.</b></td><td>1o2f3o4</td><td>streng</td><td>Werte hinter ‚f‘ sind falsch.</td></tr>
+                <tr><td><b>eY</b></td><td>1Y</td><td>-</td><td>statt streng werden leichte Schreibfehler akzeptiert (fuzzy)</td></tr>
+                <tr><td><b>(2o3)Z</b></td><td>1Z</td><td>-</td><td>auch größere Schreibfehler werden akzeptiert</td></tr>
+                <tr><td><b>2X</b></td><td>1Z</td><td>-</td><td>bei 'streng' wird groß/Kleinschreibung akzepiert, fuzzy wird zu streng</td></tr>
+
+                <tr><td colspan = "4"><b>Rechenaufgaben:</b></td></tr>
+
+                <tr>
+                    <td><b>r</b></td>
+                    <td colspan="2">Was ist das Produkt aus <b>{0}</b> und <b>{1}</b>?</td>
+                    <td>
+                        Die Platzhalter werden durch Werte aus den Feldern <strong>2, 3...</strong> ersetzt. Diese Felder enthalten <strong>Zahlentupel</strong> (mit Semikolon <b>;</b> getrennt). 
+                        Der <i>aktive_index</i> bestimmt, welcher Wert aus dem Tupel und welche <strong>Lösung</strong> gewählt wird.<br>
+                        Oft ist es sinnvoll, hier in den optionalen Feldern "Formelzeichen" und "Einheit" Werte einzutragen, diese werden vor bzw. hinter dem Eingabefeld angezeigt.
+                    </td>
+                </tr>
+                <tr><td colspan = "4"><b>Auswahl:</b></td></tr>
+
+                <tr><td><b>w</b></td><td>w,wahr,ja,j,richtig,r oder f,falsch,nein,n</td><td>-</td><td>Wahr oder falsch (Lösung steht in Lösung)</td></tr>
+                <tr><td><b>a</b></td><td>-</td><td>-</td><td>Aus einer Liste muss die richtige Lösung angeklickt werden. Eintrag in 'Lösung' ist richtig.</td></tr>
+                <tr><td><b>p</b></td><td>p</td><td>-</td><td>Bilder-Klick: Grafiken zufällig, Index .1 ist richtig.</td></tr>
+
+                <tr><td colspan = "4"><b>Ergänzungen  bei allen Typen:</b></td></tr>
+                <tr><td colspan = "4"><b>Unabhängig vom Aufgabentyp können ein oder auch mehrere Bilder bzw. Videoclips zur Illusration hochgeladen werden.</b></td></tr>
+
+
+            </tbody>
+        </table>

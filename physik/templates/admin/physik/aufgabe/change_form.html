@@ -1,0 +1,121 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<datalist id="typ-vorschlaege">
+  {% for t in adminform.form.typ_datalist %}
+    <option value="{{ t }}">
+  {% endfor %}
+</datalist>
+
+<style>
+    /* Styles für dein Hilfe-System */
+    #hilfe-overlay {
+        display: none; 
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.7); 
+        z-index: 9999;
+    }
+    #hilfe-popup {
+        display: none; 
+        position: fixed; 
+        top: 50%; left: 50%; 
+        transform: translate(-50%, -50%); 
+        background: white; 
+        padding: 20px; 
+        z-index: 10000; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+        border-radius: 10px; 
+        width: 85%; 
+        max-width: 900px; 
+        max-height: 85vh; 
+        overflow-y: auto;
+    }
+    .hilfe-tabelle {
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 15px;
+    }
+    .hilfe-tabelle th, .hilfe-tabelle td {
+        border: 1px solid #ddd; 
+        padding: 8px; 
+        text-align: left;
+        font-size: 13px;
+    }
+    .hilfe-tabelle th { background-color: #f4f4f4; }
+    .hilfe-close {
+        cursor: pointer; 
+        float: right; 
+        font-size: 24px; 
+        font-weight: bold; 
+        color: #888;
+    }
+</style>
+{% endblock %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+
+    <div id="hilfe-overlay" onclick="closePhysikHelp()"></div>
+    <div id="hilfe-popup">
+        <span class="hilfe-close" onclick="closePhysikHelp()">&times;</span>
+        <h2 id="hilfe-titel" style="margin-top:0; color:#447e9b;">Hilfe</h2>
+        <div id="hilfe-content">
+            </div>
+    </div>
+
+    <div id="text-typ" style="display:none;">
+        {% include "admin/physik/popups/hilfe_typen.html" %}
+    </div>
+
+    <div id="text-lfd_nr" style="display:none;">
+        {% include "admin/physik/popups/hilfe_lfd_nr.html" %}
+    </div>
+
+    <script>
+        // 1. Funktion zum Öffnen: Sie nimmt den Inhalt aus den versteckten Divs
+        function openPhysikHelp(thema) {
+            const titelMap = {
+                'typ': 'Referenz: Aufgabentypen',
+                'lfd_nr': 'Hilfe: Laufende Nummer & IDs'
+            };
+            
+            const content = document.getElementById('text-' + thema).innerHTML;
+            document.getElementById('hilfe-titel').innerText = titelMap[thema];
+            document.getElementById('hilfe-content').innerHTML = content;
+            
+            document.getElementById('hilfe-popup').style.display = 'block';
+            document.getElementById('hilfe-overlay').style.display = 'block';
+        }
+
+        function closePhysikHelp() {
+            document.getElementById('hilfe-popup').style.display = 'none';
+            document.getElementById('hilfe-overlay').style.display = 'none';
+        }
+
+        // 2. Buttons automatisch neben die Labels setzen
+        document.addEventListener('DOMContentLoaded', function() {
+            function addHelpBtn(fieldName, key) {
+                // Django-Admin nutzt für Labels meist .field-<name>
+                const label = document.querySelector('.field-' + fieldName + ' label');
+                if (label) {
+                    const btn = document.createElement('span');
+                    btn.innerHTML = " 💡Referenz";
+                    btn.style = "cursor:pointer; margin-left:5px; font-size:14px; vertical-align:middle;";
+                    btn.title = "Hilfe öffnen";
+                    btn.onclick = function(e) {
+                        e.preventDefault();
+                        openPhysikHelp(key);
+                    };
+                    label.appendChild(btn);
+                }
+            }
+
+            // Hier definierst du, welches Feld welchen Hilfetext bekommt
+            addHelpBtn('typ', 'typ');
+            addHelpBtn('lfd_nr', 'lfd_nr');
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,88 @@
+<style>
+    .detail-container { max-width: 900px; margin: 2rem auto; }
+    .question-section { background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .solution-banner { 
+        background-color: #d1e7dd; 
+        border-left: 5px solid #198754; 
+        padding: 15px; 
+        margin: 20px 0;
+        font-size: 1.2rem;
+        color: #0f5132;
+    }
+    .option-box { 
+        padding: 10px 15px; 
+        border: 1px solid #dee2e6; 
+        border-radius: 6px; 
+        margin-bottom: 6px; 
+        background-color: #f9f9f9;
+    }
+    .option-is-correct { border-color: #198754; background-color: #f0fff4; }
+    .label-sm { font-size: 0.75rem; color: #6c757d; font-weight: bold; text-transform: uppercase; }
+</style>
+
+<div class="container detail-container">
+    <div class="mb-3 no-print">
+        <a href="{% url 'physik:aufgaben_liste' %}" class="btn btn-outline-secondary btn-sm">← Zurück zur Liste</a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="label-sm text-light opacity-75">Aufgabe Nr.</span>
+                    <h2 class="mb-0">{{ aufgabe.lfd_nr }}</h2>
+                </div>
+                <div class="text-end">
+                    <span class="label-sm text-light opacity-75">Aufgabentyp</span>
+                    <div class="fs-5">{{ aufgabe.typ }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="question-section border-bottom">
+                <span class="label-sm">Fragestellung:</span>
+                <p class="lead mt-2" style="white-space: pre-wrap;">{{ aufgabe.frage }}</p>
+            </div>
+
+            <div class="solution-banner shadow-sm">
+                <span class="label-sm d-block">Das ist die richtige Lösung:</span>
+                <strong class="fs-4">{{ aufgabe.loesung }}</strong>
+            </div>
+
+            {% if aufgabe.optionen.exists %}
+            <div class="my-4">
+                <span class="label-sm">Antwortoptionen:</span>
+                <div class="mt-2">
+                    {% for opt in aufgabe.optionen.all|dictsort:"position" %}
+                    <div class="option-box {% if opt.text == aufgabe.loesung %}option-is-correct{% endif %}">
+                        <strong>{{ opt.position }}.</strong> {{ opt.text }}
+                        {% if opt.text == aufgabe.loesung %}
+                            <span class="badge bg-success float-end">Korrekt</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="label-sm">Hilfestellung:</span>
+                    <p class="mt-1 text-muted">{{ aufgabe.hilfe|default:"Keine Hilfe vorhanden." }}</p>
+                </div>
+                <div class="col-md-6">
+                    <span class="label-sm">Erklärung:</span>
+                    <p class="mt-1 text-muted">{{ aufgabe.erklaerung|default:"Keine Begründung vorhanden." }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between bg-light align-items-center">
+            <small class="text-muted">Kapitel: {{ aufgabe.kapitel.kapitel }}</small>
+            <a href="/admin/physik/aufgabe/{{ aufgabe.id }}/change/" class="btn btn-warning btn-sm">Im Admin bearbeiten</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,124 @@
+/* physik/static/physik/admin_custom.css */
+
+/* Der typische Django-Admin Header */
+.admin-header-bar {
+    background-color: #417690;
+    color: #f5dd5d;
+    padding: 10px 20px;
+    margin: -24px -24px 20px -24px; /* Kompensiert Container-Padding */
+}
+
+/* Die Tabelle im Admin-Stil */
+.admin-table-clean {
+    font-size: 0.85rem;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+.admin-table-clean thead th {
+    background-color: #79aec8;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 8px 10px;
+    border: none;
+}
+
+.admin-table-clean tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.admin-table-clean td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+/* Die "Hugo"-Warnbox für falsche Antworten */
+.error-highlight-box {
+    background-color: #fff8e1;
+    border-left: 5px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.error-label {
+    color: #856404;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: block;
+}
+
+/* Spezifisch für die Fehler-Liste */
+.list-container {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.admin-table-list {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.admin-table-list thead th {
+    background-color: #79aec8; /* Django Blau */
+    color: white;
+    text-align: left;
+    padding: 8px 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.admin-table-list tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.admin-table-list tbody tr:nth-child(even) {
+    background-color: #f8f8f8; /* Alternierende Zeilen */
+}
+
+.admin-table-list tbody tr:hover {
+    background-color: #f1f1f1; /* Hover-Effekt */
+}
+
+.admin-table-list td {
+    padding: 10px;
+    vertical-align: top;
+}
+
+/* Styling für die Links in der Liste */
+.task-link {
+    color: #447e9b;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.task-link:hover {
+    color: #036;
+    text-decoration: underline;
+}
+
+/* Badge für den Typ */
+.type-badge {
+    background: #e1f5fe;
+    color: #01579b;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-weight: bold;
+    border: 1px solid #b3e5fc;
+}
+
+/* Die rote Fehler-Vorschau in der Liste */
+.error-preview {
+    color: #ba2121;
+    font-style: italic;
+    display: block;
+    margin-top: 4px;
+    font-family: 'Courier New', Courier, monospace;
+}
