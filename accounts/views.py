@@ -1,3 +1,4 @@
+import os
 import string
 import random
 import json
@@ -5,6 +6,8 @@ import logging
 
 import base64
 import requests
+
+import urllib.parse
 
 from datetime import date, datetime, timedelta, time
 
@@ -46,10 +49,43 @@ from core.views import soll_berechnung
 
 from mathetests.models import Test
 
+# Konfigurationswerte
+EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
+EDUPLACES_CLIENT_SECRET = os.getenv("EDUPLACES_CLIENT_SECRET")
+EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
+OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
+
 # Dies ist die Startseite:
 def index(req):
     if 'duell' in req.session:
         del req.session['duell']
+
+
+    # Prüfen, ob Eduplaces uns einen Login aufzwingen will (Launch aus dem Portal)
+    iss = req.GET.get('iss')
+    login_hint = req.GET.get('login_hint')
+    
+    if iss and login_hint:
+        # Parameter für den Eduplaces-Login zusammenbauen und direkt dorthin weiterleiten
+        auth_endpoint, _, _ = get_oidc_endpoints() # Deine bestehende Funktion
+        
+        state = secrets.token_urlsafe(16)
+        req.session['eduplaces_state'] = state
+        
+        scopes = "openid role groups school schooling_level school_name school_location school_official_id"
+        
+        params = {
+            'response_type': 'code',
+            'client_id': EDUPLACES_CLIENT_ID,
+            'redirect_uri': EDUPLACES_REDIRECT_URI,
+            'scope': scopes,
+            'state': state,
+            'login_hint': login_hint, # Wichtig: Den Hint von Eduplaces direkt durchreichen!
+        }
+        
+        redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
+        return redirect(redirect_url)
+
     anz_angemeldet = Profil.objects.count()
     anz_lehrer = User.objects.filter(groups__name="Lehrer").count()
     anz_aktuell = Protokoll.objects.count()
@@ -431,11 +467,6 @@ def simulation_moodle(request):
     """)
 
 # Eduplaces:
-# Konfigurationswerte
-EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
-EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
-OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
-
 def get_oidc_endpoints():
   """Lädt die Discovery-Endpunkte von Eduplaces."""
   try:
