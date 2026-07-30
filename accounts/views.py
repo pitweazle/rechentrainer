@@ -41,8 +41,8 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Ort, Lerngruppe, Geloescht, wahl_kurs, LoginLog
-from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
+from .models import Profil, Schule, Ort, Lerngruppe, Geloescht, wahl_kurs, LoginLog, wahl_kurs
+from .services import get_today, check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
 from core.models import Zaehler, Profil, Kategorie, Protokoll, EwigeBestenliste
 from core.views import soll_berechnung
@@ -59,7 +59,6 @@ OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configu
 def index(req):
     if 'duell' in req.session:
         del req.session['duell']
-
 
     # Prüfen, ob Eduplaces uns einen Login aufzwingen will (Launch aus dem Portal)
     iss = req.GET.get('iss')
@@ -101,11 +100,74 @@ def index(req):
     tests = []
     if req.user.is_authenticated:
         profil = Profil.objects.select_related("gruppe").filter(user=req.user).first()
+        if not profil or not profil.mathe or not profil.sj:
+            return redirect('rt_profil_ergaenzen')
         if profil and profil.gruppe_id:
             tests = Test.objects.filter(gruppe = profil.gruppe).order_by("-created_at")
     else:
         profil = None
-    return render(req, "index.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_gesamt, "tests": tests, })
+    return render(req, "mathe_start.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_gesamt, "tests": tests, })
+
+def rt_profil_ergaenzen(request):
+    user = request.user
+    # Profil holen oder anlegen, falls noch keines da ist
+    profil, created = Profil.objects.get_or_create(user=user)
+    
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'registrierung_speichern':
+            # Namen auslesen (falls leer gewesen, wurden sie im Template als required abgefragt)
+            eingabe_vorname = request.POST.get('reg_vorname', '').strip()
+            eingabe_nachname = request.POST.get('reg_nachname', '').strip()
+            
+            if eingabe_vorname:
+                profil.vorname = eingabe_vorname
+            if eingabe_nachname:
+                profil.nachname = eingabe_nachname
+                
+            profil.klasse = request.POST.get('reg_klasse')
+            
+            reg_jg = int(request.POST.get('reg_jg'))
+            reg_kurs = request.POST.get('reg_kurs')
+            reg_email = request.POST.get('reg_email')
+            
+            # E-Mail am Standard-User aktualisieren, falls angegeben
+            if reg_email and not user.email:
+                user.email = reg_email
+                user.save()
+            
+            # 1. Mathe-Berechtigung aktivieren & Stufe berechnen
+            profil.mathe = True  
+            profil.stufe = stufe_aus_jg(reg_jg, reg_kurs)
+            
+            # 2. Schuljahr und Halbjahr über deine Service-Funktion setzen
+            sj, hj = name_hj()
+            profil.sj = sj
+            profil.hj = hj
+            
+            # Zeitstempel für den Beginn setzen, falls noch leer
+            if not profil.schuljahr_ab and not profil.halbjahr_ab:
+                heute_datum = get_today()
+                if hj == 1:
+                    profil.schuljahr_ab = timezone.now()
+                else:
+                    profil.halbjahr_ab = timezone.now()
+                    
+            profil.save()
+            ergebnis = check_hj(request)
+            if ergebnis:
+                return ergebnis
+            return redirect('ort_wahl')
+
+    # Kontext für das Template bereitstellen
+    context = {
+        'moodle_vorname': profil.vorname,   
+        'moodle_nachname': profil.nachname, 
+        'moodle_email': user.email,
+        'kurs_choices': wahl_kurs.choices,
+        'titel': "Registrierung abschließen",
+    }
+    return render(request, 'SSO/sso_registrierung.html', context)
 
 def datenschutz(req):
     return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})
@@ -153,6 +215,7 @@ def registrieren(req):
                     profil.schuljahr_ab = timezone.now()
                 else:
                     profil.halbjahr_ab = timezone.now()
+                profil.mathe = True
                 profil.save()
                 return redirect(ort_wahl)
     context = {'reg_form' : reg_form, 'profil_form' : profil_form, 'datenschutz': datenschutz,'titel': "Registrieren"} 
@@ -312,7 +375,6 @@ def moodle_entscheidung(request):
             }
 
             return render(request, 'SSO/sso_registrierung.html', context)
-
         # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
@@ -675,11 +737,8 @@ def eduplaces_zuordnung(request):
         rolle = 'Lehrer'
     else:
         rolle = 'Schüler'
-
     is_lehrer = (rolle == 'Lehrer')
-
     error_message = None
-
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
 
@@ -865,7 +924,7 @@ def account_loeschen(req):
         user = User.objects.get(pk = req.user.id)
     except:
         messages.error(req, "Es ist kein Benutzer angemeldet!!")        
-        return render(req, 'index.html')        
+        return render(req, 'mathe_start.html')        
     if req.method == 'POST':
         bestaetigt = req.POST.get('bestaetigt', 'off')        
         if bestaetigt == "on":
@@ -874,7 +933,7 @@ def account_loeschen(req):
             messages.success(req, "Dein Account und alle deine Daten wurden gelöscht!")
         else:
             messages.error(req, "Löschen wurde abgebrochen!")
-        return render(req, 'index.html')
+        return render(req, 'mathe_start.html')
     return render(req, 'admin/account_loeschen.html', context={'titel': "Account löschen",}) 
 
 def naechstes_halbjahr(req):

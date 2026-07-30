@@ -43,9 +43,16 @@ class Profil_Form(forms.ModelForm):
             'jg': 'Jahrgang',
         }
         fields = ('vorname', 'nachname', 'klasse', 'jg', 'kurs',)
-        widgets = {'jg': forms.TextInput(attrs={'size': 2}), 
-        'klasse': forms.TextInput(attrs={'size': 10}),
+        widgets = {
+            'jg': forms.TextInput(attrs={'size': 2}), 
+            'klasse': forms.TextInput(attrs={'size': 10}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Im Rechentrainer sind jg und kurs Pflichtfelder:
+        self.fields['jg'].required = True
+        self.fields['kurs'].required = True
 
 class Profil_Aendern_Form(forms.ModelForm):
     class Meta:

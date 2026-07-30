@@ -57,8 +57,7 @@
       <label style="display: block; margin-bottom: 5px;">E-Mail-Adresse (optional):</label>
       <input type="email" name="reg_email" id="emailInput" value="{{ moodle_email }}" placeholder="z.B. max@schule.de" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
       <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
-        Ohne E-Mail kannst du dich später <strong>nur über Moodle</strong> anmelden.
-      </p>
+        Wenn du keine E-Mail-Adresse angibst, kannst du, wenn du dein Passwort vergisst, kein neues Passwort anfordern.</p>
     </div>
 
     <button type="submit" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Account erstellen</button>
@@ -71,7 +70,7 @@
     const email = document.getElementById('emailInput').value.trim();
     if (email === '') {
       alert(
-        "Hinweis: Ohne E-Mail-Adresse kannst du dich später NUR über Moodle anmelden.\n\n" +
+        "Hinweis: Ohne E-Mail-Adresse kannst du kein neues Passwort anfordern.\n\n" +
         "Mit einer E-Mail könntest du:\n" +
         "- Dein Passwort zurücksetzen\n" +
         "- Dich direkt beim Rechentrainer anmelden (ohne Moodle)"

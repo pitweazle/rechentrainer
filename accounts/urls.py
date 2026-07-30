@@ -8,6 +8,7 @@ urlpatterns = [
 
     # Anmeldung & Registrierung
     path("anmelden/", views.anmelden, name="anmelden"),
+    path("rt_profil_ergaenzen/", views.rt_profil_ergaenzen, name="rt_profil_ergaenzen"),
     path("login/", views.anmelden, name="login"), 
     path('logout/', views.custom_logout, name='logout'),
     path("registrieren/", views.registrieren, name="registrieren"),

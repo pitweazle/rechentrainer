@@ -96,6 +96,9 @@ class Profil(models.Model):
     schule = models.ForeignKey(Schule, related_name='schule1', null= True, blank=True, on_delete = models.SET_NULL)
     zweite_schule = models.ForeignKey(Schule, related_name='schule2',null= True, blank=True, on_delete = models.SET_NULL)
 
+    mathe = models.BooleanField(default=False)
+    physik = models.BooleanField(default=False)
+
     # nur für Physik
     physikgruppe = models.ForeignKey(Physikgruppe, null=True, blank=True, on_delete=models.SET_NULL, related_name='profile')
 

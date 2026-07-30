@@ -717,7 +717,7 @@ def duell_neue_gruppe(req):
             jg = gruppe_form.cleaned_data['jg']
             gruppe, created = Lerngruppe.objects.get_or_create(name = neu, lehrer = req.user, jg = jg, temp = True)
             if not created:
-                return render(req, 'duell_light/duell_light.html.html', context={'gruppe': gruppe, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
+                return render(req, 'duell_light/duell_light.html', context={'gruppe': gruppe, 'titel': "Ein Gruppe mit diesem Name existiert schon!",})                 
             return render(req, 'lehrer/meine_gruppen.html', context={'gruppen': gruppen, 'titel': "neue Lerngruppe wurde angelegt"}) 
     return render(req, 'duell_light/duell_light.html', context={'gruppe_neu': gruppe_temp, 'titel': "neue Lerngruppe anlegen",})
 

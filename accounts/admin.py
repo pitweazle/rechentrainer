@@ -46,19 +46,20 @@ class PhysikGruppeFilter(admin.RelatedFieldListFilter):
 
 class ProfilAdmin(admin.ModelAdmin):
     list_filter = (
+        'mathe', 
+        'physik',
         ('gruppe', MatheGruppeFilter),
         ('physikgruppe', PhysikGruppeFilter),
     )
     search_fields = ['vorname', 'nachname']
-    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'get_mathegruppe_name', 'physikgruppe')
-
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'mathe', 'physik', 'get_mathegruppe_name', 'physikgruppe')
     # Übersichten in der Tabellenansicht (Admin-Liste)
     list_display = ('pk', 'vorname', 'nachname', 'klasse', 'get_mathegruppe_name', 'physikgruppe')
 
     # Feldgruppen für die Detailansicht eines Profils
     fieldsets = [
         ('Allgemein', {
-            'fields': [('vorname', 'nachname', 'klasse')]
+            'fields': [('vorname', 'nachname', 'klasse'),('mathe', 'physik')]
         }),
         ('Mathe-Spezifisch', {
             'fields': [('gruppe', 'jg', 'kurs', 'stufe', 'sj', 'hj', 'katmax')],
