@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.messages import get_messages
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -155,7 +155,7 @@ def index(request):
         t_stats["sum_em"] = t_stats["s1"]["total"] + t_stats["s2"]["total"]
         t_stats["sum_all"] = t_stats["sum_em"] + t_stats["s3"]["total"]
         tb_totals[tb.id] = t_stats
-    return render(request, "physik/index.html", {
+    return render(request, "physik/physik_start.html", {
             "themenbereiche": themenbereiche,
             "counts": counts,
             "tb_totals": tb_totals, # <--- WICHTIG: Muss in den Context!
@@ -182,13 +182,49 @@ def anmelden(req):
         titel = "Username und/oder Passwort stimmen nicht"
     form = Login_Form()
     context = {'form' : form, 'titel': titel} 
-    return render(req, 'physik:anmelden.html', context)
+    return render(req, 'physik/anmelden.html', context)
+
+def registrieren(req):
+    reg_form = Register_Form()
+    profil_form = Profil_Form()  
+    datenschutz = ""
+    
+    if req.method == 'POST':
+        datenschutz = req.POST.get('datenschutz', 'off')
+        reg_form = Register_Form(req.POST)
+        profil_form = Profil_Form(req.POST) 
+        
+        if datenschutz == "on":
+            if reg_form.is_valid() and profil_form.is_valid(): 
+                user = reg_form.save()
+                profil = profil_form.save(commit=False)
+                profil.user = user
+                profil.save()
+                
+                # Direkt einloggen
+                username = reg_form.cleaned_data['username']
+                password = reg_form.cleaned_data['password1']
+                user = authenticate(username=username, password=password)
+                login(req, user)
+                
+                if req.POST.get('cookie_loeschen') == 'on':
+                    req.session.set_expiry(0)
+                    
+                return redirect('physik:index')
+                
+    context = {
+        'reg_form': reg_form, 
+        'profil_form': profil_form, 
+        'datenschutz': datenschutz,
+        'titel': "Registrieren"
+    } 
+    return render(req, 'physik/registrieren.html', context)
 
 def force_logout(request):
     logout(request)
-    return redirect('/')
+    return redirect('physik:index')
 
-@login_required
+@login_required(login_url='/physik/anmelden/')
 def update_view_settings(request, slug):
     try:
         # Sicherer Weg: Profil über das Model suchen
@@ -213,8 +249,8 @@ def update_view_settings(request, slug):
         return JsonResponse({"status": "ok", "versteckt": versteckt})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
-    
-@login_required
+
+@login_required(login_url='/physik/anmelden/')    
 def update_row_settings(request, slug):
     profil, created = Profil.objects.get_or_create(user=request.user)
     einstellungen = profil.physik_einstellungen if isinstance(profil.physik_einstellungen, dict) else {}
@@ -232,7 +268,7 @@ def update_row_settings(request, slug):
     
     return JsonResponse({'status': 'ok', 'versteckt': einstellungen['zeilen_versteckt']})
     
-@login_required
+@login_required(login_url='/physik/anmelden/')
 def aufgaben(request):
     anmerkung_fuer_template = ""
     
@@ -505,7 +541,7 @@ def aufgaben(request):
             if request.session.get("warte_auf_weiter") else "",
     })
 
-@user_passes_test(ist_mitarbeiter)
+@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def aufgaben_liste(request):
     themenbereiche = ThemenBereich.objects.all()
     thema_id = request.GET.get('thema')
@@ -537,13 +573,13 @@ def aufgaben_liste(request):
         'suche': suche, # Damit das Suchwort im Feld stehen bleibt
     })
 
-@user_passes_test(ist_mitarbeiter)
+@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def aufgabe_einstellungen(request, pk):
     # Holt die Aufgabe oder zeigt 404, wenn die ID nicht existiert
     aufgabe = get_object_or_404(Aufgabe, pk=pk)
     return render(request, 'physik/aufgabe_einstellungen.html', {'aufgabe': aufgabe})
 
-@user_passes_test(ist_mitarbeiter)
+@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def call(request, lfd_nr):
     try:
         aufgabe = Aufgabe.objects.get(lfd_nr=lfd_nr)
@@ -561,7 +597,7 @@ def call(request, lfd_nr):
 
     return redirect("physik:aufgaben")
 
-@user_passes_test(ist_mitarbeiter)
+@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def fehler_liste(request):
     # Basis-Queryset
     logs = FehlerLog.objects.all().select_related('aufgabe__thema', 'aufgabe__kapitel')
@@ -609,7 +645,7 @@ def fehler_liste(request):
     }
     return render(request, 'physik/fehler_liste.html', context)
 
-@user_passes_test(ist_mitarbeiter)
+@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def fehler_edit(request, log_id):
     # Wir holen das log trotzdem am Anfang, um sicherzugehen, dass es existiert
     log = get_object_or_404(FehlerLog, id=log_id)

@@ -31,16 +31,6 @@ else:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
-
-# STATIC_URL = "/static/"
-# if DEBUG:
-#     STATICFILES_DIRS = [BASE_DIR / "static"]
-# else:
-#     # Weg mit dem Umweg über 'staticfiles'
-#     STATIC_ROOT = "/home/rt/html/static/"
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = getenv("DEBUG", "0") == "1"
@@ -168,8 +158,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #CRISPY_TEMPLATE_PACK="bootstrap4"
 
-LOGIN_REDIRECT_URL = "index"
-LOGOUT_REDIRECT_URL = "index" 
+# LOGIN_REDIRECT_URL = "index"
+# LOGOUT_REDIRECT_URL = "index" 
 
 ADMINS = [("Rechentrainer", "info@rechentrainer.app"),]
 MANAGERS = ADMINS

@@ -1,0 +1,32 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div style="max-width: 600px; margin: 40px auto; padding: 20px;">
+  <h2>Anmeldung Physiktrainer</h2>
+  
+  <form method="POST" action="{% url 'physik:anmelden' %}">
+    {% csrf_token %}
+    <table>    
+      {{ form.as_table }}
+    </table>
+    
+    <p style="font-size: 0.9em; color: #555;">Achte darauf, dass auch beim Benutzernamen zwischen großen und kleinen Buchstaben unterschieden wird!</p>
+    
+    <div style="margin: 15px 0;">
+      <input type="checkbox" name="cookie_loeschen" id="cookie_loeschen"> 
+      <label for="cookie_loeschen">Ich arbeite nicht an meinem eigenen Gerät, bitte Cookies nach der Abmeldung löschen</label>
+    </div>
+    
+    <input type="submit" value="Anmelden" class="btn">
+  </form>
+
+  <hr style="margin: 30px 0;">
+
+  <p>Du hast dein Passwort vergessen? 
+    <button><a href="{% url 'physik:password_reset' %}" style="text-decoration: none;">hier klicken</a></button>
+  </p>
+  <p>Du hast noch keinen Account? 
+    <button><a href="{% url 'physik:registrieren' %}" style="text-decoration: none;">hier klicken</a></button>
+  </p>
+</div>
+{% endblock %}

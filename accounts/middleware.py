@@ -5,13 +5,14 @@ class PlatformSwitchMiddleware:
     def __call__(self, request):
         host = request.get_host()
         
-        # Hier schaut die Middleware, woher der Request kommt:
-        # Entweder das Wort "physik" steht in der URL/Domain, 
-        # oder der Pfad beginnt mit /physik/
         if 'physik' in host or request.path.startswith('/physik/'):
             request.platform = 'physik'
+            # Setze die Login-URL dynamisch für den Physiktrainer
+            request.login_url = '/physik/anmelden/'
         else:
             request.platform = 'mathe'
+            # Setze die Login-URL für den Rechentrainer (passe den Pfad an, falls er anders heißt)
+            request.login_url = '/anmelden/'  # oder wie immer der Mathe-Login heißt
             
         response = self.get_response(request)
         return response

@@ -20,13 +20,6 @@ body {
     padding: 2rem;
 }
 
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-}
-
 .rot {
     background-color: rgba(255, 0, 0, 0.6);
 }
@@ -67,6 +60,14 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.header {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
 header, footer {

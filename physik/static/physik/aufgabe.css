@@ -1,93 +1,93 @@
 .task-dialog {
-  width: 460px;
-  max-width: 90vw;
-  margin: 40px auto;
-  border: 1px solid #b6b3b3;
-  padding: 10px;
-  background: #eee;
+    width: 460px;
+    max-width: 90vw;
+    margin: 40px auto;
+    border: 1px solid #b6b3b3;
+    padding: 10px;
+    background: #eee;
 }
 
 .task-header {
-  border-bottom: 1px solid #444;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
+    border-bottom: 1px solid #444;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
 }
 
 .task-title {
-  font-weight: bold;
-  font-size: 1.1em;
+    font-weight: bold;
+    font-size: 1.1em;
 }
 
 .task-kapitel {
-  font-size: 0.9em;
-  color: #333;
+    font-size: 0.9em;
+    color: #333;
 }
 
 .task-frage {
-  background: #fff;
-  border: 1px solid #333;
-  padding: 10px;
-  min-height: 60px;
-  margin-bottom: 10px;
+    background: #fff;
+    border: 1px solid #333;
+    padding: 10px;
+    min-height: 60px;
+    margin-bottom: 10px;
 }
 
 .task-antwort {
-  background: #dde;
-  border: 1px solid #333;
-  padding: 10px;
-  min-height: 60px;
-  margin-bottom: 10px;
+    background: #dde;
+    border: 1px solid #333;
+    padding: 10px;
+    min-height: 60px;
+    margin-bottom: 10px;
 }
 
 .task-option {
-  margin: 5px 0;
+    margin: 5px 0;
 }
 
 .task-input {
-  width: 300px;
-  font-size: 1.2em;
+    width: 300px;
+    font-size: 1.2em;
 }
 
 .task-image {
-  max-width: 48%;  /* Sorgt dafür, dass zwei Bilder nebeneinander passen */
-  max-height: 250px; /* Verhindert, dass ein einzelnes Bild zu hoch wird */
-  width: auto;     /* WICHTIG: Nicht mehr stur auf 100% erzwingen */
-  height: auto;
-  object-fit: contain;
-  display: block;
-  border: 1px solid #aaa;
-  background: white;
+    max-width: 48%;  /* Sorgt dafür, dass zwei Bilder nebeneinander passen */
+    max-height: 250px; /* Verhindert, dass ein einzelnes Bild zu hoch wird */
+    width: auto;     /* WICHTIG: Nicht mehr stur auf 100% erzwingen */
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border: 1px solid #aaa;
+    background: white;
 }
 
 /* Neue Klasse für das einsame Bild */
 .task-image.single-image {
-  max-width: 100%;   /* Darf die volle Breite nutzen */
-  max-height: 600px; /* Erlaubt deutlich mehr Höhe */
-  width: auto;       /* Behält Proportionen bei */
+    max-width: 100%;   /* Darf die volle Breite nutzen */
+    max-height: 600px; /* Erlaubt deutlich mehr Höhe */
+    width: auto;       /* Behält Proportionen bei */
 }
 
 .task-images {
-  display: flex;
-  flex-wrap: wrap;   /* Falls die Bilder mal zu breit werden, brechen sie um */
-  gap: 10px;
-  width: 100%;
-  justify-content: center; /* Zentriert die Bilder, wenn nur eines da ist */
-  box-sizing: border-box;
-  margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;   /* Falls die Bilder mal zu breit werden, brechen sie um */
+    gap: 10px;
+    width: 100%;
+    justify-content: center; /* Zentriert die Bilder, wenn nur eines da ist */
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 .task-buttons {
-  display: flex !important;
-  justify-content: flex-start !important;
-  gap: 10px;
+    display: flex !important;
+    justify-content: flex-start !important;
+    gap: 10px;
 }
 
 .task-buttons button {
-  margin: 0;
+    margin: 0;
 }
 
 .task-image.selected {
-  outline: 3px solid blue;
+    outline: 3px solid blue;
 }
 
 .task-message {
