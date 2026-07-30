@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import  Kategorie, Auswahl, Protokoll, Zaehler, Hilfe, Sachaufgabe
+from .models import  Kategorie, Auswahl, Protokoll, Zaehler, Hilfe, Sachaufgabe, EwigeBestenliste
 
 class AuswahlInline(admin.TabularInline):
     model = Auswahl
@@ -36,6 +36,21 @@ admin.site.register(Hilfe, HilfeAdmin)
 
 admin.site.register(Zaehler, ZaehlerAdmin)
 admin.site.register(Protokoll, ProtokollAdmin)
+
+@admin.register(EwigeBestenliste)
+class EwigeBestenlisteAdmin(admin.ModelAdmin):
+    # Damit du in der Übersicht direkt sortieren kannst
+    list_display = ('name', 'schule', 'lehrer', 'punkte', 'letztes_datum')
+    
+    # Damit du bei vielen Einträgen schnell suchen kannst
+    search_fields = ('name', 'schule', 'lehrer')
+    
+    # Damit du direkt nach Punkten oder Datum filtern kannst
+    list_filter = ('schule', 'lehrer', 'letztes_datum')
+    
+    # Optional: Damit die Liste automatisch absteigend nach Punkten sortiert ist
+    ordering = ('-punkte',)
+
 
 
 

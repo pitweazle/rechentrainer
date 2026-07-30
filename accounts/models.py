@@ -1,3 +1,7 @@
+import uuid
+import secrets
+import string
+
 from django.db import models
 from django import forms
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -14,10 +18,6 @@ class Ort(models.Model):
     class Meta:
         verbose_name_plural = 'Orte'
     
-import uuid
-import secrets
-import string
-
 class Schule(models.Model):
     ort = models.ForeignKey(Ort, null=True, on_delete=models.SET_NULL)
     schulname = models.CharField(max_length=50)
@@ -69,6 +69,18 @@ class wahl_kurs(models.TextChoices):
     C_KURS = 'C', 'C-Kurs'
     FOERDER = 'i', 'Förderschüler/in'
     BERUF = 'Z', 'Ausbildung/Berufsschule'
+
+class Physikgruppe(models.Model):
+    lehrer = models.ForeignKey(User, null=False, on_delete=models.CASCADE, related_name='physikgruppen')
+    name = models.CharField(max_length=15)
+    erstellt_am = models.DateField(auto_now_add=True)
+        
+    class Meta:
+        verbose_name_plural = 'Physikgruppen'
+        unique_together = ['lehrer', 'name']
+    
+    def __str__(self):
+        return f"{self.id} {self.lehrer.profil.nachname}, {self.name}"
     
 class Profil(models.Model):
     user = models.OneToOneField(User, related_name='profil', on_delete=models.CASCADE)
@@ -79,25 +91,30 @@ class Profil(models.Model):
     # ERWEITERT FÜR DEINE SSO-SYSTEME
     eduplaces_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     moodle_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+
     # diese Felder werden erst ausgefüllt, wenn ein Schüler seine Lerngruppe wählt
     schule = models.ForeignKey(Schule, related_name='schule1', null= True, blank=True, on_delete = models.SET_NULL)
     zweite_schule = models.ForeignKey(Schule, related_name='schule2',null= True, blank=True, on_delete = models.SET_NULL)
-    gruppe = models.ForeignKey(Lerngruppe, null= True, blank=True, on_delete = models.SET_NULL, related_name='profile')
 
-    jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)])
-    kurs= models.CharField(max_length=1, choices=wahl_kurs.choices, default=wahl_kurs.E_KURS,)
+    # nur für Physik
+    physikgruppe = models.ForeignKey(Physikgruppe, null=True, blank=True, on_delete=models.SET_NULL, related_name='profile')
 
-    stufe = models.PositiveSmallIntegerField(default=5)
-    sj = models.SmallIntegerField(default=0)
-    hj = models.SmallIntegerField(default=0)
+    # nur für Mathe:
+    gruppe = models.ForeignKey(Lerngruppe, null=True, blank=True, on_delete=models.SET_NULL, related_name='profile')
+
+    jg = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(13)], null=True, blank=True)
+    kurs = models.CharField(max_length=1, choices=wahl_kurs.choices, default=wahl_kurs.E_KURS, null=True, blank=True)
+
+    stufe = models.PositiveSmallIntegerField(default=5, null=True, blank=True)
+    sj = models.SmallIntegerField(default=0, null=True, blank=True)
+    hj = models.SmallIntegerField(default=0, null=True, blank=True)
 
     schuljahr_ab = models.DateTimeField(null=True, blank=True)
     halbjahr_ab = models.DateTimeField(null=True, blank=True)
 
-    katmax = models.IntegerField(default=0)                                 # die Zeilennummer die höchsten gewählten Aufgabenkategorie
-    details = models.BooleanField(default = True)
+    katmax = models.IntegerField(default=0, null=True, blank=True)                               # die Zeilennummer die höchsten gewählten Aufgabenkategorie
+    details = models.BooleanField(default=True)
 
-    #voreinst = models.JSONField(blank=True, null=True, default=dict)
     keine_hj_frage = models.BooleanField(default = False)
 
     historische_aufgaben_richtig = models.PositiveIntegerField(default=0)
@@ -123,29 +140,6 @@ class Geloescht(models.Model):
         verbose_name_plural = 'Gelöscht'
     def __str__(self):
         return f"{self.erstellt_am}: {self.benutzername}: {self.grund}: {self.text}"
-
-class EwigeBestenliste(models.Model):
-    profil_id = models.IntegerField(unique=True, null=True, blank=True)
-    name = models.CharField(max_length=100)
-    lehrer = models.CharField(max_length=100)
-    schule = models.CharField(max_length=100)
-    
-    # Leistungs-Daten
-    punkte = models.IntegerField(default=0)
-    letztes_datum = models.DateField()
-    
-    class Meta:
-        # Sorgt dafür, dass es nur einen Eintrag pro Schüler-Kombination gibt
-        unique_together = ('name', 'lehrer', 'schule')
-        ordering = ['-punkte']
-        indexes = [
-            models.Index(fields=['punkte']),
-        ]
-        verbose_name = "Ewige Bestenliste"
-        verbose_name_plural = "Ewige Bestenliste"
-
-    def __str__(self):
-        return f"{self.name} ({self.punkte} Punkte)"
 
 class LoginLog(models.Model):
     zeitpunkt = models.DateTimeField(auto_now_add=True)

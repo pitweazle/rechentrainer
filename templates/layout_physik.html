@@ -1,6 +1,14 @@
-{% load static %}
-<header>
-    <div class="navbar">
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Physiktrainer{% endblock %}</title>
+    {% load static %}
+    {% block css_files %}{% endblock %}
+</head>
+
+<body>
+    <nav style="background: #eee; padding: 10px; margin-bottom: 20px;">
         <a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
         <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
         
@@ -14,8 +22,16 @@
                 </button>
             </form>
         {% else %}
-            <a href="{% url 'login' %}?next={% url 'physik:anmelden' %}" style="color: green;">Anmelden</a>
+            <a href="{% url 'login' %}?next={% url 'physik:index' %}" style="color: green;">Anmelden</a>
         {% endif %}
-    </div> 
-</header>
+    </nav>
 
+    <header>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

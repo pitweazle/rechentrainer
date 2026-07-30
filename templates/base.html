@@ -13,9 +13,9 @@
     <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
     {% if user.is_authenticated %}
         <span>Eingeloggt als: <strong>{{ user.username }}</strong></span> 
-        <a href="/accounts/logout/" >Abmelden</a>
+        <a href="/physik/logout/" >Abmelden</a>
     {% else %}
-        <a href="/accounts/login/" >Anmelden</a>
+        <a href="/physik/login/" >Anmelden</a>
     {% endif %}
 
 </nav>

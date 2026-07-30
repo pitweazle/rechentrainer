@@ -1,5 +1,6 @@
 from pathlib import Path
 from os import getenv
+import socket
 from dotenv import load_dotenv
 import os
 
@@ -7,14 +8,41 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+# 4. Weiche für Uberspace-Erkennung
+ON_UBERSPACE = 'caelum' in socket.gethostname()
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# 7. Static & Media (Saubere Struktur für PT und RT gemeinsam)
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+if ON_UBERSPACE:
+    # Jetzt direkt in den echten html-Ordner (ohne 'staticfiles' Umweg)
+    STATIC_ROOT = '/home/rt/html/static/'
+    MEDIA_ROOT = '/home/rt/html/media/'
+else:
+    # Lokal auf Windows bleibt alles beim Alten
+    STATIC_ROOT = BASE_DIR / "staticfiles" 
+    MEDIA_ROOT = BASE_DIR / "media"
+    
+    # WICHTIG für lokal, damit zentrale statische Dateien gefunden werden:
+    STATICFILES_DIRS = [
+        BASE_DIR / "static",
+    ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
+
+# STATIC_URL = "/static/"
+# if DEBUG:
+#     STATICFILES_DIRS = [BASE_DIR / "static"]
+# else:
+#     # Weg mit dem Umweg über 'staticfiles'
+#     STATIC_ROOT = "/home/rt/html/static/"
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG", "0") == "1"
 
 # Application definition
@@ -23,7 +51,6 @@ ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
 CSRF_TRUSTED_ORIGINS = getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,10 +66,6 @@ INSTALLED_APPS = [
     'mathetests',
     'duell',
 ]
-#    'register.apps.RegisterConfig'
-#LOGIN_URL = '/benutzer/anmelden/'
-#LOGOUT_URL = '/benutzer/abmelden/'
-#LOGIN_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,10 +100,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rechentrainer.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DB_ENGINE = getenv("DB_ENGINE", "django.db.backends.sqlite3")
 
 if DB_ENGINE == "django.db.backends.sqlite3":
@@ -140,15 +160,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-
-
-STATIC_URL = "/static/"
-if DEBUG:
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-else:
-    # Weg mit dem Umweg über 'staticfiles'
-    STATIC_ROOT = "/home/rt/html/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

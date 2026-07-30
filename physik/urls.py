@@ -7,6 +7,7 @@ app_name = "physik"
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path("anmelden/", views.anmelden, name="anmelden"),
     path('accounts/logout/', views.force_logout, name='logout'),
     path('view-einstellung/<str:slug>/', views.update_view_settings, name='update_view_settings'),
     path('row-einstellung/<str:slug>/', views.update_row_settings, name='update_row_settings'),
@@ -18,9 +19,6 @@ urlpatterns = [
     path("howto/", views.howto, name="howto"),
     path("call/<str:lfd_nr>/", views.call, name="call"),
     path('accounts/', include('django.contrib.auth.urls')),
-
     path("datenschutz/", views.datenschutz, name="datenschutz"),
-
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

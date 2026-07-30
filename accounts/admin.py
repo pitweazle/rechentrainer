@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht, EwigeBestenliste, LoginLog
+from .models import   Ort, Schule, Profil, Lerngruppe, Geloescht, LoginLog
 
 class GruppeFilter(admin.SimpleListFilter):
     title = 'Lerngruppe'
@@ -34,16 +34,50 @@ class LerngruppeAdmin(admin.ModelAdmin):
     )
     ordering = ('-id',)
 
+class MatheGruppeFilter(admin.RelatedFieldListFilter):
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
+        self.title = 'Mathegruppe'
+
+class PhysikGruppeFilter(admin.RelatedFieldListFilter):
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
+        self.title = 'Physikgruppe'
+
 class ProfilAdmin(admin.ModelAdmin):
-    list_filter=('gruppe',  )
+    list_filter = (
+        ('gruppe', MatheGruppeFilter),
+        ('physikgruppe', PhysikGruppeFilter),
+    )
     search_fields = ['vorname', 'nachname']
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'get_mathegruppe_name', 'physikgruppe')
 
-    # fieldsets = [
-    #     (None,   {'fields': [('vorname', 'nachname', 'klasse', 'gruppe') ]}),
-    #             ('weitere Infos', {'fields': ['schuljahr_ab', 'halbjahr_ab'], 'classes': ['collapse']}),        
-    # ]
+    # Übersichten in der Tabellenansicht (Admin-Liste)
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'get_mathegruppe_name', 'physikgruppe')
 
-    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'gruppe') 
+    # Feldgruppen für die Detailansicht eines Profils
+    fieldsets = [
+        ('Allgemein', {
+            'fields': [('vorname', 'nachname', 'klasse')]
+        }),
+        ('Mathe-Spezifisch', {
+            'fields': [('gruppe', 'jg', 'kurs', 'stufe', 'sj', 'hj', 'katmax')],
+            'classes': ['collapse']  # Eingeklappt, damit es nicht stört
+        }),
+        ('Zeiträume & Weitere Infos', {
+            'fields': ['schuljahr_ab', 'halbjahr_ab', 'details', 'keine_hj_frage'], 
+            'classes': ['collapse']
+        }),
+        ('Physik-Spezifisch', {
+            'fields': ['physikgruppe'],
+            'classes': ['collapse']
+        }),
+    ]
+
+    # Hilfsmethode, um die Spalte in der Liste im Admin "Mathegruppe" zu nennen
+    @admin.display(description='Mathegruppe', ordering='gruppe')
+    def get_mathegruppe_name(self, obj):
+        return obj.gruppe
 
 class BenutzerAdmin(UserAdmin):
     list_display = ('id', 'username', 'profil_nachname', 'profil_vorname', 'profil_gruppe', 'date_joined', 'last_login')
@@ -81,19 +115,6 @@ class LoginLogAdmin(admin.ModelAdmin):
     list_display = ('zeitpunkt', 'consumer_key', 'user_name', 'rolle')
     ordering = ('-zeitpunkt',)
 
-@admin.register(EwigeBestenliste)
-class EwigeBestenlisteAdmin(admin.ModelAdmin):
-    # Damit du in der Übersicht direkt sortieren kannst
-    list_display = ('name', 'schule', 'lehrer', 'punkte', 'letztes_datum')
-    
-    # Damit du bei vielen Einträgen schnell suchen kannst
-    search_fields = ('name', 'schule', 'lehrer')
-    
-    # Damit du direkt nach Punkten oder Datum filtern kannst
-    list_filter = ('schule', 'lehrer', 'letztes_datum')
-    
-    # Optional: Damit die Liste automatisch absteigend nach Punkten sortiert ist
-    ordering = ('-punkte',)
 
 admin.site.unregister(User)
 admin.site.register(User,  BenutzerAdmin)  

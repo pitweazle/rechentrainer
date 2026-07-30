@@ -203,3 +203,14 @@ class Sachaufgabe(models.Model):
         return f"{self.lfd_nr}: {self.text}, {self.ab_jg}"
     class Meta:
         verbose_name_plural = 'Sachaufgaben'
+
+class EwigeBestenliste(models.Model):
+    profil_id = models.IntegerField(unique=True, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    lehrer = models.CharField(max_length=100)
+    schule = models.CharField(max_length=100)
+    
+    # Leistungs-Daten
+    punkte = models.IntegerField(default=0)
+    letztes_datum = models.DateField()
+ 

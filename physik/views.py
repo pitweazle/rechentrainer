@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.messages import get_messages
 
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test, login_required
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -13,6 +13,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
 
 from accounts.models import Profil
+from accounts.forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 
 from .models import ThemenBereich, Kapitel, Aufgabe, FehlerLog, AufgabeOption, Protokoll
 
@@ -23,7 +24,7 @@ from django.http import JsonResponse
 def ist_mitarbeiter(user):
     if not user.is_authenticated:
         return False
-    return user.groups.filter(name='Physiklehrer').exists()
+    return user.groups.filter(name='Mitarbeiter').exists()
 
 def berechne_sperre(total, f1_bestand, f2_bestand, ziel_fach, f3_bestand=0):
     ready = True
@@ -160,7 +161,28 @@ def index(request):
             "tb_totals": tb_totals, # <--- WICHTIG: Muss in den Context!
             "kapitel_map": kapitel_map,
             'profil': profil,
+            "ist_mitarbeiter": ist_mitarbeiter(request.user),
         })
+
+def anmelden(req):
+    titel = "Anmelden" 
+    if req.method == 'POST':
+        #get_expire_at_browser_close()
+        form = Login_Form(req.POST)
+        if  form.is_valid ():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']            
+            user = authenticate(req, username=username, password=password)
+
+            if user is not None:
+                login(req, user)
+
+                return redirect('physik:index')
+
+        titel = "Username und/oder Passwort stimmen nicht"
+    form = Login_Form()
+    context = {'form' : form, 'titel': titel} 
+    return render(req, 'physik:anmelden.html', context)
 
 def force_logout(request):
     logout(request)

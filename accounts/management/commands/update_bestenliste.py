@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Sum, Min
-from accounts.models import EwigeBestenliste, Profil
-from core.models import Protokoll
+from accounts.models import Profil
+from core.models import Protokoll, EwigeBestenliste
 
 class Command(BaseCommand):
     help = 'Einmaliger Migrations-Befehl zur Verknüpfung der alten Bestenliste mit Profil-IDs.'

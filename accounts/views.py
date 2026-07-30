@@ -41,10 +41,10 @@ from .forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen
 from .forms import Profil_Aendern_Form, Ort_Form, Lehrer_Aendern_Form, Gruppe_Neu_Form, Gruppe_Aendern_Form, Schueler_Aendern_Form 
 from .forms import ProtokollFilter_neu, Start_Datum, End_Datum
 
-from .models import Profil, Schule, Ort, Lerngruppe, Geloescht, wahl_kurs, EwigeBestenliste, LoginLog
+from .models import Profil, Schule, Ort, Lerngruppe, Geloescht, wahl_kurs, LoginLog
 from .services import check_hj, stufe_aus_jg, sub_daten_loeschen, name_hj, name_next_hj, quote_farbe
 
-from core.models import Zaehler, Profil, Kategorie, Protokoll
+from core.models import Zaehler, Profil, Kategorie, Protokoll, EwigeBestenliste
 from core.views import soll_berechnung
 
 from mathetests.models import Test
