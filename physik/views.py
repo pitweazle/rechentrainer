@@ -1,9 +1,12 @@
 import random
 
-from django.http import HttpResponse
+from dotenv import load_dotenv
+
+from django.http import HttpResponse, JsonResponse
 
 from django.contrib import messages
 from django.contrib.messages import get_messages
+from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -18,8 +21,6 @@ from accounts.forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, 
 from .models import ThemenBereich, Kapitel, Aufgabe, FehlerLog, AufgabeOption, Protokoll
 
 from .bewertung import bewerte_aufgabe
-
-from django.http import JsonResponse
 
 def ist_mitarbeiter(user):
     if not user.is_authenticated:
