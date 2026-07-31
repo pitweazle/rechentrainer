@@ -142,7 +142,7 @@ class Geloescht(models.Model):
         verbose_name = 'Gelöscht'
         verbose_name_plural = 'Gelöscht'
     def __str__(self):
-        return f"{self.erstellt_am}: {self.benutzername}: {self.grund}: {self.text}"
+        return f"{self.erstellt_am}: {self.benutzername}: {self.grund}"
 
 class LoginLog(models.Model):
     zeitpunkt = models.DateTimeField(auto_now_add=True)

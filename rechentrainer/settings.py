@@ -4,21 +4,23 @@ import socket
 from dotenv import load_dotenv
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
-# 4. Weiche für Uberspace-Erkennung
+# Weiche für Uberspace-Erkennung
 ON_UBERSPACE = 'caelum' in socket.gethostname()
 
-# 7. Static & Media (Saubere Struktur für PT und RT gemeinsam)
+# Static & Media (Saubere Struktur für PT und RT gemeinsam)
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 if ON_UBERSPACE:
     # Jetzt direkt in den echten html-Ordner (ohne 'staticfiles' Umweg)
-    STATIC_ROOT = '/home/rt/html/static/'
-    MEDIA_ROOT = '/home/rt/html/media/'
+    # STATIC_ROOT = '/home/rt/html/static/'
+    # MEDIA_ROOT = '/home/rt/html/media/'
+    STATIC_ROOT = '/var/www/virtual/rt/html/static/'
+    MEDIA_ROOT = '/var/www/virtual/rt/html/media/'
+
 else:
     # Lokal auf Windows bleibt alles beim Alten
     STATIC_ROOT = BASE_DIR / "staticfiles" 
@@ -115,9 +117,6 @@ else:
         }
     }
 
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -134,9 +133,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.0/topics/i18n/
-
 LANGUAGE_CODE = 'de-de'
 
 TIME_ZONE = 'Europe/Berlin'
@@ -147,19 +143,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#CRISPY_TEMPLATE_PACK="bootstrap4"
-
-# LOGIN_REDIRECT_URL = "index"
-# LOGOUT_REDIRECT_URL = "index" 
 
 ADMINS = [("Rechentrainer", "info@rechentrainer.app"),]
 MANAGERS = ADMINS

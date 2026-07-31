@@ -188,30 +188,26 @@ def registrieren(req):
     reg_form = Register_Form()
     profil_form = Profil_Form()  
     datenschutz = ""
-    
     if req.method == 'POST':
         datenschutz = req.POST.get('datenschutz', 'off')
         reg_form = Register_Form(req.POST)
         profil_form = Profil_Form(req.POST) 
-        
         if datenschutz == "on":
             if reg_form.is_valid() and profil_form.is_valid(): 
                 user = reg_form.save()
                 profil = profil_form.save(commit=False)
                 profil.user = user
+                profil.physik = True
                 profil.save()
-                
                 # Direkt einloggen
                 username = reg_form.cleaned_data['username']
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
                 login(req, user)
-                
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
-                    
                 return redirect('physik:index')
-                
+
     context = {
         'reg_form': reg_form, 
         'profil_form': profil_form, 
