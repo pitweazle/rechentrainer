@@ -121,6 +121,7 @@ def vergleich_api(index, aufgabe, antwort_norm, antwort_original):
         result = response.json()
 
         answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip().lower()
+        print(f"[KI-DEBUG] Frage: {aufgabe.frage[:50]}... | Lösung: {text[:30]}... | Antwort: {antwort_original[:30]}... | KI-Ergebnis: {answer}")
         return (answer == "stimmt"), None
 
     except Exception as e:
