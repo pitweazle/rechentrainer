@@ -194,26 +194,26 @@ class FehlerLog(models.Model):
     class Meta:
         ordering = ['-zeitpunkt']
 
-# @receiver(post_save, sender=Aufgabe) 
-# def benachrichtige_mich(sender, instance, created, **kwargs):
-#     status = "NEU ERSTELLT" if created else "GEÄNDERT"
+@receiver(post_save, sender=Aufgabe) 
+def benachrichtige_mich(sender, instance, created, **kwargs):
+    status = "NEU ERSTELLT" if created else "GEÄNDERT"
     
-#     # Wir holen uns die lfd_nr von der Instanz
-#     # Falls lfd_nr mal leer sein sollte, nutzen wir .get oder einen Fallback
-#     nummer = getattr(instance, 'lfd_nr', 'Unbekannt')
+    # Wir holen uns die lfd_nr von der Instanz
+    # Falls lfd_nr mal leer sein sollte, nutzen wir .get oder einen Fallback
+    nummer = getattr(instance, 'lfd_nr', 'Unbekannt')
 
-#     betreff = f"PT-Info: Aufgabe Nr. {nummer} {status}"
+    betreff = f"PT-Info: Aufgabe Nr. {nummer} {status}"
     
-#     nachricht = f"Die Aufgabe mit der laufenden Nummer {nummer} wurde {status.lower()}.\n\n"
-#     # Der Link braucht für Django intern meist trotzdem die ID (instance.id), 
-#     # da die Admin-URLs auf der Primärschlüssel-ID basieren.
-#     nachricht += f"Link zur Aufgabe: https://physiktrainer.app/admin/physik/aufgabe/{instance.id}/change/"
-#     empfaenger = ['info@physiktrainer.app'] 
+    nachricht = f"Die Aufgabe mit der laufenden Nummer {nummer} wurde {status.lower()}.\n\n"
+    # Der Link braucht für Django intern meist trotzdem die ID (instance.id), 
+    # da die Admin-URLs auf der Primärschlüssel-ID basieren.
+    nachricht += f"Link zur Aufgabe: https://physiktrainer.app/admin/physik/aufgabe/{instance.id}/change/"
+    empfaenger = ['info@physiktrainer.app'] 
 
-#     send_mail(
-    #     betreff,
-    #     nachricht,
-    #     'info@physiktrainer.app', # Hier jetzt die Artfiles-Adresse
-    #     ['info@physiktrainer.app'],
-    #     fail_silently=False, 
-    # )
+    send_mail(
+        betreff,
+        nachricht,
+        'info@physiktrainer.app', # Hier jetzt die Artfiles-Adresse
+        ['info@physiktrainer.app'],
+        fail_silently=False, 
+    )
