@@ -1,7 +1,6 @@
 from difflib import SequenceMatcher
 import re
 from .models import Protokoll, FehlerLog
-
 import requests
 import os
 from dotenv import load_dotenv
@@ -62,14 +61,72 @@ def vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, ratio):
         return True, None
 
     # 2. Wort-für-Wort Fuzzy Check (Damit Tippfehler in langen Sätzen erkannt werden)
-    # Wir trennen den Satz an allen Nicht-Wort-Zeichen
     woerter_im_satz = re.findall(r'\w+', ist_satz)
-    
+
     for wort in woerter_im_satz:
         if SequenceMatcher(None, soll, wort).ratio() >= ratio:
             return True, f"Fast richtig – gemeint war: {text}"
 
     return False, None
+
+# NEUE FUNKTION: Vergleich mit Mistral-API für logische Ausdrücke (o/u)
+def vergleich_api(index, aufgabe, antwort_norm, antwort_original):
+    """
+    Nutzt die Mistral-API, um eine Schülerantwort zu überprüfen.
+    Wird nur für logische Ausdrücke (o/u) verwendet.
+    Falls die API nicht verfügbar ist, fällt es auf vergleich_fuzzy zurück.
+    """
+    if index == 1:
+        text = aufgabe.loesung
+    else:
+        opts = list(aufgabe.optionen.order_by("position"))
+        pos = index - 2
+        if pos < 0 or pos >= len(opts):
+            return False, None
+        text = opts[pos].text
+
+    if not text:
+        return False, None
+
+    try:
+        api_url = os.getenv("MISTRAL_API_URL", "https://api.mistral.ai/v1/chat/completions")
+        api_key = os.getenv("MISTRAL_API_KEY")
+
+        if not api_key:
+            # Fallback: Nutze Fuzzy-Logik, falls kein API-Key vorhanden
+            return vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, 0.8)
+
+        prompt = f"""
+        Frage: {aufgabe.frage}
+        Mögliche Lösung: {text}
+        Schülerantwort: {antwort_original}
+
+        Antworte **nur** mit "stimmt" oder "stimmt nicht". Keine weiteren Erklärungen.
+        """
+
+        payload = {
+            "model": "mistral-medium",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.0,
+            "max_tokens": 10,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.post(api_url, json=payload, headers=headers)
+        response.raise_for_status()
+        result = response.json()
+
+        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip().lower()
+        return (answer == "stimmt"), None
+
+    except Exception as e:
+        print(f"[API-Fehler] {e}")
+        # Fallback: Nutze Fuzzy-Logik, falls API nicht verfügbar
+        return vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, 0.8)
 
 # ===========================================================
 # HAUPTFUNKTION (Bewerte Aufgabe)
@@ -78,44 +135,42 @@ def vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, ratio):
 def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antwort=None, session=None):
     ergebnis = None
     typ_roh = (aufgabe.typ or "").strip()
-    
+
     # Fallback für Tests
     if not text_antwort and user_antwort:
         text_antwort = user_antwort
-        
+
     norm = "".join(text_antwort.split()) if text_antwort else ""
-    
+
     # Flags bereinigen
     typ_rein = typ_roh.replace("X", "").replace("Y", "").replace("Z", "").strip()
-    
+
     # WICHTIG: Erkennung ob logischer Ausdruck (o/u) oder reine Zahl
     ist_logisch = 'o' in typ_rein or 'u' in typ_rein
     is_pure_number = typ_rein.isdigit()
 
     # X-Flag: Case Sensitivity
-    # Bei reinen Zahlen ist X (case-sensitiv) Standard (False), bei Texten umgekehrt
     if is_pure_number:
-        case_sensitiv = ("X" not in typ_roh) 
+        case_sensitiv = ("X" not in typ_roh)
     else:
         case_sensitiv = ("X" in typ_roh)
 
     # Fuzzy-Aktivierung (Y, Z oder automatisch bei o/u)
     fuzzy_aktiv = False
     ratio = 0.8
-    if "Y" in typ_roh: 
+    if "Y" in typ_roh:
         fuzzy_aktiv = True
         ratio = 0.8
     elif "Z" in typ_roh:
         fuzzy_aktiv = True
         ratio = 0.65
     elif ist_logisch:
-        fuzzy_aktiv = True # Logische Ausdrücke erlauben immer Fuzzy
-        ratio = 0.8
+        # Für logische Ausdrücke nutzen wir die API
+        fuzzy_aktiv = False  # API ersetzt Fuzzy
 
     typ = typ_rein
 
     # --- A. Spezial-Typen (r, p, w, a, e) ---
-    # (Hier gekürzt: Deine bestehenden Funktionen bewerte_bildauswahl etc. bleiben gleich)
     if typ == "r":
         ergebnis = bewerte_rechnen(aufgabe, text_antwort, request)
     elif "p" in typ:
@@ -125,7 +180,6 @@ def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antw
     elif "a" in typ:
         ergebnis = bewerte_liste(aufgabe, text_antwort)
     elif "l" in typ:
-        # Die neue Lückentext-Weiche
         ergebnis = bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv, ratio)
 
     # --- B. Text-Parser (Der entscheidende Teil) ---
@@ -146,36 +200,29 @@ def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antw
                 ergebnis = {"richtig": True, "hinweis": f_hinw or "Richtig!"}
 
     # 2. Logische Ausdrücke (1o2, 1u(2o3) etc.)
-    if not ergebnis:
-        # STRENG-CHECK
+    if not ergebnis and ist_logisch:
+        # NUTZE API FÜR LOGISCHE AUSDRÜCKE
         streng_ok, hinweis = bewerte_booleschen_ausdruck(
-            typ, aufgabe, norm, text_antwort,
-            # Bei logischen Ausdrücken ist contain=True (Teilstring-Suche)
-            lambda idx, aufg, n, o: vergleich_streng(idx, aufg, n, o, case_sensitiv, ist_logisch)
+            typ, aufgabe, norm, text_antwort, ist_logisch,
+            vergleich_api  # Hier wird die API genutzt
         )
         if streng_ok:
             ergebnis = {"richtig": True, "hinweis": "Richtig!"}
-
-        # FUZZY-CHECK (wenn streng nicht gereicht hat)
-        if not ergebnis and fuzzy_aktiv:
-            fuzzy_ok, f_hinw = bewerte_booleschen_ausdruck(
-                typ, aufgabe, norm, text_antwort,
-                lambda idx, aufg, n, o: vergleich_fuzzy(idx, aufg, n, o, ratio)
-            )
-            if fuzzy_ok:
-                ergebnis = {"richtig": True, "hinweis": f_hinw or "Fast richtig!"}
+        else:
+            # Falls API "stimmt nicht" zurückgibt, versuche Fuzzy als Fallback
+            if fuzzy_aktiv:
+                fuzzy_ok, f_hinw = bewerte_booleschen_ausdruck(
+                    typ, aufgabe, norm, text_antwort, ist_logisch,
+                    lambda idx, aufg, n, o: vergleich_fuzzy(idx, aufg, n, o, ratio)
+                )
+                if fuzzy_ok:
+                    ergebnis = {"richtig": True, "hinweis": f_hinw or "Fast richtig!"}
 
     # --- C. Protokollierung & FehlerLog (Bleibt gleich) ---
-    # ... (Dein Code für Protokoll.objects.create / delete)
-    
     if ergebnis is None:
         ergebnis = {"richtig": False, "hinweis": "Leider falsch."}
 
-    # Fehlerlogging
     if not ergebnis.get("richtig") and text_antwort:
-        # Hier prüfen wir, ob wir nicht bei 'w' oder 'a' sind, falls du nur Freitext loggen willst
-        # Aber meistens ist es gut, alles Falsche zu sehen
-        from .models import FehlerLog
         FehlerLog.objects.get_or_create(
             aufgabe=aufgabe,
             eingegebene_antwort=text_antwort.strip()
@@ -186,7 +233,7 @@ def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antw
 # ===========================================================
 # PARSER
 # ===========================================================
-def bewerte_booleschen_ausdruck(typ, aufgabe, antwort_norm, antwort_original, vergleich):
+def bewerte_booleschen_ausdruck(typ, aufgabe, antwort_norm, antwort_original, ist_logisch, vergleich):
     tokens = []
     i = 0
     while i < len(typ):
@@ -237,40 +284,37 @@ def bewerte_booleschen_ausdruck(typ, aufgabe, antwort_norm, antwort_original, ve
         nonlocal pos
         tok = peek()
         if not tok: return False, None
-        
+
         if tok[0] == "(":
             eat("(")
             res = expr()
             eat(")")
             return res
-        
+
         if tok[0] == "NUM":
             num1 = tok[1]
             eat("NUM")
-            
+
             # PRÜFUNG: Folgt ein 'o' und eine weitere NUM? (Bereichs-Check)
             if peek() and peek()[0] == "o":
-                # Schauen, ob das Token nach dem 'o' eine Zahl ist
                 if pos + 1 < len(tokens) and tokens[pos+1][0] == "NUM":
                     eat("o") # 'o' essen
                     num2 = tokens[pos][1]
                     eat("NUM") # zweite Zahl essen
-                    
-                    #print(f" !!! BEREICH GEFUNDEN: {num1} bis {num2}")
+
                     for n in range(num1, num2 + 1):
                         ok, hinw = vergleich(n, aufgabe, antwort_norm, antwort_original)
                         if ok: return True, hinw
                     return False, None
 
-            # Normalfall
-            #print(f" -> Einzelvergleich NUM {num1}")
+            # Normalfall: Einzelvergleich
             return vergleich(num1, aufgabe, antwort_norm, antwort_original)
-        
+
         return False, None
     return expr()
 
 # ===========================================================
-# HILFSFUNKTIONEN
+# HILFSFUNKTIONEN (unverändert)
 # ===========================================================
 
 def normalisiere(text):
@@ -279,20 +323,19 @@ def normalisiere(text):
 def bewerte_rechnen(aufgabe, antwort, request):
     idx = request.session.get('aktiver_index', 0)
     loesungs_liste = [l.strip() for l in aufgabe.loesung.split(";")]
-    
+
     try:
         korrektes_ergebnis = loesungs_liste[idx]
     except:
         korrektes_ergebnis = loesungs_liste[0]
 
-    # Säuberung (Komma, Einheiten)
     import re
     ist_clean = re.sub(r'[^0-9,.]', '', antwort).replace(",", ".")
     soll_clean = re.sub(r'[^0-9,.]', '', korrektes_ergebnis).replace(",", ".")
 
     if ist_clean == soll_clean and ist_clean != "":
         return {"richtig": True, "hinweis": "Richtig gerechnet!"}
-    
+
     return {
         "richtig": False,
         "hinweis": (
@@ -303,10 +346,7 @@ def bewerte_rechnen(aufgabe, antwort, request):
     }
 
 def bewerte_bildauswahl(aufgabe, bild_antwort, session):
-    # Wir berechnen erst den Boolean
     ist_richtig = session and str(session.get("p_richtig")) == str(bild_antwort)
-    
-    # Und geben sofort das erwartete Dictionary zurück
     return {
         "richtig": ist_richtig,
         "hinweis": "Richtig!" if ist_richtig else "Leider falsch.",
@@ -314,36 +354,23 @@ def bewerte_bildauswahl(aufgabe, bild_antwort, session):
     }
 
 def bewerte_wahr_falsch(aufgabe, norm):
-    """
-    Vergleicht die Bedeutung der User-Eingabe mit der Bedeutung der Lösung in der DB.
-    'f' (User) wird gegen 'falsch' (Datenbank) korrekt als WAHR gewertet.
-    """
-
     t = (norm or "").lower()
-
-    # Lösung aus Feld 1 (antwort) radikal bereinigen (entfernt auch Punkte/Leerzeichen)
     db_lsg = "".join((aufgabe.loesung or "").lower().split()).rstrip(".")
 
-    # 2. Bedeutungsgruppen definieren
     WAHR_GRUPPE = {"w", "wahr", "ja", "j", "richtig", "r", "ok", "stimmt"}
     FALSCH_GRUPPE = {"f", "falsch", "nein", "n", "stimmtnicht"}
 
-    # 3. Bestimmen, was gemeint ist
     user_meint_wahr = t in WAHR_GRUPPE
     user_meint_falsch = t in FALSCH_GRUPPE
-    
+
     db_ist_wahr = db_lsg in WAHR_GRUPPE
     db_ist_falsch = db_lsg in FALSCH_GRUPPE
 
-    # 4. Der eigentliche Vergleich der Bedeutung
     if user_meint_wahr:
-        # User sagt 'Ja' -> Richtig, wenn DB auch 'Ja'-Bedeutung hat
         return {"richtig": db_ist_wahr, "hinweis": "Richtig!" if db_ist_wahr else "Leider falsch."}
-    
     if user_meint_falsch:
         return {"richtig": db_ist_falsch, "hinweis": "Richtig!" if db_ist_falsch else "Leider falsch."}
 
-    # 5. Pech gehabt (Quatsch geschrieben)
     return {
         "richtig": False,
         "ungueltig": True,
@@ -351,33 +378,24 @@ def bewerte_wahr_falsch(aufgabe, norm):
     }
 
 def bewerte_liste(aufgabe, antwort):
-    # 1. Die richtige Lösung (Text) holen
     korrekt_text = aufgabe.loesung
     gewaehlter_text = ""
 
-    # 2. Versuchen, den Text der Schüler-Wahl zu identifizieren
     try:
         idx = int(antwort)
         if idx == 0:
             return {"richtig": True, "hinweis": "Richtig!"}
         else:
-            # Holen der gewählten Option aus der DB für das Feedback
-            # Da 0 richtig ist, sind 1, 2, 3... die falschen Optionen
             opts = list(aufgabe.optionen.order_by("position"))
-            # -1, weil in deiner Logik 0 die Lösung ist und 1 die erste Option
-            pos = idx - 1 
+            pos = idx - 1
             if 0 <= pos < len(opts):
                 gewaehlter_text = opts[pos].text
     except (ValueError, TypeError):
-        # Fallback: Falls Text direkt gesendet wurde
         gewaehlter_text = antwort
         if normalisiere(antwort) == normalisiere(korrekt_text):
             return {"richtig": True, "hinweis": "Richtig!"}
 
-    # 3. Das "schöne" Feedback zusammenbauen
-    # Wenn wir den Text der Wahl kennen, zeigen wir ihn an
     wahl_display = f"»{gewaehlter_text}«" if gewaehlter_text else f"Nummer {antwort}"
-    
     return {
         "richtig": False,
         "hinweis": (
@@ -388,12 +406,9 @@ def bewerte_liste(aufgabe, antwort):
     }
 
 def bewerte_e_typ(typ, aufgabe, antwort, case_sensitiv, is_integer, ratio, fuzzy_aktiv):
-    # 1. Typ am 'e' splitten
     links, rechts = typ.split("e", 1)
-    
-    # 2. Eingabe trennen
     teile = re.split(r';|\.\.\.', antwort)
-    
+
     if len(teile) >= 2:
         a = teile[0].strip()
         b = teile[1].strip()
@@ -403,41 +418,33 @@ def bewerte_e_typ(typ, aufgabe, antwort, case_sensitiv, is_integer, ratio, fuzzy
     norm_a = normalisiere(a)
     norm_b = normalisiere(b)
 
-    # Hilfsfunktion für die doppelte Prüfung (Streng -> dann Fuzzy)
     def check_einzeln(t_typ, n_val, o_val):
-        # Erst Streng
-        ok, _ = bewerte_booleschen_ausdruck(t_typ, aufgabe, n_val, o_val, 
+        ok, _ = bewerte_booleschen_ausdruck(t_typ, aufgabe, n_val, o_val, False,
                     lambda idx, aufg, n, o: vergleich_streng(idx, aufg, n, o, case_sensitiv, not is_integer))
         if ok:
             return True, None
-        
-        # Dann Fuzzy (wenn erlaubt)
         if fuzzy_aktiv:
-            ok_f, hinw_f = bewerte_booleschen_ausdruck(t_typ, aufgabe, n_val, o_val, 
+            ok_f, hinw_f = bewerte_booleschen_ausdruck(t_typ, aufgabe, n_val, o_val, False,
                                 lambda idx, aufg, n, o: vergleich_fuzzy(idx, aufg, n, o, ratio))
             if ok_f:
                 return True, hinw_f
-        
         return False, None
 
     ok1, hinweis1 = check_einzeln(links, norm_a, a)
     ok2, hinweis2 = check_einzeln(rechts, norm_b, b)
-    
-    # Präzises Feedback
+
     if ok1 and ok2:
         h = "Richtig!"
         if hinweis1 or hinweis2:
             h = f"Fast richtig! (Achte auf: {hinweis1 or ''} {hinweis2 or ''})".strip()
         return True, h
-    
+
     if ok1: return False, "Der erste Begriff ist richtig, der zweite ist falsch oder fehlt."
     if ok2: return False, "Der zweite Begriff ist richtig, der erste ist falsch oder fehlt."
-    
     return False, "Beide Begriffe sind leider falsch."
-    
+
 def pruefe_verbotene_begriffe(aufgabe, norm, text_antwort):
     typ = (aufgabe.typ or "").strip()
-
     if "f" not in typ:
         return True, ""
 
@@ -445,23 +452,18 @@ def pruefe_verbotene_begriffe(aufgabe, norm, text_antwort):
     if not verbot:
         return True, ""
 
-    # prüfen, ob verbotener Ausdruck zutrifft
     kommt_vor, _ = bewerte_booleschen_ausdruck(
         verbot,
         aufgabe,
         norm,
         text_antwort,
-        lambda i, a, n, o: vergleich_streng(
-            i, a, n, o,
-            case_sensitiv=False,
-            contain=True
-        )
+        False,  # ist_logisch=False, da verbotene Begriffe nicht logisch sind
+        lambda i, a, n, o: vergleich_streng(i, a, n, o, case_sensitiv=False, contain=True)
     )
 
     if not kommt_vor:
         return True, ""
 
-    # konkreten Begriff bestimmen
     verbotener_begriff = None
     i = 0
     indices = []
@@ -476,11 +478,7 @@ def pruefe_verbotene_begriffe(aufgabe, norm, text_antwort):
             i += 1
 
     for k in indices:
-        ok, _ = vergleich_streng(
-            k, aufgabe, norm, text_antwort,
-            case_sensitiv=False,
-            contain=True
-        )
+        ok, _ = vergleich_streng(k, aufgabe, norm, text_antwort, case_sensitiv=False, contain=True)
         if ok:
             if k == 1:
                 verbotener_begriff = aufgabe.loesung
@@ -505,70 +503,56 @@ def pruefe_verbotene_begriffe(aufgabe, norm, text_antwort):
     return False, hinweis
 
 def bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv=False, ratio=0.8):
-    # 1. Einträge aus den Optionen holen (sortiert)
     optionen = aufgabe.optionen.all().order_by('position', 'id')
     anzahl_vorgabe = optionen.count()
-    print(optionen)
-    
-    # User-Eingabe am Semikolon splitten und Leerzeichen vorn/hinten entfernen
+
     user_eingaben = [a.strip() for a in user_antwort.split(";") if a.strip()]
     anzahl_user = len(user_eingaben)
-    print(anzahl_user)
 
-    # PUNKT 1: Überprüfung der Anzahl
     if anzahl_user != anzahl_vorgabe:
         return {
-            "richtig": False, 
+            "richtig": False,
             "hinweis": f"Die Anzahl der Begriffe stimmt nicht. Erwartet werden <b>{anzahl_vorgabe}</b> Begriffe (getrennt durch Semikolon), du hast <b>{anzahl_user}</b> eingegeben. Versuch es noch einmal!"
         }
 
     loesungs_vorgaben = [opt.text for opt in optionen]
-    
-    # Wir gehen die Lücken nacheinander durch
+
     for i, korrekter_text in enumerate(loesungs_vorgaben):
         user_wort = user_eingaben[i]
-        # Falls in einer Option Alternativen stehen (z.B. "Reihe; Reihenschaltung")
         erlaubte = [e.strip() for e in str(korrekter_text).split(";") if e.strip()]
-        
+
         wort_korrekt = False
         for alternative in erlaubte:
             if fuzzy_aktiv:
-                # PUNKT 3: Mit "Y" -> Case-Insensitive, ENTHALTEN und FUZZY
                 u_word_lower = user_wort.lower()
                 alt_lower = alternative.lower()
-                print(u_word_lower,alt_lower)               
-                # Check A: Ist die Lösung im Schüler-Eintrag enthalten?
-                # Check B: Ist die Fuzzy-Ähnlichkeit hoch genug?
                 similarity = SequenceMatcher(None, u_word_lower, alt_lower).ratio()
-                
                 if alt_lower in u_word_lower or similarity >= ratio:
                     wort_korrekt = True
                     break
             else:
-                # PUNKT 2: Ohne "Y" -> Exakte Übereinstimmung (Case-Sensitive, ohne Leerzeichen)
                 if user_wort == alternative:
                     wort_korrekt = True
                     break
-        
-        # Falls ein Begriff (trotz eventueller Alternativen) falsch ist:
+
         if not wort_korrekt:
-            # Wir zeigen nur die korrekten Begriffe der Optionen als Hilfe
             loesung_hilfe = " ; ".join([f"<b>{t.split(';')[0].strip()}</b>" for t in loesungs_vorgaben])
             return {
-                "richtig": False, 
+                "richtig": False,
                 "hinweis": f"Nicht ganz korrekt. Die Begriffe wären: {loesung_hilfe}"
             }
 
-    # Wenn alle Schleifen durchgelaufen sind:
     return {"richtig": True, "hinweis": "Hervorragend! Alles korrekt gelöst."}
 
-
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 def check_answer_with_api(frage, loesung, schueler_antwort):
     """
     Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
-    Gibt "stimmt" oder "stimmt nicht" zurück.
+    - Bei richtiger Antwort: Gibt "stimmt" zurück.
+    - Bei falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
+    - Bei API-Fehlern: Sendet eine E-Mail an info@physiktrainer.app.
     """
     api_url = os.getenv("MISTRAL_API_URL")
     api_key = os.getenv("MISTRAL_API_KEY")
@@ -576,19 +560,38 @@ def check_answer_with_api(frage, loesung, schueler_antwort):
     if not api_url or not api_key:
         raise ValueError("API-Key oder URL fehlt in .env")
 
+    # 🔹 NEU: Prompt für Erklärung bei falscher Antwort
     prompt = f"""
+    Analysiere die folgende Aufgabe und prüfe, ob die Schülerantwort **inhaltslich richtig** ist.
+    **Sehr wichtig:** Akzeptiere sinngemäße Antworten, auch wenn sie anders formuliert sind!
+
+    ---
     Frage: {frage}
-    Mögliche Lösung: {loesung}
+    Korrekte Lösung: {loesung}
     Schülerantwort: {schueler_antwort}
 
-    Antworte **nur** mit "stimmt" oder "stimmt nicht". Keine weiteren Erklärungen.
+    ---
+    **Anweisungen für dich (KI):**
+    1. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
+    - Antworte **nur** mit: "stimmt"
+    2. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
+    - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
+    - Beispiel: "Falsch. Die Ursache sind Frostrisse, nicht nur die Folge."
+
+    **Wichtig:**
+    - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
+    - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
+    - **Beispiel für "stimmt":**
+    - Lösung: "Frost verursacht Risse im Winter."
+    - Schülerantwort: "Im Winter entstehen durch Frost Risse in der Straße."
+    → **stimmt** (gleiche Aussage, andere Wörter).
     """
 
     payload = {
         "model": "mistral-medium",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.0,
-        "max_tokens": 10,
+        "temperature": 0.3,  # Etwas Kreativität für Erklärungen
+        "max_tokens": 50,     # Ausreichend für 25 Wörter
     }
 
     headers = {
@@ -600,8 +603,49 @@ def check_answer_with_api(frage, loesung, schueler_antwort):
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip().lower()
+        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
-        return answer if answer in ["stimmt", "stimmt nicht"] else "stimmt nicht"
+        # Falls die API "stimmt" sagt → zurückgeben
+        if answer.lower() == "stimmt":
+            return "stimmt"
+
+        # Falls die API eine Erklärung gibt → zurückgeben
+        elif answer.lower() != "stimmt nicht":
+            # Begrenze auf 25 Wörter (falls die API mehr liefert)
+            woerter = answer.split()
+            if len(woerter) > 25:
+                answer = " ".join(woerter[:25]) + "..."
+            return answer
+
+        # Fallback: Falls die API nur "stimmt nicht" sagt
+        else:
+            return "stimmt nicht"
+
+    except requests.exceptions.HTTPError as e:
+        error_msg = f"Mistral API-Fehler (HTTP {e.response.status_code}): {str(e)}"
+        if e.response.status_code in [402, 429]:
+            try:
+                send_mail(
+                    subject=f"[Physiktrainer] Mistral API-Fehler: {e.response.status_code}",
+                    message=f"Fehler bei der API-Anfrage:\n\n{error_msg}\n\nFrage: {frage}\nLösung: {loesung}\nAntwort: {schueler_antwort}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=["info@physiktrainer.app"],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+        raise RuntimeError(error_msg)
+
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"API-Fehler: {str(e)}")
+        error_msg = f"Mistral API-Netzwerkfehler: {str(e)}"
+        try:
+            send_mail(
+                subject="[Physiktrainer] Mistral API-Netzwerkfehler",
+                message=f"Netzwerkfehler bei der API-Anfrage:\n\n{error_msg}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=["info@physiktrainer.app"],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+        raise RuntimeError(error_msg)   
