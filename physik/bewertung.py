@@ -544,37 +544,108 @@ def bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv=False, ratio=0.8):
 
     return {"richtig": True, "hinweis": "Hervorragend! Alles korrekt gelöst."}
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 def check_answer_with_api(frage, loesung, schueler_antwort):
     """
     Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
-    Gibt "stimmt" oder "stimmt nicht" zurück.
+    - Bei richtiger Antwort: Gibt "stimmt" zurück.
+    - Bei falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
+    - Bei API-Fehlern: Sendet eine E-Mail an info@physiktrainer.app.
     """
-    api_url = os.getenv("MISTRAL_API_URL", "https://api.mistral.ai/v1/chat/completions")
+    api_url = os.getenv("MISTRAL_API_URL")
     api_key = os.getenv("MISTRAL_API_KEY")
+
     if not api_url or not api_key:
         raise ValueError("API-Key oder URL fehlt in .env")
+
+    # 🔹 NEU: Prompt für Erklärung bei falscher Antwort
     prompt = f"""
+    Analysiere die folgende Aufgabe und prüfe, ob die Schülerantwort **inhaltslich richtig** ist.
+    **Sehr wichtig:** Akzeptiere sinngemäße Antworten, auch wenn sie anders formuliert sind!
+
+    ---
     Frage: {frage}
-    Mögliche Lösung: {loesung}
+    Korrekte Lösung: {loesung}
     Schülerantwort: {schueler_antwort}
 
-    Antworte **nur** mit "stimmt" oder "stimmt nicht". Keine weiteren Erklärungen.
+    ---
+    **Anweisungen für dich (KI):**
+    1. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
+    - Antworte **nur** mit: "stimmt"
+    2. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
+    - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
+    - Beispiel: "Falsch. Die Ursache sind Frostrisse, nicht nur die Folge."
+
+    **Wichtig:**
+    - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
+    - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
+    - **Beispiel für "stimmt":**
+    - Lösung: "Frost verursacht Risse im Winter."
+    - Schülerantwort: "Im Winter entstehen durch Frost Risse in der Straße."
+    → **stimmt** (gleiche Aussage, andere Wörter).
     """
+
     payload = {
         "model": "mistral-medium",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.0,
-        "max_tokens": 10,
+        "temperature": 0.3,  # Etwas Kreativität für Erklärungen
+        "max_tokens": 50,     # Ausreichend für 25 Wörter
     }
+
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-   try:
+
+    try:
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip().lower()
-        return answer if answer in ["stimmt", "stimmt nicht"] else "stimmt nicht"
+        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+
+        # Falls die API "stimmt" sagt → zurückgeben
+        if answer.lower() == "stimmt":
+            return "stimmt"
+
+        # Falls die API eine Erklärung gibt → zurückgeben
+        elif answer.lower() != "stimmt nicht":
+            # Begrenze auf 25 Wörter (falls die API mehr liefert)
+            woerter = answer.split()
+            if len(woerter) > 25:
+                answer = " ".join(woerter[:25]) + "..."
+            return answer
+
+        # Fallback: Falls die API nur "stimmt nicht" sagt
+        else:
+            return "stimmt nicht"
+
+    except requests.exceptions.HTTPError as e:
+        error_msg = f"Mistral API-Fehler (HTTP {e.response.status_code}): {str(e)}"
+        if e.response.status_code in [402, 429]:
+            try:
+                send_mail(
+                    subject=f"[Physiktrainer] Mistral API-Fehler: {e.response.status_code}",
+                    message=f"Fehler bei der API-Anfrage:\n\n{error_msg}\n\nFrage: {frage}\nLösung: {loesung}\nAntwort: {schueler_antwort}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=["info@physiktrainer.app"],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+        raise RuntimeError(error_msg)
+
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"API-Fehler: {str(e)}")
+        error_msg = f"Mistral API-Netzwerkfehler: {str(e)}"
+        try:
+            send_mail(
+                subject="[Physiktrainer] Mistral API-Netzwerkfehler",
+                message=f"Netzwerkfehler bei der API-Anfrage:\n\n{error_msg}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=["info@physiktrainer.app"],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+        raise RuntimeError(error_msg)   

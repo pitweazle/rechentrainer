@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views, check_answer
+from . import views
 
 app_name = "physik"
 
@@ -16,7 +16,7 @@ urlpatterns = [
     path('row-einstellung/<str:slug>/', views.update_row_settings, name='update_row_settings'),
     path("aufgaben/", views.aufgaben, name="aufgaben"),
 
-    path('check-answer/', check_answer, name='check_answer'),
+    #path('check-answer/', check_answer, name='check_answer'),
 
     path('inventar/', views.aufgaben_liste, name='aufgaben_liste'),
     path('aufgabe/<int:pk>/', views.aufgabe_einstellungen, name='aufgabe_einstellungen'),
