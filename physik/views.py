@@ -705,4 +705,5 @@ def howto(request):
     return render(request, 'physik/howto.html')
 
 def datenschutz(req):
-    return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})
+    print("OK")
+    return render(req, 'physik/datenschutz.html', context={'titel': "Datenschutz",})
