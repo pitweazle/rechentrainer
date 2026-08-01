@@ -75,15 +75,20 @@ def vergleich_api(index, aufgabe, antwort_norm, antwort_original):
     Nutzt die Mistral-API, um eine Schülerantwort zu überprüfen.
     Wird nur für logische Ausdrücke (o/u) verwendet.
     Falls die API nicht verfügbar ist, fällt es auf vergleich_fuzzy zurück.
+    
+    NEU: Gibt Typ und Optionen an die KI weiter, damit sie die logische Bedingung prüfen kann.
     """
+    # Holen aller Optionen für den Kontext
+    optionen = list(aufgabe.optionen.order_by("position"))
+    
+    # Bestimmen des Textes basierend auf dem Index
     if index == 1:
         text = aufgabe.loesung
     else:
-        opts = list(aufgabe.optionen.order_by("position"))
         pos = index - 2
-        if pos < 0 or pos >= len(opts):
+        if pos < 0 or pos >= len(optionen):
             return False, None
-        text = opts[pos].text
+        text = optionen[pos].text
 
     if not text:
         return False, None
@@ -96,19 +101,48 @@ def vergleich_api(index, aufgabe, antwort_norm, antwort_original):
             # Fallback: Nutze Fuzzy-Logik, falls kein API-Key vorhanden
             return vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, 0.8)
 
-        prompt = f"""
-        Frage: {aufgabe.frage}
-        Mögliche Lösung: {text}
-        Schülerantwort: {antwort_original}
+        # Formatieren der Optionen für den Prompt
+        optionen_text = "\n".join([f"  {i+1}: {opt.text}" for i, opt in enumerate(optionen)])
+        
+        # Typ aus der Aufgabe extrahieren
+        typ = (aufgabe.typ or "").strip()
+        typ_hinweis = f"- Typ: {typ} (z. B. \"3u(4o5)\" = Option 3 UND (Option 4 ODER Option 5))"
 
-        Antworte **nur** mit "stimmt" oder "stimmt nicht". Keine weiteren Erklärungen.
+        # NEU: Prompt mit Typ und Optionen für logische Bewertung
+        prompt = f"""
+        Du bist ein Physik-Lehrer und bewertest eine Schülerantwort basierend auf einer **logischen Bedingung**.
+
+        **Aufgabenkontext:**
+        - Frage: {aufgabe.frage}
+        {typ_hinweis}
+        - Optionen:
+{optionen_text}
+        - Korrekte Lösung: {text}
+
+        **Schülerantwort:**
+        {antwort_original}
+
+        ---
+        **Anweisungen für dich (KI):**
+        1. **Analysiere den Typ** und prüfe, ob die Schülerantwort die **logische Bedingung** erfüllt.
+           - Beispiel: Bei "3u(4o5)" muss die Antwort **Option 3 UND (Option 4 ODER Option 5)** inhaltlich enthalten.
+        2. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
+           - Antworte **nur** mit: "stimmt"
+        3. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
+           - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
+           - Beispiel: "Falsch. Fehlt Option 3 (Luft) und Option 5 (isoliert)."
+
+        **Wichtig:**
+        - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
+        - Akzeptiere **Synonyme** (z. B. "isoliert" = "dämmt" = "schützt vor Wärmeverlust").
+        - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
         """
 
         payload = {
             "model": "mistral-medium",
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.0,
-            "max_tokens": 10,
+            "temperature": 0.3,
+            "max_tokens": 50,
         }
 
         headers = {
@@ -548,12 +582,16 @@ def bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv=False, ratio=0.8):
 from django.core.mail import send_mail
 from django.conf import settings
 
-def check_answer_with_api(frage, loesung, schueler_antwort):
+def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None):
     """
     Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
     - Bei richtiger Antwort: Gibt "stimmt" zurück.
     - Bei falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
     - Bei API-Fehlern: Sendet eine E-Mail an info@physiktrainer.app.
+    
+    Parameter:
+    - typ: Der Typ der Aufgabe (z. B. "3u(4o5)" für logische Verknüpfungen).
+    - optionen: QuerySet der Optionen (z. B. aufgabe.optionen.all()).
     """
     api_url = os.getenv("MISTRAL_API_URL")
     api_key = os.getenv("MISTRAL_API_KEY")
@@ -561,38 +599,51 @@ def check_answer_with_api(frage, loesung, schueler_antwort):
     if not api_url or not api_key:
         raise ValueError("API-Key oder URL fehlt in .env")
 
-    # 🔹 NEU: Prompt für Erklärung bei falscher Antwort
-    prompt = f"""
-    Analysiere die folgende Aufgabe und prüfe, ob die Schülerantwort **inhaltslich richtig** ist.
-    **Sehr wichtig:** Akzeptiere sinngemäße Antworten, auch wenn sie anders formuliert sind!
+    # Optionen als String formatieren (falls vorhanden)
+    optionen_text = ""
+    if optionen:
+        optionen_text = "\n".join([f"  {i+1}: {opt.text}" for i, opt in enumerate(optionen)])
+    
+    # Typ-Erklärung für die KI
+    typ_hinweis = ""
+    if typ:
+        typ_hinweis = f"- Typ: {typ} (z. B. \"3u(4o5)\" = Option 3 UND (Option 4 ODER Option 5))"
 
-    ---
-    Frage: {frage}
-    Korrekte Lösung: {loesung}
-    Schülerantwort: {schueler_antwort}
+    # Prompt mit Typ und Optionen für logische Bewertung
+    prompt = f"""
+    Du bist ein Physik-Lehrer und bewertest eine Schülerantwort basierend auf einer **logischen Bedingung**.
+
+    **Aufgabenkontext:**
+    - Frage: {frage}
+    {typ_hinweis}
+    - Optionen:
+{optionen_text}
+    - Korrekte Lösung: {loesung}
+
+    **Schülerantwort:**
+    {schueler_antwort}
 
     ---
     **Anweisungen für dich (KI):**
-    1. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
-    - Antworte **nur** mit: "stimmt"
-    2. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
-    - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
-    - Beispiel: "Falsch. Die Ursache sind Frostrisse, nicht nur die Folge."
+    1. **Analysiere den Typ** (falls vorhanden) und prüfe, ob die Schülerantwort die **logische Bedingung** erfüllt.
+       - Beispiel: Bei "3u(4o5)" muss die Antwort **Option 3 UND (Option 4 ODER Option 5)** inhaltlich enthalten.
+    2. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
+       - Antworte **nur** mit: "stimmt"
+    3. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
+       - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
+       - Beispiel: "Falsch. Fehlt die Ursache (Frostrisse) und die Wirkung (Isolierung)."
 
     **Wichtig:**
     - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
+    - Akzeptiere **Synonyme** (z. B. "isoliert" = "dämmt" = "schützt vor Wärmeverlust").
     - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
-    - **Beispiel für "stimmt":**
-    - Lösung: "Frost verursacht Risse im Winter."
-    - Schülerantwort: "Im Winter entstehen durch Frost Risse in der Straße."
-    → **stimmt** (gleiche Aussage, andere Wörter).
     """
 
     payload = {
         "model": "mistral-medium",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,  # Etwas Kreativität für Erklärungen
-        "max_tokens": 50,     # Ausreichend für 25 Wörter
+        "temperature": 0.3,
+        "max_tokens": 50,
     }
 
     headers = {
@@ -606,21 +657,17 @@ def check_answer_with_api(frage, loesung, schueler_antwort):
         result = response.json()
         answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
-        # Falls die API "stimmt" sagt → zurückgeben
+        # Debug-Ausgabe im Terminal
+        print(f"[KI-DEBUG] Frage: {frage[:50]}... | Lösung: {loesung[:20]}... | Antwort: {schueler_antwort[:20]}... | KI-Ergebnis: {answer}")
+
         if answer.lower() == "stimmt":
             return "stimmt"
-
-        # Falls die API eine Erklärung gibt → zurückgeben
-        elif answer.lower() != "stimmt nicht":
-            # Begrenze auf 25 Wörter (falls die API mehr liefert)
+        else:
+            # Begrenze auf 25 Wörter
             woerter = answer.split()
             if len(woerter) > 25:
                 answer = " ".join(woerter[:25]) + "..."
             return answer
-
-        # Fallback: Falls die API nur "stimmt nicht" sagt
-        else:
-            return "stimmt nicht"
 
     except requests.exceptions.HTTPError as e:
         error_msg = f"Mistral API-Fehler (HTTP {e.response.status_code}): {str(e)}"
@@ -649,4 +696,4 @@ def check_answer_with_api(frage, loesung, schueler_antwort):
             )
         except Exception:
             pass
-        raise RuntimeError(error_msg)   
+        raise RuntimeError(error_msg)
