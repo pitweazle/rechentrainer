@@ -13,9 +13,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
 
 from accounts.models import Profil
-from accounts.forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
+from accounts.forms import  Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 
 from .models import ThemenBereich, Kapitel, Aufgabe, FehlerLog, AufgabeOption, Protokoll
+from .forms import Register_Form, Profil_Form
 
 from .bewertung import bewerte_aufgabe
 
