@@ -1,0 +1,14 @@
+{% extends 'auswahl.html' %}
+{% block content %}
+<div style="background-color: yellow; padding: 20px; text-align: center;">
+        <h2>🔧 Beta-Version Hinweis</h2>
+        <p><strong>Der Physiktrainer befindet sich noch in der Beta-Phase.</strong></p>
+        <p>Die 'physiktrainer.app' arbeitet mit dem Prinzip der Lernkärtchen (genaueres steht in der Gebrauchsanweisung). 
+          Bisher gibt es allerdings erst etwa hundert Aufgaben auf diesen 'Fragekärtchen' es werden aber immer mehr.
+        <p></p>
+          Gesucht werden Physiklehrer als Mitarbeiter, die helfen, diese Fragen zu ergänzen. 
+          Physiklehrer, oder auch andere Interessierte, schicken mir gerne eine Mail an <a href="mailto:info@physiktrainer.app">info@physiktrainer.app</a>
+           - ich schalte sie dann als Mitarbeiter frei.</p>
+    <a href="{% url 'physik:index' %}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none;">Weiter</a>
+</div>
+{% endblock %}

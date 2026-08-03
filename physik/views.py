@@ -70,6 +70,11 @@ def index(request):
     profil = None
     if request.user.is_authenticated:
         profil, created = Profil.objects.get_or_create(user=request.user)
+        # Beta-Hinweis für Mathe-Nutzer, die zum ersten Mal Physik nutzen
+        if not profil.physik:
+            profil.physik = True
+            profil.save()
+            return redirect('physik:beta_hinweis')
         qp = (
             Protokoll.objects.filter(user=request.user, aufgabe__thema__in=themenbereiche)
             .values("aufgabe__thema_id", "aufgabe__kapitel_id", "aufgabe__schwierigkeit", "fach")
@@ -184,6 +189,9 @@ def anmelden(req):
     form = Login_Form()
     context = {'form' : form, 'titel': titel} 
     return render(req, 'physik/anmelden.html', context)
+
+def beta_hinweis(request):
+    return render(request, 'physik/beta_hinweis.html')
 
 def registrieren(req):
     reg_form = Register_Form()
@@ -705,4 +713,4 @@ def howto(request):
     return render(request, 'physik/howto.html')
 
 def datenschutz(req):
-    return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})
+    return render(req, 'physik:datenschutz.html', context={'titel': "Datenschutz",})
