@@ -36,20 +36,23 @@ class Command(BaseCommand):
             return "Kein Typ angegeben."
 
         klartext = typ
-        klartext = re.sub(r'\b1\b', f"'{loesung}'", klartext)
 
-        position_to_text = {opt.position: opt.text for opt in optionen}
-
-        for position, text in position_to_text.items():
-            klartext = re.sub(
-                rf'\b{position}\b',
-                f"'{text}'",
-                klartext
-            )
-
+        # Ersetze Operatoren
         klartext = klartext.replace("u", " UND ").replace("o", " ODER ")
         klartext = klartext.replace("f", " ABER NICHT ")
-        klartext = klartext.replace("  (", " (").replace(")  ", ") ")
+        klartext = klartext.replace("Y", "").replace("Z", "")
+
+        # Index 1 = Lösung
+        klartext = klartext.replace("1", f"'{loesung}'")
+
+        # Erstelle Mapping: Position in DB -> Text
+        position_to_text = {opt.position: opt.text for opt in optionen}
+
+        # Ersetze die Zahlen im Typ durch die Texte
+        for position, text in position_to_text.items():
+            klartext = klartext.replace(str(position), f"'{text}'")
+
+        # Aufräumen
         klartext = " ".join(klartext.split())
 
         return klartext
