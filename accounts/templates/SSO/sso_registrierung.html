@@ -24,15 +24,14 @@
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">{{ rollen_label|default:"Klasse:" }}</label>
       <input type="text" name="reg_klasse" 
-             value="{% if is_lehrer %}Lehrer{% endif %}" 
-             {% if not is_lehrer %}required placeholder="z.B. 6R"{% else %}placeholder="z.B. Lehrer / Lehrerin"{% endif %} 
-             style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+             value="{{ form_klasse }}" 
+             {% if is_lehrer %}readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;"{% else %}required placeholder="z.B. 6R" style="width: 100%; padding: 8px; border: 1px solid #ddd;"{% endif %}>
     </div>
 
     <!-- Jahrgang -->
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">Jahrgang:</label>
-      <input type="number" name="reg_jg" value="{{ default_jg }}" required min="1" max="13" placeholder="z.B. 6" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <input type="number" name="reg_jg" value="{{ form_jg }}" required min="1" max="13" placeholder="z.B. 6" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
     </div>
 
     <!-- Kurs -->
