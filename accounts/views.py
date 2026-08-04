@@ -593,7 +593,7 @@ def eduplaces_login(request):
     
     # Scopes um 'profile' für den Klarnamen und 'school_location' ergänzt
     scopes = (
-        "openid role groups school schooling_level school_name"
+        "openid role pseudony groups school schooling_level school_name"
         " school_location school_official_id"
         " profile"
     )
@@ -616,7 +616,9 @@ def eduplaces_callback(request):
     if error or not code:
         messages.error(request, "Der Login über Eduplaces wurde abgebrochen oder ist fehlgeschlagen.")
         return redirect("index")
+    
     _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+    
     # 1. Code gegen Token tauschen (mit Basic Auth)
     credentials = f"{EDUPLACES_CLIENT_ID}:{EDUPLACES_CLIENT_SECRET}"
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
@@ -663,27 +665,30 @@ def eduplaces_callback(request):
 
     email = "" 
     
+    # Schulinformationen direkt hier definieren, damit sie überall verfügbar sind
     school_name = ed_data.get("school_name", "Unbekannte Schule")
-    raw_location = ed_data.get("school_location", "").strip()
     school_official_id = ed_data.get("school_official_id", None)
-
-    # Ort und PLZ aus school_location extrahieren (Erwartet z.B. "64546 Büttelborn" oder "Büttelborn")
-    plz_val = None
-    ort_name_val = raw_location if raw_location else "Unbekannter Ort"
     
-    if raw_location:
-        match = re.match(r"^(\d{5})\s+(.*)$", raw_location)
-        if match:
-            plz_val = match.group(1)
-            ort_name_val = match.group(2).strip()
-
+    raw_location_data = ed_data.get("school_location", "")
+    plz_val = None
+    
+    if isinstance(raw_location_data, dict):
+        ort_name_val = raw_location_data.get("state", "Unbekannter Ort")
+    else:
+        raw_location = str(raw_location_data).strip()
+        ort_name_val = raw_location if raw_location else "Unbekannter Ort"
+        if raw_location:
+            match = re.match(r"^(\d{5})\s+(.*)$", raw_location)
+            if match:
+                plz_val = match.group(1)
+                ort_name_val = match.group(2).strip()
+    
     # 3. Ort & Schule in der eigenen Datenbank prüfen / anlegen (PLZ und Name getrennt)
     if plz_val:
         ort_obj, _ = Ort.objects.get_or_create(
             name=ort_name_val,
             defaults={"plz": plz_val}
         )
-        # Falls es den Ort schon gab, aber die PLZ leer war, aktualisieren
         if not ort_obj.plz and plz_val:
             ort_obj.plz = plz_val
             ort_obj.save()
@@ -877,6 +882,42 @@ def eduplaces_zuordnung(request):
     }
 
     return render(request, 'SSO/sso_registrierung.html', context)
+
+@csrf_exempt
+@require_POST
+def eduplaces_logout(request):
+    """
+    Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
+    EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
+    """
+    logout_token = request.POST.get('logout_token')
+    
+    if not logout_token:
+        return HttpResponse("Missing logout_token", status=400)
+    
+    try:
+        # Ein JWT hat das Format: header.payload.signature
+        # Uns interessiert nur der mittlere Teil (der Payload).
+        parts = logout_token.split('.')
+        if len(parts) >= 2:
+            # Base64-Urlsafe-Decode für den Payload
+            payload_segment = parts[1]
+            # Padding korrigieren, falls nötig
+            payload_segment += '=' * (-len(payload_segment) % 4)
+            decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
+            payload = json.loads(decoded_bytes.decode('utf-8'))
+            
+            eduplaces_sub = payload.get('sub')
+            
+            if eduplaces_sub:
+                # Alle Django-Sessions durchgehen und die passende Session löschen
+                for session in Session.objects.all():
+                    session_data = session.get_decoded()
+                    if session_data.get('eduplaces_sub') == eduplaces_sub:
+                        session.delete()
+        return HttpResponse("OK", status=200)
+    except Exception as e:
+        return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 # def eduplaces_login(request):
 #     """Leitet den Nutzer zum Eduplaces-Login weiter."""
@@ -1154,42 +1195,6 @@ def eduplaces_zuordnung(request):
 #     }
 
 #     return render(request, 'SSO/sso_registrierung.html', context)
-
-@csrf_exempt
-@require_POST
-def eduplaces_logout(request):
-    """
-    Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
-    EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
-    """
-    logout_token = request.POST.get('logout_token')
-    
-    if not logout_token:
-        return HttpResponse("Missing logout_token", status=400)
-    
-    try:
-        # Ein JWT hat das Format: header.payload.signature
-        # Uns interessiert nur der mittlere Teil (der Payload).
-        parts = logout_token.split('.')
-        if len(parts) >= 2:
-            # Base64-Urlsafe-Decode für den Payload
-            payload_segment = parts[1]
-            # Padding korrigieren, falls nötig
-            payload_segment += '=' * (-len(payload_segment) % 4)
-            decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
-            payload = json.loads(decoded_bytes.decode('utf-8'))
-            
-            eduplaces_sub = payload.get('sub')
-            
-            if eduplaces_sub:
-                # Alle Django-Sessions durchgehen und die passende Session löschen
-                for session in Session.objects.all():
-                    session_data = session.get_decoded()
-                    if session_data.get('eduplaces_sub') == eduplaces_sub:
-                        session.delete()
-        return HttpResponse("OK", status=200)
-    except Exception as e:
-        return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 @csrf_exempt
 def simulation_eduplaces(request):
