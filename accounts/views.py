@@ -23,15 +23,17 @@ from django.utils import timezone
 
 from django.shortcuts import render, redirect, get_object_or_404
 
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User, Group
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User, Group
+from django.contrib.sessions.models import Session
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404
 from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from django.db.models import Max, Sum, Count, F, Q, Prefetch
 from django.db.models import Sum, Case, When, IntegerField
@@ -71,7 +73,11 @@ def index(req):
         state = secrets.token_urlsafe(16)
         req.session['eduplaces_state'] = state
         
-        scopes = "openid role groups school schooling_level school_name school_location school_official_id"
+        scopes = (
+            "openid role groups school schooling_level school_name"
+            " school_location school_official_id"
+            " profile"
+        )
         
         params = {
             'response_type': 'code',
@@ -79,8 +85,9 @@ def index(req):
             'redirect_uri': EDUPLACES_REDIRECT_URI,
             'scope': scopes,
             'state': state,
-            'login_hint': login_hint, # Wichtig: Den Hint von Eduplaces direkt durchreichen!
-        }
+            'iss': iss,
+            'login_hint': login_hint,
+        }       
         
         redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
         return redirect(redirect_url)
@@ -547,6 +554,35 @@ def get_oidc_endpoints():
 import secrets
 import urllib.parse
 
+import base64
+import secrets
+import urllib.parse
+import re
+import requests
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import Group, User
+from django.core.mail import send_mail
+from django.shortcuts import redirect, render
+
+from .models import LoginLog, Ort, Profil, Schule
+
+def get_oidc_endpoints():
+    """Lädt die Discovery-Endpunkte von Eduplaces."""
+    try:
+        response = requests.get(OIDC_CONFIG_URL, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("authorization_endpoint"), data.get("token_endpoint"), data.get("userinfo_endpoint")
+    except requests.RequestException:
+        pass
+    return (
+        "https://auth.sandbox.eduplaces.dev/oauth/authorize",
+        "https://auth.sandbox.eduplaces.dev/oauth/token",
+        "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
+    )
+
 def eduplaces_login(request):
     """Leitet den Nutzer zum Eduplaces-Login weiter."""
     auth_endpoint, _, _ = get_oidc_endpoints()
@@ -555,9 +591,11 @@ def eduplaces_login(request):
     state = secrets.token_urlsafe(16)
     request.session['eduplaces_state'] = state
     
+    # Scopes um 'profile' für den Klarnamen und 'school_location' ergänzt
     scopes = (
         "openid role groups school schooling_level school_name"
         " school_location school_official_id"
+        " profile"
     )
     
     params = {
@@ -575,17 +613,13 @@ def eduplaces_callback(request):
     """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
     code = request.GET.get("code")
     error = request.GET.get("error")
-
     if error or not code:
         messages.error(request, "Der Login über Eduplaces wurde abgebrochen oder ist fehlgeschlagen.")
         return redirect("index")
-
     _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
-
     # 1. Code gegen Token tauschen (mit Basic Auth)
     credentials = f"{EDUPLACES_CLIENT_ID}:{EDUPLACES_CLIENT_SECRET}"
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
-
     headers = {
         "Authorization": f"Basic {encoded_credentials}",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -613,30 +647,50 @@ def eduplaces_callback(request):
         return redirect("index")
 
     ed_data = userinfo_response.json()
+    request.session['eduplaces_sub'] = ed_data.get('sub')
 
-# Daten aus Eduplaces extrahieren
+    # Daten aus Eduplaces extrahieren
     eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudony")
     vorname = ed_data.get("given_name", "").strip()
     nachname = ed_data.get("family_name", "").strip()
     
-    # 1. ROBUSTE ROLLEN-ERKENNUNG (Wird genau hier einmal gemacht und nie wieder überschrieben)
+    # ROBUSTE ROLLEN-ERKENNUNG
     roh_rolle = str(ed_data.get("role", ed_data.get("rolle", "student"))).lower()
     if any(r in roh_rolle for r in ["lehrer", "teacher", "instructor"]):
         ziel_gruppen_name = "Lehrer"
     else:
         ziel_gruppen_name = "Schüler"
 
-    # Eduplaces schickt keine E-Mail -> leer lassen
     email = "" 
     
     school_name = ed_data.get("school_name", "Unbekannte Schule")
-    school_location = ed_data.get("school_location", "Unbekannter Ort")
+    raw_location = ed_data.get("school_location", "").strip()
     school_official_id = ed_data.get("school_official_id", None)
 
-    # 3. Ort & Schule in der eigenen Datenbank prüfen / anlegen
-    ort_obj, _ = Ort.objects.get_or_create(
-        name=school_location
-    )
+    # Ort und PLZ aus school_location extrahieren (Erwartet z.B. "64546 Büttelborn" oder "Büttelborn")
+    plz_val = None
+    ort_name_val = raw_location if raw_location else "Unbekannter Ort"
+    
+    if raw_location:
+        match = re.match(r"^(\d{5})\s+(.*)$", raw_location)
+        if match:
+            plz_val = match.group(1)
+            ort_name_val = match.group(2).strip()
+
+    # 3. Ort & Schule in der eigenen Datenbank prüfen / anlegen (PLZ und Name getrennt)
+    if plz_val:
+        ort_obj, _ = Ort.objects.get_or_create(
+            name=ort_name_val,
+            defaults={"plz": plz_val}
+        )
+        # Falls es den Ort schon gab, aber die PLZ leer war, aktualisieren
+        if not ort_obj.plz and plz_val:
+            ort_obj.plz = plz_val
+            ort_obj.save()
+    else:
+        ort_obj, _ = Ort.objects.get_or_create(
+            name=ort_name_val
+        )
     
     schule_neu = False
     schule_obj = None
@@ -662,12 +716,12 @@ def eduplaces_callback(request):
         rohdaten=str(ed_data)
     )
 
-    # Wenn es eine ganz neue Schule im System ist, Mail an dich senden
+    # Wenn es eine ganz neue Schule im System ist, Mail senden
     if schule_neu:
         try:
             send_mail(
                 subject="Neue Schule über Eduplaces registriert",
-                message=f"Eine neue Schule hat sich über Eduplaces angemeldet:\n\nName: {school_name}\nOrt: {school_location}\nOffizielle ID: {school_official_id}",
+                message=f"Eine neue Schule hat sich über Eduplaces angemeldet:\n\nName: {school_name}\nOrt: {ort_name_val} (PLZ: {plz_val})\nOffizielle ID: {school_official_id}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[settings.ADMINS[0][1] if hasattr(settings, "ADMINS") and settings.ADMINS else "info@rechentrainer.app"],
                 fail_silently=True,
@@ -712,7 +766,7 @@ def eduplaces_callback(request):
             login(request, user)
             return redirect("index")
 
-    # STUFE 3 & 4: Ab in die Session (Hier landet jetzt garantiert "Lehrer" oder "Schüler")
+    # STUFE 3 & 4: Ab in die Session
     request.session["ed_pending"] = {
         "eduplaces_uid": eduplaces_uid,
         "vorname": vorname,
@@ -739,6 +793,7 @@ def eduplaces_zuordnung(request):
         rolle = 'Schüler'
     is_lehrer = (rolle == 'Lehrer')
     error_message = None
+    
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
 
@@ -823,11 +878,318 @@ def eduplaces_zuordnung(request):
 
     return render(request, 'SSO/sso_registrierung.html', context)
 
+# def eduplaces_login(request):
+#     """Leitet den Nutzer zum Eduplaces-Login weiter."""
+#     auth_endpoint, _, _ = get_oidc_endpoints()
+    
+#     # 1. Sicheren State mit ausreichend Länge generieren und in der Session merken
+#     state = secrets.token_urlsafe(16)
+#     request.session['eduplaces_state'] = state
+    
+#     scopes = (
+#         "openid role groups school schooling_level school_name"
+#         " school_location school_official_id"
+#         " profile"
+#     )
+    
+#     params = {
+#         'response_type': 'code',
+#         'client_id': EDUPLACES_CLIENT_ID,
+#         'redirect_uri': EDUPLACES_REDIRECT_URI,
+#         'scope': scopes,
+#         'state': state,  # Hier wird der State übergeben
+#     }
+    
+#     redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
+#     return redirect(redirect_url)
+
+# def eduplaces_callback(request):
+#     """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
+#     code = request.GET.get("code")
+#     error = request.GET.get("error")
+
+#     if error or not code:
+#         messages.error(request, "Der Login über Eduplaces wurde abgebrochen oder ist fehlgeschlagen.")
+#         return redirect("index")
+
+#     _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+
+#     # 1. Code gegen Token tauschen (mit Basic Auth)
+#     credentials = f"{EDUPLACES_CLIENT_ID}:{EDUPLACES_CLIENT_SECRET}"
+#     encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+#     headers = {
+#         "Authorization": f"Basic {encoded_credentials}",
+#         "Content-Type": "application/x-www-form-urlencoded",
+#     }
+#     payload = {
+#         "grant_type": "authorization_code",
+#         "code": code,
+#         "redirect_uri": EDUPLACES_REDIRECT_URI,
+#     }
+
+#     token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
+#     if token_response.status_code != 200:
+#         messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
+#         return redirect("index")
+
+#     token_data = token_response.json()
+#     access_token = token_data.get("access_token")
+
+#     # 2. Benutzerdaten (UserInfo) von Eduplaces abrufen
+#     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
+#     userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
+    
+#     if userinfo_response.status_code != 200:
+#         messages.error(request, "Fehler beim Abrufen der Benutzerdaten von Eduplaces.")
+#         return redirect("index")
+
+#     ed_data = userinfo_response.json()
+
+# # Daten aus Eduplaces extrahieren
+#     eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudony")
+#     vorname = ed_data.get("given_name", "").strip()
+#     nachname = ed_data.get("family_name", "").strip()
+    
+#     # 1. ROBUSTE ROLLEN-ERKENNUNG (Wird genau hier einmal gemacht und nie wieder überschrieben)
+#     roh_rolle = str(ed_data.get("role", ed_data.get("rolle", "student"))).lower()
+#     if any(r in roh_rolle for r in ["lehrer", "teacher", "instructor"]):
+#         ziel_gruppen_name = "Lehrer"
+#     else:
+#         ziel_gruppen_name = "Schüler"
+
+#     # Eduplaces schickt keine E-Mail -> leer lassen
+#     email = "" 
+    
+#     school_name = ed_data.get("school_name", "Unbekannte Schule")
+#     school_location = ed_data.get("school_location", "Unbekannter Ort")
+#     school_official_id = ed_data.get("school_official_id", None)
+
+#     # 3. Ort & Schule in der eigenen Datenbank prüfen / anlegen
+#     ort_obj, _ = Ort.objects.get_or_create(
+#         name=school_location
+#     )
+    
+#     schule_neu = False
+#     schule_obj = None
+#     if school_official_id:
+#         schule_obj, schule_neu = Schule.objects.get_or_create(
+#             dienststellen_nr=school_official_id,
+#             defaults={"schulname": school_name, "ort": ort_obj}
+#         )
+#     else:
+#         schule_obj, schule_neu = Schule.objects.get_or_create(
+#             schulname=school_name,
+#             ort=ort_obj
+#         )
+
+#     # LoginLog schreiben
+#     LoginLog.objects.create(
+#         quelle='eduplaces',
+#         consumer_key=school_official_id if school_official_id else 'unbekannt',
+#         user_id=eduplaces_uid,
+#         user_name=f"{vorname} {nachname}".strip(),
+#         rolle=ziel_gruppen_name,
+#         institution_name=school_name,
+#         rohdaten=str(ed_data)
+#     )
+
+#     # Wenn es eine ganz neue Schule im System ist, Mail an dich senden
+#     if schule_neu:
+#         try:
+#             send_mail(
+#                 subject="Neue Schule über Eduplaces registriert",
+#                 message=f"Eine neue Schule hat sich über Eduplaces angemeldet:\n\nName: {school_name}\nOrt: {school_location}\nOffizielle ID: {school_official_id}",
+#                 from_email=settings.DEFAULT_FROM_EMAIL,
+#                 recipient_list=[settings.ADMINS[0][1] if hasattr(settings, "ADMINS") and settings.ADMINS else "info@rechentrainer.app"],
+#                 fail_silently=True,
+#             )
+#         except Exception:
+#             pass
+
+#     # 4. Stufen-Logik
+
+#     # STUFE 1: Ist die eduplaces_uid bereits in einem Profil gespeichert?
+#     try:
+#         profil = Profil.objects.get(eduplaces_uid=eduplaces_uid)
+#         user = profil.user
+        
+#         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+#         if gruppe_obj:
+#             user.groups.add(gruppe_obj)
+#         if email and user.email != email:
+#             user.email = email
+#             user.save()
+
+#         login(request, user)
+#         return redirect("index")
+#     except Profil.DoesNotExist:
+#         pass
+
+#     # STUFE 2: Keine ID, aber Name & Schule stimmen überein
+#     if schule_obj:
+#         profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
+#         if profil:
+#             user = profil.user
+#             profil.eduplaces_uid = eduplaces_uid
+#             profil.save()
+            
+#             gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+#             if gruppe_obj:
+#                 user.groups.add(gruppe_obj)
+#             if email and user.email != email:
+#                 user.email = email
+#                 user.save()
+                
+#             login(request, user)
+#             return redirect("index")
+
+#     # STUFE 3 & 4: Ab in die Session (Hier landet jetzt garantiert "Lehrer" oder "Schüler")
+#     request.session["ed_pending"] = {
+#         "eduplaces_uid": eduplaces_uid,
+#         "vorname": vorname,
+#         "nachname": nachname,
+#         "email": email,
+#         "rolle": ziel_gruppen_name,
+#         "schule_id": schule_obj.id if schule_obj else None,
+#         "jg": 5,
+#     }
+
+#     return redirect("eduplaces_zuordnung")
+
+# def eduplaces_zuordnung(request):
+#     ed_data = request.session.get('ed_pending')
+#     if not ed_data:
+#         return redirect('index')
+
+#     vorname = ed_data.get('vorname')
+#     nachname = ed_data.get('nachname')
+#     rohe_rolle = str(ed_data.get('rolle', 'Schüler')).lower()
+#     if any(r in rohe_rolle for r in ['lehrer', 'teacher', 'instructor']):
+#         rolle = 'Lehrer'
+#     else:
+#         rolle = 'Schüler'
+#     is_lehrer = (rolle == 'Lehrer')
+#     error_message = None
+#     if request.method == 'POST':
+#         aktion = request.POST.get('aktion')
+
+#         if aktion == 'registrierung_speichern':
+#             if is_lehrer:
+#                 reg_klasse = request.POST.get('reg_klasse', 'Lehrer')
+#                 reg_jg = 0
+#             else:
+#                 reg_klasse = request.POST.get('reg_klasse')
+#                 reg_jg = request.POST.get('reg_jg')
+
+#             reg_kurs = request.POST.get('reg_kurs')
+#             reg_email = request.POST.get('reg_email', '').strip()
+
+#             base_username = f'edu_{ed_data["eduplaces_uid"][:10]}'
+#             username = base_username
+#             counter = 1
+#             while User.objects.filter(username=username).exists():
+#                 username = f'{base_username}_{counter}'
+#                 counter += 1
+
+#             new_user = User.objects.create_user(
+#                 username=username,
+#                 email=reg_email if reg_email else '',
+#                 password=User.objects.make_random_password(),
+#             )
+
+#             gruppe_obj = Group.objects.filter(name=rolle).first()
+#             if gruppe_obj:
+#                 new_user.groups.add(gruppe_obj)
+
+#             Profil.objects.create(
+#                 user=new_user,
+#                 vorname=vorname,
+#                 nachname=nachname,
+#                 klasse=reg_klasse,
+#                 jg=reg_jg if reg_jg else 0,
+#                 kurs=reg_kurs,
+#                 eduplaces_uid=ed_data['eduplaces_uid'],
+#                 schule_id=ed_data.get('schule_id'),
+#             )
+
+#             login(request, new_user)
+#             if 'ed_pending' in request.session:
+#                 del request.session['ed_pending']
+
+#             return redirect('index')
+
+#         elif aktion == 'verknuepfen':
+#             u_eingabe = request.POST.get('username_eingabe')
+#             p_eingabe = request.POST.get('passwort_eingabe')
+
+#             user = authenticate(request, username=u_eingabe, password=p_eingabe)
+#             if user is not None:
+#                 profil, _ = Profil.objects.get_or_create(user=user)
+#                 profil.eduplaces_uid = ed_data['eduplaces_uid']
+#                 if ed_data.get('schule_id'):
+#                     profil.schule_id = ed_data.get('schule_id')
+#                 profil.save()
+
+#                 gruppe_obj = Group.objects.filter(name=rolle).first()
+#                 if gruppe_obj:
+#                     user.groups.add(gruppe_obj)
+
+#                 login(request, user)
+#                 if 'ed_pending' in request.session:
+#                     del request.session['ed_pending']
+#                 return redirect('index')
+#             else:
+#                 error_message = 'Benutzername oder Passwort war falsch.'
+
+#     context = {
+#         'moodle_vorname': vorname,
+#         'moodle_nachname': nachname,
+#         'moodle_email': ed_data.get('email', ''),
+#         'kurs_choices': wahl_kurs.choices,
+#         'error_message': error_message,
+#         'is_lehrer': is_lehrer,
+#         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+#         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
+#     }
+
+#     return render(request, 'SSO/sso_registrierung.html', context)
+
+@csrf_exempt
+@require_POST
 def eduplaces_logout(request):
-  """Loggt den Benutzer lokal aus."""
-  from django.contrib.auth import logout
-  logout(request)
-  return redirect("home")
+    """
+    Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
+    EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
+    """
+    logout_token = request.POST.get('logout_token')
+    
+    if not logout_token:
+        return HttpResponse("Missing logout_token", status=400)
+    
+    try:
+        # Ein JWT hat das Format: header.payload.signature
+        # Uns interessiert nur der mittlere Teil (der Payload).
+        parts = logout_token.split('.')
+        if len(parts) >= 2:
+            # Base64-Urlsafe-Decode für den Payload
+            payload_segment = parts[1]
+            # Padding korrigieren, falls nötig
+            payload_segment += '=' * (-len(payload_segment) % 4)
+            decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
+            payload = json.loads(decoded_bytes.decode('utf-8'))
+            
+            eduplaces_sub = payload.get('sub')
+            
+            if eduplaces_sub:
+                # Alle Django-Sessions durchgehen und die passende Session löschen
+                for session in Session.objects.all():
+                    session_data = session.get_decoded()
+                    if session_data.get('eduplaces_sub') == eduplaces_sub:
+                        session.delete()
+        return HttpResponse("OK", status=200)
+    except Exception as e:
+        return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 @csrf_exempt
 def simulation_eduplaces(request):
