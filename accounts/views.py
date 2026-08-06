@@ -165,12 +165,20 @@ def rt_profil_ergaenzen(request):
             return redirect('ort_wahl')
 
     # Kontext für das Template bereitstellen
+    # Prüfen, ob der Benutzer ein Lehrer ist
+    is_lehrer = User.objects.filter(pk=user.id, groups__name='Lehrer').exists()
+    
     context = {
         'moodle_vorname': profil.vorname,   
         'moodle_nachname': profil.nachname, 
         'moodle_email': user.email,
         'kurs_choices': wahl_kurs.choices,
         'titel': "Registrierung abschließen",
+        'is_lehrer': is_lehrer,
+        'form_klasse': 'Lehrer' if is_lehrer else profil.klasse if profil.klasse else '',
+        'form_jg': profil.jg if profil.jg else 5,
+        'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+        'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
     return render(request, 'SSO/sso_registrierung.html', context)
 
@@ -818,6 +826,9 @@ def eduplaces_zuordnung(request):
             reg_email = request.POST.get('reg_email', '').strip()
             ed_uid = ed_data['eduplaces_uid']
 
+            # Holen oder erstellen des aktuellen Schuljahrs und Halbjahrs
+            sj, hj = name_hj()
+            
             existing_profil = Profil.objects.filter(eduplaces_uid=ed_uid).first()
             if existing_profil:
                 new_user = existing_profil.user
@@ -828,6 +839,17 @@ def eduplaces_zuordnung(request):
                 existing_profil.kurs = reg_kurs
                 if ed_data.get('schule_id'):
                     existing_profil.schule_id = ed_data.get('schule_id')
+                # Setze die fehlenden Felder, damit die index-Prüfung nicht zu rt_profil_ergaenzen weiterleitet
+                existing_profil.mathe = True
+                existing_profil.stufe = stufe_aus_jg(int(reg_jg) if reg_jg else 5, reg_kurs)
+                existing_profil.sj = sj
+                existing_profil.hj = hj
+                # Zeitstempel setzen, falls noch leer
+                if not existing_profil.schuljahr_ab and not existing_profil.halbjahr_ab:
+                    if hj == 1:
+                        existing_profil.schuljahr_ab = timezone.now()
+                    else:
+                        existing_profil.halbjahr_ab = timezone.now()
                 existing_profil.save()
 
                 if reg_email and new_user.email != reg_email:
@@ -851,6 +873,9 @@ def eduplaces_zuordnung(request):
                 if gruppe_obj:
                     new_user.groups.add(gruppe_obj)
 
+                # Berechne Stufe basierend auf Jahrgang und Kurs
+                stufe = stufe_aus_jg(int(reg_jg) if reg_jg else 5, reg_kurs)
+                
                 Profil.objects.create(
                     user=new_user,
                     vorname=vorname,
@@ -861,6 +886,12 @@ def eduplaces_zuordnung(request):
                     mathe=True,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
+                    mathe=True,
+                    stufe=stufe,
+                    sj=sj,
+                    hj=hj,
+                    schuljahr_ab=timezone.now() if hj == 1 else None,
+                    halbjahr_ab=timezone.now() if hj == 2 else None,
                 )
 
             login(request, new_user)

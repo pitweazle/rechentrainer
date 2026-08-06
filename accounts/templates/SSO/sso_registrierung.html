@@ -25,7 +25,7 @@
       <label style="display: block; margin-bottom: 5px;">{{ rollen_label|default:"Klasse:" }}</label>
       <input type="text" name="reg_klasse" 
              value="{{ form_klasse }}" 
-             {% if is_lehrer %}readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;"{% else %}required placeholder="z.B. 6R" style="width: 100%; padding: 8px; border: 1px solid #ddd;"{% endif %}>
+             {% if is_lehrer %}readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;" placeholder="{{ rollen_placeholder|default:'z.B. Lehrer' }}"{% else %}required placeholder="{{ rollen_placeholder|default:'z.B. 6R' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd;"{% endif %}>
     </div>
 
     <!-- Jahrgang -->
