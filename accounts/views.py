@@ -835,7 +835,7 @@ def eduplaces_zuordnung(request):
                 existing_profil.vorname = vorname
                 existing_profil.nachname = nachname
                 existing_profil.klasse = reg_klasse
-                existing_profil.jg = int(reg_jg) if reg_jg else 0
+                existing_profil.jg = int(reg_jg) if reg_jg else 7
                 existing_profil.kurs = reg_kurs
                 if ed_data.get('schule_id'):
                     existing_profil.schule_id = ed_data.get('schule_id')
