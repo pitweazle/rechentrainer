@@ -817,7 +817,7 @@ def eduplaces_zuordnung(request):
         if aktion == 'registrierung_speichern':
             if is_lehrer:
                 reg_klasse = 'Lehrer'
-                reg_jg = 0
+                reg_jg = 7  # Default-Jahrgang für Lehrer, kann später im Profil geändert werden
             else:
                 reg_klasse = request.POST.get('reg_klasse')
                 reg_jg = request.POST.get('reg_jg')
@@ -885,7 +885,6 @@ def eduplaces_zuordnung(request):
                     kurs=reg_kurs,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
-                    mathe=True,
                     stufe=stufe,
                     sj=sj,
                     hj=hj,
@@ -1376,9 +1375,15 @@ def schule_wahl(req, schule_id):
     profil.schule = schule
     profil.save()
     if profil.klasse.lower() == "lehrer":
-        return render(req, 'lehrer/wahl_fertig.html', {'titel': "fertig"})
+        # Prüfen, ob der Lehrer bereits über Eduplaces oder Moodle angemeldet ist
+        # Wenn ja, direkt zur Startseite weiterleiten (keine Mail nötig)
+        if profil.eduplaces_uid or profil.moodle_uid:
+            return redirect('index')
+        else:
+            # Lehrer, die manuell registriert wurden, müssen eine Mail schicken
+            return render(req, 'lehrer/wahl_fertig.html', {'schule': schule, 'titel': "fertig"})
     else:
-        return render(req, 'schueler/lehrer_wahl.html', context={'lehrer_liste': lehrer_liste, 'schule': schule_wahl, 'titel': "Lehrer/in wählen"}) 
+        return render(req, 'schueler/lehrer_wahl.html', context={'lehrer_liste': lehrer_liste, 'schule': schule, 'titel': "Lehrer/in wählen"}) 
 
 def lehrer_wahl(req, lehrer_id):
     try:
