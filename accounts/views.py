@@ -29,7 +29,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from django.contrib.sessions.models import Session
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404, request
 from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
@@ -886,7 +886,9 @@ def eduplaces_zuordnung(request):
                 login(request, user)
                 if 'ed_pending' in request.session:
                     del request.session['ed_pending']
-                return redirect('index')
+                if 'eduplaces_sub' in request.session:
+                    del request.session['eduplaces_sub']    
+                    return redirect('index')
             else:
                 error_message = 'Benutzername oder Passwort war falsch.'
 
@@ -902,8 +904,8 @@ def eduplaces_zuordnung(request):
         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
-
     return render(request, 'SSO/sso_registrierung.html', context)
+
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
