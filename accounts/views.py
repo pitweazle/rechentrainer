@@ -61,11 +61,9 @@ OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configu
 def index(req):
     if 'duell' in req.session:
         del req.session['duell']
-
     # Prüfen, ob Eduplaces uns einen Login aufzwingen will (Launch aus dem Portal)
     iss = req.GET.get('iss')
     login_hint = req.GET.get('login_hint')
-    
     if iss and login_hint:
         # Parameter für den Eduplaces-Login zusammenbauen und direkt dorthin weiterleiten
         auth_endpoint, _, _ = get_oidc_endpoints() # Deine bestehende Funktion
@@ -860,6 +858,7 @@ def eduplaces_zuordnung(request):
                     klasse=reg_klasse,
                     jg=int(reg_jg) if reg_jg else 0,
                     kurs=reg_kurs,
+                    mathe=True,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
                 )
