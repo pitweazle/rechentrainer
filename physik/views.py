@@ -190,17 +190,40 @@ def anmelden(req):
     context = {'form' : form, 'titel': titel} 
     return render(req, 'physik/anmelden.html', context)
 
+# def beta_hinweis(request):
+#     return render(request, 'physik/beta_hinweis.html')
+
 def beta_hinweis(request):
-    return render(request, 'physik/beta_hinweis.html')
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'ok':
+            # Prüfen, ob der Nutzer schon eingeloggt ist (kam über index / Mathe-Wechsel)
+            if request.user.is_authenticated:
+                return redirect('physik:index')
+            else:
+                # Kam über die Registrierung -> weiter zum Formular
+                request.session['beta_akzeptiert'] = True
+                return redirect('physik:registrieren')
+        else:
+            # Bei Abbrechen immer zurück zur Hauptseite / Index
+            if 'beta_akzeptiert' in request.session:
+                del request.session['beta_akzeptiert']
+            return redirect('index') # oder 'physik:index', je nachdem wohin der Abbruch führen soll
+            
+    return render(request if 'req' in locals() else request, 'physik/beta_hinweis.html')
 
 def registrieren(req):
+    # Schutz: Wenn der Beta-Hinweis noch nicht bestätigt wurde, dorthin umleiten
+    if not req.session.get('beta_akzeptiert'):
+        return redirect('physik:beta_hinweis')
+
     reg_form = Register_Form()
     profil_form = Profil_Form()  
     datenschutz = ""
     if req.method == 'POST':
         datenschutz = req.POST.get('datenschutz', 'off')
         reg_form = Register_Form(req.POST)
-        profil_form = Profil_Form(req.POST) 
+        profil_form = Profil_Form(req.POST)  
         if datenschutz == "on":
             if reg_form.is_valid() and profil_form.is_valid(): 
                 user = reg_form.save()
@@ -213,6 +236,11 @@ def registrieren(req):
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
                 login(req, user)
+                
+                # Session-Flag für Beta wieder aufräumen
+                if 'beta_akzeptiert' in req.session:
+                    del req.session['beta_akzeptiert']
+                    
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
                 return redirect('physik:index')
@@ -713,4 +741,4 @@ def howto(request):
     return render(request, 'physik/howto.html')
 
 def datenschutz(req):
-    return render(req, 'physik:datenschutz.html', context={'titel': "Datenschutz",})
+    return render(req, 'physik/datenschutz.html', context={'titel': "Datenschutz",})

@@ -1,14 +1,20 @@
 {% extends 'auswahl.html' %}
 {% block content %}
-<div style="background-color: yellow; padding: 20px; text-align: center;">
+<div class="container" style="max-width: 600px; margin-top: 30px;">
+    <div style="background-color: yellow; padding: 20px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
         <h2>🔧 Beta-Version Hinweis</h2>
         <p><strong>Der Physiktrainer befindet sich noch in der Beta-Phase.</strong></p>
         <p>Die 'physiktrainer.app' arbeitet mit dem Prinzip der Lernkärtchen (genaueres steht in der Gebrauchsanweisung). 
-          Bisher gibt es allerdings erst etwa hundert Aufgaben auf diesen 'Fragekärtchen' es werden aber immer mehr.
-        <p></p>
-          Gesucht werden Physiklehrer als Mitarbeiter, die helfen, diese Fragen zu ergänzen. 
-          Physiklehrer, oder auch andere Interessierte, schicken mir gerne eine Mail an <a href="mailto:info@physiktrainer.app">info@physiktrainer.app</a>
+           Bisher gibt es allerdings erst etwa hundert Aufgaben auf diesen 'Fragekärtchen' es werden aber immer mehr.</p>
+        <p>Gesucht werden Physiklehrer als Mitarbeiter, die helfen, diese Fragen zu ergänzen. 
+           Physiklehrer, oder auch andere Interessierte, schicken mir gerne eine Mail an <a href="mailto:info@physiktrainer.app">info@physiktrainer.app</a>
            - ich schalte sie dann als Mitarbeiter frei.</p>
-    <a href="{% url 'physik:index' %}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none;">Weiter</a>
+        
+        <form method="POST" style="margin-top: 20px;">
+            {% csrf_token %}
+            <button type="submit" name="aktion" value="ok" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em;">OK</button>
+            <button type="submit" name="aktion" value="abbrechen" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-left: 10px;">Abbrechen</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

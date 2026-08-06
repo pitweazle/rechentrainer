@@ -5,7 +5,7 @@
   <h2>Registrierung abschließen</h2>
   <p>Hallo <strong>{{ moodle_vorname }} {{ moodle_nachname }}</strong>, bitte ergänze deine Daten:</p>
 
-  <form method="POST" onsubmit="return checkEmail()">
+  <form method="POST">
     {% csrf_token %}
     <input type="hidden" name="aktion" value="registrierung_speichern">
 
@@ -56,27 +56,10 @@
       <label style="display: block; margin-bottom: 5px;">E-Mail-Adresse (optional):</label>
       <input type="email" name="reg_email" id="emailInput" value="{{ moodle_email }}" placeholder="z.B. max@schule.de" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
       <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
-        Wenn du keine E-Mail-Adresse angibst, kannst du, wenn du dein Passwort vergisst, kein neues Passwort anfordern.</p>
+        Wenn du eine E-Mail-Adresse angibst, kannst du ein neues Passwort beim Rechentrainer anfordern und dich dort direkt (ohne Umweg bei Eduplaces) anmelden.</p>
     </div>
 
     <button type="submit" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Account erstellen</button>
   </form>
 </div>
-
-<!-- JavaScript für die Validierung -->
-<script>
-  function checkEmail() {
-    const email = document.getElementById('emailInput').value.trim();
-    if (email === '') {
-      alert(
-        "Hinweis: Ohne E-Mail-Adresse kannst du kein neues Passwort anfordern.\n\n" +
-        "Mit einer E-Mail könntest du:\n" +
-        "- Dein Passwort zurücksetzen\n" +
-        "- Dich direkt beim Rechentrainer anmelden (ohne Moodle)"
-      );
-      return confirm("Möchtest du trotzdem ohne E-Mail fortfahren?");
-    }
-    return true;
-  }
-</script>
 {% endblock %}

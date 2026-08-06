@@ -2,19 +2,6 @@
 {% load static %}
 
   {% block content %}
-      <div id="beta-hinweis" style="background-color: yellow; padding: 15px; margin-bottom: 20px; border: 1px solid #ccc; text-align: center;">
-        <h2>🔧 Beta-Version Hinweis</h2>
-        <p><strong>Der Physiktrainer befindet sich noch in der Beta-Phase.</strong></p>
-        <p>Die 'physiktrainer.app' arbeitet mit dem Prinzip der Lernkärtchen (genaueres steht in der Gebrauchsanweisung). 
-          Bisher gibt es allerdings erst etwa hundert Aufgaben auf diesen 'Fragekärtchen' es werden aber immer mehr.
-        <p></p>
-          Gesucht werden Physiklehrer als Mitarbeiter, die helfen, diese Fragen zu ergänzen. 
-          Physiklehrer, oder auch andere Interessierte, schicken mir gerne eine Mail an <a href="mailto:info@physiktrainer.app">info@physiktrainer.app</a>
-           - ich schalte sie dann als Mitarbeiter frei.</p>
-        <button onclick="document.getElementById('beta-hinweis').style.display='none'" style="background-color: #4CAF50; color: white; padding: 8px 16px; border: none; cursor: pointer;">OK</button>
-        <button onclick="window.location.href='{% url 'physik:index' %}'" style="background-color: #f44336; color: white; padding: 8px 16px; border: none; cursor: pointer; margin-left: 10px;">Abbrechen</button>
-      </div>
-
       <div style="background-color: yellow">
         {% if datenschutz == "off"%}
           <h2>Sorry, das geht nicht!</h2>
