@@ -1375,13 +1375,24 @@ def schule_wahl(req, schule_id):
     profil.schule = schule
     profil.save()
     if profil.klasse.lower() == "lehrer":
-        # Prüfen, ob der Lehrer bereits über Eduplaces oder Moodle angemeldet ist
-        # Wenn ja, direkt zur Startseite weiterleiten (keine Mail nötig)
-        if profil.eduplaces_uid or profil.moodle_uid:
-            return redirect('index')
+        # Prüfen, ob der Benutzer in der Gruppe "Lehrer" ist
+        if req.user.groups.filter(name="Lehrer").exists():
+            # Lehrer: Prüfen, ob Schule einen Ort hat
+            hat_ort = schule.ort is not None
+            return render(req, 'lehrer/wahl_fertig.html', {
+                'schule': schule,
+                'titel': "fertig",
+                'ist_lehrer': True,
+                'hat_ort': hat_ort
+            })
         else:
-            # Lehrer, die manuell registriert wurden, müssen eine Mail schicken
-            return render(req, 'lehrer/wahl_fertig.html', {'schule': schule, 'titel': "fertig"})
+            # Kein Lehrer: Mail-Meldung
+            return render(req, 'lehrer/wahl_fertig.html', {
+                'schule': schule,
+                'titel': "fertig",
+                'ist_lehrer': False,
+                'hat_ort': schule.ort is not None
+            })
     else:
         return render(req, 'schueler/lehrer_wahl.html', context={'lehrer_liste': lehrer_liste, 'schule': schule, 'titel': "Lehrer/in wählen"}) 
 
