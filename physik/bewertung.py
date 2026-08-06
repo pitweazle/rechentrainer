@@ -607,36 +607,52 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
     # Typ-Erklärung für die KI
     typ_hinweis = ""
     if typ:
-        typ_hinweis = f"- Typ: {typ} (z. B. \"3u(4o5)\" = Option 3 UND (Option 4 ODER Option 5))"
+        typ_hinweis = f"- Kriterien: {typ} (z. B. logische Verknüpfung von Optionen)"
 
-    # Prompt mit Typ und Optionen für logische Bewertung
+    # NEUER PROMPT: Freie Formulierung mit Fokus auf physikalische Prinzipien
     prompt = f"""
-    Du bist ein Physik-Lehrer und bewertest eine Schülerantwort basierend auf einer **logischen Bedingung**.
+    Ein Physiklehrer hat die Antwort **"{schueler_antwort}"** eines Schülers auf die Frage **"{frage}"** als falsch gewertet.
+    Er hat dies nach den Kriterien **"{typ}"** (z. B. logische Verknüpfung von Optionen) beurteilt.
 
-    **Aufgabenkontext:**
-    - Frage: {frage}
-    {typ_hinweis}
-    - Optionen:
-{optionen_text}
-    - Korrekte Lösung: {loesung}
-
-    **Schülerantwort:**
-    {schueler_antwort}
+    **Möglicherweise hat der Schüler aber doch Recht!**
+    Deine Aufgabe als **unabhängiger Physik-Experte**:
+    - Prüfe, ob die Schülerantwort **physikalische Prinzipien korrekt anwendet** – auch wenn sie nicht offensichtlich oder wortwörtlich mit der Lösung übereinstimmt.
+    - Die Antwort soll **nicht nur oberflächlich richtig sein**, sondern zeigen, dass der Schüler **physikalische Zusammenhänge verstanden hat**.
 
     ---
-    **Anweisungen für dich (KI):**
-    1. **Analysiere den Typ** (falls vorhanden) und prüfe, ob die Schülerantwort die **logische Bedingung** erfüllt.
-       - Beispiel: Bei "3u(4o5)" muss die Antwort **Option 3 UND (Option 4 ODER Option 5)** inhaltlich enthalten.
-    2. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
-       - Antworte **nur** mit: "stimmt"
-    3. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
-       - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
-       - Beispiel: "Falsch. Fehlt die Ursache (Frostrisse) und die Wirkung (Isolierung)."
+    **Kontext:**
+    - **Korrekte Lösung:** {loesung}
+    - **Optionen (falls vorhanden):**
+    {optionen_text}
 
+    ---
+    **Bewertungskriterien:**
+    1. **Physikalische Tiefe:**
+       - Akzeptiere Antworten, die **physikalische Prinzipien** korrekt anwenden, auch wenn sie anders formuliert sind.
+         - Beispiel: Frage: *"Warum plustern Vögel ihr Gefieder auf?"*
+           - Oberflächlich: *"Damit sie nicht erfrieren."* → **Nicht akzeptieren** (fehlende Physik).
+           - Korrekt: *"Mehr Luft im Gefieder isoliert und reduziert den Wärmeverlust."* → **Akzeptieren**.
+       - **Synonyme sind erlaubt**, wenn sie physikalisch äquivalent sind (z. B. *"isoliert"* = *"dämmt"* = *"reduziert Wärmeübertragung"*).
+
+    2. **Bezug zu den Optionen:**
+       - Falls die Schülerantwort **Begriffe aus den Optionen** verwendet, die physikalisch korrekt sind, bewerten sie als richtig.
+       - Falls die Antwort **falsche oder unpräzise Begriffe** enthält, vergleiche sie mit den Optionen und weise darauf hin.
+
+    3. **Rückmeldung:**
+       - **Falls die Antwort physikalisch korrekt ist:**
+         - Antworte **nur** mit: `"stimmt"`
+       - **Falls die Antwort falsch oder unvollständig ist:**
+         - Gib eine **kurze, präzise Rückmeldung (max. 25 Wörter)**, die:
+           1. **Den Fehler benennt** (z. B. *"Fehlt der Bezug zur Wärmeleitung."*).
+           2. **Auf korrekte Begriffe hinweist** (z. B. *"Nutze Begriffe wie 'Isolierung' oder 'Wärmeverlust' (siehe Optionen)."*).
+       - **Falls die Antwort oberflächlich ist:**
+         - Fordere eine **physikalische Begründung** ein (z. B. *"Erkläre das Prinzip, z. B. 'Luft isoliert durch geringe Wärmeleitung'."*).
+
+    ---
     **Wichtig:**
-    - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
-    - Akzeptiere **Synonyme** (z. B. "isoliert" = "dämmt" = "schützt vor Wärmeverlust").
-    - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
+    - **Sei streng mit Oberflächlichkeit**, aber fair mit alternativen Formulierungen.
+    - **Nutze die Optionen als Referenz** für erwartete Begriffe.
+    - **Maximal 25 Wörter** in der Rückmeldung.
     """
 
     payload = {
