@@ -71,7 +71,8 @@ def check_hj(req):
         logout(req)
         return render(req, 'doppelte_accounts.html', {'zeilen': zeilen, 'email': email})
     if not profil or not profil.mathe or not profil.sj:
-        return redirect('rt_profil_ergaenzen')
+        if not getattr(req, 'platform', None) == 'physik':
+            return redirect('rt_profil_ergaenzen')
     heute = get_today()
     # Halbjahres-/Schuljahreswechsel prüfen
     if heute.month in (1, 7): # and sub_note_anzeigen(profil):

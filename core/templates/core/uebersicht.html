@@ -91,7 +91,7 @@
                 </tr>
             {% endfor %}
             <tr>
-            {% if not lehrer %}
+            {% comment %} {% if not lehrer %} {% endcomment %}
                 {% if not alle_kat %}
                     <td  colspan="3", align="left">
                         <form action="{% url 'uebersicht' %}" method="POST">
@@ -100,7 +100,7 @@
                         </form>
                     </td>
                 {% endif %}
-            {% endif %}
+            {% comment %} {% endif %} {% endcomment %}
             </tr>          
         </tbody>
     </table>

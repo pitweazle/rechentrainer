@@ -10,6 +10,9 @@ urlpatterns = [
     path("registrieren/", views.registrieren, name="registrieren"),
     path("anmelden/", views.anmelden, name="anmelden"),
     path("login/", views.anmelden, name="login"),
+    path('beta-hinweis/', views.beta_hinweis, name='beta_hinweis'),
+    path("datenschutz/", views.datenschutz, name="datenschutz"),
+    
     path('logout/', views.force_logout, name='logout'),
 
     path('view-einstellung/<str:slug>/', views.update_view_settings, name='update_view_settings'),

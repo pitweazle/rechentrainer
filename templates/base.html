@@ -13,7 +13,8 @@
     <header>
         <nav class="navbar main">
             <a href="javascript:history.back()" class="btn-back">⬅ Zurück</a>
-            <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a>
+            <a href="{% static 'physik/Wie_funktioniert_der_Physiktrainer.pdf' %}" target="_blank">❓ Anleitung</a>
+            {% comment %} <a href="{% url 'physik:index' %}" class="btn-back">🏠 Startseite</a> {% endcomment %}
             {% if user.is_authenticated %}
                 <span>Eingeloggt als: <strong>{{ user.username }}</strong></span> 
                 <a href="/physik/logout/" >Abmelden</a>

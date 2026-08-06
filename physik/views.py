@@ -16,9 +16,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
 
 from accounts.models import Profil
-from accounts.forms import Register_Form, Profil_Form, Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
+from accounts.forms import  Login_Form, Suchen_Form, Loeschen_Form, Zusammen_Form, Abmelden_Form
 
 from .models import ThemenBereich, Kapitel, Aufgabe, FehlerLog, AufgabeOption, Protokoll
+from .forms import Register_Form, Profil_Form
 
 from .bewertung import bewerte_aufgabe
 
@@ -70,6 +71,11 @@ def index(request):
     profil = None
     if request.user.is_authenticated:
         profil, created = Profil.objects.get_or_create(user=request.user)
+        # Beta-Hinweis für Mathe-Nutzer, die zum ersten Mal Physik nutzen
+        if not profil.physik:
+            profil.physik = True
+            profil.save()
+            return redirect('physik:beta_hinweis')
         qp = (
             Protokoll.objects.filter(user=request.user, aufgabe__thema__in=themenbereiche)
             .values("aufgabe__thema_id", "aufgabe__kapitel_id", "aufgabe__schwierigkeit", "fach")
@@ -185,14 +191,40 @@ def anmelden(req):
     context = {'form' : form, 'titel': titel} 
     return render(req, 'physik/anmelden.html', context)
 
+# def beta_hinweis(request):
+#     return render(request, 'physik/beta_hinweis.html')
+
+def beta_hinweis(request):
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'ok':
+            # Prüfen, ob der Nutzer schon eingeloggt ist (kam über index / Mathe-Wechsel)
+            if request.user.is_authenticated:
+                return redirect('physik:index')
+            else:
+                # Kam über die Registrierung -> weiter zum Formular
+                request.session['beta_akzeptiert'] = True
+                return redirect('physik:registrieren')
+        else:
+            # Bei Abbrechen immer zurück zur Hauptseite / Index
+            if 'beta_akzeptiert' in request.session:
+                del request.session['beta_akzeptiert']
+            return redirect('index') # oder 'physik:index', je nachdem wohin der Abbruch führen soll
+            
+    return render(request if 'req' in locals() else request, 'physik/beta_hinweis.html')
+
 def registrieren(req):
+    # Schutz: Wenn der Beta-Hinweis noch nicht bestätigt wurde, dorthin umleiten
+    if not req.session.get('beta_akzeptiert'):
+        return redirect('physik:beta_hinweis')
+
     reg_form = Register_Form()
     profil_form = Profil_Form()  
     datenschutz = ""
     if req.method == 'POST':
         datenschutz = req.POST.get('datenschutz', 'off')
         reg_form = Register_Form(req.POST)
-        profil_form = Profil_Form(req.POST) 
+        profil_form = Profil_Form(req.POST)  
         if datenschutz == "on":
             if reg_form.is_valid() and profil_form.is_valid(): 
                 user = reg_form.save()
@@ -205,6 +237,11 @@ def registrieren(req):
                 password = reg_form.cleaned_data['password1']
                 user = authenticate(username=username, password=password)
                 login(req, user)
+                
+                # Session-Flag für Beta wieder aufräumen
+                if 'beta_akzeptiert' in req.session:
+                    del req.session['beta_akzeptiert']
+                    
                 if req.POST.get('cookie_loeschen') == 'on':
                     req.session.set_expiry(0)
                 return redirect('physik:index')
@@ -705,5 +742,4 @@ def howto(request):
     return render(request, 'physik/howto.html')
 
 def datenschutz(req):
-    print("OK")
     return render(req, 'physik/datenschutz.html', context={'titel': "Datenschutz",})
