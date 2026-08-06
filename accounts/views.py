@@ -791,12 +791,18 @@ def eduplaces_zuordnung(request):
 
     vorname = ed_data.get('vorname')
     nachname = ed_data.get('nachname')
-    rohe_rolle = str(ed_data.get('rolle', 'Schüler')).lower()
-    if any(r in rohe_rolle for r in ['lehrer', 'teacher', 'instructor']):
-        rolle = 'Lehrer'
-    else:
-        rolle = 'Schüler'
-    is_lehrer = (rolle == 'Lehrer')
+    
+    # HIER IST DER SCHLÜSSEL: Wir holen den festen Wert direkt aus der Session!
+    is_lehrer = ed_data.get('is_lehrer', False)
+    
+    # Falls er noch nicht in der Session war, beim ersten Mal sauber ermitteln und speichern:
+    if 'is_lehrer' not in ed_data:
+        rohe_rolle = str(ed_data.get('rolle', 'Schüler')).lower()
+        is_lehrer = any(r in rohe_rolle for r in ['lehrer', 'teacher', 'instructor'])
+        ed_data['is_lehrer'] = is_lehrer
+        request.session['ed_pending'] = ed_data
+
+    rolle = 'Lehrer' if is_lehrer else 'Schüler'
     error_message = None
     
     if request.method == 'POST':
@@ -814,15 +820,13 @@ def eduplaces_zuordnung(request):
             reg_email = request.POST.get('reg_email', '').strip()
             ed_uid = ed_data['eduplaces_uid']
 
-            # SCHUTZ: Prüfen, ob für diese EduPlaces-ID bereits ein Profil existiert
             existing_profil = Profil.objects.filter(eduplaces_uid=ed_uid).first()
             if existing_profil:
                 new_user = existing_profil.user
-                # Bestehendes Profil aktualisieren statt einen neuen User zu bauen
                 existing_profil.vorname = vorname
                 existing_profil.nachname = nachname
                 existing_profil.klasse = reg_klasse
-                existing_profil.jg = reg_jg if reg_jg else 0
+                existing_profil.jg = int(reg_jg) if reg_jg else 0
                 existing_profil.kurs = reg_kurs
                 if ed_data.get('schule_id'):
                     existing_profil.schule_id = ed_data.get('schule_id')
@@ -832,7 +836,6 @@ def eduplaces_zuordnung(request):
                     new_user.email = reg_email
                     new_user.save()
             else:
-                # Keins da -> Ganz normal neu anlegen
                 base_username = f'edu_{ed_uid[:10]}'
                 username = base_username
                 counter = 1
@@ -855,15 +858,19 @@ def eduplaces_zuordnung(request):
                     vorname=vorname,
                     nachname=nachname,
                     klasse=reg_klasse,
-                    jg=reg_jg if reg_jg else 0,
+                    jg=int(reg_jg) if reg_jg else 0,
                     kurs=reg_kurs,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
                 )
 
             login(request, new_user)
+            
+            # Session komplett aufräumen, damit es nie wieder aufgerufen wird
             if 'ed_pending' in request.session:
                 del request.session['ed_pending']
+            if 'eduplaces_sub' in request.session:
+                del request.session['eduplaces_sub']
 
             return redirect('index')
 
@@ -887,8 +894,8 @@ def eduplaces_zuordnung(request):
                 if 'ed_pending' in request.session:
                     del request.session['ed_pending']
                 if 'eduplaces_sub' in request.session:
-                    del request.session['eduplaces_sub']    
-                    return redirect('index')
+                    del request.session['eduplaces_sub']
+                return redirect('index')
             else:
                 error_message = 'Benutzername oder Passwort war falsch.'
 
@@ -904,6 +911,7 @@ def eduplaces_zuordnung(request):
         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
+
     return render(request, 'SSO/sso_registrierung.html', context)
 
 @csrf_exempt
