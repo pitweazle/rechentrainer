@@ -1,8 +1,17 @@
 {% extends 'auswahl.html' %}  
 {% block content %}
     <body>
-        <p>Das hat geklappt, um als Lehrer freigeschaltet zu werden, musst du jetzt noch eine Mail an den Rechentrainer schicken, aus der irgendwie glaubhaft hervorgeht, 
-            dass du auch wirklich Lehrer der <b>{{schule.schulname}}</b> bist! </p>
+        {% if ist_lehrer %}
+            <p>Super! Du bist jetzt als Lehrer der <b>{{schule.schulname}}</b> registriert und kannst Lerngruppen anlegen.</p>
+            {% if not hat_ort %}
+                <p style="color: orange; margin-top: 15px;">
+                    <strong>Hinweis:</strong> Deine Schule hat noch keinen Ort zugewiesen.
+                    Bitte kontaktiere <a href="mailto:info@rechentrainer.app">info@rechentrainer.app</a>, um die Schuladresse zu ergänzen.
+                </p>
+            {% endif %}
+        {% else %}
+            <p>Das hat geklappt, um als Lehrer freigeschaltet zu werden, musst du jetzt noch eine Mail an <a href="mailto:info@rechentrainer.app">info@rechentrainer.app</a> schicken, aus der irgendwie glaubhaft hervorgeht, dass du auch wirklich Lehrer der <b>{{schule.schulname}}</b> bist!</p>
+        {% endif %}
         <a href="{% url 'index' %}">weiter</a>
     </body>
 {% endblock %}
