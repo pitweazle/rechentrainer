@@ -70,103 +70,6 @@ def vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, ratio):
     return False, None
 
 # # NEUE FUNKTION: Vergleich mit Mistral-API für logische Ausdrücke (o/u)
-# def vergleich_api(index, aufgabe, antwort_norm, antwort_original):
-#     """
-#     Nutzt die Mistral-API, um eine Schülerantwort zu überprüfen.
-#     Wird nur für logische Ausdrücke (o/u) verwendet.
-#     Falls die API nicht verfügbar ist, fällt es auf vergleich_fuzzy zurück.
-    
-#     NEU: Gibt Typ und Optionen an die KI weiter, damit sie die logische Bedingung prüfen kann.
-#     """
-#     # Holen aller Optionen für den Kontext
-#     optionen = list(aufgabe.optionen.order_by("position"))
-    
-#     # Bestimmen des Textes basierend auf dem Index
-#     if index == 1:
-#         text = aufgabe.loesung
-#     else:
-#         pos = index - 2
-#         if pos < 0 or pos >= len(optionen):
-#             return False, None
-#         text = optionen[pos].text
-
-#     if not text:
-#         return False, None
-
-#     try:
-#         api_url = os.getenv("MISTRAL_API_URL", "https://api.mistral.ai/v1/chat/completions")
-#         api_key = os.getenv("MISTRAL_API_KEY")
-
-#         if not api_key:
-#             # Fallback: Nutze Fuzzy-Logik, falls kein API-Key vorhanden
-#             return vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, 0.8)
-
-#         # Formatieren der Optionen für den Prompt
-#         optionen_text = "\n".join([f"  {i+1}: {opt.text}" for i, opt in enumerate(optionen)])
-        
-#         # Typ aus der Aufgabe extrahieren
-#         typ = (aufgabe.typ or "").strip()
-#         typ_hinweis = f"- Typ: {typ} (z. B. \"3u(4o5)\" = Option 3 UND (Option 4 ODER Option 5))"
-
-#         # NEU: Prompt mit Typ und Optionen für logische Bewertung
-#         prompt = f"""
-#         Du bist ein Physik-Lehrer und bewertest eine Schülerantwort basierend auf einer **logischen Bedingung**.
-
-#         **Aufgabenkontext:**
-#         - Frage: {aufgabe.frage}
-#         {typ_hinweis}
-#         - Optionen:
-# {optionen_text}
-#         - Korrekte Lösung: {text}
-
-#         **Schülerantwort:**
-#         {antwort_original}
-
-#         ---
-#         **Anweisungen für dich (KI):**
-#         1. **Analysiere den Typ** und prüfe, ob die Schülerantwort die **logische Bedingung** erfüllt.
-#            - Beispiel: Bei "3u(4o5)" muss die Antwort **Option 3 UND (Option 4 ODER Option 5)** inhaltlich enthalten.
-#         2. **Falls die Schülerantwort inhaltlich richtig ist** (auch wenn sie andere Wörter verwendet):
-#            - Antworte **nur** mit: "stimmt"
-#         3. **Falls die Schülerantwort inhaltlich falsch oder unvollständig ist:**
-#            - Antworte mit einer **kurzen Erklärung (max. 25 Wörter)**, warum sie falsch ist.
-#            - Beispiel: "Falsch. Fehlt Option 3 (Luft) und Option 5 (isoliert)."
-
-#         **Wichtig:**
-#         - Ignoriere die Formulierung und konzentriere dich **nur auf die inhaltliche Richtigkeit**.
-#         - Akzeptiere **Synonyme** (z. B. "isoliert" = "dämmt" = "schützt vor Wärmeverlust").
-#         - Wenn die Schülerantwort **den gleichen Sachverhalt beschreibt**, gilt sie als richtig.
-#         """
-
-#         payload = {
-#             "model": "mistral-medium",
-#             "messages": [{"role": "user", "content": prompt}],
-#             "temperature": 0.3,
-#             "max_tokens": 50,
-#         }
-
-#         headers = {
-#             "Authorization": f"Bearer {api_key}",
-#             "Content-Type": "application/json",
-#         }
-
-#         response = requests.post(api_url, json=payload, headers=headers)
-#         response.raise_for_status()
-#         result = response.json()
-
-#         answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip().lower()
-#         print(f"[KI-DEBUG] Frage: {aufgabe.frage[:50]}... | Lösung: {text[:20]}... | Antwort: {antwort_original[:20]}... | KI-Ergebnis: {answer}")
-#         return (answer == "stimmt"), None
-
-#     except Exception as e:
-#         print(f"[API-Fehler] {e}")
-#         # Fallback: Nutze Fuzzy-Logik, falls API nicht verfügbar
-#         return vergleich_fuzzy(index, aufgabe, antwort_norm, antwort_original, 0.8)
-
-# ===========================================================
-# HAUPTFUNKTION (Bewerte Aufgabe)
-# ===========================================================
-
 def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antwort=None, session=None):
     ergebnis = None
     typ_roh = (aufgabe.typ or "").strip()
@@ -239,7 +142,7 @@ def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antw
         # NUTZE API FÜR LOGISCHE AUSDRÜCKE
         streng_ok, hinweis = bewerte_booleschen_ausdruck(
             typ, aufgabe, norm, text_antwort, ist_logisch,
-            # vergleich_api  # Hier wird die API genutzt
+            lambda idx, aufg, n, o: vergleich_fuzzy(idx, aufg, n, o, 0.8)
         )
         if streng_ok:
             ergebnis = {"richtig": True, "hinweis": "Richtig!"}
