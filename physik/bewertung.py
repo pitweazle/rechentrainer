@@ -486,16 +486,23 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .utils import typ_zu_klartext
 
+from django.core.mail import send_mail
+from django.conf import settings
+from .utils import typ_zu_klartext  # ✅ Korrekter Import
+import re  # ✅ Für Schlüsselwort-Extraktion
+
 def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None, kategorie=None, kapitel=None):
     """
     Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
     - Bei richtiger Antwort: Gibt "stimmt" zurück.
     - Bei falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
     - Bei API-Fehlern: Sendet eine E-Mail an info@physiktrainer.app.
-    
+
     Parameter:
     - typ: Der Typ der Aufgabe (z. B. "3u(4o5)" für logische Verknüpfungen).
     - optionen: QuerySet der Optionen (z. B. aufgabe.optionen.all()).
+    - kategorie: Name der Kategorie (z. B. "Wärmelehre").
+    - kapitel: Name des Kapitels (z. B. "Ausdehnung").
     """
     api_url = os.getenv("MISTRAL_API_URL")
     api_key = os.getenv("MISTRAL_API_KEY")
@@ -507,57 +514,108 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
     optionen_text = ""
     if optionen:
         optionen_text = "\n".join([f"  {i+1}: {opt.text}" for i, opt in enumerate(optionen)])
-    
-    # Typ-Erklärung für die KI
-    typ_hinweis = ""
-    if typ:
-        typ_hinweis = f"- Kriterien: {typ} (z. B. logische Verknüpfung von Optionen)"
 
-    # NEUER PROMPT: Freie Formulierung mit Fokus auf physikalische Prinzipien
+    # Erzeuge Klartext aus dem Typ (falls Optionen vorhanden)
+    typ_klartext = typ  # Fallback
+    if typ and optionen:
+        try:
+            typ_klartext = typ_zu_klartext(typ, loesung, list(optionen))  # ✅ Funktion AUFRUFEN!
+        except Exception as e:
+            print(f"[DEBUG] Fehler in typ_zu_klartext: {e}")
+            typ_klartext = f"Typ: {typ} (Klartext nicht verfügbar)"
+
+    # Extrahiere Schlüsselwörter aus der Lösung für den Vergleich
+    loesung_schluesselwoerter = [wort.lower() for wort in re.findall(r'\b\w+\b', loesung)]
+    optionen_schluesselwoerter = []
+    if optionen:
+        for opt in optionen:
+            optionen_schluesselwoerter.extend([wort.lower() for wort in re.findall(r'\b\w+\b', opt.text)])
+
+    alle_schluesselwoerter = list(set(loesung_schluesselwoerter + optionen_schluesselwoerter))
+    schluesselwoerter_text = ", ".join(alle_schluesselwoerter[:20])
+
+    # # NEUER PROMPT: Extrem strenge Bewertung mit Schlüsselwort-Check
+    # prompt = f"""
+    # Du bist ein **extrem strenger Physiklehrer** und bewertest eine Schülerantwort auf eine **Physikaufgabe**.
+    # Die Aufgabe gehört zur **Kategorie: {kategorie}**, **Kapitel: {kapitel}**.
+
+    # **Aufgabe:** {frage}
+    # **Erwartete Lösung:** {loesung}
+    # **Schlüsselwörter aus Lösung/Optionen:** {schluesselwoerter_text}
+    # **Typ der Aufgabe:** {typ_klartext}
+    # **Optionen (falls vorhanden):**
+    # {optionen_text}
+
+    # **Schülerantwort:** {schueler_antwort}
+
+    # ---
+    # **Deine Aufgabe als KI:**
+    # 1. **Prüfe, ob die Antwort MINDESTENS EIN Schlüsselwort aus der Liste enthält**
+    #    - **Akzeptiere NUR Antworten, die mindestens ein Schlüsselwort aus der Lösung oder den Optionen enthalten!**
+    #    - Beispiel: Bei Lösung "0°C und 100°C" muss die Antwort "Celsius", "0", "100", "Grad" enthalten.
+
+    # 2. **Sei extrem streng mit offensichtlich falschen Antworten**
+    #    - Antworten wie "oben und unten", "Kevin", "Schmutz" sind **IMMER falsch**, wenn sie KEIN Schlüsselwort enthalten.
+
+    # 3. **Bewertung:**
+    #    - Falls korrekt: Antworte **nur** mit `"stimmt"`
+    #    - Falls falsch: Gib eine **kurze Begründung (max. 25 Wörter)**
+
+    # ---
+    # **WICHTIG:**
+    # - **Sei extrem streng!** Akzeptiere NUR Antworten mit Schlüsselwörtern.
+    # - **Nutze die Schlüsselwörter als Hauptkriterium.**
+    # """
+
     prompt = f"""
-    Ein Physiklehrer hat die Antwort **"{schueler_antwort}"** eines Schülers auf die Frage **"{frage}"** als falsch gewertet.
-    Er hat dies nach den Kriterien **"{typ}"** (z. B. logische Verknüpfung von Optionen) beurteilt.
+    Du bist ein ** strenger Physiklehrer** und bewertest eine Schülerantwort **NUR nach physikalischen Fakten**.
 
-    **Möglicherweise hat der Schüler aber doch Recht!**
-    Deine Aufgabe als **unabhängiger Physik-Experte**:
-    - Prüfe, ob die Schülerantwort **physikalische Prinzipien korrekt anwendet** – auch wenn sie nicht offensichtlich oder wortwörtlich mit der Lösung übereinstimmt.
-    - Die Antwort soll **nicht nur oberflächlich richtig sein**, sondern zeigen, dass der Schüler **physikalische Zusammenhänge verstanden hat**.
+    **Aufgabe:** {frage}
+    **Kategorie:** {kategorie}
+    **Kapitel:** {kapitel}
+    **Erwartete Lösung:** {loesung}
+    **Schlüsselwörter:** {schluesselwoerter_text}
 
-    ---
-    **Kontext:**
-    - **Korrekte Lösung:** {loesung}
-    - **Optionen (falls vorhanden):**
-    {optionen_text}
+    **Schülerantwort:** {schueler_antwort}
 
     ---
-    **Bewertungskriterien:**
-    1. **Physikalische Tiefe:**
-       - Akzeptiere Antworten, die **physikalische Prinzipien** korrekt anwenden, auch wenn sie anders formuliert sind.
-         - Beispiel: Frage: *"Warum plustern Vögel ihr Gefieder auf?"*
-           - Oberflächlich: *"Damit sie nicht erfrieren."* → **Nicht akzeptieren** (fehlende Physik).
-           - Korrekt: *"Mehr Luft im Gefieder isoliert und reduziert den Wärmeverlust."* → **Akzeptieren**.
-       - **Synonyme sind erlaubt**, wenn sie physikalisch äquivalent sind (z. B. *"isoliert"* = *"dämmt"* = *"reduziert Wärmeübertragung"*).
+    **Deine Aufgabe als KI:**
+    1. **Akzeptiere Antworten, die:**
+    - **Exakte Schlüsselwörter** enthalten (z. B. "Kelvin", "-273°C", "0 K")
+    - **Leichte Tippfehler** haben (z. B. "Kellin" → "Kelvin", "Celsis" → "Celsius")
+        → **Nur wenn die Ähnlichkeit >90% ist!**
 
-    2. **Bezug zu den Optionen:**
-       - Falls die Schülerantwort **Begriffe aus den Optionen** verwendet, die physikalisch korrekt sind, bewerten sie als richtig.
-       - Falls die Antwort **falsche oder unpräzise Begriffe** enthält, vergleiche sie mit den Optionen und weise darauf hin.
+    2. **Lehne Antworten AB, die:**
+    - **Keine Schlüsselwörter** enthalten (z. B. "ganz unten", "sehr kalt")
+    - **Metaphern** sind (z. B. "kältester Punkt")
+    - **Völlig falsch** sind (z. B. "Kevin", "Schmutz")
 
     3. **Rückmeldung:**
-       - **Falls die Antwort physikalisch korrekt ist:**
-         - Antworte **nur** mit: `"stimmt"`
-       - **Falls die Antwort falsch oder unvollständig ist:**
-         - Gib eine **kurze, präzise Rückmeldung (max. 25 Wörter)**, die:
-           1. **Den Fehler benennt** (z. B. *"Fehlt der Bezug zur Wärmeleitung."*).
-           2. **Auf korrekte Begriffe hinweist** (z. B. *"Nutze Begriffe wie 'Isolierung' oder 'Wärmeverlust' (siehe Optionen)."*).
-       - **Falls die Antwort oberflächlich ist:**
-         - Fordere eine **physikalische Begründung** ein (z. B. *"Erkläre das Prinzip, z. B. 'Luft isoliert durch geringe Wärmeleitung'."*).
+    - Falls korrekt: Antworte **nur** mit `"stimmt"`
+    - Falls falsch: Gib eine **kurze Begründung (max. 25 Wörter)**
+        Beispiel: "Falsch. Erwarte: Kelvin, -273°C, absoluter Nullpunkt."
 
     ---
-    **Wichtig:**
-    - **Sei streng mit Oberflächlichkeit**, aber fair mit alternativen Formulierungen.
-    - **Nutze die Optionen als Referenz** für erwartete Begriffe.
-    - **Maximal 25 Wörter** in der Rückmeldung.
+    **WICHTIG:**
+    - **Sei streng mit Metaphern!** Akzeptiere NUR exakte Begriffe oder minimale Tippfehler.
+    - **Nutze die Schlüsselwörter als Hauptkriterium.**
     """
+
+    # DEBUG: Prompt ausgeben
+    print("\n" + "="*80)
+    print("KI-PROMPT DEBUG:")
+    print("="*80)
+    print(f"Frage: {frage[:100]}...")
+    print(f"Loesung: {loesung[:100]}...")
+    print(f"Schuelerantwort: {schueler_antwort[:100]}...")
+    print(f"Kategorie: {kategorie}")
+    print(f"Kapitel: {kapitel}")
+    print(f"Typ: {typ}")
+    print(f"Typ Klartext: {typ_klartext}")  # ✅ Jetzt ein String!
+    print("-"*80)
+    print("Vollständiger Prompt:")
+    print(prompt)
+    print("="*80 + "\n")
 
     payload = {
         "model": "mistral-medium",
@@ -571,35 +629,17 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
         "Content-Type": "application/json",
     }
 
-    # DEBUG: Prompt ausgeben
-    print("\n" + "="*80)
-    print("KI-PROMPT DEBUG:")
-    print("="*80)
-    print(f"Frage: {frage[:100]}...")
-    print(f"Loesung: {loesung[:100]}...")
-    print(f"Schuelerantwort: {schueler_antwort[:100]}...")
-    print(f"Kategorie: {kategorie}")
-    print(f"Kapitel: {kapitel}")
-    print(f"Typ: {typ}")
-    print(f"Typ Klartext: {typ_klartext}")
-    print("-"*80)
-    print("Vollstaendiger Prompt:")
-    print(prompt)
-    print("="*80)
-    
     try:
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
         answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
-        # Debug-Ausgabe im Terminal
-        print(f"[KI-DEBUG] Frage: {frage[:50]}... | Lösung: {loesung[:20]}... | Antwort: {schueler_antwort[:20]}... | KI-Ergebnis: {answer}")
+        print(f"[KI-DEBUG] KI-Ergebnis: {answer}")
 
         if answer.lower() == "stimmt":
             return "stimmt"
         else:
-            # Begrenze auf 25 Wörter
             woerter = answer.split()
             if len(woerter) > 25:
                 answer = " ".join(woerter[:25]) + "..."

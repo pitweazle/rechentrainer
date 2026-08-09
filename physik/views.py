@@ -537,7 +537,7 @@ def aufgaben(request):
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
 
             # KI-Zweite Bewertung für Freitext-Aufgaben
-            if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
+            if aufgabe.typ not in ["p", "a", "r", "w", "x"] and aufgabe.typ in ["o", "u"] :
                 ki_ergebnis = check_answer_with_api(
                         aufgabe.frage, 
                         aufgabe.loesung, 
