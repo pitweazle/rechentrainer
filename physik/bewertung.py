@@ -571,6 +571,22 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
         "Content-Type": "application/json",
     }
 
+    # DEBUG: Prompt ausgeben
+    print("\n" + "="*80)
+    print("KI-PROMPT DEBUG:")
+    print("="*80)
+    print(f"Frage: {frage[:100]}...")
+    print(f"Loesung: {loesung[:100]}...")
+    print(f"Schuelerantwort: {schueler_antwort[:100]}...")
+    print(f"Kategorie: {kategorie}")
+    print(f"Kapitel: {kapitel}")
+    print(f"Typ: {typ}")
+    print(f"Typ Klartext: {typ_klartext}")
+    print("-"*80)
+    print("Vollstaendiger Prompt:")
+    print(prompt)
+    print("="*80)
+    
     try:
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
