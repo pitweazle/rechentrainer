@@ -553,7 +553,19 @@ def aufgaben(request):
         # ---- falsch ----
         else:
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
+<<<<<<< HEAD
             print(hinweis_text,antwort, aufgabe.frage)
+=======
+            
+            # KI-Zweite Bewertung für Freitext-Aufgaben
+            if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
+                ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
+                if ki_ergebnis and ki_ergebnis != "stimmt":
+                    hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
+                elif ki_ergebnis == "stimmt":
+                    hinweis_text += f"<br><br>Hinweis: Die KI bestätigt, dass deine Antwort inhaltlich stimmt! (Diese Einschätzung kommt von einer KI)"
+            
+>>>>>>> 159cda60b1ba4805e6b66f083159fd605d628399
             # Wir hängen den Standard-Text NICHT an bei:
             # 'p' (Bilder) und 'a' (Listen/Auswahl), weil diese eigene Formate haben.
             if aufgabe.typ not in ["p", "a", "r"]:
