@@ -536,62 +536,45 @@ def aufgaben(request):
         else:
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
 
-            # KI-Zweite Bewertung für Freitext-Aufgaben
-            if aufgabe.typ not in ["p", "a", "r", "w", "x"] and aufgabe.typ in ["o", "u"] :
-                ki_ergebnis = check_answer_with_api(
-                        aufgabe.frage, 
-                        aufgabe.loesung, 
-                        antwort, 
-                        typ=aufgabe.typ, 
-                        optionen=aufgabe.optionen.all(),
-                        kategorie=aufgabe.thema.thema if aufgabe.thema else "Unbekannt",
-                        kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"
-                    )
-                if ki_ergebnis == "stimmt":
-                    # KI akzeptiert die Antwort als inhaltlich richtig
-                    # Speichere im FehlerLog mit KI-Bewertung
-                    FehlerLog.objects.create(
-                        aufgabe=aufgabe,
-                        eingegebene_antwort=antwort,
-                        ki_bewertung=True,
-                        ki_hinweis=f"KI hat die Antwort als inhaltlich richtig bewertet: {ki_ergebnis}"
-                    )
-                    messages.success(request, f"""Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.
-                    Ich (die KI) finde deine Antwort "{antwort}" auch gut - vielleicht berücksichtigst du den Lösungsvorschlag des Physiktrainers beim nächsten Mal.
-                    (KI-Einschätzung)""")
-                    request.session["index"] += 1
-                    request.session.pop('aktiver_index', None)
-                    request.session["warte_auf_weiter"] = False
-                    request.session.pop("letzte_antwort", None)
-                    return redirect("physik:aufgaben")
-                elif ki_ergebnis:
-                    hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
-                    # Speichere KI-Bewertung im FehlerLog
-                    FehlerLog.objects.create(
-                        aufgabe=aufgabe,
-                        eingegebene_antwort=antwort,
-                        ki_bewertung=False,
-                        ki_hinweis=f"KI-Bewertung: {ki_ergebnis}"
-                    )
-            # Standard-Texte nur anhängen, wenn KI nicht "stimmt" gesagt hat
-            if aufgabe.typ not in ["p", "a", "r"]:
-                hinweis_text = (
-                    f"{hinweis_text} "
-                    f"Deine Eingabe: »{antwort}« | "
-                    f"Richtige Lösung: »{aufgabe.loesung}«"
+        # KI-Zweite Bewertung für Freitext-Aufgaben
+        if aufgabe.typ not in ["p", "a", "r", "w", "x"] and ("o" in aufgabe.typ or "u" in aufgabe.typ):
+            ki_ergebnis = check_answer_with_api(
+                aufgabe.frage,
+                aufgabe.loesung,
+                antwort,
+                typ=aufgabe.typ,
+                optionen=aufgabe.optionen.all(),
+                kategorie=aufgabe.thema.thema if aufgabe.thema else "Unbekannt",
+                kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"  # ✅ Korrigiert: .name statt .kapitel
+            )
+
+            # Prüfe, ob bereits ein FehlerLog-Eintrag in der Session existiert
+            fehler_log_id = request.session.get("fehler_log_id")
+
+        if ki_ergebnis == "stimmt":
+            # KI akzeptiert die Antwort als inhaltlich richtig
+            fehler_log_id = request.session.get("fehler_log_id")
+            if fehler_log_id:
+                fehler_log = FehlerLog.objects.get(pk=int(fehler_log_id))
+                fehler_log.ki_bewertung = True
+                fehler_log.ki_hinweis = f"KI hat die Antwort als inhaltlich richtig bewertet: {ki_ergebnis}"
+                fehler_log.save()
+                request.session.pop("fehler_log_id", None)
+            else:
+                fehler_log = FehlerLog.objects.create(
+                    aufgabe=aufgabe,
+                    eingegebene_antwort=antwort,
+                    ki_bewertung=True,
+                    ki_hinweis=f"KI hat die Antwort als inhaltlich richtig bewertet: {ki_ergebnis}"
                 )
+                request.session["fehler_log_id"] = int(fehler_log.pk)
 
-            # Die Begründung/Erklärung anhängen
-            if aufgabe.erklaerung and aufgabe.erklaerung not in hinweis_text:
-                # Nutze <br> für HTML-Umbrüche, falls dein Template das rendert
-                hinweis_text += f"<br><br><strong>Begründung:</strong> {aufgabe.erklaerung}"
-            
-            messages.warning(request, hinweis_text)
-            
-            request.session["warte_auf_weiter"] = True
-            request.session["letzte_antwort"] = antwort
-
-        return redirect("physik:aufgaben")
+            messages.success(request, f'Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.\nIch (die KI) finde deine Antwort "{antwort}" auch gut - vielleicht berücksichtigst du den Lösungsvorschlag des Physiktrainers beim nächsten Mal.\n(KI-Einschätzung)')
+            request.session["index"] += 1
+            request.session.pop('aktiver_index', None)
+            request.session["warte_auf_weiter"] = False
+            request.session.pop("letzte_antwort", None)
+            return redirect("physik:aufgaben")
 
     # -------- GET anzeigen --------
     return render(request, "physik/aufgabe.html", {

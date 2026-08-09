@@ -161,10 +161,11 @@ def bewerte_aufgabe(request, aufgabe, user_antwort, text_antwort=None, bild_antw
         ergebnis = {"richtig": False, "hinweis": "Leider falsch."}
 
     if not ergebnis.get("richtig") and text_antwort:
-        FehlerLog.objects.get_or_create(
+        fehler_log = FehlerLog.objects.create(
             aufgabe=aufgabe,
             eingegebene_antwort=text_antwort.strip()
         )
+        request.session["fehler_log_id"] = int(fehler_log.pk)
 
     return ergebnis
 
