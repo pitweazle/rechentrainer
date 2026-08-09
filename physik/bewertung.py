@@ -484,8 +484,9 @@ def bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv=False, ratio=0.8):
 
 from django.core.mail import send_mail
 from django.conf import settings
+from .management.commands.typ_zu_klartext import Command
 
-def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None):
+def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None, kategorie=None, kapitel=None):
     """
     Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
     - Bei richtiger Antwort: Gibt "stimmt" zurück.

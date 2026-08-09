@@ -538,7 +538,15 @@ def aufgaben(request):
 
             # KI-Zweite Bewertung für Freitext-Aufgaben
             if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
-                ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
+                ki_ergebnis = check_answer_with_api(
+                        aufgabe.frage, 
+                        aufgabe.loesung, 
+                        antwort, 
+                        typ=aufgabe.typ, 
+                        optionen=aufgabe.optionen.all(),
+                        kategorie=aufgabe.kapitel.thema.name if aufgabe.kapitel and aufgabe.kapitel.thema else "Unbekannt",
+                        kapitel=aufgabe.kapitel.name if aufgabe.kapitel else "Unbekannt"
+                    )
                 if ki_ergebnis == "stimmt":
                     # KI akzeptiert die Antwort als inhaltlich richtig
                     # Speichere im FehlerLog mit KI-Bewertung
