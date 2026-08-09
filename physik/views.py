@@ -541,6 +541,13 @@ def aufgaben(request):
                 ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
                 if ki_ergebnis == "stimmt":
                     # KI akzeptiert die Antwort als inhaltlich richtig
+                    # Speichere im FehlerLog mit KI-Bewertung
+                    FehlerLog.objects.create(
+                        aufgabe=aufgabe,
+                        eingegebene_antwort=antwort,
+                        ki_bewertung=True,
+                        ki_hinweis=f"KI hat die Antwort als inhaltlich richtig bewertet: {ki_ergebnis}"
+                    )
                     messages.success(request, f"""Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.
                     Ich (die KI) finde deine Antwort "{antwort}" auch gut - vielleicht berücksichtigst du den Lösungsvorschlag des Physiktrainers beim nächsten Mal.
                     (KI-Einschätzung)""")
@@ -551,6 +558,13 @@ def aufgaben(request):
                     return redirect("physik:aufgaben")
                 elif ki_ergebnis:
                     hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
+                    # Speichere KI-Bewertung im FehlerLog
+                    FehlerLog.objects.create(
+                        aufgabe=aufgabe,
+                        eingegebene_antwort=antwort,
+                        ki_bewertung=False,
+                        ki_hinweis=f"KI-Bewertung: {ki_ergebnis}"
+                    )
             # Standard-Texte nur anhängen, wenn KI nicht "stimmt" gesagt hat
             if aufgabe.typ not in ["p", "a", "r"]:
                 hinweis_text = (

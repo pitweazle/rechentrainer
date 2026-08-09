@@ -190,6 +190,10 @@ class FehlerLog(models.Model):
     aufgabe = models.ForeignKey(Aufgabe, on_delete=models.CASCADE, related_name="fehler_logs")
     eingegebene_antwort = models.TextField()
     zeitpunkt = models.DateTimeField(auto_now_add=True)
+    ki_bewertung = models.BooleanField(null=True, blank=True, default=None,
+                                       help_text="Ob die KI die Antwort als richtig bewertet hat (True=richtig, False=falsch, None=nicht geprüft)")
+    ki_hinweis = models.TextField(blank=True, default="",
+                                 help_text="Rückmeldung der KI zur Bewertung")
 
     class Meta:
         ordering = ['-zeitpunkt']
