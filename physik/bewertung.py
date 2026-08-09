@@ -484,7 +484,7 @@ def bewerte_luecke(aufgabe, user_antwort, fuzzy_aktiv=False, ratio=0.8):
 
 from django.core.mail import send_mail
 from django.conf import settings
-from .management.commands.typ_zu_klartext import Command
+from .utils import typ_zu_klartext
 
 def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None, kategorie=None, kapitel=None):
     """
