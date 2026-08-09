@@ -539,16 +539,20 @@ def aufgaben(request):
             # KI-Zweite Bewertung für Freitext-Aufgaben
             if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
                 ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
-                if ki_ergebnis and ki_ergebnis != "stimmt":
+                if ki_ergebnis == "stimmt":
+                    # KI akzeptiert die Antwort als inhaltlich richtig
+                    messages.success(request, f"""Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.
+                    Ich (die KI) finde deine Antwort "{antwort}" auch gut - vielleicht berücksichtigst du den Lösungsvorschlag des Physiktrainers beim nächsten Mal.
+                    (KI-Einschätzung)""")
+                    request.session["index"] += 1
+                    request.session.pop('aktiver_index', None)
+                    request.session["warte_auf_weiter"] = False
+                    request.session.pop("letzte_antwort", None)
+                    return redirect("physik:aufgaben")
+                elif ki_ergebnis:
                     hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
-                elif ki_ergebnis == "stimmt":
-                    hinweis_text += f"<br><br>Hinweis: Die KI bestätigt, dass deine Antwort inhaltlich stimmt! (Diese Einschätzung kommt von einer KI)"
-            # Wir hängen den Standard-Text NICHT an bei:
-            # 'p' (Bilder) und 'a' (Listen/Auswahl), weil diese eigene Formate haben.
+            # Standard-Texte nur anhängen, wenn KI nicht "stimmt" gesagt hat
             if aufgabe.typ not in ["p", "a", "r"]:
-
-
-
                 hinweis_text = (
                     f"{hinweis_text} "
                     f"Deine Eingabe: »{antwort}« | "
