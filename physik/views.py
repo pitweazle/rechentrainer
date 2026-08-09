@@ -544,8 +544,8 @@ def aufgaben(request):
                         antwort, 
                         typ=aufgabe.typ, 
                         optionen=aufgabe.optionen.all(),
-                        kategorie=aufgabe.thema.name if aufgabe.thema else "Unbekannt",
-                        kapitel=aufgabe.kapitel.name if aufgabe.kapitel else "Unbekannt"
+                        kategorie=aufgabe.thema.thema if aufgabe.thema else "Unbekannt",
+                        kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"
                     )
                 if ki_ergebnis == "stimmt":
                     # KI akzeptiert die Antwort als inhaltlich richtig
