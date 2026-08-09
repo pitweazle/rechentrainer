@@ -21,7 +21,7 @@ from accounts.forms import  Login_Form, Suchen_Form, Loeschen_Form, Zusammen_For
 from .models import ThemenBereich, Kapitel, Aufgabe, FehlerLog, AufgabeOption, Protokoll
 from .forms import Register_Form, Profil_Form
 
-from .bewertung import bewerte_aufgabe
+from .bewertung import bewerte_aufgabe, check_answer_with_api
 
 def ist_mitarbeiter(user):
     if not user.is_authenticated:
@@ -539,6 +539,14 @@ def aufgaben(request):
         # ---- falsch ----
         else:
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
+            
+            # KI-Zweite Bewertung für Freitext-Aufgaben
+            if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
+                ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
+                if ki_ergebnis and ki_ergebnis != "stimmt":
+                    hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
+                elif ki_ergebnis == "stimmt":
+                    hinweis_text += f"<br><br>Hinweis: Die KI bestätigt, dass deine Antwort inhaltlich stimmt! (Diese Einschätzung kommt von einer KI)"
             
             # Wir hängen den Standard-Text NICHT an bei:
             # 'p' (Bilder) und 'a' (Listen/Auswahl), weil diese eigene Formate haben.
