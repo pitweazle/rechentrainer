@@ -518,21 +518,6 @@ def aufgaben(request):
             bild_antwort=bild_antwort,
             session=request.session,
         )
-        print("ergebnis: ",ergebnis)
-        if  "richtig" not in ergebnis and aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
-
-            hinweis_text = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=None, optionen=None)
-            print("hinweistext: ", hinweis_text)
-            if "stimmt" in hinweis_text:
-                hinweis_text = (
-                    f"{hinweis_text} "
-                    f"Deine Eingabe: »{antwort}« | "
-                    f"Richtige Lösung: »{aufgabe.loesung}«"
-                    f"(Diese Einschätzung kommt von einer KI)"
-                )
-
-
-
         # ---- richtig ----
         if ergebnis.get("richtig"):
             messages.success(request, ergebnis.get("hinweis", "Richtig!"))
@@ -550,7 +535,14 @@ def aufgaben(request):
         # ---- falsch ----
         else:
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
-            print(hinweis_text,antwort, aufgabe.frage)
+
+            # KI-Zweite Bewertung für Freitext-Aufgaben
+            if aufgabe.typ not in ["p", "a", "r", "w", "x", "l"]:
+                ki_ergebnis = check_answer_with_api(aufgabe.frage, aufgabe.loesung, antwort, typ=aufgabe.typ, optionen=aufgabe.optionen.all())
+                if ki_ergebnis and ki_ergebnis != "stimmt":
+                    hinweis_text += f"<br><br>KI-Hinweis: {ki_ergebnis} (Diese Einschätzung kommt von einer KI)"
+                elif ki_ergebnis == "stimmt":
+                    hinweis_text += f"<br><br>Hinweis: Die KI bestätigt, dass deine Antwort inhaltlich stimmt! (Diese Einschätzung kommt von einer KI)"
             # Wir hängen den Standard-Text NICHT an bei:
             # 'p' (Bilder) und 'a' (Listen/Auswahl), weil diese eigene Formate haben.
             if aufgabe.typ not in ["p", "a", "r"]:
