@@ -18,6 +18,8 @@ urlpatterns = [
     # SSO Einbindung
     path('lti/launch/', views.lti_launch, name='lti_launch'),
     path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
+    path('simulation_moodle/', views.simulation_moodle, name='simulation_moodle'),
+    path('physik/simulation/moodle/', views.simulation_moodle, name='simulation_moodle_physik'),
     path('eduplaces/login/', views.eduplaces_login, name='eduplaces_login'),
     path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
     path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),

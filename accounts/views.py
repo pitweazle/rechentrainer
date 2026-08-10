@@ -318,7 +318,7 @@ def lti_launch(request):
             user.email = moodle_email
             user.save()
         login(request, user)
-        return redirect('physik_index' if platform == 'physik' else 'index')
+        return redirect('physik:index' if platform == 'physik' else 'index')
     except Profil.DoesNotExist:
         pass
 
@@ -395,9 +395,6 @@ def moodle_entscheidung(request):
             else:  # physik
                 reg_jg = ''
                 reg_kurs = ''
-                # Falls Lehrkraft und Feld leer/nicht ausgefüllt -> automatisch setzen
-                if moodle_data.get('gruppe') == 'Lehrer' and not reg_klasse:
-                    reg_klasse = 'Lehrer/in'
 
             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
             zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
@@ -417,7 +414,9 @@ def moodle_entscheidung(request):
                 schule=schule_obj,
                 jg=reg_jg,
                 klasse=reg_klasse,
-                kurs=reg_kurs
+                kurs=reg_kurs,
+                mathe=(platform == 'mathe'),
+                physik=(platform == 'physik')
             )
             
             login(request, user)
@@ -457,6 +456,7 @@ def moodle_entscheidung(request):
                     'nachname': moodle_data['nachname'],
                     'error_message': 'Ungültiger Benutzername oder Passwort.'
                 })
+
         # D) Abbrechen
         elif aktion == 'abbrechen':
             if 'moodle_launch_data' in request.session:
@@ -471,7 +471,6 @@ def moodle_entscheidung(request):
 @csrf_exempt
 def simulation_moodle(request):
     if request.method == 'POST':
-        # Echtes QueryDict für POST-Daten erstellen, damit .dict() im lti_launch funktioniert
         q = QueryDict('', mutable=True)
         q.setlist('oauth_consumer_key', [request.POST.get('schule_id', 'DE-HE-6072')])
         q.setlist('user_id', [request.POST.get('uid', 'test_franz')])
@@ -482,31 +481,31 @@ def simulation_moodle(request):
         q.setlist('context_title', [request.POST.get('klasse', 'Testklasse')])
         q.setlist('custom_jg', [request.POST.get('jg', '6')])
 
-        # Fake-Request zusammenbauen
         fake_request = HttpRequest()
         fake_request.method = 'POST'
         fake_request.POST = q
         fake_request.session = request.session
+        fake_request.platform = request.platform  # ← neu: vom echten Request übernehmen
 
-        # Rufe lti_launch auf und gib die Antwort zurück
         return lti_launch(fake_request)
 
-    # HTML-Formular für die Simulation
-    return HttpResponse("""
+    return HttpResponse(f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Moodle-LTI-Simulation (realistisch)</title>
             <style>
-                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
-                input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-                button { background: #28a745; color: white; border: none; cursor: pointer; }
+                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }}
+                form {{ background: #f5f5f5; padding: 20px; border-radius: 8px; }}
+                input, select, button {{ padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }}
+                button {{ background: #28a745; color: white; border: none; cursor: pointer; }}
             </style>
         </head>
         <body>
             <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
             <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
+            <p><strong>Aktuell erkannte Platform:</strong> {request.platform}</p>
+
             <form method="POST">
                 <label>Consumer Key (Dienststellennr):</label>
                 <input type="text" name="schule_id" value="DE-HE-6072"><br>
@@ -540,7 +539,6 @@ def simulation_moodle(request):
         </body>
         </html>
     """)
-
 # Eduplaces:
 def get_oidc_endpoints():
   """Lädt die Discovery-Endpunkte von Eduplaces."""

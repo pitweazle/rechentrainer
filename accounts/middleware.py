@@ -7,7 +7,7 @@ class PlatformSwitchMiddleware:
     def __call__(self, request):
         host = request.get_host()
         
-        if 'physik' in host:
+        if 'physik' in host or request.path.startswith('/physik/'):
             request.platform = 'physik'
             request.login_url = '/physik/anmelden/'
             
