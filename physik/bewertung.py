@@ -535,39 +535,6 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
     alle_schluesselwoerter = list(set(loesung_schluesselwoerter + optionen_schluesselwoerter))
     schluesselwoerter_text = ", ".join(alle_schluesselwoerter[:20])
 
-    # # NEUER PROMPT: Extrem strenge Bewertung mit Schlüsselwort-Check
-    # prompt = f"""
-    # Du bist ein **extrem strenger Physiklehrer** und bewertest eine Schülerantwort auf eine **Physikaufgabe**.
-    # Die Aufgabe gehört zur **Kategorie: {kategorie}**, **Kapitel: {kapitel}**.
-
-    # **Aufgabe:** {frage}
-    # **Erwartete Lösung:** {loesung}
-    # **Schlüsselwörter aus Lösung/Optionen:** {schluesselwoerter_text}
-    # **Typ der Aufgabe:** {typ_klartext}
-    # **Optionen (falls vorhanden):**
-    # {optionen_text}
-
-    # **Schülerantwort:** {schueler_antwort}
-
-    # ---
-    # **Deine Aufgabe als KI:**
-    # 1. **Prüfe, ob die Antwort MINDESTENS EIN Schlüsselwort aus der Liste enthält**
-    #    - **Akzeptiere NUR Antworten, die mindestens ein Schlüsselwort aus der Lösung oder den Optionen enthalten!**
-    #    - Beispiel: Bei Lösung "0°C und 100°C" muss die Antwort "Celsius", "0", "100", "Grad" enthalten.
-
-    # 2. **Sei extrem streng mit offensichtlich falschen Antworten**
-    #    - Antworten wie "oben und unten", "Kevin", "Schmutz" sind **IMMER falsch**, wenn sie KEIN Schlüsselwort enthalten.
-
-    # 3. **Bewertung:**
-    #    - Falls korrekt: Antworte **nur** mit `"stimmt"`
-    #    - Falls falsch: Gib eine **kurze Begründung (max. 25 Wörter)**
-
-    # ---
-    # **WICHTIG:**
-    # - **Sei extrem streng!** Akzeptiere NUR Antworten mit Schlüsselwörtern.
-    # - **Nutze die Schlüsselwörter als Hauptkriterium.**
-    # """
-
     prompt = f"""
     Du bist ein ** strenger Physiklehrer** und bewertest eine Schülerantwort **NUR nach physikalischen Fakten**.
 
@@ -674,3 +641,4 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
         except Exception:
             pass
         raise RuntimeError(error_msg)
+    
