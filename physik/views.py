@@ -494,14 +494,13 @@ def aufgaben(request):
     elif "e" in (aufgabe.typ or "").lower():
         anmerkung_fuer_template = "Bitte beide Begriffe mit ';' oder '...' trennen."
 
-    # -------- POST --------
+# -------- POST --------
     if request.method == "POST":
-        # Hier definierst du 'antwort'
         antwort = request.POST.get("user_antwort") or request.POST.get("antwort", "")
         bild_antwort = request.POST.get("bild_antwort")
 
         # ---- Skip ----
-        if not antwort and not bild_antwort:# and not request.session.get("warte_auf_weiter"):
+        if not antwort and not bild_antwort:
             if not request.session.get("warte_auf_weiter"):
                 messages.info(request, "Letzte Aufgabe übersprungen.")
             request.session["index"] += 1
@@ -509,7 +508,7 @@ def aufgaben(request):
             request.session["warte_auf_weiter"] = False
             request.session.pop("letzte_antwort", None)
             return redirect("physik:aufgaben")
-        
+
         ergebnis = bewerte_aufgabe(
             request,
             aufgabe,
@@ -518,13 +517,18 @@ def aufgaben(request):
             bild_antwort=bild_antwort,
             session=request.session,
         )
+
+        print(f"DEBUG: ergebnis = {ergebnis}")
+
         # ---- richtig ----
         if ergebnis.get("richtig"):
+            print("DEBUG: Antwort wurde als RICHTIG bewertet (keine KI-Prüfung)")
             messages.success(request, ergebnis.get("hinweis", "Richtig!"))
             request.session["index"] += 1
             request.session.pop('aktiver_index', None)
             request.session["warte_auf_weiter"] = False
             request.session.pop("letzte_antwort", None)
+            return redirect("physik:aufgaben")  # ⬅ FIX 1: sonst wird unten die alte Aufgabe erneut gerendert
 
         # ---- ungültig ----
         elif ergebnis.get("ungueltig"):
@@ -534,19 +538,27 @@ def aufgaben(request):
 
         # ---- falsch ----
         else:
+            print("DEBUG: Antwort wurde als FALSCH bewertet (KI-Prüfung möglich)")
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
 
             # KI-Zweite Bewertung für Freitext-Aufgaben
             if aufgabe.typ not in ["p", "a", "r", "w", "x"] and ("o" in aufgabe.typ or "u" in aufgabe.typ):
-                ki_ergebnis = check_answer_with_api(
-                    aufgabe.frage,
-                    aufgabe.loesung,
-                    antwort,
-                    typ=aufgabe.typ,
-                    optionen=aufgabe.optionen.all(),
-                    kategorie=aufgabe.thema.thema if aufgabe.thema else "Unbekannt",
-                    kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"  # ✅ .kapitel (nicht .name)
-                )
+
+                # ⬅ FIX 2: KI-Aufruf absichern, damit ein API-Fehler die Seite nicht zum Absturz bringt
+                try:
+                    ki_ergebnis = check_answer_with_api(
+                        aufgabe.frage,
+                        aufgabe.loesung,
+                        antwort,
+                        typ=aufgabe.typ,
+                        optionen=aufgabe.optionen.all(),
+                        kategorie=aufgabe.thema.thema if aufgabe.thema else "Unbekannt",
+                        kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"
+                    )
+                except RuntimeError as e:
+                    print(f"[WARN] KI-Check fehlgeschlagen: {e}")
+                    messages.warning(request, "Die KI-Prüfung ist gerade nicht erreichbar. " + hinweis_text)
+                    ki_ergebnis = None
 
                 fehler_log_id = request.session.get("fehler_log_id")
 
@@ -576,7 +588,21 @@ def aufgaben(request):
                     request.session["warte_auf_weiter"] = False
                     request.session.pop("letzte_antwort", None)
                     return redirect("physik:aufgaben")
-                
+
+                elif ki_ergebnis is not None:
+                    # KI hat explizit "falsch" bewertet (nicht "stimmt")
+                    messages.error(request, f"Leider falsch. {ki_ergebnis}")
+                    request.session["warte_auf_weiter"] = False
+                    request.session.pop("letzte_antwort", None)
+
+                # bei ki_ergebnis is None (Fehlerfall aus dem except-Block)
+                # wurde die Warning oben schon gesetzt, kein weiterer Code nötig
+
+            else:
+                # Kein KI-Check für diesen Typ → normale Fehlermeldung anzeigen
+                messages.error(request, hinweis_text)
+                request.session["warte_auf_weiter"] = False
+                request.session.pop("letzte_antwort", None)                
     # -------- GET anzeigen --------
     return render(request, "physik/aufgabe.html", {
         "aufgabe": aufgabe,

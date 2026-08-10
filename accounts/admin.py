@@ -59,7 +59,7 @@ class ProfilAdmin(admin.ModelAdmin):
     # Feldgruppen für die Detailansicht eines Profils
     fieldsets = [
         ('Allgemein', {
-            'fields': [('vorname', 'nachname', 'klasse'),('mathe', 'physik')]
+            'fields': [('vorname', 'nachname', 'klasse', 'schule', ),('mathe', 'physik')]
         }),
         ('Mathe-Spezifisch', {
             'fields': [('gruppe', 'jg', 'kurs', 'stufe', 'sj', 'hj', 'katmax')],
