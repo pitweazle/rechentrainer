@@ -80,7 +80,7 @@
             </div>
         </div>
 
-        {% if darf_bearbeiten %}
+        {% if ist_mitarbeiter %}
             <div class="card-footer d-flex justify-content-between bg-light align-items-center">
                 <small class="text-muted">Kapitel: {{ aufgabe.kapitel.kapitel }}</small>
                 <a href="/admin/physik/aufgabe/{{ aufgabe.id }}/change/" class="btn btn-warning btn-sm">Im Admin bearbeiten</a>
