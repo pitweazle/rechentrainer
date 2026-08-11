@@ -28,6 +28,14 @@ def ist_mitarbeiter(user):
         return False
     return user.groups.filter(name='Mitarbeiter').exists()
 
+def ist_lehrer(user):
+    if not user.is_authenticated:
+        return False
+    return user.groups.filter(name='Lehrer').exists()
+
+def ist_mitarbeiter_oder_lehrer(user):
+    return ist_mitarbeiter(user) or ist_lehrer(user)
+
 def berechne_sperre(total, f1_bestand, f2_bestand, ziel_fach, f3_bestand=0):
     ready = True
     hint = ""
@@ -169,6 +177,7 @@ def index(request):
             "kapitel_map": kapitel_map,
             'profil': profil,
             "ist_mitarbeiter": ist_mitarbeiter(request.user),
+            "ist_lehrer": ist_lehrer(request.user),
         })
 
 def anmelden(req):
@@ -654,7 +663,7 @@ def aufgaben(request):
         if request.session.get("warte_auf_weiter") else "",
     })
 
-@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
+@user_passes_test(ist_mitarbeiter_oder_lehrer, login_url='/physik/anmelden/')
 def aufgaben_liste(request):
     themenbereiche = ThemenBereich.objects.all()
     thema_id = request.GET.get('thema')
@@ -686,11 +695,14 @@ def aufgaben_liste(request):
         'suche': suche, # Damit das Suchwort im Feld stehen bleibt
     })
 
-@user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
+@user_passes_test(ist_mitarbeiter_oder_lehrer, login_url='/physik/anmelden/')
 def aufgabe_einstellungen(request, pk):
-    # Holt die Aufgabe oder zeigt 404, wenn die ID nicht existiert
     aufgabe = get_object_or_404(Aufgabe, pk=pk)
-    return render(request, 'physik/aufgabe_einstellungen.html', {'aufgabe': aufgabe})
+    kann_bearbeiten = ist_mitarbeiter(request.user)
+    return render(request, 'physik/aufgabe_einstellungen.html', {
+        'aufgabe': aufgabe,
+        'ist_mitarbeiter': kann_bearbeiten,
+    })
 
 @user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
 def call(request, lfd_nr):
