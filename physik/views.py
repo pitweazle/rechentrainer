@@ -299,6 +299,38 @@ def update_row_settings(request, slug):
     
     return JsonResponse({'status': 'ok', 'versteckt': einstellungen['zeilen_versteckt']})
     
+def aktualisiere_protokoll_fach(user, aufgabe):
+    """
+    Leitner-Logik: Bei richtiger Antwort wandert die Aufgabe ein Fach weiter.
+    - Noch kein Protokoll-Eintrag für diese Aufgabe -> neu anlegen mit fach=2 (= "Fach 1").
+    - Vorhandener Eintrag -> fach um 1 erhöhen, gedeckelt bei 4 (= "Fach 3 / Archiv").
+    """
+    protokoll, created = Protokoll.objects.get_or_create(
+        user=user,
+        aufgabe=aufgabe,
+        defaults={"fach": 2},
+    )
+    if not created:
+        protokoll.fach = min(protokoll.fach + 1, 4)
+        protokoll.save()
+
+def verschiebe_protokoll_zurueck(user, aufgabe):
+    """
+    Leitner-Logik: Bei falscher Antwort wandert die Aufgabe ein Fach zurück.
+    - Kein Protokoll-Eintrag vorhanden -> nichts zu tun (Aufgabe ist bereits "neu").
+    - fach == 2 ("Fach 1") -> Eintrag komplett löschen (zurück auf "neu").
+    - fach > 2 -> fach um 1 verringern.
+    """
+    try:
+        protokoll = Protokoll.objects.get(user=user, aufgabe=aufgabe)
+    except Protokoll.DoesNotExist:
+        return
+    if protokoll.fach <= 2:
+        protokoll.delete()
+    else:
+        protokoll.fach -= 1
+        protokoll.save()
+
 @login_required(login_url='/physik/anmelden/')
 def aufgaben(request):
     anmerkung_fuer_template = ""
@@ -396,6 +428,8 @@ def aufgaben(request):
 
     # 9. Aktuelle Aufgabe laden
     aufgabe = Aufgabe.objects.get(id=ids_in_session[index])
+    print(f"[DEBUG-INDEX] index={index}, aufgabe_id={aufgabe.id}, frage={aufgabe.frage[:40]!r}, "
+          f"warte_auf_weiter(session)={request.session.get('warte_auf_weiter')}, method={request.method}")
 
     # -------- Medien (Bilder & Videos) --------
     bilder_anzeige = None
@@ -455,14 +489,21 @@ def aufgaben(request):
         antwort = request.POST.get("user_antwort") or request.POST.get("antwort", "")
         bild_antwort = request.POST.get("bild_antwort")
 
-        # ---- Skip ----
+        # ---- Skip / "Weiter" nach gesperrter Falsch-Antwort ----
         if not antwort and not bild_antwort:
+            print(f"[DEBUG-INDEX] Skip-Zweig ausgelöst. index VOR Erhöhung={request.session.get('index')}, "
+                  f"warte_auf_weiter={request.session.get('warte_auf_weiter')}")
             if not request.session.get("warte_auf_weiter"):
+                # Echter Skip: Aufgabe wurde nie beantwortet
                 messages.info(request, "Letzte Aufgabe übersprungen.")
-                request.session["index"] += 1
-                request.session.pop('aktiver_index', None)
-                request.session["warte_auf_weiter"] = False
-                request.session.pop("letzte_antwort", None)
+            # In beiden Fällen (echter Skip ODER "Weiter"-Klick nach gesperrter
+            # falscher Antwort) zur nächsten Aufgabe weiterschalten:
+            request.session["index"] += 1
+            request.session.pop('aktiver_index', None)
+            request.session["warte_auf_weiter"] = False
+            request.session.pop("letzte_antwort", None)
+            print(f"[DEBUG-INDEX] index NACH Erhöhung={request.session.get('index')}, "
+                  f"session_key={request.session.session_key}")
             return redirect("physik:aufgaben")
 
         ergebnis = bewerte_aufgabe(
@@ -478,6 +519,7 @@ def aufgaben(request):
         # ---- richtig ----
         if ergebnis.get("richtig"):
             print("DEBUG: Antwort wurde als RICHTIG bewertet (keine KI-Prüfung)")
+            aktualisiere_protokoll_fach(request.user, aufgabe)
             messages.success(request, ergebnis.get("hinweis", "Richtig!"))
             request.session["index"] += 1
             request.session.pop('aktiver_index', None)
@@ -516,6 +558,8 @@ def aufgaben(request):
                         extra_tags="ki"
                     )
                     ki_ergebnis = None
+                    request.session["warte_auf_weiter"] = True
+                    request.session["letzte_antwort"] = antwort
 
                 fehler_log_id = request.session.get("fehler_log_id")
 
@@ -547,6 +591,7 @@ def aufgaben(request):
                         extra_tags="ki"
                     )
 
+                    aktualisiere_protokoll_fach(request.user, aufgabe)
                     request.session["index"] += 1
                     request.session.pop('aktiver_index', None)
                     request.session["warte_auf_weiter"] = False
@@ -555,20 +600,34 @@ def aufgaben(request):
 
                 elif ki_ergebnis is not None:
                     # KI hat explizit "falsch" bewertet (nicht "stimmt")
+                    verschiebe_protokoll_zurueck(request.user, aufgabe)
+
+                    # FehlerLog aktualisieren, damit "nicht geprüft" nicht fälschlich stehen bleibt
+                    if fehler_log_id:
+                        try:
+                            fehler_log = FehlerLog.objects.get(pk=int(fehler_log_id))
+                            fehler_log.ki_bewertung = False
+                            fehler_log.ki_hinweis = ki_ergebnis
+                            fehler_log.save()
+                        except FehlerLog.DoesNotExist:
+                            pass
+                        request.session.pop("fehler_log_id", None)
+
                     ki_hinweis_text = f"Leider falsch. {ki_ergebnis} (KI-Einschätzung)"
                     if aufgabe.typ not in ["p", "a", "r"]:
                         ki_hinweis_text += f"<br>Deine Eingabe: »{antwort}« | Richtige Lösung: »{aufgabe.loesung}«"
                     if aufgabe.erklaerung and aufgabe.erklaerung not in ki_hinweis_text:
                         ki_hinweis_text += f"<br><br><strong>Begründung:</strong> {aufgabe.erklaerung}"
                     messages.error(request, ki_hinweis_text, extra_tags="ki")
-                    request.session["warte_auf_weiter"] = False
-                    request.session.pop("letzte_antwort", None)
+                    request.session["warte_auf_weiter"] = True
+                    request.session["letzte_antwort"] = antwort
 
                 # bei ki_ergebnis is None (Fehlerfall aus dem except-Block)
                 # wurde die Warning oben schon gesetzt, kein weiterer Code nötig
 
             else:
                 # Kein KI-Check für diesen Typ → normale Fehlermeldung anzeigen
+                verschiebe_protokoll_zurueck(request.user, aufgabe)
                 if aufgabe.typ not in ["p", "a", "r"]:
                     hinweis_text = (
                         f"{hinweis_text} "
@@ -578,8 +637,8 @@ def aufgaben(request):
                 if aufgabe.erklaerung and aufgabe.erklaerung not in hinweis_text:
                     hinweis_text += f"<br><br><strong>Begründung:</strong> {aufgabe.erklaerung}"
                 messages.error(request, hinweis_text)
-                request.session["warte_auf_weiter"] = False
-                request.session.pop("letzte_antwort", None)
+                request.session["warte_auf_weiter"] = True
+                request.session["letzte_antwort"] = antwort
 
     # -------- GET anzeigen --------
     return render(request, "physik/aufgabe.html", {
@@ -683,6 +742,16 @@ def fehler_liste(request):
     if kapitel_id:
         logs = logs.filter(aufgabe__kapitel_id=kapitel_id)
 
+    # 4. NEU: Filter nach KI-Status
+    ki_status = request.GET.get('ki_status')
+    if ki_status == 'bestaetigt':
+        logs = logs.filter(ki_bewertung=True)
+    elif ki_status == 'abgelehnt':
+        logs = logs.filter(ki_bewertung=False)
+    elif ki_status == 'nicht_geprueft':
+        logs = logs.filter(ki_bewertung__isnull=True)
+    # ki_status == '' oder None -> kein Filter, alle anzeigen
+
     # Daten für die Dropdowns
     themen = ThemenBereich.objects.all().order_by('ordnung')
     # Kapitel nur für das gewählte Thema (optional, für bessere UX)
@@ -696,6 +765,7 @@ def fehler_liste(request):
         's_kapitel': int(kapitel_id) if kapitel_id else None,
         'query': q or '',
         'sort': sort,
+        's_ki_status': ki_status or '',
     }
     return render(request, 'physik/fehler_liste.html', context)
 

@@ -593,21 +593,21 @@ UNABHÄNGIG davon fachlich neu zu beurteilen.
 physikalische Richtigkeit, nicht um Übereinstimmung mit einer bestimmten Formulierung.
 """
 
-    # DEBUG: Prompt ausgeben
-    print("\n" + "=" * 80)
-    print("KI-PROMPT DEBUG:")
-    print("=" * 80)
-    print(f"Frage: {frage[:100]}...")
-    print(f"Loesung: {loesung[:100]}...")
-    print(f"Schuelerantwort: {schueler_antwort[:100]}...")
-    print(f"Kategorie: {kategorie}")
-    print(f"Kapitel: {kapitel}")
-    print(f"Typ: {typ}")
-    print(f"Typ Klartext (nur Beispiel): {typ_klartext}")
-    print("-" * 80)
-    print("Vollständiger Prompt:")
-    print(prompt)
-    print("=" * 80 + "\n")
+    # # DEBUG: Prompt ausgeben
+    # print("\n" + "=" * 80)
+    # print("KI-PROMPT DEBUG:")
+    # print("=" * 80)
+    # print(f"Frage: {frage[:100]}...")
+    # print(f"Loesung: {loesung[:100]}...")
+    # print(f"Schuelerantwort: {schueler_antwort[:100]}...")
+    # print(f"Kategorie: {kategorie}")
+    # print(f"Kapitel: {kapitel}")
+    # print(f"Typ: {typ}")
+    # print(f"Typ Klartext (nur Beispiel): {typ_klartext}")
+    # print("-" * 80)
+    # print("Vollständiger Prompt:")
+    # print(prompt)
+    # print("=" * 80 + "\n")
 
     payload = {
         "model": "mistral-medium",

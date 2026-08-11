@@ -1,4 +1,4 @@
-{% extends "layout_physik.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block content %}
@@ -34,6 +34,13 @@
                 {% endfor %}
             </select>
 
+            <select name="ki_status" class="form-select form-select-sm" style="width: 180px;" onchange="this.form.submit()">
+                <option value="" {% if s_ki_status == '' %}selected{% endif %}>-- Alle (KI-Status) --</option>
+                <option value="bestaetigt" {% if s_ki_status == 'bestaetigt' %}selected{% endif %}>🤖 KI: bestätigt (richtig)</option>
+                <option value="abgelehnt" {% if s_ki_status == 'abgelehnt' %}selected{% endif %}>🤖 KI: abgelehnt (falsch)</option>
+                <option value="nicht_geprueft" {% if s_ki_status == 'nicht_geprueft' %}selected{% endif %}>– nicht KI-geprüft</option>
+            </select>
+
             <button type="submit" class="btn btn-sm btn-secondary">Filtern</button>
             <a href="{% url 'physik:fehler_liste' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
         </form>
@@ -47,6 +54,7 @@
                     <th style="width: 100px;">LFD_NR</th>
                     <th style="width: 100px;">Typ</th>
                     <th>Thema / Kapitel</th>
+                    <th style="width: 220px;">KI-Bewertung</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,9 +70,21 @@
                         <div class="small text-muted text-uppercase" style="font-size: 0.65rem;">{{ log.aufgabe.thema.thema }}</div>
                         <div class="small">{{ log.aufgabe.kapitel.kapitel|truncatechars:40 }}</div>
                     </td>
+                    <td>
+                        {% if log.ki_bewertung is True %}
+                            <span class="badge bg-success">🤖 bestätigt</span>
+                        {% elif log.ki_bewertung is False %}
+                            <span class="badge bg-danger">🤖 abgelehnt</span>
+                        {% else %}
+                            <span class="badge bg-secondary">nicht geprüft</span>
+                        {% endif %}
+                        {% if log.ki_hinweis %}
+                            <div class="small text-muted mt-1" style="font-size: 0.72rem;">{{ log.ki_hinweis|truncatechars:80 }}</div>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center py-4 text-muted">Keine passenden Fehler gefunden.</td></tr>
+                <tr><td colspan="5" class="text-center py-4 text-muted">Keine passenden Fehler gefunden.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
