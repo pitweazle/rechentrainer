@@ -24,32 +24,36 @@
     <div style="margin-bottom: 15px;">
       <label style="display: block; margin-bottom: 5px;">{{ rollen_label|default:"Klasse:" }}</label>
       <input type="text" name="reg_klasse" 
-             value="{{ form_klasse }}" 
-             {% if is_lehrer %}readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;" placeholder="{{ rollen_placeholder|default:'z.B. Lehrer' }}"{% else %}required placeholder="{{ rollen_placeholder|default:'z.B. 6R' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd;"{% endif %}>
+            value="{{ form_klasse }}" 
+            required 
+            placeholder="{% if is_lehrer %}z.B. Lehrer/in{% else %}z.B. 6R{% endif %}" 
+            style="width: 100%; padding: 8px; border: 1px solid #ddd;">
     </div>
 
-    <!-- Jahrgang -->
-    <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px;">Jahrgang:</label>
-      <input type="number" name="reg_jg" value="{{ form_jg }}" required min="1" max="13" placeholder="z.B. 6" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
-    </div>
+    {% if platform == 'mathe' %}
+      <!-- Jahrgang -->
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Jahrgang:</label>
+        <input type="number" name="reg_jg" value="{{ form_jg }}" required min="1" max="13" placeholder="z.B. 6" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      </div>
 
-    <!-- Kurs -->
-    <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px;">Kurs:</label>
-      <select name="reg_kurs" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
-        <option value="" disabled selected>Bitte auswählen...</option>
-        {% for value, label in kurs_choices %}
-          <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-      </select>
-      
-      {% if is_lehrer %}
-        <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
-          Hinweis: Jahrgang und Kurs bestimmen den Schwierigkeitsgrad der Aufgaben und können von dir später jederzeit im <strong>Profil</strong> geändert werden.
-        </p>
-      {% endif %}
-    </div>
+      <!-- Kurs -->
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Kurs:</label>
+        <select name="reg_kurs" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+          <option value="" disabled selected>Bitte auswählen...</option>
+          {% for value, label in kurs_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        
+        {% if is_lehrer %}
+          <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+            Hinweis: Jahrgang und Kurs bestimmen den Schwierigkeitsgrad der Aufgaben und können von dir später jederzeit im <strong>Profil</strong> geändert werden.
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}    
 
     <!-- E-Mail (optional) -->
     <div style="margin-bottom: 15px;">

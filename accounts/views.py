@@ -271,27 +271,26 @@ def custom_logout(request):
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
-    
-    # Consumer Key aus dem Request ist jetzt die Dienststellennummer der Schule
+
+    platform = request.platform  # 'mathe' oder 'physik' – von der Middleware gesetzt
+
     consumer_key = request.POST.get('oauth_consumer_key')
-    
-    # 1. Schule direkt über die Dienststellennummer (consumer_key) finden
     try:
         schule_objekt = Schule.objects.get(dienststellen_nr=consumer_key)
     except Schule.DoesNotExist:
-        return HttpResponseBadRequest(f"Unbekannte oder ungültige Dienststellennummer: '{consumer_key}'.")
+        return HttpResponseBadRequest(f"Unbekannte Dienststellennummer: '{consumer_key}'.")
 
-    # Moodle-Daten auslesen
     logger = logging.getLogger(__name__)
-    logger.warning(f"MOODLE POST DATEN: {request.POST.dict()}")
-    moodle_uid = request.POST.get('user_id') 
+    logger.warning(f"MOODLE POST DATEN ({platform}): {request.POST.dict()}")
+
+    moodle_uid = request.POST.get('user_id')
     vorname = request.POST.get('lis_person_name_given', '').strip()
     nachname = request.POST.get('lis_person_name_family', '').strip()
     moodle_email = request.POST.get('lis_person_contact_email_primary', '').strip()
     moodle_rollen = request.POST.get('roles', 'Learner')
 
     LoginLog.objects.create(
-        quelle='moodle',
+        quelle=f'moodle_{platform}',
         consumer_key=consumer_key,
         user_id=moodle_uid,
         user_name=request.POST.get('lis_person_name_full'),
@@ -299,31 +298,27 @@ def lti_launch(request):
         institution_name=request.POST.get('tool_consumer_instance_name'),
         rohdaten=str(request.POST.dict())
     )
-    
+
     if 'Instructor' in moodle_rollen or 'Teacher' in moodle_rollen:
         ziel_gruppen_name = "Lehrer"
     else:
         ziel_gruppen_name = "Schüler"
 
-    # WENN DATEN VON MOODLE FEHLERHAFT -> Fehlermeldung
     if not moodle_uid or not vorname or not nachname:
         return HttpResponseBadRequest("Falsche oder unvollständige Moodle-Daten übermittelt.")
-        
+
     # WENN ID SCHON IM PROFIL -> Einloggen
     try:
         profil = Profil.objects.get(moodle_uid=moodle_uid)
         user = profil.user
-        
-        # Gruppe und E-Mail pflegen
         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
         if gruppe_obj:
             user.groups.add(gruppe_obj)
         if moodle_email and user.email != moodle_email:
             user.email = moodle_email
             user.save()
-            
         login(request, user)
-        return redirect('index')
+        return redirect('physik:index' if platform == 'physik' else 'index')
     except Profil.DoesNotExist:
         pass
 
@@ -333,16 +328,14 @@ def lti_launch(request):
         user = profil.user
         profil.moodle_uid = moodle_uid
         profil.save()
-        
         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
         if gruppe_obj:
             user.groups.add(gruppe_obj)
         if moodle_email and user.email != moodle_email:
             user.email = moodle_email
             user.save()
-            
         login(request, user)
-        return redirect('index')
+        return redirect('physik_index' if platform == 'physik' else 'index')
 
     # WENN KEINE ID UND KEINE NAMENSÜBEREINSTIMMUNG -> Daten merken und ab zur Frage!
     request.session['moodle_launch_data'] = {
@@ -352,10 +345,10 @@ def lti_launch(request):
         'email': moodle_email,
         'schule_id': schule_objekt.id,
         'gruppe': ziel_gruppen_name,
+        'platform': platform,   # ← neu: mitnehmen für den nächsten Schritt
         'jg': request.POST.get('custom_jg', request.POST.get('jg', 5)),
         'klasse': request.POST.get('context_title', 'Moodle-Kurs')[:10]
     }
-    
     return redirect('moodle_entscheidung')
 
 @csrf_exempt
@@ -363,52 +356,55 @@ def moodle_entscheidung(request):
     moodle_data = request.session.get('moodle_launch_data')
     if not moodle_data:
         return redirect('index')
+    platform = moodle_data.get('platform', 'mathe')
+
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
         # A) Registrierungs-Formular anzeigen
         if aktion == 'neu_registrieren':
-            # Daten aus der Session holen
             default_vorname = moodle_data.get('vorname', '')
             default_nachname = moodle_data.get('nachname', '')
             is_lehrer = (moodle_data.get('gruppe') == 'Lehrer')
-            
-            # Leere Werte, damit es aktiv ausgefüllt werden muss
-            default_jg = "" 
+
+            default_jg = ""
             default_klasse = ""
 
-            # Den Context zusammenbauen, den das Template erwartet
             context = {
                 'moodle_vorname': default_vorname,
                 'moodle_nachname': default_nachname,
                 'moodle_email': moodle_data.get('email', ''),
                 'is_lehrer': is_lehrer,
                 'default_jg': default_jg,
-                'kurs_choices': wahl_kurs.choices,  # Übergibt die Liste direkt für die {% for %}-Schleife im Template
+                'kurs_choices': wahl_kurs.choices,
                 'rollen_label': "Rolle (z.B. Lehrer / Lehrerin):" if is_lehrer else "Klasse:",
+                'platform': platform,   # ← neu
             }
 
             return render(request, 'SSO/sso_registrierung.html', context)
-        # NEU: Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
+        
+        # Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
         elif aktion == 'registrierung_speichern':
             reg_vorname = request.POST.get('reg_vorname', '').strip()
             reg_nachname = request.POST.get('reg_nachname', '').strip()
             reg_email = request.POST.get('reg_email', '').strip()
             reg_klasse = request.POST.get('reg_klasse', '')[:10]
-            reg_jg = request.POST.get('reg_jg', '').strip()
-            reg_kurs = request.POST.get('reg_kurs', '').strip()
+
+            if platform == 'mathe':
+                reg_jg = request.POST.get('reg_jg', '').strip()
+                reg_kurs = request.POST.get('reg_kurs', '').strip()
+            else:  # physik
+                reg_jg = ''
+                reg_kurs = ''
 
             username = f"moodle_{moodle_data['moodle_uid'][:20]}"
             zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
 
-            # User erstellen
             user = User.objects.create_user(username=username, email=reg_email, password=zufalls_passwort)
 
-            # Gruppe zuweisen
             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
 
-            # Profil erstellen
             schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
             Profil.objects.create(
                 user=user,
@@ -418,9 +414,11 @@ def moodle_entscheidung(request):
                 schule=schule_obj,
                 jg=reg_jg,
                 klasse=reg_klasse,
-                kurs=reg_kurs
+                kurs=reg_kurs,
+                # mathe=(platform == 'mathe'),
+                # physik=(platform == 'physik')
             )
-
+            
             login(request, user)
             if 'moodle_launch_data' in request.session:
                 del request.session['moodle_launch_data']
@@ -431,6 +429,7 @@ def moodle_entscheidung(request):
                 'email': reg_email,
             }
             return render(request, 'SSO/moodle_erfolg.html', context)
+        
         # C) Bestehenden User verknüpfen
         elif aktion == 'verknuepfen':
             user_input = request.POST.get('username_eingabe')
@@ -457,6 +456,7 @@ def moodle_entscheidung(request):
                     'nachname': moodle_data['nachname'],
                     'error_message': 'Ungültiger Benutzername oder Passwort.'
                 })
+
         # D) Abbrechen
         elif aktion == 'abbrechen':
             if 'moodle_launch_data' in request.session:
@@ -471,7 +471,6 @@ def moodle_entscheidung(request):
 @csrf_exempt
 def simulation_moodle(request):
     if request.method == 'POST':
-        # Echtes QueryDict für POST-Daten erstellen, damit .dict() im lti_launch funktioniert
         q = QueryDict('', mutable=True)
         q.setlist('oauth_consumer_key', [request.POST.get('schule_id', 'DE-HE-6072')])
         q.setlist('user_id', [request.POST.get('uid', 'test_franz')])
@@ -482,31 +481,31 @@ def simulation_moodle(request):
         q.setlist('context_title', [request.POST.get('klasse', 'Testklasse')])
         q.setlist('custom_jg', [request.POST.get('jg', '6')])
 
-        # Fake-Request zusammenbauen
         fake_request = HttpRequest()
         fake_request.method = 'POST'
         fake_request.POST = q
         fake_request.session = request.session
+        fake_request.platform = request.platform  # ← neu: vom echten Request übernehmen
 
-        # Rufe lti_launch auf und gib die Antwort zurück
         return lti_launch(fake_request)
 
-    # HTML-Formular für die Simulation
-    return HttpResponse("""
+    return HttpResponse(f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Moodle-LTI-Simulation (realistisch)</title>
             <style>
-                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
-                input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-                button { background: #28a745; color: white; border: none; cursor: pointer; }
+                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }}
+                form {{ background: #f5f5f5; padding: 20px; border-radius: 8px; }}
+                input, select, button {{ padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }}
+                button {{ background: #28a745; color: white; border: none; cursor: pointer; }}
             </style>
         </head>
         <body>
             <h1>Moodle-LTI-Simulation (für lti_launch)</h1>
             <p>Simuliert eine echte Moodle-LTI-Anfrage an <code>lti_launch</code>.</p>
+            <p><strong>Aktuell erkannte Platform:</strong> {request.platform}</p>
+
             <form method="POST">
                 <label>Consumer Key (Dienststellennr):</label>
                 <input type="text" name="schule_id" value="DE-HE-6072"><br>
@@ -540,7 +539,6 @@ def simulation_moodle(request):
         </body>
         </html>
     """)
-
 # Eduplaces:
 def get_oidc_endpoints():
   """Lädt die Discovery-Endpunkte von Eduplaces."""
@@ -817,7 +815,7 @@ def eduplaces_zuordnung(request):
         if aktion == 'registrierung_speichern':
             if is_lehrer:
                 reg_klasse = 'Lehrer'
-                reg_jg = 0
+                reg_jg = 7  # Default-Jahrgang für Lehrer, kann später im Profil geändert werden
             else:
                 reg_klasse = request.POST.get('reg_klasse')
                 reg_jg = request.POST.get('reg_jg')
@@ -885,7 +883,6 @@ def eduplaces_zuordnung(request):
                     kurs=reg_kurs,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
-                    mathe=True,
                     stufe=stufe,
                     sj=sj,
                     hj=hj,
@@ -1376,9 +1373,26 @@ def schule_wahl(req, schule_id):
     profil.schule = schule
     profil.save()
     if profil.klasse.lower() == "lehrer":
-        return render(req, 'lehrer/wahl_fertig.html', {'titel': "fertig"})
+        # Prüfen, ob der Benutzer in der Gruppe "Lehrer" ist
+        if req.user.groups.filter(name="Lehrer").exists():
+            # Lehrer: Prüfen, ob Schule einen Ort hat
+            hat_ort = schule.ort is not None
+            return render(req, 'lehrer/wahl_fertig.html', {
+                'schule': schule,
+                'titel': "fertig",
+                'ist_lehrer': True,
+                'hat_ort': hat_ort
+            })
+        else:
+            # Kein Lehrer: Mail-Meldung
+            return render(req, 'lehrer/wahl_fertig.html', {
+                'schule': schule,
+                'titel': "fertig",
+                'ist_lehrer': False,
+                'hat_ort': schule.ort is not None
+            })
     else:
-        return render(req, 'schueler/lehrer_wahl.html', context={'lehrer_liste': lehrer_liste, 'schule': schule_wahl, 'titel': "Lehrer/in wählen"}) 
+        return render(req, 'schueler/lehrer_wahl.html', context={'lehrer_liste': lehrer_liste, 'schule': schule, 'titel': "Lehrer/in wählen"}) 
 
 def lehrer_wahl(req, lehrer_id):
     try:
