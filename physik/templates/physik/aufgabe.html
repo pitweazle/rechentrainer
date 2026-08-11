@@ -86,56 +86,56 @@
                 {% endif %}
               {% endfor %}
 
-          {# --- 2. Bilder-Reihe 1 (Die ersten zwei echten BILDER) --- #}
-          <div class="task-images row1" style="display: flex; justify-content: center; width: 100%;">
-            {% for b in bilder_liste %}
-              {% if b.bild %}
-                {% if forloop.counter <= 2 %}
-                  <img src="{{ b.bild.url }}" 
-                      class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}"
-                      data-id="{{ b.id }}"
-                      {% if bilder_liste|length == 1 %}
-                        {# Wir hebeln die max-width und max-height aus dem CSS aus #}
-                        style="width: 100%; max-width: 1000px !important; max-height: none !important; height: auto;" 
-                      {% else %}
-                        style="max-width: 45%; height: auto;"
-                      {% endif %}>
-                {% endif %}
-              {% endif %}
-            {% endfor %}
-          </div>
-
-          {# --- 3. Bilder-Reihe 2 (Restliche Bilder ab dem dritten Bild) --- #}
-          {% if bilder_liste|length > 2 %}
-            <div class="task-images row2" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-              {% for b in bilder_liste %}
-                {% if b.bild %}
-                  {% if forloop.counter > 2 %}
-                    <img src="{{ b.bild.url }}" 
-                        {# Auch hier: Klickbarkeit NUR bei Typ 'p' #}
-                        class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}" 
-                        data-id="{{ b.id }}"
-                        style="max-width: 45%; height: auto;">
+              {# --- 2. Bilder-Reihe 1 (Die ersten zwei echten BILDER) --- #}
+              <div class="task-images row1" style="display: flex; justify-content: center; width: 100%;">
+                {% for b in bilder_liste %}
+                  {% if b.bild %}
+                    {% if forloop.counter <= 2 %}
+                      <img src="{{ b.bild.url }}" 
+                          class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}"
+                          data-id="{{ b.id }}"
+                          {% if bilder_liste|length == 1 %}
+                            {# Wir hebeln die max-width und max-height aus dem CSS aus #}
+                            style="width: 100%; max-width: 1000px !important; max-height: none !important; height: auto;" 
+                          {% else %}
+                            style="max-width: 45%; height: auto;"
+                          {% endif %}>
+                    {% endif %}
                   {% endif %}
-                {% endif %}
-              {% endfor %}
-            </div>
+                {% endfor %}
+              </div>
+
+              {# --- 3. Bilder-Reihe 2 (Restliche Bilder ab dem dritten Bild) --- #}
+              {% if bilder_liste|length > 2 %}
+                <div class="task-images row2" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  {% for b in bilder_liste %}
+                    {% if b.bild %}
+                      {% if forloop.counter > 2 %}
+                        <img src="{{ b.bild.url }}" 
+                            {# Auch hier: Klickbarkeit NUR bei Typ 'p' #}
+                            class="task-image {% if aufgabe.typ == 'p' %}clickable{% endif %}" 
+                            data-id="{{ b.id }}"
+                            style="max-width: 45%; height: auto;">
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            {% endwith %}
+            <input type="hidden" name="bild_antwort" id="bild_antwort">
           {% endif %}
 
-          {% endwith %}
-          <input type="hidden" name="bild_antwort" id="bild_antwort">
-        {% endif %}
-
-        <!-- Button-Leiste -->
-        <div class="task-buttons">
-            <button type="button" onclick="location.href='{% url 'physik:index' %}'">zurück</button>
-            {% if aufgabe.hilfe and aufgabe.hilfe != "0" and aufgabe.hilfe != 0 %}
-                <button type="button" onclick="alert('{{ aufgabe.hilfe|escapejs }}')">
-                Hilfe
-                </button>
-            {% endif %}
-            <button type="button" id="showSolution">Lösung anzeigen</button>
-            <button type="submit">Weiter</button>
+          <!-- Button-Leiste -->
+          <div class="task-buttons">
+              <button type="button" onclick="location.href='{% url 'physik:index' %}'">zurück</button>
+              {% if aufgabe.hilfe and aufgabe.hilfe != "0" and aufgabe.hilfe != 0 %}
+                  <button type="button" onclick="alert('{{ aufgabe.hilfe|escapejs }}')">
+                  Hilfe
+                  </button>
+              {% endif %}
+              <button type="button" id="showSolution">Lösung anzeigen</button>
+              <button type="submit">Weiter</button>
         </div>
       </div>
   </form>

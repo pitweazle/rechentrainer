@@ -494,9 +494,17 @@ import re  # ✅ Für Schlüsselwort-Extraktion
 
 def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=None, kategorie=None, kapitel=None):
     """
-    Ruft die Mistral-API auf, um eine Schülerantwort zu überprüfen.
-    - Bei richtiger Antwort: Gibt "stimmt" zurück.
-    - Bei falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
+    Ruft die Mistral-API auf, um eine Schülerantwort UNABHÄNGIG von der
+    Signalwort-Prüfung des App-Codes fachlich zu bewerten.
+
+    Wichtig: Die App hat die Antwort bereits anhand von Signalworten (typ_klartext)
+    als "falsch" eingestuft. Die KI soll das NICHT einfach nachprüfen, sondern
+    eigenständig beurteilen, ob die Antwort trotzdem fachlich/physikalisch korrekt
+    ist - die Signalworte dienen ihr nur als Beispiel/Orientierung, nicht als
+    Pflicht-Checkliste.
+
+    - Bei fachlich richtiger Antwort: Gibt "stimmt" zurück.
+    - Bei fachlich falscher Antwort: Gibt eine kurze Erklärung (max. 25 Wörter) zurück.
     - Bei API-Fehlern: Sendet eine E-Mail an info@physiktrainer.app.
 
     Parameter:
@@ -511,87 +519,102 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
     if not api_url or not api_key:
         raise ValueError("API-Key oder URL fehlt in .env")
 
-    # Optionen als String formatieren (falls vorhanden)
-    optionen_text = ""
-    if optionen:
-        optionen_text = "\n".join([f"  {i+1}: {opt.text}" for i, opt in enumerate(optionen)])
-
-    # Erzeuge Klartext aus dem Typ (falls Optionen vorhanden)
-    typ_klartext = typ  # Fallback
+    # Klartext der App-Erwartung (Signalwort-Logik) - dient der KI nur als BEISPIEL,
+    # nicht als Bedingung, die exakt erfüllt sein muss.
+    typ_klartext = None
     if typ and optionen:
         try:
-            typ_klartext = typ_zu_klartext(typ, loesung, list(optionen))  # ✅ Funktion AUFRUFEN!
+            typ_klartext = typ_zu_klartext(typ, loesung, list(optionen))
         except Exception as e:
             print(f"[DEBUG] Fehler in typ_zu_klartext: {e}")
-            typ_klartext = f"Typ: {typ} (Klartext nicht verfügbar)"
+            typ_klartext = None
 
-    # Extrahiere Schlüsselwörter aus der Lösung für den Vergleich
-    loesung_schluesselwoerter = [wort.lower() for wort in re.findall(r'\b\w+\b', loesung)]
-    optionen_schluesselwoerter = []
-    if optionen:
-        for opt in optionen:
-            optionen_schluesselwoerter.extend([wort.lower() for wort in re.findall(r'\b\w+\b', opt.text)])
-
-    alle_schluesselwoerter = list(set(loesung_schluesselwoerter + optionen_schluesselwoerter))
-    schluesselwoerter_text = ", ".join(alle_schluesselwoerter[:20])
+    beispiel_hinweis = ""
+    if typ_klartext:
+        beispiel_hinweis = f'\nBeispielhafte, von der App erwartete Formulierung(en) (nur zur Orientierung, NICHT zwingend): {typ_klartext}\n'
 
     prompt = f"""
-    Du bist ein ** strenger Physiklehrer** und bewertest eine Schülerantwort **NUR nach physikalischen Fakten**.
+Du bist ein erfahrener, aber fairer Physiklehrer. Ein Lernprogramm hat eine Schülerantwort
+bereits automatisch per Stichwort-Abgleich als "falsch" markiert. Diese automatische Prüfung
+ist unzuverlässig, weil sie nur exakte Formulierungen erkennt. Deine Aufgabe ist es, die Antwort
+UNABHÄNGIG davon fachlich neu zu beurteilen.
 
-    **Aufgabe:** {frage}
-    **Kategorie:** {kategorie}
-    **Kapitel:** {kapitel}
-    **Erwartete Lösung:** {loesung}
-    **Schlüsselwörter:** {schluesselwoerter_text}
+**Aufgabe:** {frage}
+**Kategorie:** {kategorie}
+**Kapitel:** {kapitel}
+**Vom Lernprogramm hinterlegte Musterlösung:** {loesung}
+{beispiel_hinweis}
+**Schülerantwort:** {schueler_antwort}
 
-    **Schülerantwort:** {schueler_antwort}
+---
+**Deine Aufgabe als KI:**
 
-    ---
-    **Deine Aufgabe als KI:**
-    1. **Akzeptiere Antworten, die:**
-    - **Exakte Schlüsselwörter** enthalten (z. B. "Kelvin", "-273°C", "0 K")
-    - **Leichte Tippfehler** haben (z. B. "Kellin" → "Kelvin", "Celsis" → "Celsius")
-        → **Nur wenn die Ähnlichkeit >90% ist!**
+1. Beurteile NUR anhand deines physikalischen Fachwissens, ob die Schülerantwort die
+   gestellte Frage inhaltlich richtig beantwortet - unabhängig davon, ob sie wörtlich
+   mit der Musterlösung oder den Beispiel-Formulierungen übereinstimmt.
+2. Akzeptiere die Antwort, wenn sie den physikalischen WIRKMECHANISMUS (das "Wodurch"/"Warum"
+   auf physikalischer Ebene) erkennbar richtig benennt, auch wenn sie:
+   - anders formuliert ist als Musterlösung/Beispiele,
+   - einen anderen, aber ebenfalls gültigen physikalischen Aspekt derselben Sache nennt,
+   - knapper oder umgangssprachlicher formuliert ist, solange der fachliche Mechanismus erkennbar ist.
+3. Lehne die Antwort ab, wenn sie:
+   - fachlich falsch ist,
+   - VAGE oder UNSPEZIFISCH ist, also KEINEN konkreten, überprüfbaren fachlichen Inhalt liefert
+     (keine Zahl, kein Fachbegriff, keine erkennbare Ursache-Wirkung-Kette) - selbst wenn sie
+     "in die richtige Richtung" zu deuten scheint. Eine Umschreibung, die im Grunde nur die
+     Frage mit anderen Worten wiederholt, ist NICHT ausreichend.
+   - NUR den Zweck/das Ziel nennt, aber nicht den physikalischen Wirkmechanismus dahinter
+     (die reine Zweck-Angabe steht meist schon sinngemäß in der Frage selbst).
+   - eine reine Vermutung/Metapher ohne fachlichen Kern ist.
 
-    2. **Lehne Antworten AB, die:**
-    - **Keine Schlüsselwörter** enthalten (z. B. "ganz unten", "sehr kalt")
-    - **Metaphern** sind (z. B. "kältester Punkt")
-    - **Völlig falsch** sind (z. B. "Kevin", "Schmutz")
+**Beispiele aus der Praxis (zeigen das Muster, das du erkennen sollst):**
+- Frage "Wie tief ist der absolute Nullpunkt?" → Antwort "ganz unten" → ABLEHNEN
+  (keine Zahl, kein Fachbegriff, reine Wiederholung der Frage).
+- Frage "Wie tief ist der absolute Nullpunkt?" → Antwort "bei ungefähr minus 273 Grad"
+  → AKZEPTIEREN (konkreter Wert genannt).
+- Frage "Warum soll man das Auto nach dem Tanken nicht in die Sonne stellen?"
+  → Antwort "damit es nicht so heiß wird" → ABLEHNEN (nennt nur den Zweck/das Ziel,
+  nicht den Mechanismus: Ausdehnung von Kraftstoffdämpfen, Druckaufbau).
+- Frage "Warum bekommen Tiere im Winter ein Winterfell?" → Antwort "damit sie nicht frieren"
+  → ABLEHNEN (reine Zweck-Angabe, kein Mechanismus: Luft im Fell isoliert).
+- Frage "Warum wärmt ein Wollpullover im Winter?" → Antwort "weil er dicke Wolle hat"
+  → ABLEHNEN (nennt nur eine Eigenschaft, nicht den Mechanismus: eingeschlossene Luft
+  in der Wolle isoliert, Luft ist schlechter Wärmeleiter).
+- Frage "Warum wärmt ein Wollpullover im Winter?" → Antwort "weil die Luft zwischen den
+  Wollfasern die Wärme schlecht leitet" → AKZEPTIEREN (Mechanismus klar benannt, auch
+  wenn die Formulierung von der Musterlösung abweicht).
+4. Antwortformat (GENAU zwei Zeilen, kein Text davor oder danach):
+   Zeile 1: Beginnt mit "ANALYSE:" - ein kurzer Satz, ob die Schülerantwort einen konkreten
+   Wert/Fachbegriff/Mechanismus nennt oder nur vage/den Zweck wiederholt.
+   Zeile 2: Beginnt mit "ERGEBNIS:" - entweder NUR "stimmt", oder eine kurze Begründung
+   (max. 25 Wörter), die den fehlenden fachlichen Punkt konkret benennt.
 
-    3. **Rückmeldung:**
-    - Falls korrekt: Antworte **nur** mit `"stimmt"`
-    - Falls falsch: Gib eine **kurze Begründung (max. 25 Wörter)**
-        Beispiel: "Falsch. Erwarte: Kelvin, -273°C, absoluter Nullpunkt."
-
-    ---
-    **WICHTIG:**
-    - **Sei streng mit Metaphern!** Akzeptiere NUR exakte Begriffe oder minimale Tippfehler.
-    - **Nutze die Schlüsselwörter als Hauptkriterium.**
-    """
+**WICHTIG:** Du bist die zweite, fachliche Instanz - nicht die Wortlaut-Polizei. Es geht um
+physikalische Richtigkeit, nicht um Übereinstimmung mit einer bestimmten Formulierung.
+"""
 
     # DEBUG: Prompt ausgeben
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("KI-PROMPT DEBUG:")
-    print("="*80)
+    print("=" * 80)
     print(f"Frage: {frage[:100]}...")
     print(f"Loesung: {loesung[:100]}...")
     print(f"Schuelerantwort: {schueler_antwort[:100]}...")
     print(f"Kategorie: {kategorie}")
     print(f"Kapitel: {kapitel}")
     print(f"Typ: {typ}")
-    print(f"Typ Klartext: {typ_klartext}")  # ✅ Jetzt ein String!
-    print("-"*80)
+    print(f"Typ Klartext (nur Beispiel): {typ_klartext}")
+    print("-" * 80)
     print("Vollständiger Prompt:")
     print(prompt)
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
     payload = {
         "model": "mistral-medium",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,
-        "max_tokens": 50,
+        "temperature": 0,  # konsistente, strikte Bewertung statt Interpretationsspielraum
+        "max_tokens": 120,
     }
-
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -601,9 +624,18 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
         response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+        raw_answer = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+        print(f"[KI-DEBUG] KI-Rohantwort:\n{raw_answer}")
 
-        print(f"[KI-DEBUG] KI-Ergebnis: {answer}")
+        # "ERGEBNIS:"-Zeile herausfiltern (Analyse-Zeile ist nur fürs Debugging relevant)
+        answer = raw_answer
+        for line in raw_answer.splitlines():
+            line = line.strip()
+            if line.upper().startswith("ERGEBNIS:"):
+                answer = line.split(":", 1)[1].strip()
+                break
+
+        print(f"[KI-DEBUG] Extrahiertes Ergebnis: {answer}")
 
         if answer.lower() == "stimmt":
             return "stimmt"
@@ -641,4 +673,5 @@ def check_answer_with_api(frage, loesung, schueler_antwort, typ=None, optionen=N
         except Exception:
             pass
         raise RuntimeError(error_msg)
+
     

@@ -302,22 +302,20 @@ def update_row_settings(request, slug):
 @login_required(login_url='/physik/anmelden/')
 def aufgaben(request):
     anmerkung_fuer_template = ""
-    
-    # NEU: Wenn 'tb' in der URL steht, wollen wir IMMER eine neue Serie starten,
-    # auch wenn 'aufgaben_ids' schon in der Session existieren.
+
     if request.GET.get("tb"):
         # 0. Vorbereitung: Alte Session & Messages aufräumen
         for k in ("aufgaben_ids", "index", "p_richtig", "letzte_antwort", "warte_auf_weiter"):
             request.session.pop(k, None)
-        
         storage = get_messages(request)
-        for message in storage: pass
+        for message in storage:
+            pass
 
         # 1. Parameter aus GET holen
         tb_id = request.GET.get("tb")
-        level_param = request.GET.get("level", "3") # Standard 3
+        level_param = request.GET.get("level", "3")  # Standard 3
         bis_kap_zeile = request.GET.get("bis_kap")
-        
+
         # Diese bleiben für das Overlay wichtig:
         start_kap = int(request.GET.get("start", 0))
         end_kap = int(request.GET.get("end", 999))
@@ -328,7 +326,6 @@ def aufgaben(request):
         aufgaben_qs = Aufgabe.objects.filter(thema=thema)
 
         # --- NEU: Kapitel-Logik unterscheiden ---
-        
         # Fall A: Das Thema ist als "kapitel_unabhaengig" markiert (z.B. Sonstige)
         if thema.kapitel_unabhaengig:
             if bis_kap_zeile:
@@ -340,7 +337,6 @@ def aufgaben(request):
                     kapitel__zeile__gte=start_kap,
                     kapitel__zeile__lte=end_kap
                 )
-        
         # Fall B: Normales Verhalten (Physik-Themen: Aufbauend/Kumulativ)
         else:
             if bis_kap_zeile:
@@ -360,36 +356,21 @@ def aufgaben(request):
         else:
             aufgaben_qs = aufgaben_qs.filter(schwierigkeit__lte=int(level_param))
 
-        # 3. Spezifische Fach-Filterung (DEIN BESTEHENDER CODE)
-        if fach_int == 1: 
+        # 3. Spezifische Fach-Filterung
+        if fach_int == 1:
             aufgaben_qs = aufgaben_qs.filter(
-                Q(protokoll__user=request.user, protokoll__fach=1) | 
+                Q(protokoll__user=request.user, protokoll__fach=1) |
                 ~Q(protokoll__user=request.user)
             ).distinct()
         else:
             aufgaben_qs = aufgaben_qs.filter(
-                protokoll__user=request.user, 
+                protokoll__user=request.user,
                 protokoll__fach=fach_int
             )
 
-        # 3. Spezifische Fach-Filterung
-        # fach_int kommt oben aus request.GET.get("fach")
-        if fach_int == 1: 
-            # Zeigt nur Aufgaben, die noch "neu" sind oder explizit in Fach 1 liegen
-            aufgaben_qs = aufgaben_qs.filter(
-                Q(protokoll__user=request.user, protokoll__fach=1) | 
-                ~Q(protokoll__user=request.user)
-            ).distinct()
-        else:
-            # Filtert exakt auf Fach 2, 3 oder 4
-            aufgaben_qs = aufgaben_qs.filter(
-                protokoll__user=request.user, 
-                protokoll__fach=fach_int
-            )
-            
         # 4. IDs extrahieren & initialisieren
         all_ids = list(aufgaben_qs.values_list("id", flat=True))
-        
+
         if not all_ids:
             messages.info(request, f"Keine Aufgaben in diesem Bereich gefunden.")
             return redirect('physik:index')
@@ -398,11 +379,11 @@ def aufgaben(request):
         request.session["aufgaben_ids"] = all_ids[:10]
         request.session["index"] = 0
         request.session["warte_auf_weiter"] = False
-        
-        # WICHTIG: Redirect auf die URL ohne Parameter, damit ein Refresh 
+
+        # WICHTIG: Redirect auf die URL ohne Parameter, damit ein Refresh
         # nicht die Serie neu startet
         return redirect("physik:aufgaben")
-    
+
     # 7. Aktuellen Stand aus der Session holen
     ids_in_session = request.session.get("aufgaben_ids", [])
     index = request.session.get("index", 0)
@@ -415,86 +396,61 @@ def aufgaben(request):
 
     # 9. Aktuelle Aufgabe laden
     aufgabe = Aufgabe.objects.get(id=ids_in_session[index])
-    
-# -------- Medien (Bilder & Videos) --------
+
+    # -------- Medien (Bilder & Videos) --------
     bilder_anzeige = None
-    
-    # Wir holen die Bilder/Videos immer, wenn welche da sind
     bilder = list(aufgabe.bilder.order_by("position"))
-    
+
     if bilder:
         # ---- Fall 1: Echte Bildfrage (Typ enthält 'p') ----
         if "p" in aufgabe.typ:
-            # Nur bei Typ genau 'p' setzen wir die richtige Bild-Antwort
             if aufgabe.typ == "p":
                 p_richtig = bilder[0].id
                 request.session["p_richtig"] = p_richtig
-            
-            # Bilder mischen, damit das richtige nicht immer an Platz 1 steht
             random.shuffle(bilder)
-        
         # ---- Fall 2: Illustration / Video (z.B. Typ 'a' oder 'va') ----
         else:
             request.session.pop("p_richtig", None)
-            # Bei Videos oder normalen Illustrationen NICHT mischen? 
-            # Meistens will man Videos an Position 1 behalten.
-            pass 
+            pass
 
         bilder_anzeige = bilder
 
     optionen_liste = []
     anzeigen = []
+
     if "r" in aufgabe.typ:
-        # 1. Optionen nach Position sortiert holen
         optionen = aufgabe.optionen.all().order_by('position')
-        
         if optionen.exists():
-            # 2. Anzahl der Werte aus der ersten Option ermitteln
-            # Wir splitten den Text und zählen die Elemente
             erstes_opt_text = optionen[0].text
             anzahl_werte = len(erstes_opt_text.split(';'))
 
-            # 3. Zufallsindex bestimmen
-            # Wir versuchen den Index aus der Session zu holen, damit er stabil bleibt
             idx = request.session.get('aktiver_index')
-            
-            # Falls kein Index da ist oder er nicht mehr zu den Daten passt, neu würfeln
             if idx is None or idx >= anzahl_werte:
                 idx = random.randrange(anzahl_werte)
                 request.session['aktiver_index'] = idx
 
-            # 4. Die Werte-Liste für .format() zusammenstellen
-            # Wir nehmen von jeder Option den Wert an der Stelle 'idx'
             auswahl_liste = []
             for opt in optionen:
                 werte = [v.strip() for v in opt.text.split(';')]
                 if idx < len(werte):
                     auswahl_liste.append(werte[idx])
                 else:
-                    # Fallback, falls eine Liste mal kürzer ist
                     auswahl_liste.append("???")
 
-            # 5. Fragetext formatieren
-            # Hier werden {0}, {1}, {2} etc. durch die Liste ersetzt
             try:
-                # Wichtig: Der Stern * entpackt die Liste für die Positions-Platzhalter
                 aufgabe.frage = aufgabe.frage.format(*auswahl_liste)
             except (IndexError, TypeError):
-                # Falls die Anzahl der {} im Text nicht zur Anzahl der Optionen passt
                 pass
 
     if "a" in aufgabe.typ:
-        # Wir bauen eine Liste aus (Index, Text) Paaren
-        optionen_liste = [(0, aufgabe.loesung)] # Index 0 ist immer die richtige Antwort
+        optionen_liste = [(0, aufgabe.loesung)]  # Index 0 ist immer die richtige Antwort
         for i, o in enumerate(aufgabe.optionen.order_by("position"), start=1):
             optionen_liste.append((i, o.text))
         random.shuffle(optionen_liste)
-
-    # Spezialfall: Überschreibe für Typ 'e'
     elif "e" in (aufgabe.typ or "").lower():
         anmerkung_fuer_template = "Bitte beide Begriffe mit ';' oder '...' trennen."
 
-# -------- POST --------
+    # -------- POST --------
     if request.method == "POST":
         antwort = request.POST.get("user_antwort") or request.POST.get("antwort", "")
         bild_antwort = request.POST.get("bild_antwort")
@@ -503,10 +459,10 @@ def aufgaben(request):
         if not antwort and not bild_antwort:
             if not request.session.get("warte_auf_weiter"):
                 messages.info(request, "Letzte Aufgabe übersprungen.")
-            request.session["index"] += 1
-            request.session.pop('aktiver_index', None)
-            request.session["warte_auf_weiter"] = False
-            request.session.pop("letzte_antwort", None)
+                request.session["index"] += 1
+                request.session.pop('aktiver_index', None)
+                request.session["warte_auf_weiter"] = False
+                request.session.pop("letzte_antwort", None)
             return redirect("physik:aufgaben")
 
         ergebnis = bewerte_aufgabe(
@@ -517,7 +473,6 @@ def aufgaben(request):
             bild_antwort=bild_antwort,
             session=request.session,
         )
-
         print(f"DEBUG: ergebnis = {ergebnis}")
 
         # ---- richtig ----
@@ -528,7 +483,7 @@ def aufgaben(request):
             request.session.pop('aktiver_index', None)
             request.session["warte_auf_weiter"] = False
             request.session.pop("letzte_antwort", None)
-            return redirect("physik:aufgaben")  # ⬅ FIX 1: sonst wird unten die alte Aufgabe erneut gerendert
+            return redirect("physik:aufgaben")
 
         # ---- ungültig ----
         elif ergebnis.get("ungueltig"):
@@ -543,8 +498,6 @@ def aufgaben(request):
 
             # KI-Zweite Bewertung für Freitext-Aufgaben
             if aufgabe.typ not in ["p", "a", "r", "w", "x"] and ("o" in aufgabe.typ or "u" in aufgabe.typ):
-
-                # ⬅ FIX 2: KI-Aufruf absichern, damit ein API-Fehler die Seite nicht zum Absturz bringt
                 try:
                     ki_ergebnis = check_answer_with_api(
                         aufgabe.frage,
@@ -557,7 +510,11 @@ def aufgaben(request):
                     )
                 except RuntimeError as e:
                     print(f"[WARN] KI-Check fehlgeschlagen: {e}")
-                    messages.warning(request, "Die KI-Prüfung ist gerade nicht erreichbar. " + hinweis_text)
+                    messages.warning(
+                        request,
+                        "Die KI-Prüfung ist gerade nicht erreichbar. " + hinweis_text,
+                        extra_tags="ki"
+                    )
                     ki_ergebnis = None
 
                 fehler_log_id = request.session.get("fehler_log_id")
@@ -582,7 +539,14 @@ def aufgaben(request):
                         )
                         request.session["fehler_log_id"] = int(fehler_log.pk)
 
-                    messages.success(request, f'Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.\nIch (die KI) finde deine Antwort "{antwort}" auch gut - vielleicht berücksichtigst du den Lösungsvorschlag des Physiktrainers beim nächsten Mal.\n(KI-Einschätzung)')
+                    messages.success(
+                        request,
+                        f'Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.<br>'
+                        f'Ich (die KI) finde deine Antwort "{antwort}" auch gut – vielleicht berücksichtigst du '
+                        f'den Lösungsvorschlag des Physiktrainers beim nächsten Mal.<br>(KI-Einschätzung)',
+                        extra_tags="ki"
+                    )
+
                     request.session["index"] += 1
                     request.session.pop('aktiver_index', None)
                     request.session["warte_auf_weiter"] = False
@@ -591,7 +555,12 @@ def aufgaben(request):
 
                 elif ki_ergebnis is not None:
                     # KI hat explizit "falsch" bewertet (nicht "stimmt")
-                    messages.error(request, f"Leider falsch. {ki_ergebnis}")
+                    ki_hinweis_text = f"Leider falsch. {ki_ergebnis} (KI-Einschätzung)"
+                    if aufgabe.typ not in ["p", "a", "r"]:
+                        ki_hinweis_text += f"<br>Deine Eingabe: »{antwort}« | Richtige Lösung: »{aufgabe.loesung}«"
+                    if aufgabe.erklaerung and aufgabe.erklaerung not in ki_hinweis_text:
+                        ki_hinweis_text += f"<br><br><strong>Begründung:</strong> {aufgabe.erklaerung}"
+                    messages.error(request, ki_hinweis_text, extra_tags="ki")
                     request.session["warte_auf_weiter"] = False
                     request.session.pop("letzte_antwort", None)
 
@@ -600,9 +569,18 @@ def aufgaben(request):
 
             else:
                 # Kein KI-Check für diesen Typ → normale Fehlermeldung anzeigen
+                if aufgabe.typ not in ["p", "a", "r"]:
+                    hinweis_text = (
+                        f"{hinweis_text} "
+                        f"Deine Eingabe: »{antwort}« | "
+                        f"Richtige Lösung: »{aufgabe.loesung}«"
+                    )
+                if aufgabe.erklaerung and aufgabe.erklaerung not in hinweis_text:
+                    hinweis_text += f"<br><br><strong>Begründung:</strong> {aufgabe.erklaerung}"
                 messages.error(request, hinweis_text)
                 request.session["warte_auf_weiter"] = False
-                request.session.pop("letzte_antwort", None)                
+                request.session.pop("letzte_antwort", None)
+
     # -------- GET anzeigen --------
     return render(request, "physik/aufgabe.html", {
         "aufgabe": aufgabe,
@@ -613,8 +591,8 @@ def aufgaben(request):
         "fragenummer": index + 1,
         "anzahl": len(ids_in_session),
         "warte_auf_weiter": request.session.get("warte_auf_weiter", False),
-        "letzte_antwort": request.session.get("letzte_antwort", "") 
-            if request.session.get("warte_auf_weiter") else "",
+        "letzte_antwort": request.session.get("letzte_antwort", "")
+        if request.session.get("warte_auf_weiter") else "",
     })
 
 @user_passes_test(ist_mitarbeiter, login_url='/physik/anmelden/')
