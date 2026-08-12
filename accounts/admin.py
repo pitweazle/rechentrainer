@@ -61,6 +61,10 @@ class ProfilAdmin(admin.ModelAdmin):
         ('Allgemein', {
             'fields': [('vorname', 'nachname', 'klasse', 'schule'),('mathe', 'physik')]
         }),
+        ('SSO', {
+            'fields': ['moodle_uid', 'eduplaces_uid'], 
+            'classes': ['collapse']
+        }),
         ('Mathe-Spezifisch', {
             'fields': [('gruppe', 'jg', 'kurs', 'stufe', 'sj', 'hj', 'katmax')],
             'classes': ['collapse']  # Eingeklappt, damit es nicht stört
