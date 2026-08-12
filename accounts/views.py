@@ -287,6 +287,8 @@ def lti_launch(request):
     vorname = request.POST.get('lis_person_name_given', '').strip()
     nachname = request.POST.get('lis_person_name_family', '').strip()
     moodle_email = request.POST.get('lis_person_contact_email_primary', '').strip()
+    if moodle_email.endswith('.invalid'):
+        moodle_email = ''
     moodle_rollen = request.POST.get('roles', 'Learner')
 
     LoginLog.objects.create(
@@ -335,7 +337,7 @@ def lti_launch(request):
             user.email = moodle_email
             user.save()
         login(request, user)
-        return redirect('physik_index' if platform == 'physik' else 'index')
+        return redirect('physik:index' if platform == 'physik' else 'index')
 
     # WENN KEINE ID UND KEINE NAMENSÜBEREINSTIMMUNG -> Daten merken und ab zur Frage!
     request.session['moodle_launch_data'] = {
@@ -370,14 +372,17 @@ def moodle_entscheidung(request):
             default_klasse = ""
 
             context = {
-                'moodle_vorname': default_vorname,
-                'moodle_nachname': default_nachname,
-                'moodle_email': moodle_data.get('email', ''),
-                'is_lehrer': is_lehrer,
-                'default_jg': default_jg,
+                'moodle_vorname': profil.vorname,
+                'moodle_nachname': profil.nachname,
+                'moodle_email': user.email,
                 'kurs_choices': wahl_kurs.choices,
-                'rollen_label': "Rolle (z.B. Lehrer / Lehrerin):" if is_lehrer else "Klasse:",
-                'platform': platform,   # ← neu
+                'titel': "Registrierung abschließen",
+                'is_lehrer': is_lehrer,
+                'form_klasse': 'Lehrer' if is_lehrer else profil.klasse if profil.klasse else '',
+                'form_jg': profil.jg if profil.jg else 5,
+                'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+                'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
+                'platform': 'mathe',  # NEU
             }
 
             return render(request, 'SSO/sso_registrierung.html', context)
@@ -415,7 +420,7 @@ def moodle_entscheidung(request):
                 jg=reg_jg,
                 klasse=reg_klasse,
                 kurs=reg_kurs,
-                # mathe=(platform == 'mathe'),
+                mathe=(platform == 'mathe'),
                 # physik=(platform == 'physik')
             )
             
