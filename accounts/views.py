@@ -372,19 +372,18 @@ def moodle_entscheidung(request):
             default_klasse = ""
 
             context = {
-                'moodle_vorname': profil.vorname,
-                'moodle_nachname': profil.nachname,
-                'moodle_email': user.email,
+                'moodle_vorname': default_vorname,
+                'moodle_nachname': default_nachname,
+                'moodle_email': moodle_data.get('email', ''),
                 'kurs_choices': wahl_kurs.choices,
                 'titel': "Registrierung abschließen",
                 'is_lehrer': is_lehrer,
-                'form_klasse': 'Lehrer' if is_lehrer else profil.klasse if profil.klasse else '',
-                'form_jg': profil.jg if profil.jg else 5,
-                'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+                'form_klasse': 'Lehrer' if is_lehrer else '',
+                'form_jg': default_jg,
+                'rollen_label': "Rolle (z.B. Lehrer / Lehrerin):" if is_lehrer else "Klasse:",
                 'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
-                'platform': 'mathe',  # NEU
+                'platform': platform,
             }
-
             return render(request, 'SSO/sso_registrierung.html', context)
         
         # Das Formular wurde ausgefüllt abgeschickt -> Jetzt in der DB speichern
