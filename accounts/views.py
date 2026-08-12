@@ -179,6 +179,7 @@ def rt_profil_ergaenzen(request):
         'form_jg': profil.jg if profil.jg else 5,
         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
+        'platform': 'mathe',
     }
     return render(request, 'SSO/sso_registrierung.html', context)
 
