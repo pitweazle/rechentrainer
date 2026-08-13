@@ -547,6 +547,24 @@ def simulation_moodle(request):
     """)
 
 # Eduplaces:
+def decode_jwt_payload(token):
+    """
+    Dekodiert NUR den Payload-Teil eines JWT (ohne Signaturprüfung).
+    Gibt ein dict zurück, oder None bei Fehlern/leerem Token.
+    """
+    if not token:
+        return None
+    try:
+        parts = token.split('.')
+        if len(parts) < 2:
+            return None
+        payload_segment = parts[1]
+        payload_segment += '=' * (-len(payload_segment) % 4)
+        decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
+        return json.loads(decoded_bytes.decode('utf-8'))
+    except Exception:
+        return None
+
 def get_oidc_endpoints():
   """Lädt die Discovery-Endpunkte von Eduplaces."""
   try:
@@ -650,6 +668,9 @@ def eduplaces_callback(request):
 
     token_data = token_response.json()
     access_token = token_data.get("access_token")
+    id_token = token_data.get("id_token")
+    id_payload = decode_jwt_payload(id_token) or {}
+    eduplaces_sid = id_payload.get("sid")
 
     # 2. Benutzerdaten (UserInfo) von Eduplaces abrufen
     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
@@ -661,6 +682,7 @@ def eduplaces_callback(request):
 
     ed_data = userinfo_response.json()
     request.session['eduplaces_sub'] = ed_data.get('sub')
+    request.session['eduplaces_sid'] = eduplaces_sid
 
     # Daten aus Eduplaces extrahieren
     eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudony")
@@ -947,20 +969,16 @@ def eduplaces_zuordnung(request):
 
     return render(request, 'SSO/sso_registrierung.html', context)
 
-# Ersetzt die bestehende eduplaces_logout()-View 1:1.
-# Am Dateianfang von accounts/views.py sicherstellen, dass "import logging" vorhanden ist,
-# und direkt danach (falls noch nicht vorhanden):
-#   logger = logging.getLogger(__name__)
-
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
     """
-    Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
-    EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
+    Verarbeitet den Backchannel-Logout von Eduplaces.
+    Eduplaces schickt einen POST mit 'logout_token' (JWT), der laut OIDC-Spec
+    entweder 'sub' oder 'sid' (oder beides) enthalten kann. Eduplaces schickt
+    aktuell nur 'sid' - wir matchen daher primär gegen 'sid', mit 'sub' als
+    Fallback fuer den Fall, dass sich das spaeter aendert.
     """
-    logger.warning(f"[ED-LOGOUT] Request erhalten. POST keys: {list(request.POST.keys())}")
-
     logout_token = request.POST.get('logout_token')
 
     if not logout_token:
@@ -968,44 +986,40 @@ def eduplaces_logout(request):
         return HttpResponse("Missing logout_token", status=400)
 
     try:
-        parts = logout_token.split('.')
-        if len(parts) >= 2:
-            payload_segment = parts[1]
-            payload_segment += '=' * (-len(payload_segment) % 4)
-            decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
-            payload = json.loads(decoded_bytes.decode('utf-8'))
+        payload = decode_jwt_payload(logout_token)
+        if not payload:
+            logger.warning("[ED-LOGOUT] Token konnte nicht dekodiert werden.")
+            return HttpResponse("Invalid logout_token", status=400)
 
-            eduplaces_sub = payload.get('sub')
-            logger.warning(f"[ED-LOGOUT] Kompletter Payload: {payload}")
-            logger.warning(f"[ED-LOGOUT] eduplaces_sub aus Token: {eduplaces_sub!r}")   
-            logger.warning(f"[ED-LOGOUT] Token dekodiert. eduplaces_sub aus Token: {eduplaces_sub!r}")
+        eduplaces_sub = payload.get('sub')
+        eduplaces_sid = payload.get('sid')
+        logger.warning(f"[ED-LOGOUT] sub={eduplaces_sub!r} sid={eduplaces_sid!r}")
 
-            if eduplaces_sub:
-                alle_sessions = Session.objects.all()
-                logger.warning(f"[ED-LOGOUT] {alle_sessions.count()} Sessions insgesamt in der DB.")
+        if not eduplaces_sub and not eduplaces_sid:
+            logger.warning("[ED-LOGOUT] Weder 'sub' noch 'sid' im Token-Payload gefunden.")
+            return HttpResponse("OK", status=200)
 
-                gefunden = 0
-                for session in alle_sessions:
-                    session_data = session.get_decoded()
-                    session_sub = session_data.get('eduplaces_sub')
-                    if session_sub:
-                        logger.warning(f"[ED-LOGOUT]   Session {session.session_key[:8]}...: eduplaces_sub={session_sub!r}")
-                    if session_sub == eduplaces_sub:
-                        gefunden += 1
-                        session.delete()
-                        logger.warning(f"[ED-LOGOUT]   -> GELÖSCHT (Session {session.session_key[:8]}...)")
+        gefunden = 0
+        for session in Session.objects.all():
+            session_data = session.get_decoded()
+            treffer = False
 
-                logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} passende Session(s) gelöscht.")
-            else:
-                logger.warning("[ED-LOGOUT] Kein 'sub' im Token-Payload gefunden.")
-        else:
-            logger.warning(f"[ED-LOGOUT] Token hat nicht das erwartete Format (Teile: {len(parts)}).")
+            if eduplaces_sid and session_data.get('eduplaces_sid') == eduplaces_sid:
+                treffer = True
+            elif eduplaces_sub and session_data.get('eduplaces_sub') == eduplaces_sub:
+                treffer = True
 
+            if treffer:
+                gefunden += 1
+                session.delete()
+                logger.warning(f"[ED-LOGOUT] Session {session.session_key[:8]}... gelöscht.")
+
+        logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} Session(s) gelöscht.")
         return HttpResponse("OK", status=200)
+
     except Exception as e:
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
-
 
 # @csrf_exempt
 # @require_POST
