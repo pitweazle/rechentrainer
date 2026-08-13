@@ -3,6 +3,7 @@ import string
 import random
 import json
 import logging
+logger = logging.getLogger(__name__)
 
 import base64
 import requests
@@ -544,6 +545,7 @@ def simulation_moodle(request):
         </body>
         </html>
     """)
+
 # Eduplaces:
 def get_oidc_endpoints():
   """Lädt die Discovery-Endpunkte von Eduplaces."""
@@ -945,6 +947,11 @@ def eduplaces_zuordnung(request):
 
     return render(request, 'SSO/sso_registrierung.html', context)
 
+# Ersetzt die bestehende eduplaces_logout()-View 1:1.
+# Am Dateianfang von accounts/views.py sicherstellen, dass "import logging" vorhanden ist,
+# und direkt danach (falls noch nicht vorhanden):
+#   logger = logging.getLogger(__name__)
+
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
@@ -952,34 +959,87 @@ def eduplaces_logout(request):
     Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
     EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
     """
+    logger.warning(f"[ED-LOGOUT] Request erhalten. POST keys: {list(request.POST.keys())}")
+
     logout_token = request.POST.get('logout_token')
-    
+
     if not logout_token:
+        logger.warning("[ED-LOGOUT] Kein logout_token im POST-Body gefunden.")
         return HttpResponse("Missing logout_token", status=400)
-    
+
     try:
-        # Ein JWT hat das Format: header.payload.signature
-        # Uns interessiert nur der mittlere Teil (der Payload).
         parts = logout_token.split('.')
         if len(parts) >= 2:
-            # Base64-Urlsafe-Decode für den Payload
             payload_segment = parts[1]
-            # Padding korrigieren, falls nötig
             payload_segment += '=' * (-len(payload_segment) % 4)
             decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
             payload = json.loads(decoded_bytes.decode('utf-8'))
-            
+
             eduplaces_sub = payload.get('sub')
-            
+            logger.warning(f"[ED-LOGOUT] Token dekodiert. eduplaces_sub aus Token: {eduplaces_sub!r}")
+
             if eduplaces_sub:
-                # Alle Django-Sessions durchgehen und die passende Session löschen
-                for session in Session.objects.all():
+                alle_sessions = Session.objects.all()
+                logger.warning(f"[ED-LOGOUT] {alle_sessions.count()} Sessions insgesamt in der DB.")
+
+                gefunden = 0
+                for session in alle_sessions:
                     session_data = session.get_decoded()
-                    if session_data.get('eduplaces_sub') == eduplaces_sub:
+                    session_sub = session_data.get('eduplaces_sub')
+                    if session_sub:
+                        logger.warning(f"[ED-LOGOUT]   Session {session.session_key[:8]}...: eduplaces_sub={session_sub!r}")
+                    if session_sub == eduplaces_sub:
+                        gefunden += 1
                         session.delete()
+                        logger.warning(f"[ED-LOGOUT]   -> GELÖSCHT (Session {session.session_key[:8]}...)")
+
+                logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} passende Session(s) gelöscht.")
+            else:
+                logger.warning("[ED-LOGOUT] Kein 'sub' im Token-Payload gefunden.")
+        else:
+            logger.warning(f"[ED-LOGOUT] Token hat nicht das erwartete Format (Teile: {len(parts)}).")
+
         return HttpResponse("OK", status=200)
     except Exception as e:
+        logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
+
+
+# @csrf_exempt
+# @require_POST
+# def eduplaces_logout(request):
+#     """
+#     Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
+#     EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
+#     """
+#     logout_token = request.POST.get('logout_token')
+    
+#     if not logout_token:
+#         return HttpResponse("Missing logout_token", status=400)
+    
+#     try:
+#         # Ein JWT hat das Format: header.payload.signature
+#         # Uns interessiert nur der mittlere Teil (der Payload).
+#         parts = logout_token.split('.')
+#         if len(parts) >= 2:
+#             # Base64-Urlsafe-Decode für den Payload
+#             payload_segment = parts[1]
+#             # Padding korrigieren, falls nötig
+#             payload_segment += '=' * (-len(payload_segment) % 4)
+#             decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
+#             payload = json.loads(decoded_bytes.decode('utf-8'))
+            
+#             eduplaces_sub = payload.get('sub')
+            
+#             if eduplaces_sub:
+#                 # Alle Django-Sessions durchgehen und die passende Session löschen
+#                 for session in Session.objects.all():
+#                     session_data = session.get_decoded()
+#                     if session_data.get('eduplaces_sub') == eduplaces_sub:
+#                         session.delete()
+#         return HttpResponse("OK", status=200)
+#     except Exception as e:
+#         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 @csrf_exempt
 def simulation_eduplaces(request):
