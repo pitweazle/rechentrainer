@@ -683,6 +683,7 @@ def eduplaces_callback(request):
     ed_data = userinfo_response.json()
     request.session['eduplaces_sub'] = ed_data.get('sub')
     request.session['eduplaces_sid'] = eduplaces_sid
+    logger.warning(f"[ED-LOGIN] id_token vorhanden: {id_token is not None}, eduplaces_sid gespeichert: {eduplaces_sid!r}")
 
     # Daten aus Eduplaces extrahieren
     eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudony")
