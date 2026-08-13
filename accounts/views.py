@@ -1001,18 +1001,30 @@ def eduplaces_logout(request):
             return HttpResponse("OK", status=200)
 
         gefunden = 0
-        for session in Session.objects.all():
-            session_data = session.get_decoded()
-            treffer = False
+        alle_sessions = list(Session.objects.all())
+        logger.warning(f"[ED-LOGOUT] {len(alle_sessions)} Sessions insgesamt in der DB. Suche sid={eduplaces_sid!r}")
 
-            if eduplaces_sid and session_data.get('eduplaces_sid') == eduplaces_sid:
+        for session in alle_sessions:
+            session_data = session.get_decoded()
+            gespeicherte_sid = session_data.get('eduplaces_sid')
+            gespeicherte_sub = session_data.get('eduplaces_sub')
+            if gespeicherte_sid or gespeicherte_sub:
+                logger.warning(
+                    f"[ED-LOGOUT]   Session {session.session_key[:8]}... "
+                    f"expire={session.expire_date} "
+                    f"gespeicherte_sid={gespeicherte_sid!r} (type={type(gespeicherte_sid).__name__}) "
+                    f"gespeicherte_sub={gespeicherte_sub!r}"
+                )
+
+            treffer = False
+            if eduplaces_sid and gespeicherte_sid == eduplaces_sid:
                 treffer = True
-            elif eduplaces_sub and session_data.get('eduplaces_sub') == eduplaces_sub:
+            elif eduplaces_sub and gespeicherte_sub == eduplaces_sub:
                 treffer = True
 
             if treffer:
                 gefunden += 1
-                key_fuer_log = session.session_key  # VOR dem Löschen sichern
+                key_fuer_log = session.session_key
                 session.delete()
                 logger.warning(f"[ED-LOGOUT] Session {key_fuer_log[:8]}... gelöscht.")
 
@@ -1022,6 +1034,7 @@ def eduplaces_logout(request):
     except Exception as e:
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
+
 
 # @csrf_exempt
 # @require_POST
