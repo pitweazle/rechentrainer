@@ -976,6 +976,8 @@ def eduplaces_logout(request):
             payload = json.loads(decoded_bytes.decode('utf-8'))
 
             eduplaces_sub = payload.get('sub')
+            logger.warning(f"[ED-LOGOUT] Kompletter Payload: {payload}")
+            logger.warning(f"[ED-LOGOUT] eduplaces_sub aus Token: {eduplaces_sub!r}")   
             logger.warning(f"[ED-LOGOUT] Token dekodiert. eduplaces_sub aus Token: {eduplaces_sub!r}")
 
             if eduplaces_sub:
