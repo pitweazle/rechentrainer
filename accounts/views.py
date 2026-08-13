@@ -1011,8 +1011,9 @@ def eduplaces_logout(request):
 
             if treffer:
                 gefunden += 1
+                key_fuer_log = session.session_key  # VOR dem Löschen sichern
                 session.delete()
-                logger.warning(f"[ED-LOGOUT] Session {session.session_key[:8]}... gelöscht.")
+                logger.warning(f"[ED-LOGOUT] Session {key_fuer_log[:8]}... gelöscht.")
 
         logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} Session(s) gelöscht.")
         return HttpResponse("OK", status=200)
