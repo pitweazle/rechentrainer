@@ -29,10 +29,10 @@
             <h2 style= "text-align: left;"> Zeitraum: 
                 <button type="button">
                     {{form.auswahl}}
-                </button type="button">
+                </button>
                 <button type="button">
                     <input name="filter" type="submit" value="anwenden">
-                </button type="button">
+                </button>
             </h2>
         </form>
     {% endif %}
@@ -50,23 +50,24 @@
             </tr>
         </thead>
         <tbody>
-            <td style="text-align: center;">Aufgaben Halbjahr</td>
-            <td class = "{{summe_farbe}}">{{richtig}}</td>
-            <td>{{nicht_richtig_summe}}</td> 
-            <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
-            {% comment %} {% if note_anzeigen == True %}
-                <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
-                <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
-            {% else %} {% endcomment %}
-            <td>{{letzte}}</td> 
-            {% comment %} {% endif %}          {% endcomment %}
+            <tr>
+                <td style="text-align: center;">Aufgaben Halbjahr</td>
+                <td class = "{{summe_farbe}}">{{richtig}}</td>
+                <td>{{nicht_richtig_summe}}</td> 
+                <td class ="{{nicht_richtig_summe_farbe}}">{{nicht_richtig_summe_quote}}%</td>
+                {% comment %} {% if note_anzeigen == True %}
+                    <td class = "{{prozent_summe_farbe}}">{{prozent_summe}}%</td>
+                    <td class = "{{prozent_summe_farbe}}" style="text-align: center; font-weight: bold;">Note: {{note}}</td>
+                {% else %} {% endcomment %}
+                <td>{{letzte}}</td> 
+                {% comment %} {% endif %}          {% endcomment %}
+            </tr>
             {% for kategorie, aktiv, zeile in zeilen %}            
                 <tr>
                     {% if lehrer and not loeschen or not aktiv%}
                         <td style="text-align: center;">{{kategorie.name}}</td>
                     {%else%}    
-                        <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</td>
-                    {%endif%} 
+                        <td style="text-align: center;"><a class="button" href="{% url 'main' kategorie.slug %}">{{kategorie.name}}</a></td>                    {%endif%} 
                     {% for style, item in zeile %}
                         <td class = "{{style}}">{{item}}</td>
                     {% endfor %}
@@ -74,10 +75,10 @@
             {% endfor %}
             {% if not alle_kat %}
             <tr>
-            <td  colspan="3", align="left">
+            <td  colspan="3" align="left">
                 <form action="{% url 'uebersicht' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit"><b>alle Kategorien anzeigen</b></button>
+                    <button type="submit" name="alle Kategorien"><b>alle Kategorien anzeigen</b></button>
                 </form>
             </td>
             </tr> 
@@ -87,7 +88,7 @@
     <p>
         {% if details %}
             Wenn du mit einem Smartphone arbeitest, kannst du hier "Details anzeigen" anklicken, dann wird diese Anzeige schmaler und passt auf das Display.
-    
+
         {% else %}
             Wenn du hier unter "Details anzeigen" anklickst, bekommst du mehr Informationen.
         {% endif %}

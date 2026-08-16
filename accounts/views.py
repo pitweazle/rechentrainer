@@ -973,13 +973,6 @@ def eduplaces_zuordnung(request):
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
-    """
-    Verarbeitet den Backchannel-Logout von Eduplaces.
-    Eduplaces schickt einen POST mit 'logout_token' (JWT), der laut OIDC-Spec
-    entweder 'sub' oder 'sid' (oder beides) enthalten kann. Eduplaces schickt
-    aktuell nur 'sid' - wir matchen daher primär gegen 'sid', mit 'sub' als
-    Fallback fuer den Fall, dass sich das spaeter aendert.
-    """
     logout_token = request.POST.get('logout_token')
 
     if not logout_token:
@@ -1034,43 +1027,6 @@ def eduplaces_logout(request):
     except Exception as e:
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
-
-
-# @csrf_exempt
-# @require_POST
-# def eduplaces_logout(request):
-#     """
-#     Verarbeitet den Backchannel-Logout von Eduplaces ohne externe Bibliotheken.
-#     EduPlaces schickt einen POST-Request mit einem 'logout_token' (JWT).
-#     """
-#     logout_token = request.POST.get('logout_token')
-    
-#     if not logout_token:
-#         return HttpResponse("Missing logout_token", status=400)
-    
-#     try:
-#         # Ein JWT hat das Format: header.payload.signature
-#         # Uns interessiert nur der mittlere Teil (der Payload).
-#         parts = logout_token.split('.')
-#         if len(parts) >= 2:
-#             # Base64-Urlsafe-Decode für den Payload
-#             payload_segment = parts[1]
-#             # Padding korrigieren, falls nötig
-#             payload_segment += '=' * (-len(payload_segment) % 4)
-#             decoded_bytes = base64.urlsafe_b64decode(payload_segment.encode('utf-8'))
-#             payload = json.loads(decoded_bytes.decode('utf-8'))
-            
-#             eduplaces_sub = payload.get('sub')
-            
-#             if eduplaces_sub:
-#                 # Alle Django-Sessions durchgehen und die passende Session löschen
-#                 for session in Session.objects.all():
-#                     session_data = session.get_decoded()
-#                     if session_data.get('eduplaces_sub') == eduplaces_sub:
-#                         session.delete()
-#         return HttpResponse("OK", status=200)
-#     except Exception as e:
-#         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 @csrf_exempt
 def simulation_eduplaces(request):
