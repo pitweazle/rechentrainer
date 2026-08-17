@@ -278,7 +278,7 @@ def lti_launch(request):
 
     consumer_key = request.POST.get('oauth_consumer_key')
     try:
-        schule_objekt = Schule.objects.get(dienststellen_nr=consumer_key)
+        schule_obj = Schule.objects.get(dienststellen_nr=consumer_key)
     except Schule.DoesNotExist:
         return HttpResponseBadRequest(f"Unbekannte Dienststellennummer: '{consumer_key}'.")
 
@@ -313,7 +313,8 @@ def lti_launch(request):
 
     # WENN ID SCHON IM PROFIL -> Einloggen
     try:
-        profil = Profil.objects.get(moodle_uid=moodle_uid)
+        #profil = Profil.objects.get(moodle_uid=moodle_uid)
+        profil = Profil.objects.get(moodle_uid=moodle_uid, schule=schule_obj)
         user = profil.user
         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
         if gruppe_obj:
@@ -327,7 +328,7 @@ def lti_launch(request):
         pass
 
     # WENN KEINE ID, ABER NAME STIMMT ÜBEREIN -> ID eintragen und einloggen
-    profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_objekt).first()
+    profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
     if profil:
         user = profil.user
         profil.moodle_uid = moodle_uid
@@ -347,7 +348,7 @@ def lti_launch(request):
         'vorname': vorname,
         'nachname': nachname,
         'email': moodle_email,
-        'schule_id': schule_objekt.id,
+        'schule_id': schule_obj.id,
         'gruppe': ziel_gruppen_name,
         'platform': platform,   # ← neu: mitnehmen für den nächsten Schritt
         'jg': request.POST.get('custom_jg', request.POST.get('jg', 5)),
@@ -402,7 +403,9 @@ def moodle_entscheidung(request):
                 reg_jg = ''
                 reg_kurs = ''
 
-            username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+            #username = f"moodle_{moodle_data['moodle_uid'][:20]}"
+            schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
+            username = f"moodle_{schule_obj.dienststellen_nr}_{moodle_data['moodle_uid'][:20]}"
             zufalls_passwort = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
 
             user = User.objects.create_user(username=username, email=reg_email, password=zufalls_passwort)
@@ -410,8 +413,8 @@ def moodle_entscheidung(request):
             gruppe_obj = Group.objects.filter(name=moodle_data['gruppe']).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
+            sj, hj = name_hj()
 
-            schule_obj = Schule.objects.get(id=moodle_data['schule_id'])
             Profil.objects.create(
                 user=user,
                 moodle_uid=moodle_data['moodle_uid'],
@@ -422,6 +425,8 @@ def moodle_entscheidung(request):
                 klasse=reg_klasse,
                 kurs=reg_kurs,
                 mathe=(platform == 'mathe'),
+                sj=sj,
+                hj=hj,
                 # physik=(platform == 'physik')
             )
             
@@ -491,7 +496,7 @@ def simulation_moodle(request):
         fake_request.method = 'POST'
         fake_request.POST = q
         fake_request.session = request.session
-        fake_request.platform = request.platform  # ← neu: vom echten Request übernehmen
+        fake_request.platform = request.platform
 
         return lti_launch(fake_request)
 

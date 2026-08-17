@@ -126,6 +126,12 @@ class Profil(models.Model):
     def __str__(self):
         return f"Username: {self.user}: ({self.id}) {self.vorname} {self.nachname}, {self.klasse}"
 
+    @property
+    def anzeige_name(self):
+        if self.user.groups.filter(name='Lehrer').exists():
+            return f"{self.vorname} {self.nachname}".strip()
+        return self.vorname
+
     class Meta:
         verbose_name = 'Profil'
         verbose_name_plural = 'Profile'
