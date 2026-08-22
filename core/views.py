@@ -4019,7 +4019,7 @@ def negativ(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge
             typ = random.randint(1,6)*2
         typ=9
         typ2 = 0
-        titel = "Titel" 
+        titel = "Negative Zahlen" 
         text = "default{}"
         variable = ["",]
         pro_text = frage = einheit = anmerkung = ""
