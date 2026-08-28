@@ -1078,17 +1078,28 @@ def eduplaces_callback_duell(request):
     token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
 
     # DIAGNOSE
-    LoginLog.objects.create(
-        quelle='eduplaces_duell_debug',
-        consumer_key='DIAGNOSE-TOKEN',
-        user_id=str(token_response.status_code),
-        user_name='Token-Response',
-        rolle='',
-        institution_name='',
-        rohdaten=token_response.text
-    )
-
-    if token_response.status_code != 200:
+    try:
+        token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
+        LoginLog.objects.create(
+            quelle='eduplaces_duell_debug',
+            consumer_key='DIAGNOSE-TOKEN',
+            user_id=str(token_response.status_code),
+            user_name='Token-Response OK',
+            rolle='',
+            institution_name='',
+            rohdaten=token_response.text[:2000]
+        )
+    except Exception as e:
+        import traceback
+        LoginLog.objects.create(
+            quelle='eduplaces_duell_debug',
+            consumer_key='DIAGNOSE-EXCEPTION',
+            user_id='',
+            user_name=str(type(e).__name__),
+            rolle='',
+            institution_name='',
+            rohdaten=traceback.format_exc()
+        )
         messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
         return redirect("duell")
 
