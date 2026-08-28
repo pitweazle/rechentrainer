@@ -1074,7 +1074,6 @@ def eduplaces_login_duell(request):
 
 def eduplaces_callback_duell(request):
     """Verarbeitet den Rücksprung von Eduplaces für Rechenduell."""
-
     code = request.GET.get("code")
     error = request.GET.get("error")
     if error or not code:
@@ -1101,32 +1100,7 @@ def eduplaces_callback_duell(request):
         "code_verifier": code_verifier,
     }
 
-    # DIAGNOSE (jetzt an der richtigen Stelle, NACH der Definition von token_endpoint/payload/headers)
-    try:
-        token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
-        LoginLog.objects.create(
-            quelle='eduplaces_duell_debug',
-            consumer_key='DIAGNOSE-TOKEN',
-            user_id=str(token_response.status_code),
-            user_name='Token-Response OK',
-            rolle='',
-            institution_name='',
-            rohdaten=token_response.text[:2000]
-        )
-    except Exception as e:
-        import traceback
-        LoginLog.objects.create(
-            quelle='eduplaces_duell_debug',
-            consumer_key='DIAGNOSE-EXCEPTION',
-            user_id='',
-            user_name=str(type(e).__name__),
-            rolle='',
-            institution_name='',
-            rohdaten=traceback.format_exc()
-        )
-        messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
-        return redirect("duell")
-
+    token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
     if token_response.status_code != 200:
         messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
         return redirect("duell")
@@ -1148,24 +1122,58 @@ def eduplaces_callback_duell(request):
     request.session['eduplaces_sub'] = ed_data.get('sub')
     request.session['eduplaces_sid'] = eduplaces_sid
 
+    # Daten aus Eduplaces extrahieren (identisch zum Rechentrainer)
     eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudonym")
     vorname = ed_data.get("given_name", "").strip()
     nachname = ed_data.get("family_name", "").strip()
 
-    roh_rolle = str(ed_data.get("role", "student")).lower()
+    roh_rolle = str(ed_data.get("role", ed_data.get("rolle", "student"))).lower()
     if any(r in roh_rolle for r in ["lehrer", "teacher", "instructor"]):
         ziel_gruppen_name = "Lehrer"
     else:
         ziel_gruppen_name = "Schüler"
 
+    email = ""
+
     school_name = ed_data.get("school_name", "Unbekannte Schule")
     school_official_id = ed_data.get("school_official_id", None)
 
+    raw_location_data = ed_data.get("school_location", "")
+    plz_val = None
+
+    if isinstance(raw_location_data, dict):
+        ort_name_val = raw_location_data.get("state", "Unbekannter Ort")
+    else:
+        raw_location = str(raw_location_data).strip()
+        ort_name_val = raw_location if raw_location else "Unbekannter Ort"
+        if raw_location:
+            match = re.match(r"^(\d{5})\s+(.*)$", raw_location)
+            if match:
+                plz_val = match.group(1)
+                ort_name_val = match.group(2).strip()
+
+    if plz_val:
+        ort_obj, _ = Ort.objects.get_or_create(
+            name=ort_name_val,
+            defaults={"plz": plz_val}
+        )
+        if not ort_obj.plz and plz_val:
+            ort_obj.plz = plz_val
+            ort_obj.save()
+    else:
+        ort_obj, _ = Ort.objects.get_or_create(name=ort_name_val)
+
+    schule_neu = False
     schule_obj = None
     if school_official_id:
-        schule_obj, _ = Schule.objects.get_or_create(
+        schule_obj, schule_neu = Schule.objects.get_or_create(
             dienststellen_nr=school_official_id,
-            defaults={"schulname": school_name}
+            defaults={"schulname": school_name, "ort": ort_obj}
+        )
+    else:
+        schule_obj, schule_neu = Schule.objects.get_or_create(
+            schulname=school_name,
+            ort=ort_obj
         )
 
     LoginLog.objects.create(
@@ -1185,6 +1193,9 @@ def eduplaces_callback_duell(request):
         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
         if gruppe_obj:
             user.groups.add(gruppe_obj)
+        if email and user.email != email:
+            user.email = email
+            user.save()
         login(request, user)
         return redirect("duell")
     except Profil.DoesNotExist:
@@ -1200,10 +1211,13 @@ def eduplaces_callback_duell(request):
             gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
+            if email and user.email != email:
+                user.email = email
+                user.save()
             login(request, user)
             return redirect("duell")
 
-    # STUFE 3: Neu anlegen - minimal, ohne jg/kurs
+    # STUFE 3: Komplett neu -> DIREKT anlegen, KEIN Formular, KEIN jg/kurs
     sj, hj = name_hj()
     base_username = f'edu_duell_{eduplaces_uid[:10]}'
     username = base_username
@@ -1235,6 +1249,7 @@ def eduplaces_callback_duell(request):
 
     login(request, new_user)
     return redirect("duell")
+
 @csrf_exempt
 def simulation_eduplaces(request):
   if request.method == 'POST':

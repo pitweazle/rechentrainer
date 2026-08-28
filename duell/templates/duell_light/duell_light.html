@@ -6,31 +6,31 @@
         <a href="{% url 'duell_how_to' %}">So funktioniert das Rechenduell</a>
         <br>
         <br>
+
         {% if not user.is_authenticated %}
+            <p><b>Mit eduplaces anmelden:</b></p>
+            <button><a href="{% url 'eduplaces_login_duell' %}">Mit eduplaces anmelden</a></button>
+            <br><br>
 
-        <p><b>Mit eduplaces anmelden:</b></p>
-        <button><a href="{% url 'eduplaces_login_duell' %}">Mit eduplaces anmelden</a></button>
-        <br><br>
-
-        <p><b>Neu hier?</b></p>
-        <button><a href="/duell_light_registrieren">... dann muss man sich zunächst registrieren</a></button></p>
-        <p><b>Ich war schon mal hier:</b></p>
-        <p>... dann muss man sich anmelden:</p>
-            <form method="POST" action="{% url 'duell' %}">
-                {% csrf_token %}
-                <table>    
-                {{ login_form.as_table }}
-                </table>
-                <p>(Achtung: Beim Benutzername wird zwischen großen und kleinen Buchstaben unterschieden!)</p>
-                <br>  
-                <input type="submit" value="anmelden">
-            </form>
-            <b>{{titel}}</b>
-          <p>Passwort vergessen?
-            <button><a href="/password_reset">hier klicken</a></button></p>
-            {% comment %} <a href="{% url 'duell_light_anmelden' %}">Zunächst muss man sich anmelden</a> {% endcomment %}
-          </ul>
-            {% else %}
+            <p><b>Neu hier?</b></p>
+            <button><a href="/duell_light_registrieren">... dann muss man sich zunächst registrieren</a></button></p>
+            <p><b>Ich war schon mal hier:</b></p>
+            <p>... dann muss man sich anmelden:</p>
+                <form method="POST" action="{% url 'duell' %}">
+                    {% csrf_token %}
+                    <table>    
+                    {{ login_form.as_table }}
+                    </table>
+                    <p>(Achtung: Beim Benutzername wird zwischen großen und kleinen Buchstaben unterschieden!)</p>
+                    <br>  
+                    <input type="submit" value="anmelden">
+                </form>
+                <b>{{titel}}</b>
+            <p>Passwort vergessen?
+                <button><a href="/password_reset">hier klicken</a></button></p>
+                {% comment %} <a href="{% url 'duell_light_anmelden' %}">Zunächst muss man sich anmelden</a> {% endcomment %}
+            </ul>
+        {% else %}
             <table>
                 <th colspan="3">{{titel}}</th>
                 {% for gruppe in gruppen %}
