@@ -1086,7 +1086,7 @@ def eduplaces_callback_duell(request):
         rolle='',
         institution_name='',
         rohdaten=token_response.text
-)
+    )
 
     if token_response.status_code != 200:
         messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
