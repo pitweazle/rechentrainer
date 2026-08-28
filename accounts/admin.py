@@ -52,11 +52,8 @@ class ProfilAdmin(admin.ModelAdmin):
         ('physikgruppe', PhysikGruppeFilter),
     )
     search_fields = ['vorname', 'nachname']
-    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'mathe', 'physik', 'get_mathegruppe_name', 'physikgruppe')
-    # Übersichten in der Tabellenansicht (Admin-Liste)
-    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'get_mathegruppe_name', 'physikgruppe')
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'app_kuerzel', 'sso_kuerzel', 'get_mathegruppe_name', 'physikgruppe')
 
-    # Feldgruppen für die Detailansicht eines Profils
     fieldsets = [
         ('Allgemein', {
             'fields': [('vorname', 'nachname', 'klasse', 'schule'),('mathe', 'physik')]
@@ -67,7 +64,7 @@ class ProfilAdmin(admin.ModelAdmin):
         }),
         ('Mathe-Spezifisch', {
             'fields': [('gruppe', 'jg', 'kurs', 'stufe', 'sj', 'hj', 'katmax')],
-            'classes': ['collapse']  # Eingeklappt, damit es nicht stört
+            'classes': ['collapse']
         }),
         ('Zeiträume & Weitere Infos', {
             'fields': ['schuljahr_ab', 'halbjahr_ab', 'details', 'keine_hj_frage'], 
@@ -79,11 +76,28 @@ class ProfilAdmin(admin.ModelAdmin):
         }),
     ]
 
-    # Hilfsmethode, um die Spalte in der Liste im Admin "Mathegruppe" zu nennen
     @admin.display(description='Mathegruppe', ordering='gruppe')
     def get_mathegruppe_name(self, obj):
         return obj.gruppe
 
+    @admin.display(description='Apps')
+    def app_kuerzel(self, obj):
+        kuerzel = []
+        if obj.mathe:
+            kuerzel.append('M')
+        if obj.physik:
+            kuerzel.append('P')
+        return ', '.join(kuerzel) if kuerzel else '–'
+
+    @admin.display(description='SSO')
+    def sso_kuerzel(self, obj):
+        kuerzel = []
+        if obj.moodle_uid:
+            kuerzel.append('m')
+        if obj.eduplaces_uid:
+            kuerzel.append('e')
+        return ', '.join(kuerzel) if kuerzel else '–'
+    
 class BenutzerAdmin(UserAdmin):
     list_display = ('id', 'username', 'profil_nachname', 'profil_vorname', 'profil_gruppe', 'date_joined', 'last_login')
     ordering = ['-date_joined']

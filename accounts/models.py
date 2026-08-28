@@ -168,10 +168,10 @@ from django.dispatch import receiver
 
 @receiver(pre_save, sender=Profil)
 def automatische_schule_fuer_schueler(sender, instance, **kwargs):
-    # Wenn das Profil einer Gruppe zugeordnet ist, aber noch keine Schule hat
+    if kwargs.get('raw'):
+        return  # Beim Fixture-Import (loaddata) nichts automatisch verändern
     if instance.gruppe and not instance.schule:
         lerngruppe = instance.gruppe
-        # Prüfen, ob der Lehrer der Gruppe eine Schule im Profil hat
         if lerngruppe.lehrer and hasattr(lerngruppe.lehrer, 'profil') and lerngruppe.lehrer.profil.schule:
             instance.schule = lerngruppe.lehrer.profil.schule
 
