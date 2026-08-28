@@ -48,6 +48,7 @@ class ProfilAdmin(admin.ModelAdmin):
     list_filter = (
         'mathe', 
         'physik',
+        'schule',
         ('gruppe', MatheGruppeFilter),
         ('physikgruppe', PhysikGruppeFilter),
     )
