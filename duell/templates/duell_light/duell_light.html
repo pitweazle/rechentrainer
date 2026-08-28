@@ -7,6 +7,11 @@
         <br>
         <br>
         {% if not user.is_authenticated %}
+
+        <p><b>Mit eduplaces anmelden:</b></p>
+        <button><a href="{% url 'eduplaces_login_duell' %}">Mit eduplaces anmelden</a></button>
+        <br><br>
+
         <p><b>Neu hier?</b></p>
         <button><a href="/duell_light_registrieren">... dann muss man sich zunächst registrieren</a></button></p>
         <p><b>Ich war schon mal hier:</b></p>

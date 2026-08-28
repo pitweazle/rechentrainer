@@ -1,6 +1,7 @@
 import os
 import string
 import random
+import hashlib
 import json
 import logging
 logger = logging.getLogger(__name__)
@@ -57,6 +58,10 @@ EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
 EDUPLACES_CLIENT_SECRET = os.getenv("EDUPLACES_CLIENT_SECRET")
 EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
 OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
+
+EDUPLACES_DUELL_CLIENT_ID = "d0dce1cc-7ffc-4854-b19c-d60bd81f870a"
+EDUPLACES_DUELL_CLIENT_SECRET = os.getenv("EDUPLACES_DUELL_CLIENT_SECRET")
+EDUPLACES_DUELL_REDIRECT_URI = "https://rechentrainer.app/eduplaces_duell/callback/"
 
 # Dies ist die Startseite:
 def index(req):
@@ -552,6 +557,65 @@ def simulation_moodle(request):
     """)
 
 # Eduplaces:
+@csrf_exempt
+@require_POST
+def eduplaces_logout(request):
+    logout_token = request.POST.get('logout_token')
+
+    if not logout_token:
+        logger.warning("[ED-LOGOUT] Kein logout_token im POST-Body gefunden.")
+        return HttpResponse("Missing logout_token", status=400)
+
+    try:
+        payload = decode_jwt_payload(logout_token)
+        if not payload:
+            logger.warning("[ED-LOGOUT] Token konnte nicht dekodiert werden.")
+            return HttpResponse("Invalid logout_token", status=400)
+
+        eduplaces_sub = payload.get('sub')
+        eduplaces_sid = payload.get('sid')
+        logger.warning(f"[ED-LOGOUT] sub={eduplaces_sub!r} sid={eduplaces_sid!r}")
+
+        if not eduplaces_sub and not eduplaces_sid:
+            logger.warning("[ED-LOGOUT] Weder 'sub' noch 'sid' im Token-Payload gefunden.")
+            return HttpResponse("OK", status=200)
+
+        gefunden = 0
+        alle_sessions = list(Session.objects.all())
+        logger.warning(f"[ED-LOGOUT] {len(alle_sessions)} Sessions insgesamt in der DB. Suche sid={eduplaces_sid!r}")
+
+        for session in alle_sessions:
+            session_data = session.get_decoded()
+            gespeicherte_sid = session_data.get('eduplaces_sid')
+            gespeicherte_sub = session_data.get('eduplaces_sub')
+            if gespeicherte_sid or gespeicherte_sub:
+                logger.warning(
+                    f"[ED-LOGOUT]   Session {session.session_key[:8]}... "
+                    f"expire={session.expire_date} "
+                    f"gespeicherte_sid={gespeicherte_sid!r} (type={type(gespeicherte_sid).__name__}) "
+                    f"gespeicherte_sub={gespeicherte_sub!r}"
+                )
+
+            treffer = False
+            if eduplaces_sid and gespeicherte_sid == eduplaces_sid:
+                treffer = True
+            elif eduplaces_sub and gespeicherte_sub == eduplaces_sub:
+                treffer = True
+
+            if treffer:
+                gefunden += 1
+                key_fuer_log = session.session_key
+                session.delete()
+                logger.warning(f"[ED-LOGOUT] Session {key_fuer_log[:8]}... gelöscht.")
+
+        logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} Session(s) gelöscht.")
+        return HttpResponse("OK", status=200)
+
+    except Exception as e:
+        logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
+        return HttpResponse(f"Error processing logout: {str(e)}", status=400)
+
+#nur - Rechentrainer:
 def decode_jwt_payload(token):
     """
     Dekodiert NUR den Payload-Teil eines JWT (ohne Signaturprüfung).
@@ -975,63 +1039,176 @@ def eduplaces_zuordnung(request):
 
     return render(request, 'SSO/sso_registrierung.html', context)
 
-@csrf_exempt
-@require_POST
-def eduplaces_logout(request):
-    logout_token = request.POST.get('logout_token')
+# nur Duell:
+def generate_pkce_pair():
+    """Erzeugt ein PKCE code_verifier/code_challenge-Paar (S256)."""
+    code_verifier = secrets.token_urlsafe(64)[:128]  # 43-128 Zeichen erlaubt
+    challenge_bytes = hashlib.sha256(code_verifier.encode('utf-8')).digest()
+    code_challenge = base64.urlsafe_b64encode(challenge_bytes).decode('utf-8').rstrip('=')
+    return code_verifier, code_challenge
 
-    if not logout_token:
-        logger.warning("[ED-LOGOUT] Kein logout_token im POST-Body gefunden.")
-        return HttpResponse("Missing logout_token", status=400)
+def eduplaces_login_duell(request):
+    """Leitet den Nutzer zum Eduplaces-Login für Rechenduell weiter (mit PKCE)."""
+    auth_endpoint, _, _ = get_oidc_endpoints()
 
+    state = secrets.token_urlsafe(16)
+    code_verifier, code_challenge = generate_pkce_pair()
+
+    request.session['eduplaces_duell_state'] = state
+    request.session['eduplaces_duell_code_verifier'] = code_verifier
+
+    scopes = "openid role pseudonym school school_name school_official_id"
+
+    params = {
+        'response_type': 'code',
+        'client_id': EDUPLACES_DUELL_CLIENT_ID,
+        'redirect_uri': EDUPLACES_DUELL_REDIRECT_URI,
+        'scope': scopes,
+        'state': state,
+        'code_challenge': code_challenge,
+        'code_challenge_method': 'S256',
+    }
+
+    redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
+    return redirect(redirect_url)
+
+def eduplaces_callback_duell(request):
+    """Verarbeitet den Rücksprung von Eduplaces für Rechenduell."""
+    code = request.GET.get("code")
+    error = request.GET.get("error")
+    if error or not code:
+        messages.error(request, "Der Login über Eduplaces wurde abgebrochen oder ist fehlgeschlagen.")
+        return redirect("duell")
+
+    code_verifier = request.session.get('eduplaces_duell_code_verifier')
+    if not code_verifier:
+        messages.error(request, "Sitzung abgelaufen, bitte erneut versuchen.")
+        return redirect("duell")
+
+    _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+
+    credentials = f"{EDUPLACES_DUELL_CLIENT_ID}:{EDUPLACES_DUELL_CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": EDUPLACES_DUELL_REDIRECT_URI,
+        "code_verifier": code_verifier,
+    }
+
+    token_response = requests.post(token_endpoint, data=payload, headers=headers, timeout=10)
+    if token_response.status_code != 200:
+        messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
+        return redirect("duell")
+
+    token_data = token_response.json()
+    access_token = token_data.get("access_token")
+    id_token = token_data.get("id_token")
+    id_payload = decode_jwt_payload(id_token) or {}
+    eduplaces_sid = id_payload.get("sid")
+
+    userinfo_headers = {"Authorization": f"Bearer {access_token}"}
+    userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
+
+    if userinfo_response.status_code != 200:
+        messages.error(request, "Fehler beim Abrufen der Benutzerdaten von Eduplaces.")
+        return redirect("duell")
+
+    ed_data = userinfo_response.json()
+    request.session['eduplaces_sub'] = ed_data.get('sub')
+    request.session['eduplaces_sid'] = eduplaces_sid
+
+    eduplaces_uid = ed_data.get("sub") or ed_data.get("pseudonym")
+    vorname = ed_data.get("given_name", "").strip()
+    nachname = ed_data.get("family_name", "").strip()
+
+    roh_rolle = str(ed_data.get("role", "student")).lower()
+    if any(r in roh_rolle for r in ["lehrer", "teacher", "instructor"]):
+        ziel_gruppen_name = "Lehrer"
+    else:
+        ziel_gruppen_name = "Schüler"
+
+    school_name = ed_data.get("school_name", "Unbekannte Schule")
+    school_official_id = ed_data.get("school_official_id", None)
+
+    schule_obj = None
+    if school_official_id:
+        schule_obj, _ = Schule.objects.get_or_create(
+            dienststellen_nr=school_official_id,
+            defaults={"schulname": school_name}
+        )
+
+    LoginLog.objects.create(
+        quelle='eduplaces_duell',
+        consumer_key=school_official_id if school_official_id else 'unbekannt',
+        user_id=eduplaces_uid,
+        user_name=f"{vorname} {nachname}".strip(),
+        rolle=ziel_gruppen_name,
+        institution_name=school_name,
+        rohdaten=str(ed_data)
+    )
+
+    # STUFE 1: eduplaces_uid bereits bekannt -> einloggen
     try:
-        payload = decode_jwt_payload(logout_token)
-        if not payload:
-            logger.warning("[ED-LOGOUT] Token konnte nicht dekodiert werden.")
-            return HttpResponse("Invalid logout_token", status=400)
+        profil = Profil.objects.get(eduplaces_uid=eduplaces_uid)
+        user = profil.user
+        gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+        if gruppe_obj:
+            user.groups.add(gruppe_obj)
+        login(request, user)
+        return redirect("duell")
+    except Profil.DoesNotExist:
+        pass
 
-        eduplaces_sub = payload.get('sub')
-        eduplaces_sid = payload.get('sid')
-        logger.warning(f"[ED-LOGOUT] sub={eduplaces_sub!r} sid={eduplaces_sid!r}")
+    # STUFE 2: Name + Schule stimmen überein -> verknüpfen
+    if schule_obj:
+        profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
+        if profil:
+            user = profil.user
+            profil.eduplaces_uid = eduplaces_uid
+            profil.save()
+            gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+            if gruppe_obj:
+                user.groups.add(gruppe_obj)
+            login(request, user)
+            return redirect("duell")
 
-        if not eduplaces_sub and not eduplaces_sid:
-            logger.warning("[ED-LOGOUT] Weder 'sub' noch 'sid' im Token-Payload gefunden.")
-            return HttpResponse("OK", status=200)
+    # STUFE 3: Neu anlegen - minimal, ohne jg/kurs
+    sj, hj = name_hj()
+    base_username = f'edu_duell_{eduplaces_uid[:10]}'
+    username = base_username
+    counter = 1
+    while User.objects.filter(username=username).exists():
+        username = f'{base_username}_{counter}'
+        counter += 1
 
-        gefunden = 0
-        alle_sessions = list(Session.objects.all())
-        logger.warning(f"[ED-LOGOUT] {len(alle_sessions)} Sessions insgesamt in der DB. Suche sid={eduplaces_sid!r}")
+    new_user = User.objects.create_user(
+        username=username,
+        password=User.objects.make_random_password(),
+    )
 
-        for session in alle_sessions:
-            session_data = session.get_decoded()
-            gespeicherte_sid = session_data.get('eduplaces_sid')
-            gespeicherte_sub = session_data.get('eduplaces_sub')
-            if gespeicherte_sid or gespeicherte_sub:
-                logger.warning(
-                    f"[ED-LOGOUT]   Session {session.session_key[:8]}... "
-                    f"expire={session.expire_date} "
-                    f"gespeicherte_sid={gespeicherte_sid!r} (type={type(gespeicherte_sid).__name__}) "
-                    f"gespeicherte_sub={gespeicherte_sub!r}"
-                )
+    gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
+    if gruppe_obj:
+        new_user.groups.add(gruppe_obj)
 
-            treffer = False
-            if eduplaces_sid and gespeicherte_sid == eduplaces_sid:
-                treffer = True
-            elif eduplaces_sub and gespeicherte_sub == eduplaces_sub:
-                treffer = True
+    Profil.objects.create(
+        user=new_user,
+        vorname=vorname,
+        nachname=nachname,
+        klasse='',
+        schule=schule_obj,
+        eduplaces_uid=eduplaces_uid,
+        mathe=False,
+        sj=sj,
+        hj=hj,
+    )
 
-            if treffer:
-                gefunden += 1
-                key_fuer_log = session.session_key
-                session.delete()
-                logger.warning(f"[ED-LOGOUT] Session {key_fuer_log[:8]}... gelöscht.")
-
-        logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} Session(s) gelöscht.")
-        return HttpResponse("OK", status=200)
-
-    except Exception as e:
-        logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
-        return HttpResponse(f"Error processing logout: {str(e)}", status=400)
+    login(request, new_user)
+    return redirect("duell")
 
 @csrf_exempt
 def simulation_eduplaces(request):
