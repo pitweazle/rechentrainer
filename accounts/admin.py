@@ -52,7 +52,7 @@ class ProfilAdmin(admin.ModelAdmin):
         ('physikgruppe', PhysikGruppeFilter),
     )
     search_fields = ['vorname', 'nachname']
-    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'app_kuerzel', 'sso_kuerzel', 'get_mathegruppe_name', 'physikgruppe')
+    list_display = ('pk', 'vorname', 'nachname', 'klasse', 'schule_kuerzel', 'app_kuerzel', 'sso_kuerzel', 'get_mathegruppe_name', 'physikgruppe')
 
     fieldsets = [
         ('Allgemein', {
@@ -75,6 +75,10 @@ class ProfilAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
     ]
+
+    @admin.display(description='Schule', ordering='schule')
+    def schule_kuerzel(self, obj):
+        return obj.schule.schulname if obj.schule else '–'
 
     @admin.display(description='Mathegruppe', ordering='gruppe')
     def get_mathegruppe_name(self, obj):
