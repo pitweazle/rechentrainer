@@ -1074,6 +1074,17 @@ def eduplaces_login_duell(request):
 
 def eduplaces_callback_duell(request):
     """Verarbeitet den Rücksprung von Eduplaces für Rechenduell."""
+
+    LoginLog.objects.create(
+        quelle='eduplaces_duell_debug',
+        consumer_key='DIAGNOSE',
+        user_id='',
+        user_name='Callback erreicht',
+        rolle='',
+        institution_name='',
+        rohdaten=str(dict(request.GET))
+    )
+
     code = request.GET.get("code")
     error = request.GET.get("error")
     if error or not code:
