@@ -437,8 +437,8 @@ def aufgaben(request):
 
     # 9. Aktuelle Aufgabe laden
     aufgabe = Aufgabe.objects.get(id=ids_in_session[index])
-    print(f"[DEBUG-INDEX] index={index}, aufgabe_id={aufgabe.id}, frage={aufgabe.frage[:40]!r}, "
-          f"warte_auf_weiter(session)={request.session.get('warte_auf_weiter')}, method={request.method}")
+    # print(f"[DEBUG-INDEX] index={index}, aufgabe_id={aufgabe.id}, frage={aufgabe.frage[:40]!r}, "
+    #       f"warte_auf_weiter(session)={request.session.get('warte_auf_weiter')}, method={request.method}")
 
     # -------- Medien (Bilder & Videos) --------
     bilder_anzeige = None
@@ -523,11 +523,11 @@ def aufgaben(request):
             bild_antwort=bild_antwort,
             session=request.session,
         )
-        print(f"DEBUG: ergebnis = {ergebnis}")
+        # print(f"DEBUG: ergebnis = {ergebnis}")
 
         # ---- richtig ----
         if ergebnis.get("richtig"):
-            print("DEBUG: Antwort wurde als RICHTIG bewertet (keine KI-Prüfung)")
+            #print("DEBUG: Antwort wurde als RICHTIG bewertet (keine KI-Prüfung)")
             aktualisiere_protokoll_fach(request.user, aufgabe)
             messages.success(request, ergebnis.get("hinweis", "Richtig!"))
             request.session["index"] += 1
@@ -544,7 +544,7 @@ def aufgaben(request):
 
         # ---- falsch ----
         else:
-            print("DEBUG: Antwort wurde als FALSCH bewertet (KI-Prüfung möglich)")
+            #print("DEBUG: Antwort wurde als FALSCH bewertet (KI-Prüfung möglich)")
             hinweis_text = ergebnis.get("hinweis", "Leider falsch.")
 
             # KI-Zweite Bewertung für Freitext-Aufgaben
@@ -560,7 +560,7 @@ def aufgaben(request):
                         kapitel=aufgabe.kapitel.kapitel if aufgabe.kapitel else "Unbekannt"
                     )
                 except RuntimeError as e:
-                    print(f"[WARN] KI-Check fehlgeschlagen: {e}")
+                    #print(f"[WARN] KI-Check fehlgeschlagen: {e}")
                     messages.warning(
                         request,
                         "Die KI-Prüfung ist gerade nicht erreichbar. " + hinweis_text,
