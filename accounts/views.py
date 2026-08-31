@@ -560,6 +560,16 @@ def simulation_moodle(request):
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
+    LoginLog.objects.create(
+        quelle='eduplaces_logout_debug',
+        consumer_key='DIAGNOSE',
+        user_id='',
+        user_name='Logout-Callback erreicht',
+        rolle='',
+        institution_name='',
+        rohdaten=request.body.decode('utf-8', errors='replace')[:1000]
+    )
+
     logout_token = request.POST.get('logout_token')
 
     if not logout_token:
@@ -614,6 +624,64 @@ def eduplaces_logout(request):
     except Exception as e:
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
+    
+# @csrf_exempt
+# @require_POST
+# def eduplaces_logout(request):
+#     logout_token = request.POST.get('logout_token')
+
+#     if not logout_token:
+#         logger.warning("[ED-LOGOUT] Kein logout_token im POST-Body gefunden.")
+#         return HttpResponse("Missing logout_token", status=400)
+
+#     try:
+#         payload = decode_jwt_payload(logout_token)
+#         if not payload:
+#             logger.warning("[ED-LOGOUT] Token konnte nicht dekodiert werden.")
+#             return HttpResponse("Invalid logout_token", status=400)
+
+#         eduplaces_sub = payload.get('sub')
+#         eduplaces_sid = payload.get('sid')
+#         logger.warning(f"[ED-LOGOUT] sub={eduplaces_sub!r} sid={eduplaces_sid!r}")
+
+#         if not eduplaces_sub and not eduplaces_sid:
+#             logger.warning("[ED-LOGOUT] Weder 'sub' noch 'sid' im Token-Payload gefunden.")
+#             return HttpResponse("OK", status=200)
+
+#         gefunden = 0
+#         alle_sessions = list(Session.objects.all())
+#         logger.warning(f"[ED-LOGOUT] {len(alle_sessions)} Sessions insgesamt in der DB. Suche sid={eduplaces_sid!r}")
+
+#         for session in alle_sessions:
+#             session_data = session.get_decoded()
+#             gespeicherte_sid = session_data.get('eduplaces_sid')
+#             gespeicherte_sub = session_data.get('eduplaces_sub')
+#             if gespeicherte_sid or gespeicherte_sub:
+#                 logger.warning(
+#                     f"[ED-LOGOUT]   Session {session.session_key[:8]}... "
+#                     f"expire={session.expire_date} "
+#                     f"gespeicherte_sid={gespeicherte_sid!r} (type={type(gespeicherte_sid).__name__}) "
+#                     f"gespeicherte_sub={gespeicherte_sub!r}"
+#                 )
+
+#             treffer = False
+#             if eduplaces_sid and gespeicherte_sid == eduplaces_sid:
+#                 treffer = True
+#             elif eduplaces_sub and gespeicherte_sub == eduplaces_sub:
+#                 treffer = True
+
+#             if treffer:
+#                 gefunden += 1
+#                 key_fuer_log = session.session_key
+#                 session.delete()
+#                 logger.warning(f"[ED-LOGOUT] Session {key_fuer_log[:8]}... gelöscht.")
+
+#         logger.warning(f"[ED-LOGOUT] Fertig. {gefunden} Session(s) gelöscht.")
+#         return HttpResponse("OK", status=200)
+
+#     except Exception as e:
+#         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
+#         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
 
 #nur - Rechentrainer:
 def decode_jwt_payload(token):
