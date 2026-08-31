@@ -1173,11 +1173,23 @@ def eduplaces_callback_duell(request):
         messages.error(request, "Fehler beim Token-Austausch mit Eduplaces.")
         return redirect("duell")
 
+
     token_data = token_response.json()
     access_token = token_data.get("access_token")
     id_token = token_data.get("id_token")
     id_payload = decode_jwt_payload(id_token) or {}
     eduplaces_sid = id_payload.get("sid")
+
+    # DIAGNOSE: kompletten Token-Response anschauen
+    LoginLog.objects.create(
+        quelle='eduplaces_duell_debug',
+        consumer_key='TOKEN-DATA',
+        user_id='',
+        user_name='Token Data + ID Payload',
+        rolle='',
+        institution_name='',
+        rohdaten=f"token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
+    )
 
     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
     userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
