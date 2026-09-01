@@ -25,7 +25,7 @@ urlpatterns = [
     path('eduplaces/login/', views.eduplaces_login, name='eduplaces_login'),
     path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
     path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
-    path('eduplaces_duell/logout/', views.eduplaces_logout, name='eduplaces_logout'),
+    #path('eduplaces_duell/logout/', views.eduplaces_logout, name='eduplaces_logout'),
     path('eduplaces/zuordnung/', views.eduplaces_zuordnung, name='eduplaces_zuordnung'),
 
     path('sim_moodle/', views.simulation_moodle, name='simulation_moodle'),

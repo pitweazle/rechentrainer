@@ -809,6 +809,16 @@ def eduplaces_callback(request):
     id_payload = decode_jwt_payload(id_token) or {}
     eduplaces_sid = id_payload.get("sid")
 
+    LoginLog.objects.create(
+    quelle='eduplaces_duell_debug',
+    consumer_key='ID-TOKEN-PAYLOAD',
+    user_id=str(eduplaces_sid),
+    user_name='ID Token Payload komplett',
+    rolle='',
+    institution_name='',
+    rohdaten=str(id_payload)
+)
+
     # 2. Benutzerdaten (UserInfo) von Eduplaces abrufen
     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
     userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
