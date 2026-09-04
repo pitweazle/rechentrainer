@@ -1,4 +1,5 @@
 import random
+
 from py_expression_eval import Parser
 
 from decimal import *
@@ -23,6 +24,18 @@ from core.views import format_zahl, aufgaben, kontrolle
 
 from .models import Duellant, Duell, Duell_Protokoll
 from .forms import Duellant_Aendern_Form, Duell_AuswahlForm, AufgabeFormTab, DuellProtokollFilter, Gruppe_Temp_Form, Duell_light_Form
+
+import secrets
+import urllib.parse
+
+from accounts.views import (
+    get_oidc_endpoints,
+    generate_pkce_pair,
+    decode_jwt_payload,
+    EDUPLACES_DUELL_CLIENT_ID,
+    EDUPLACES_DUELL_CLIENT_SECRET,
+    EDUPLACES_DUELL_REDIRECT_URI,
+)
 
 def duell_rang(gruppe_id):
     gruppe = get_object_or_404(Lerngruppe, pk=gruppe_id)
@@ -723,9 +736,36 @@ def duell_neue_gruppe(req):
 
 # hier kommt der Code für den Aufruf des Duells über rechenduell.app (Duell_light):
 def duell(req):
-    req.session['duell'] = "light"                                      # sorgt dafür, dass unter "home" auf die Seite rechentrainer.app/duell gesprungen wird 
-    if not req.user.is_authenticated and not req.GET.get('abgemeldet'):
-        return redirect('eduplaces_login_duell')
+    req.session['duell'] = "light"
+    
+    # Prüfen, ob Eduplaces uns einen Login aufzwingen will (Launch aus dem Portal)
+    iss = req.GET.get('iss')
+    login_hint = req.GET.get('login_hint')
+    if iss and login_hint:
+        auth_endpoint, _, _ = get_oidc_endpoints()
+        
+        code_verifier, code_challenge = generate_pkce_pair()
+        state = secrets.token_urlsafe(16)
+        req.session['eduplaces_duell_state'] = state
+        req.session['eduplaces_duell_code_verifier'] = code_verifier
+        
+        scopes = "openid role pseudonym school school_name school_official_id"
+        
+        params = {
+            'response_type': 'code',
+            'client_id': EDUPLACES_DUELL_CLIENT_ID,
+            'redirect_uri': EDUPLACES_DUELL_REDIRECT_URI,
+            'scope': scopes,
+            'state': state,
+            'code_challenge': code_challenge,
+            'code_challenge_method': 'S256',
+            'iss': iss,
+            'login_hint': login_hint,
+        }
+        
+        redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
+        return redirect(redirect_url)
+    
     titel = untertitel = oder = ""
     login_form = Login_Form()
     gruppe_form = Duell_light_Form()
