@@ -724,8 +724,8 @@ def duell_neue_gruppe(req):
 # hier kommt der Code für den Aufruf des Duells über rechenduell.app (Duell_light):
 def duell(req):
     req.session['duell'] = "light"                                      # sorgt dafür, dass unter "home" auf die Seite rechentrainer.app/duell gesprungen wird 
-    # if not req.user.is_authenticated and not req.GET.get('abgemeldet'):
-    #     return redirect('eduplaces_login_duell')
+    if not req.user.is_authenticated and not req.GET.get('abgemeldet'):
+        return redirect('eduplaces_login_duell')
     titel = untertitel = oder = ""
     login_form = Login_Form()
     gruppe_form = Duell_light_Form()
