@@ -560,15 +560,15 @@ def simulation_moodle(request):
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
-    LoginLog.objects.create(
-        quelle='eduplaces_logout_debug',
-        consumer_key='DIAGNOSE',
-        user_id='',
-        user_name='Logout-Callback erreicht',
-        rolle='',
-        institution_name='',
-        rohdaten=request.body.decode('utf-8', errors='replace')[:1000]
-    )
+    # LoginLog.objects.create(
+    #     quelle='eduplaces_logout_debug',
+    #     consumer_key='DIAGNOSE',
+    #     user_id='',
+    #     user_name='Logout-Callback erreicht',
+    #     rolle='',
+    #     institution_name='',
+    #     rohdaten=request.body.decode('utf-8', errors='replace')[:1000]
+    # )
 
     logout_token = request.POST.get('logout_token')
 
@@ -1501,7 +1501,7 @@ def bestenliste(req):
     
     # 1. Schülerauswertung
     alleschueler = []
-    schueler = Profil.objects.select_related('gruppe__lehrer__profil').all()
+    schueler = Profil.objects.select_related('gruppe__lehrer__profil').filter(mathe=True, jg__isnull=False)    
     for s in schueler:
         startdatum = s.gruppe.erstellt_am if s.gruppe else s.user.date_joined
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, s.jg, s.jg*10, startdatum) 
@@ -1522,7 +1522,7 @@ def bestenliste(req):
 
     # 2. Gruppenauswertung (Aktuelles Halbjahr)
     hjgruppen = []
-    for g in Lerngruppe.objects.all():
+    for g in Lerngruppe.objects.filter(jg__isnull=False):
         schulwoche, woche_halbjahr, soll_hj, soll_kat, pflicht_kat = soll_berechnung(sj, hj, g.jg, g.jg*10, g.erstellt_am) 
         mitglieder = Profil.objects.filter(gruppe=g).count()
         
