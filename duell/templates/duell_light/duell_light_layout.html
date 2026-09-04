@@ -20,7 +20,7 @@
         <div class="dropdown">
             <button class="dropbtn"> 
                 {% if user.is_authenticated %}
-                    Hallo {{ user.username }}
+                    Hallo {% if user.profil %}{{ user.profil.anzeige_name }}{% else %}{{ user.username }}{% endif %}                
                 {% endif %}
             </button>
             {% if user.is_authenticated %}
