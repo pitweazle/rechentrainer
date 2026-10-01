@@ -7096,6 +7096,7 @@ def quadfu(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolge 
                 if typ == 9:
                     if  "*(" in eingabe:
                         return 0, "Hier kannst du das *-Zeichen vor der Klammer weglassen."
+                return 0, ""
         elif typ == 8:
             if eingabe not in ["ja", "nein"] :
                 return 0, "Du musst dich zwischen 'ja' und 'nein' entscheiden"

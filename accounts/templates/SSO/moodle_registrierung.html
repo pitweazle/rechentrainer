@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 30px;">
+  <h2>Registrierung abschließen</h2>
+  <p>Hallo <strong>{{ moodle_vorname }} {{ moodle_nachname }}</strong>, bitte ergänze deine Daten:</p>
+
+  <form method="POST" onsubmit="return checkEmail()">
+    {% csrf_token %}
+    <input type="hidden" name="aktion" value="registrierung_speichern">
+
+    <!-- Vorgefüllte Felder (read-only) -->
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Vorname:</label>
+      <input type="text" name="reg_vorname" value="{{ moodle_vorname }}" readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Nachname:</label>
+      <input type="text" name="reg_nachname" value="{{ moodle_nachname }}" readonly style="width: 100%; padding: 8px; background-color: #f8f9fa; border: 1px solid #ddd;">
+    </div>
+
+    <!-- Pflichtfelder -->
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Klasse:</label>
+      <input type="text" name="reg_klasse" required placeholder="z.B. 6R" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Jahrgang:</label>
+      <input type="number" name="reg_jg" required min="1" max="13" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">Kurs:</label>
+      <select name="reg_kurs" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+        <option value="" disabled selected>Bitte auswählen...</option>
+        {% for value, label in kurs_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- E-Mail (optional) -->
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 5px;">E-Mail-Adresse (optional):</label>
+      <input type="email" name="reg_email" id="emailInput" value="{{ moodle_email }}" placeholder="z.B. max@schule.de" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+      <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+        Ohne E-Mail kannst du dich später <strong>nur über Moodle</strong> anmelden.
+      </p>
+    </div>
+
+    <button type="submit" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Account erstellen</button>
+  </form>
+</div>
+
+<!-- JavaScript für die Validierung -->
+<script>
+  function checkEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (email === '') {
+      alert(
+        "Hinweis: Ohne E-Mail-Adresse kannst du dich später NUR über Moodle anmelden.\n\n" +
+        "Mit einer E-Mail könntest du:\n" +
+        "- Dein Passwort zurücksetzen\n" +
+        "- Dich direkt beim Rechentrainer anmelden (ohne Moodle)"
+      );
+      return confirm("Möchtest du trotzdem ohne E-Mail fortfahren?");
+    }
+    return true;
+  }
+</script>
+{% endblock %}
