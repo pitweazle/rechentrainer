@@ -7615,13 +7615,13 @@ def potenzen(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
                 if variable1 < variable2:
                     lsg = [lsgterm1, "buchstabe" + lsgterm2]
                     if zaehler1 == zaehler2:
-                        lsg.append = (str(zaehler1) + "(" + variable1 + variable2 + ")")
-                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable2 + variable1 + ")")
+                        lsg.append(str(zaehler1) + "(" + variable1 + variable2 + ")")
+                        lsg.append("buchstabe" + str(zaehler1) + "(" + variable2 + variable1 + ")")
                 else:
                     lsg = [lsgterm2, "buchstabe" + lsgterm1]
                     if zaehler1 == zaehler2:
-                        lsg.append = (str(zaehler1) + "(" + variable2 + variable2 + ")")
-                        lsg.append = ("buchstabe" + str(zaehler1) + "(" + variable1 + variable2 + ")")
+                        lsg.append(str(zaehler1) + "(" + variable2 + variable2 + ")")
+                        lsg.append("buchstabe" + str(zaehler1) + "(" + variable1 + variable2 + ")")
             lsg.append("indiv_0")
             random.shuffle(term)
             frage = "".join(term)
