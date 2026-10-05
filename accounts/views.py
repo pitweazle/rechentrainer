@@ -278,9 +278,7 @@ def custom_logout(request):
 def lti_launch(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Nur POST-Anfragen erlaubt.")
-
     platform = request.platform  # 'mathe' oder 'physik' – von der Middleware gesetzt
-
     consumer_key = request.POST.get('oauth_consumer_key')
     try:
         schule_obj = Schule.objects.get(dienststellen_nr=consumer_key)
@@ -298,15 +296,15 @@ def lti_launch(request):
         moodle_email = ''
     moodle_rollen = request.POST.get('roles', 'Learner')
 
-    LoginLog.objects.create(
-        quelle=f'moodle_{platform}',
-        consumer_key=consumer_key,
-        user_id=moodle_uid,
-        user_name=request.POST.get('lis_person_name_full'),
-        rolle=moodle_rollen,
-        institution_name=request.POST.get('tool_consumer_instance_name'),
-        rohdaten=str(request.POST.dict())
-    )
+    # LoginLog.objects.create(
+    #     quelle=f'moodle_{platform}',
+    #     consumer_key=consumer_key,
+    #     user_id=moodle_uid,
+    #     user_name=request.POST.get('lis_person_name_full'),
+    #     rolle=moodle_rollen,
+    #     institution_name=request.POST.get('tool_consumer_instance_name'),
+    #     rohdaten=str(request.POST.dict())
+    # )
 
     if 'Instructor' in moodle_rollen or 'Teacher' in moodle_rollen:
         ziel_gruppen_name = "Lehrer"
