@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container" style="max-width: 700px; margin-top: 30px;">
+  <h2>Gruppen aus eduplaces übernehmen</h2>
+  <p>Wähle für jede Gruppe, ob daraus eine Lerngruppe im Rechentrainer werden soll. Schüler dieser Gruppe werden beim Anmelden automatisch zugeordnet.</p>
+  {% for m in messages %}<p><b>{{ m }}</b></p>{% endfor %}
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      {% for g in gruppen %}
+      <tr>
+        <td>{{ g.name }}</td>
+        {% if g.verknuepft %}
+          <td colspan="2">{{ g.verknuepft_text }}</td>
+        {% else %}
+          <td>
+            <select name="wahl_{{ g.id }}">
+              <option value="">nicht übernehmen</option>
+              <option value="neu">neue Lerngruppe anlegen</option>
+              {% for e in eigene %}<option value="{{ e.id }}">mit "{{ e.name }}" verknüpfen</option>{% endfor %}
+            </select>
+          </td>
+          <td>Jg: <input type="number" name="jg_{{ g.id }}" min="1" max="13" style="width: 60px;"></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </table>
+    <br><button type="submit">übernehmen</button>
+  </form>
+</div>
+{% endblock %}

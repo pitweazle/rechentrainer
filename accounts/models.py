@@ -49,6 +49,7 @@ class Lerngruppe(models.Model):
         help_text="Alle Aufgaben können gerechnet werden – z.B. für das Üben für einen Test.")
     temp = models.BooleanField(default=False)
     liga = models.BooleanField(default=True)
+    eduplaces_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
         
     class Meta:
         verbose_name_plural = 'Lerngruppen'

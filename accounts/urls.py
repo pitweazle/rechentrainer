@@ -23,6 +23,7 @@ urlpatterns = [
     path('physik/simulation/moodle/', views.simulation_moodle, name='simulation_moodle_physik'),
 
     path('eduplaces/login/', views.eduplaces_login, name='eduplaces_login'),
+    path('eduplaces/gruppen/', views.eduplaces_gruppen, name='eduplaces_gruppen'),
     path('eduplaces/callback/', views.eduplaces_callback, name='eduplaces_callback'),
     path('eduplaces/logout/', views.eduplaces_logout, name='eduplaces_logout'),
     #path('eduplaces_duell/logout/', views.eduplaces_logout, name='eduplaces_logout'),

@@ -29,6 +29,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404, request
@@ -623,7 +624,7 @@ def eduplaces_logout(request):
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
     
-#nur - Rechentrainer:
+#nur - Eduplaces:
 def decode_jwt_payload(token):
     """
     Dekodiert NUR den Payload-Teil eines JWT (ohne Signaturprüfung).
@@ -656,23 +657,6 @@ def get_oidc_endpoints():
       "https://auth.sandbox.eduplaces.dev/oauth/token",
       "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
   )
-
-import secrets
-import urllib.parse
-
-import base64
-import secrets
-import urllib.parse
-import re
-import requests
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import Group, User
-from django.core.mail import send_mail
-from django.shortcuts import redirect, render
-
-from .models import LoginLog, Ort, Profil, Schule
 
 def get_oidc_endpoints():
     """Lädt die Discovery-Endpunkte von Eduplaces."""
@@ -714,6 +698,71 @@ def eduplaces_login(request):
     
     redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
     return redirect(redirect_url)
+
+def eduplaces_gruppen_verarbeiten(request, profil, groups):
+    """Schüler: passende Lerngruppe zuordnen. Lehrkraft: Gruppen für die Auswahl merken."""
+    gruppen = [
+        {"id": g["id"], "name": g.get("name", "")}
+        for g in (groups or [])
+        if isinstance(g, dict) and g.get("id")
+    ]
+    if not gruppen:
+        return
+    if profil.user.groups.filter(name="Lehrer").exists():
+        request.session["ed_gruppen_angebot"] = gruppen
+    elif profil.gruppe_id is None:
+        lerngruppe = Lerngruppe.objects.filter(
+            eduplaces_id__in=[g["id"] for g in gruppen]
+        ).first()
+        if lerngruppe:
+            profil.gruppe = lerngruppe
+            profil.save()
+
+@login_required
+def eduplaces_gruppen(request):
+    if not request.user.groups.filter(name="Lehrer").exists():
+        return redirect("index")
+    angebot = request.session.get("ed_gruppen_angebot", [])
+    ids = [a["id"] for a in angebot]
+    verknuepft = {l.eduplaces_id: l for l in Lerngruppe.objects.filter(eduplaces_id__in=ids)}
+
+    if request.method == "POST":
+        for a in angebot:
+            wahl = request.POST.get(f"wahl_{a['id']}", "")
+            if not wahl or a["id"] in verknuepft:
+                continue
+            if wahl == "neu":
+                try:
+                    jg = int(request.POST.get(f"jg_{a['id']}", ""))
+                except ValueError:
+                    jg = 0
+                name = a["name"][:15]
+                if not 1 <= jg <= 13:
+                    messages.error(request, f"{a['name']}: bitte einen Jahrgang (1-13) eintragen.")
+                elif Lerngruppe.objects.filter(lehrer=request.user, name=name).exists():
+                    messages.error(request, f"{a['name']}: du hast schon eine Lerngruppe '{name}'. Bitte verknüpfe stattdessen diese.")
+                else:
+                    Lerngruppe.objects.create(lehrer=request.user, name=name, jg=jg, eduplaces_id=a["id"])
+                    messages.success(request, f"{a['name']} wurde übernommen.")
+            else:
+                gruppe = Lerngruppe.objects.filter(
+                    pk=wahl, lehrer=request.user, eduplaces_id__isnull=True
+                ).first()
+                if gruppe:
+                    gruppe.eduplaces_id = a["id"]
+                    gruppe.save()
+                    messages.success(request, f"{a['name']} wurde mit '{gruppe.name}' verknüpft.")
+        return redirect("eduplaces_gruppen")
+
+    gruppen = []
+    for a in angebot:
+        l = verknuepft.get(a["id"])
+        text = ""
+        if l:
+            text = f'verknüpft mit "{l.name}"' if l.lehrer_id == request.user.id else "bereits von einer anderen Lehrkraft übernommen"
+        gruppen.append({"id": a["id"], "name": a["name"], "verknuepft": bool(l), "verknuepft_text": text})
+    eigene = Lerngruppe.objects.filter(lehrer=request.user, eduplaces_id__isnull=True, temp=False).order_by("name")
+    return render(request, "SSO/eduplaces_gruppen.html", {"gruppen": gruppen, "eigene": eigene})
 
 def eduplaces_callback(request):
     """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
@@ -758,6 +807,7 @@ def eduplaces_callback(request):
         return redirect("index")
 
     ed_data = userinfo_response.json()
+    ed_groups = ed_data.get("groups") or []
     request.session['eduplaces_sub'] = ed_data.get('sub')
     request.session['eduplaces_sid'] = eduplaces_sid
     logger.warning(f"[ED-LOGIN] id_token vorhanden: {id_token is not None}, eduplaces_sid gespeichert: {eduplaces_sid!r}")
@@ -860,6 +910,7 @@ def eduplaces_callback(request):
             user.save()
 
         login(request, user)
+        eduplaces_gruppen_verarbeiten(request, profil, ed_groups)
         return redirect("index")
     except Profil.DoesNotExist:
         pass
@@ -880,7 +931,10 @@ def eduplaces_callback(request):
                 user.save()
                 
             login(request, user)
+            eduplaces_gruppen_verarbeiten(request, profil, ed_groups)
             return redirect("index")
+
+    # STUFE 3 & 4: Ab in die Session
 
     # STUFE 3 & 4: Ab in die Session
     request.session["ed_pending"] = {
@@ -1282,7 +1336,6 @@ def simulation_eduplaces(request):
         'rolle': request.POST.get('rolle', 'student'),
         'schule_id': None,  # Wird über die offizielle ID verknüpft
     }
-
     # Wir simulieren direkt die Daten, die sonst aus dem Userinfo-Endpoint kämen,
     # und legen Ort & Schule direkt an:
     school_name = request.POST.get('schulname', 'IGS Kelsterbach')
@@ -1297,6 +1350,9 @@ def simulation_eduplaces(request):
 
     # Aktualisiere die Session mit der echten Schul-ID
     pending = request.session['ed_pending']
+    gid = request.POST.get('gruppe_id', '').strip()
+    sim_groups = [{"id": gid, "name": request.POST.get('gruppe_name', '')}] if gid else []
+    pending['groups'] = sim_groups    
     pending['schule_id'] = schule_obj.id
     request.session['ed_pending'] = pending
 
@@ -1305,6 +1361,7 @@ def simulation_eduplaces(request):
     try:
       profil = Profil.objects.get(eduplaces_uid=pending['eduplaces_uid'])
       login(request, profil.user)
+      eduplaces_gruppen_verarbeiten(request, profil, sim_groups)
       messages.success(request, f'Simulation: Erfolgreich eingeloggt als {profil.vorname}!')
       return redirect('index')
     except Profil.DoesNotExist:
@@ -1312,7 +1369,6 @@ def simulation_eduplaces(request):
 
     # Wenn kein Profil da ist, leiten wir zur Zuordnungsmaske weiter (Stufe 2-4)
     return redirect('eduplaces_zuordnung')
-
   # HTML-Formular für die Eduplaces-Simulation
   return HttpResponse("""
         <!DOCTYPE html>
@@ -1353,6 +1409,12 @@ def simulation_eduplaces(request):
 
                 <label>Offizielle Schul-ID (dienststellen_nr):</label>
                 <input type="text" name="school_official_id" value="D_HE_6072"><br>
+
+                <label>Gruppen-ID (eduplaces):</label>
+                <input type="text" name="gruppe_id" value="da6e3715-5702-486f-9ff5-cef4f1bf748c"><br>
+
+                <label>Gruppenname:</label>
+                <input type="text" name="gruppe_name" value="rechentrainer Test-Accounts"><br>
 
                 <button type="submit">Eduplaces-Login simulieren</button>
             </form>
