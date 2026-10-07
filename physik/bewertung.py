@@ -610,7 +610,7 @@ physikalische Richtigkeit, nicht um Übereinstimmung mit einer bestimmten Formul
     # print("=" * 80 + "\n")
 
     payload = {
-        "model": "mistral-medium",
+        "model": "mistral-small-latest",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0,  # konsistente, strikte Bewertung statt Interpretationsspielraum
         "max_tokens": 120,
