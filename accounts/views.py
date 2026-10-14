@@ -686,7 +686,7 @@ def eduplaces_login(request):
     
     # Scopes um 'profile' für den Klarnamen und 'school_location' ergänzt
     scopes = (
-        "openid role pseudony groups school schooling_level school_name"
+        "openid role groups school schooling_level school_name"
         " school_location school_official_id"
         " profile"
     )
