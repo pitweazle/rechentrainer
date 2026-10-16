@@ -742,14 +742,17 @@ def duell(req):
     iss = req.GET.get('iss')
     login_hint = req.GET.get('login_hint')
     if iss and login_hint:
-        auth_endpoint, _, _ = get_oidc_endpoints()
+        auth_endpoint, _, _ = get_oidc_endpoints(EDUPLACES_DUELL_OIDC_CONFIG_URL)
+        if not auth_endpoint:
+            messages.error(req, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+            return redirect("duell")
         
         code_verifier, code_challenge = generate_pkce_pair()
         state = secrets.token_urlsafe(16)
         req.session['eduplaces_duell_state'] = state
         req.session['eduplaces_duell_code_verifier'] = code_verifier
         
-        scopes = "openid role pseudonym school school_name school_official_id"
+        scopes = "openid profile role pseudonym school school_name school_official_id"
         
         params = {
             'response_type': 'code',

@@ -68,7 +68,6 @@ EDUPLACES_DUELL_CLIENT_ID = "5a96beaa-42ff-4e23-b0eb-7d218e494ade"
 # alt: "d0dce1cc-7ffc-4854-b19c-d60bd81f870a"
 EDUPLACES_DUELL_CLIENT_SECRET = os.getenv("EDUPLACES_DUELL_CLIENT_SECRET")
 EDUPLACES_DUELL_REDIRECT_URI = "https://rechentrainer.app/eduplaces_duell/callback/"
-OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"  # Rechentrainer, vorerst Sandbox
 EDUPLACES_DUELL_OIDC_CONFIG_URL = "https://auth.eduplaces.io/.well-known/openid-configuration"
 
 # Dies ist die Startseite:
@@ -82,7 +81,7 @@ def index(req):
         # Parameter für den Eduplaces-Login zusammenbauen und direkt dorthin weiterleiten
         auth_endpoint, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
         if not auth_endpoint:
-            messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+            messages.error(req, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
             return redirect("index")
         
         state = secrets.token_urlsafe(16)
@@ -770,7 +769,10 @@ def eduplaces_callback(request):
         return redirect("index")
     
     _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
-    
+    if not token_endpoint or not userinfo_endpoint:
+        messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+        return redirect("index")
+        
     # 1. Code gegen Token tauschen (mit Basic Auth)
     credentials = f"{EDUPLACES_CLIENT_ID}:{EDUPLACES_CLIENT_SECRET}"
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
@@ -913,7 +915,7 @@ def eduplaces_callback(request):
         pass
 
     # STUFE 2: Keine ID, aber Name & Schule stimmen überein
-    if schule_obj:
+    if schule_obj and vorname and nachname:
         profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
         if profil:
             user = profil.user
@@ -1147,7 +1149,10 @@ def eduplaces_callback_duell(request):
         messages.error(request, "Sitzung abgelaufen, bitte erneut versuchen.")
         return redirect("duell")
 
-    _, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+    _, token_endpoint, userinfo_endpoint = get_oidc_endpoints(EDUPLACES_DUELL_OIDC_CONFIG_URL)
+    if not token_endpoint or not userinfo_endpoint:
+        messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+        return redirect("duell")
 
     credentials = f"{EDUPLACES_DUELL_CLIENT_ID}:{EDUPLACES_DUELL_CLIENT_SECRET}"
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
@@ -1276,7 +1281,7 @@ def eduplaces_callback_duell(request):
         pass
 
     # STUFE 2: Name + Schule stimmen überein -> verknüpfen
-    if schule_obj:
+    if schule_obj and vorname and nachname:
         profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
         if profil:
             user = profil.user
