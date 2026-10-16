@@ -58,15 +58,18 @@ from core.views import soll_berechnung
 from mathetests.models import Test
 
 # Konfigurationswerte
-EDUPLACES_CLIENT_ID = "5102a595-d3d4-4150-b868-9fcbe40f23df"
+EDUPLACES_CLIENT_ID = "ce311163-dbd9-4dd4-a39d-fbeb6829f629"
+#"5102a595-d3d4-4150-b868-9fcbe40f23df"
 EDUPLACES_CLIENT_SECRET = os.getenv("EDUPLACES_CLIENT_SECRET")
 EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
-OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
+OIDC_CONFIG_URL = "https://auth.eduplaces.io/.well-known/openid-configuration"
 
 EDUPLACES_DUELL_CLIENT_ID = "5a96beaa-42ff-4e23-b0eb-7d218e494ade"
 # alt: "d0dce1cc-7ffc-4854-b19c-d60bd81f870a"
 EDUPLACES_DUELL_CLIENT_SECRET = os.getenv("EDUPLACES_DUELL_CLIENT_SECRET")
 EDUPLACES_DUELL_REDIRECT_URI = "https://rechentrainer.app/eduplaces_duell/callback/"
+OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"  # Rechentrainer, vorerst Sandbox
+EDUPLACES_DUELL_OIDC_CONFIG_URL = "https://auth.eduplaces.io/.well-known/openid-configuration"
 
 # Dies ist die Startseite:
 def index(req):
@@ -77,7 +80,10 @@ def index(req):
     login_hint = req.GET.get('login_hint')
     if iss and login_hint:
         # Parameter für den Eduplaces-Login zusammenbauen und direkt dorthin weiterleiten
-        auth_endpoint, _, _ = get_oidc_endpoints() # Deine bestehende Funktion
+        auth_endpoint, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+        if not auth_endpoint:
+            messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+            return redirect("index")
         
         state = secrets.token_urlsafe(16)
         req.session['eduplaces_state'] = state
@@ -647,39 +653,26 @@ def decode_jwt_payload(token):
     except Exception:
         return None
 
-def get_oidc_endpoints():
-  """Lädt die Discovery-Endpunkte von Eduplaces."""
-  try:
-    response = requests.get(OIDC_CONFIG_URL, timeout=5)
-    if response.status_code == 200:
-      data = response.json()
-      return data.get("authorization_endpoint"), data.get("token_endpoint"), data.get("userinfo_endpoint")
-  except requests.RequestException:
-    pass
-  return (
-      "https://auth.sandbox.eduplaces.dev/oauth/authorize",
-      "https://auth.sandbox.eduplaces.dev/oauth/token",
-      "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
-  )
-
-def get_oidc_endpoints():
-    """Lädt die Discovery-Endpunkte von Eduplaces."""
+def get_oidc_endpoints(config_url=None):
+    """Lädt die Discovery-Endpunkte von Eduplaces (Sandbox oder Produktion)."""
+    config_url = config_url or OIDC_CONFIG_URL
     try:
-        response = requests.get(OIDC_CONFIG_URL, timeout=5)
+        response = requests.get(config_url, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            return data.get("authorization_endpoint"), data.get("token_endpoint"), data.get("userinfo_endpoint")
+            return (data.get("authorization_endpoint"),
+                    data.get("token_endpoint"),
+                    data.get("userinfo_endpoint"))
     except requests.RequestException:
         pass
-    return (
-        "https://auth.sandbox.eduplaces.dev/oauth/authorize",
-        "https://auth.sandbox.eduplaces.dev/oauth/token",
-        "https://auth.sandbox.eduplaces.dev/oauth/userinfo",
-    )
+    return None, None, None
 
 def eduplaces_login(request):
     """Leitet den Nutzer zum Eduplaces-Login weiter."""
-    auth_endpoint, _, _ = get_oidc_endpoints()
+    auth_endpoint, token_endpoint, userinfo_endpoint = get_oidc_endpoints()
+    if not auth_endpoint:
+        messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+        return redirect("index")
     
     # 1. Sicheren State mit ausreichend Länge generieren und in der Session merken
     state = secrets.token_urlsafe(16)
@@ -1115,7 +1108,10 @@ def generate_pkce_pair():
 
 def eduplaces_login_duell(request):
     """Leitet den Nutzer zum Eduplaces-Login für Rechenduell weiter (mit PKCE)."""
-    auth_endpoint, _, _ = get_oidc_endpoints()
+    auth_endpoint, _, _ = get_oidc_endpoints(EDUPLACES_DUELL_OIDC_CONFIG_URL)
+    if not auth_endpoint:
+        messages.error(request, "Eduplaces ist gerade nicht erreichbar. Bitte versuche es später noch einmal.")
+        return redirect("duell")
 
     state = secrets.token_urlsafe(16)
     code_verifier, code_challenge = generate_pkce_pair()
