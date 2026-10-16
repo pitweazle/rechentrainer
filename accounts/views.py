@@ -63,7 +63,8 @@ EDUPLACES_CLIENT_SECRET = os.getenv("EDUPLACES_CLIENT_SECRET")
 EDUPLACES_REDIRECT_URI = "https://rechentrainer.app/eduplaces/callback/"
 OIDC_CONFIG_URL = "https://auth.sandbox.eduplaces.dev/.well-known/openid-configuration"
 
-EDUPLACES_DUELL_CLIENT_ID = "d0dce1cc-7ffc-4854-b19c-d60bd81f870a"
+EDUPLACES_DUELL_CLIENT_ID = "5a96beaa-42ff-4e23-b0eb-7d218e494ade"
+# alt: "d0dce1cc-7ffc-4854-b19c-d60bd81f870a"
 EDUPLACES_DUELL_CLIENT_SECRET = os.getenv("EDUPLACES_DUELL_CLIENT_SECRET")
 EDUPLACES_DUELL_REDIRECT_URI = "https://rechentrainer.app/eduplaces_duell/callback/"
 
