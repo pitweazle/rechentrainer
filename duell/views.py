@@ -35,6 +35,7 @@ from accounts.views import (
     EDUPLACES_DUELL_CLIENT_ID,
     EDUPLACES_DUELL_CLIENT_SECRET,
     EDUPLACES_DUELL_REDIRECT_URI,
+    EDUPLACES_DUELL_OIDC_CONFIG_URL,
 )
 
 def duell_rang(gruppe_id):
