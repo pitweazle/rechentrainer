@@ -6647,16 +6647,21 @@ def dreiecke(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfolg
         if typ > 24:
             parameter['popup'] = "Klick mich: Wie berechnet man Winkel mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/arcsin.html"
-            if titel != "Maritimes":  
+            if titel not in ("Maritimes", "Steigungswinkel"):
                 text = "Wie berechnet man den Winkel {}?"
-                nachkomma = len(str(wert2).split(".")[1])           # falls jemand den Quotienten im Kopf rechnet
+                frage = "{}=".format(variable[0])
+                nachkomma = len(str(wert2).split(".")[1])
                 if nachkomma < 4:
                     ergaenzung = "{1}(".format(*variable) + str(wert2) + ")"
-                    lsg.insert(-1,ergaenzung.replace(".",","))
-        if typ > 16: 
+                    lsg.insert(-1, ergaenzung.replace(".", ","))
+            elif titel == "Steigungswinkel":
+                frage = "Winkel="
+        elif typ > 16:
             parameter['popup'] = "Klick mich: Wie rechnet man mit den trigonometrischen Funktionen?"
             parameter['popup_text'] = "popups/sin.html"
-            if titel != "Steigungswinkel":
+            if titel == "Maritimes":
+                frage = "Entfernung="
+            else:
                 frage = "{}=".format(*variable)
                 text = "Wie berechnet man die Seite {}?"
         return typ, typ2, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
@@ -8311,7 +8316,7 @@ def uebersicht(req, schueler_id=0):
                     else:
                         kat_farbe = None
                 else:
-                    if prozent_kat>=110 and not lehrer and not gruppe.alle_aufgaben and falsch_kat < 1:
+                    if prozent_kat >= 110 and not lehrer and gruppe and not gruppe.alle_aufgaben and falsch_kat < 1:
                         aktiv = False
                 prozent_summe +=prozent_kat
                 nicht_richtig_summe +=nicht_richtig_kat
@@ -8469,9 +8474,8 @@ def protokoll(req, schueler_id=0):
         else:
             profil = get_object_or_404(Profil, id = schueler_id)
         if not req.user.is_superuser:
-            if (profil.id) != (req.user.profil.id) and (profil.gruppe.lehrer.id) != (req.user.id):
+            if profil.id != req.user.profil.id and not (profil.gruppe and profil.gruppe.lehrer_id == req.user.id):                
                 return HttpResponse("Zugriff verweigert")
-        
         protokoll_basis = Protokoll.objects.filter(profil=profil).exclude(wertung = "Duell").order_by('id').reverse()
         next_sj, next_hj = name_next_hj()
         FormKlasse = ProtokollFilter_neu if (next_hj == profil.hj and next_sj == profil.sj) else ProtokollFilter
