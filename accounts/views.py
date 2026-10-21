@@ -1187,7 +1187,8 @@ def eduplaces_callback_duell(request):
         user_name='Token Data + ID Payload',
         rolle='',
         institution_name='',
-        rohdaten=f"token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
+        # rohdaten=f"token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
+        rohdaten=f"scope: {token_data.get('scope')} | token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
     )
 
     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
