@@ -178,6 +178,8 @@ def rt_profil_ergaenzen(request):
             ergebnis = check_hj(request)
             if ergebnis:
                 return ergebnis
+            if profil.gruppe_id:
+                return render(request, 'schueler/gruppe_fertig.html', {'gruppe': profil.gruppe})
             return redirect('ort_wahl')
 
     # Kontext für das Template bereitstellen
