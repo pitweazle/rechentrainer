@@ -1,0 +1,13 @@
+{% extends 'duell_light/duell_light_layout.html' %}
+{% block content %}
+<div class="container" style="max-width: 380px;">
+    <h2>Du hast schon ein Rechentrainer-Konto</h2>
+    <p>Du bist im Rechentrainer als <b>{{ user_obj.profil.vorname }} {{ user_obj.profil.nachname }}</b> bekannt.</p>
+    <p>Das Rechenduell erreichst du einfacher, wenn du dich direkt im Rechentrainer anmeldest und es von dort aus startest. Dort findest du auch deine Gruppen.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="aktion" value="abbrechen">Abbrechen</button>
+        <button type="submit" name="aktion" value="weiter">Trotzdem hier anmelden</button>
+    </form>
+</div>
+{% endblock %}

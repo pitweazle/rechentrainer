@@ -33,6 +33,7 @@ urlpatterns = [
     path('sim_eduplaces/', views.simulation_eduplaces, name='simulation_eduplaces'),
 
     path('eduplaces_duell/login/', views.eduplaces_login_duell, name='eduplaces_login_duell'),
+    path('eduplaces_duell/hinweis/', views.duell_hinweis, name='duell_hinweis'),
     path('eduplaces_duell/callback/', views.eduplaces_callback_duell, name='eduplaces_callback_duell'),
 
     # Halbjahres-Operationen

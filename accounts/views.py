@@ -1139,6 +1139,20 @@ def eduplaces_login_duell(request):
     redirect_url = f"{auth_endpoint}?{urllib.parse.urlencode(params)}"
     return redirect(redirect_url)
 
+def duell_hinweis(request):
+    user_id = request.session.get("duell_pending_user")
+    if not user_id:
+        return redirect("duell")
+    user = User.objects.filter(pk=user_id).first()
+    if not user:
+        return redirect("duell")
+    if request.method == "POST":
+        del request.session["duell_pending_user"]
+        if request.POST.get("aktion") == "weiter":
+            login(request, user)
+        return redirect("duell")
+    return render(request, "SSO/duell_hinweis.html", {"user_obj": user})
+
 def eduplaces_callback_duell(request):
     """Verarbeitet den Rücksprung von Eduplaces für Rechenduell."""
     code = request.GET.get("code")
@@ -1279,26 +1293,34 @@ def eduplaces_callback_duell(request):
         if email and user.email != email:
             user.email = email
             user.save()
+        if profil.mathe:
+            request.session["duell_pending_user"] = user.id
+            return redirect("duell_hinweis")
         login(request, user)
         return redirect("duell")
     except Profil.DoesNotExist:
         pass
 
-    # STUFE 2: Name + Schule stimmen überein -> verknüpfen
+    # STUFE 2: Name + Schule stimmen überein -> einloggen
+    # Eine vorhandene Kennung (z. B. aus dem Rechentrainer) bleibt unverändert.
     if schule_obj and vorname and nachname:
         profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
         if profil:
             user = profil.user
-            profil.eduplaces_uid = eduplaces_uid
-            profil.save()
+            if not profil.eduplaces_uid:
+                profil.eduplaces_uid = eduplaces_uid
+                profil.save()
             gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
             if email and user.email != email:
                 user.email = email
                 user.save()
-            login(request, user)
-            return redirect("duell")
+        if profil.mathe:
+            request.session["duell_pending_user"] = user.id
+            return redirect("duell_hinweis")
+        login(request, user)
+        return redirect("duell")
 
     # STUFE 3: Komplett neu -> DIREKT anlegen, KEIN Formular, KEIN jg/kurs
     sj, hj = name_hj()

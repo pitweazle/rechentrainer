@@ -1,5 +1,10 @@
 {% extends 'duell_light/duell_light_layout.html' %}
 {% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+{% endif %}
 <body>
 <div class="container" style= "max-width: 380px;">
     <h2>Willkommen zum Rechenduell</h2>
