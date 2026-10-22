@@ -936,8 +936,6 @@ def eduplaces_callback(request):
             return redirect("index")
 
     # STUFE 3 & 4: Ab in die Session
-
-    # STUFE 3 & 4: Ab in die Session
     request.session["ed_pending"] = {
         "eduplaces_uid": eduplaces_uid,
         "vorname": vorname,
@@ -946,6 +944,7 @@ def eduplaces_callback(request):
         "rolle": ziel_gruppen_name,
         "schule_id": schule_obj.id if schule_obj else None,
         "jg": 5,
+        "groups": ed_groups,
     }
 
     return redirect("eduplaces_zuordnung")
@@ -1051,7 +1050,9 @@ def eduplaces_zuordnung(request):
                     schuljahr_ab=timezone.now() if hj == 1 else None,
                     halbjahr_ab=timezone.now() if hj == 2 else None,
                 )
-
+            profil_neu = Profil.objects.get(user=new_user)
+            eduplaces_gruppen_verarbeiten(request, profil_neu, ed_data.get('groups') or [])
+            
             login(request, new_user)
             
             # Session komplett aufräumen, damit es nie wieder aufgerufen wird
