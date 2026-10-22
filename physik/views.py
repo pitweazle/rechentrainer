@@ -437,8 +437,6 @@ def aufgaben(request):
 
     # 9. Aktuelle Aufgabe laden
     aufgabe = Aufgabe.objects.get(id=ids_in_session[index])
-    # print(f"[DEBUG-INDEX] index={index}, aufgabe_id={aufgabe.id}, frage={aufgabe.frage[:40]!r}, "
-    #       f"warte_auf_weiter(session)={request.session.get('warte_auf_weiter')}, method={request.method}")
 
     # -------- Medien (Bilder & Videos) --------
     bilder_anzeige = None
@@ -500,8 +498,6 @@ def aufgaben(request):
 
         # ---- Skip / "Weiter" nach gesperrter Falsch-Antwort ----
         if not antwort and not bild_antwort:
-            print(f"[DEBUG-INDEX] Skip-Zweig ausgelöst. index VOR Erhöhung={request.session.get('index')}, "
-                  f"warte_auf_weiter={request.session.get('warte_auf_weiter')}")
             if not request.session.get("warte_auf_weiter"):
                 # Echter Skip: Aufgabe wurde nie beantwortet
                 messages.info(request, "Letzte Aufgabe übersprungen.")
@@ -511,8 +507,6 @@ def aufgaben(request):
             request.session.pop('aktiver_index', None)
             request.session["warte_auf_weiter"] = False
             request.session.pop("letzte_antwort", None)
-            print(f"[DEBUG-INDEX] index NACH Erhöhung={request.session.get('index')}, "
-                  f"session_key={request.session.session_key}")
             return redirect("physik:aufgaben")
 
         ergebnis = bewerte_aufgabe(

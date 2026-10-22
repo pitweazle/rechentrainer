@@ -9028,10 +9028,11 @@ def main(req, slug):
             if zaehler.aufgnr == 0:     # Das ist jeweils die erste Aufgabe von 10
                 zaehler.aufgnr = 1
                 zaehler.zeit_summe = 0
-                #durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
-                # if richtig_gesamt > 100 and fehler_kat < 1:
-                #     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
-                #         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
+                durchschnitt, richtig_gesamt, fehler_kat = durchschnitt_aufgaben(profil, kategorie)
+                # hier wird verhindert, dass immer 1mal1 gerechnet wird
+                if richtig_gesamt > 100 and fehler_kat < 1:
+                     if gerechnet >= durchschnitt*2 and zaehler.fehler_zaehler == 0 and not req.user.groups.filter(name='Lehrer').exists():                   # Hinweis bei zu vielen Aufgaben
+                         return render(req, 'core/genug.html', {'kategorie': kategorie.name})                    
             #hier wird die entsprechende Funktion aufgerufen und festgelegt, aus welchem Bereich (Typ) Aufgaben erzeugt werden
             #zunächst wird überprüft, ob für diese kategorie Einträge bei "Optionen" vorhanden sind:
             if not zaehler.optionen_text : 
