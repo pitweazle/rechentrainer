@@ -3,10 +3,13 @@
 <div class="container" style="max-width: 380px;">
     <h2>Du hast schon ein Rechentrainer-Konto</h2>
     <p>Du bist im Rechentrainer als <b>{{ user_obj.profil.vorname }} {{ user_obj.profil.nachname }}</b> bekannt.</p>
-    <p>Das Rechenduell erreichst du einfacher, wenn du dich direkt im Rechentrainer anmeldest und es von dort aus startest. Dort findest du auch deine Gruppen.</p>
+    <p>Das Rechenduell erreichst du am einfachsten über den Rechentrainer. Dort findest du auch deine Gruppen.</p>
+    <p><b>Was möchtest du tun?</b></p>
+    <p>1. <a href="{% url 'index' %}"><b>Zum Rechentrainer</b></a> (empfohlen)</p>
+    <p>2. Dieses Fenster schließen, wenn du das Rechenduell nicht hier nutzen möchtest.</p>
+    <p>3. Trotzdem im Rechenduell anmelden (ohne deine Rechentrainer-Gruppen):</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" name="aktion" value="abbrechen">Abbrechen</button>
         <button type="submit" name="aktion" value="weiter">Trotzdem hier anmelden</button>
     </form>
 </div>
