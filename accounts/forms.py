@@ -74,7 +74,11 @@ class Lehrer_Aendern_Form(forms.ModelForm):
                 'hj': forms.TextInput(attrs={'size': 1}),}
 
 class Ort_Form(forms.Form):
-    ort = forms.ModelChoiceField(queryset=Ort.objects.all().order_by('plz'), widget=forms.Select, required=False)
+    ort = forms.ModelChoiceField(
+        queryset=Ort.objects.exclude(name="Unbekannter Ort").order_by('plz'),
+        widget=forms.Select,
+        required=False,
+    )
 
 class Schule_Form(forms.Form):
     schule = forms.ModelChoiceField(queryset=Schule.objects.all().order_by('schulname'), widget=forms.Select, required=False)

@@ -1742,7 +1742,7 @@ def ort_wahl(req):
             else:
                 profil = get_object_or_404(Profil, user = req.user)
                 schulen = Schule.objects.filter(ort_id = ort_wahl)
-                return render(req, 'schule_wahl.html', context={ 'schulen': schulen, 'titel': "Schule wählen"})
+                return render(req, 'schule_wahl.html', context={'schulen': schulen, 'ort': ort_wahl, 'titel': "Schule wählen"})
     return render(req, 'ort_wahl.html', context={'ort_form': ort_form, 'titel': "Schulort wählen"})
 
 def schule_wahl(req, schule_id):
