@@ -1124,7 +1124,7 @@ def eduplaces_login_duell(request):
     request.session['eduplaces_duell_state'] = state
     request.session['eduplaces_duell_code_verifier'] = code_verifier
 
-    scopes = "openid role groups pseudonym school school_name school_official_id"
+    scopes = "openid role groups profile pseudonym school school_name school_location school_official_id"
 
     params = {
         'response_type': 'code',
@@ -1316,11 +1316,11 @@ def eduplaces_callback_duell(request):
             if email and user.email != email:
                 user.email = email
                 user.save()
-        if profil.mathe:
-            request.session["duell_pending_user"] = user.id
-            return redirect("duell_hinweis")
-        login(request, user)
-        return redirect("duell")
+            if profil.mathe:
+                request.session["duell_pending_user"] = user.id
+                return redirect("duell_hinweis")
+            login(request, user)
+            return redirect("duell")
 
     # STUFE 3: Komplett neu -> DIREKT anlegen, KEIN Formular, KEIN jg/kurs
     sj, hj = name_hj()
