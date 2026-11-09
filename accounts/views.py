@@ -815,6 +815,16 @@ def eduplaces_gruppen(request):
     eigene = Lerngruppe.objects.filter(lehrer=request.user, eduplaces_id__isnull=True, temp=False).order_by("name")
     return render(request, "SSO/eduplaces_gruppen.html", {"gruppen": gruppen, "eigene": eigene})
 
+def eduplaces_weiter(request):
+    """Lehrkräfte mit noch nicht übernommenen eduplaces-Gruppen zuerst zur Gruppenseite."""
+    angebot = request.session.get("ed_gruppen_angebot") or []
+    if angebot:
+        ids = [a["id"] for a in angebot]
+        bekannt = set(Lerngruppe.objects.filter(eduplaces_id__in=ids).values_list("eduplaces_id", flat=True))
+        if any(i not in bekannt for i in ids):
+            return redirect("eduplaces_gruppen")
+    return redirect("index")
+
 def eduplaces_callback(request):
     """Verarbeitet den Rücksprung von Eduplaces und steuert das Stufen-System."""
     code = request.GET.get("code")
@@ -965,7 +975,7 @@ def eduplaces_callback(request):
 
         login(request, user)
         eduplaces_gruppen_verarbeiten(request, profil, ed_groups)
-        return redirect("index")
+        return eduplaces_weiter(request)
     except Profil.DoesNotExist:
         pass
 
@@ -986,7 +996,7 @@ def eduplaces_callback(request):
                 
             login(request, user)
             eduplaces_gruppen_verarbeiten(request, profil, ed_groups)
-            return redirect("index")
+            return eduplaces_weiter(request)
 
     # STUFE 3 & 4: Ab in die Session
     request.session["ed_pending"] = {
