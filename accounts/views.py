@@ -1367,6 +1367,7 @@ def simulation_eduplaces(request):
         'vorname': request.POST.get('vorname', 'Max'),
         'nachname': request.POST.get('nachname', 'Mustermann'),
         'rolle': request.POST.get('rolle', 'student'),
+        'schulform': request.POST.get('schulform', ''),
         'schule_id': None,  # Wird über die offizielle ID verknüpft
     }
     # Wir simulieren direkt die Daten, die sonst aus dem Userinfo-Endpoint kämen,
@@ -1448,6 +1449,9 @@ def simulation_eduplaces(request):
 
                 <label>Gruppenname:</label>
                 <input type="text" name="gruppe_name" value="rechentrainer Test-Accounts"><br>
+
+                <label>Schulform (schooling_level):</label>
+                <input type="text" name="schulform" value="GYMNASIUM"><br>
 
                 <button type="submit">Eduplaces-Login simulieren</button>
             </form>
