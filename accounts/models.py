@@ -91,6 +91,7 @@ class Profil(models.Model):
 
     # ERWEITERT FÜR DEINE SSO-SYSTEME
     eduplaces_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    eduplaces_uid_duell = models.CharField(max_length=255, null=True, blank=True, unique=True)
     moodle_uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
     # diese Felder werden erst ausgefüllt, wenn ein Schüler seine Lerngruppe wählt
