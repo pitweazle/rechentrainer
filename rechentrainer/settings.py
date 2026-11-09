@@ -168,5 +168,18 @@ SERVER_EMAIL = 'info@rechentrainer.app'  # für Error-Mails
 #SESSION_COOKIE_AGE = 120 #das wären zwei Minuten
 #SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
 
