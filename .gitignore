@@ -143,4 +143,5 @@ cp_static/*
 */.secret
 uploads/*
 cache/*
-.mp4
+.mp4backups/
+.htaccess
