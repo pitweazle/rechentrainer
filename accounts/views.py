@@ -2,6 +2,7 @@ import os
 import string
 import random
 import hashlib
+import hmac
 import json
 import logging
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , QueryDict, FileResponse, Http404, request
+from django.http import HttpResponse, HttpResponseBadRequest, HttpRequest , HttpResponseForbidden, QueryDict, FileResponse, Http404, request
 from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
@@ -214,6 +215,44 @@ def custom_logout(request):
     return redirect('index')
 
 # moodle:
+def _lti_enc(s):
+    return urllib.parse.quote(str(s), safe='')
+
+def lti_signatur_ok(request, secret):
+    """Prüft die OAuth-1.0-Signatur (HMAC-SHA1) einer LTI-1.1-Anfrage."""
+    try:
+        gesendet = request.POST.get('oauth_signature', '')
+        if not gesendet or not secret:
+            return False
+
+        # Zeitstempel: höchstens 10 Minuten Abweichung
+        ts = int(request.POST.get('oauth_timestamp', '0'))
+        if abs(timezone.now().timestamp() - ts) > 600:
+            return False
+
+        # Alle Parameter außer der Signatur, sortiert und kodiert
+        paare = []
+        for key, werte in request.POST.lists():
+            if key == 'oauth_signature':
+                continue
+            for w in werte:
+                paare.append((_lti_enc(key), _lti_enc(w)))
+        paare.sort()
+        param_str = '&'.join(f'{k}={v}' for k, v in paare)
+
+        host = request.get_host().lower()
+        for scheme in ('https', 'http'):
+            url = f'{scheme}://{host}{request.path}'
+            basis = '&'.join(['POST', _lti_enc(url), _lti_enc(param_str)])
+            schluessel = _lti_enc(secret) + '&'
+            digest = hmac.new(schluessel.encode(), basis.encode(), hashlib.sha1).digest()
+            erwartet = base64.b64encode(digest).decode()
+            if hmac.compare_digest(erwartet, gesendet):
+                return True
+        return False
+    except Exception:
+        return False
+
 @csrf_exempt
 def lti_launch(request):
     if request.method != 'POST':
@@ -226,6 +265,12 @@ def lti_launch(request):
         return HttpResponseBadRequest(f"Unbekannte Dienststellennummer: '{consumer_key}'.")
 
     logger = logging.getLogger(__name__)
+
+    if not lti_signatur_ok(request, schule_obj.shared_secret):
+        logger.error(f"LTI-SIGNATUR UNGÜLTIG: Schule {schule_obj.schulname} ({consumer_key}), Host {request.get_host()}")
+        if os.getenv("LTI_SIGNATUR_STRIKT") == "1":
+            return HttpResponseForbidden("Ungültige LTI-Signatur.")
+
     logger.warning(f"MOODLE POST DATEN ({platform}): {request.POST.dict()}")
 
     moodle_uid = request.POST.get('user_id')
@@ -235,16 +280,6 @@ def lti_launch(request):
     if moodle_email.endswith('.invalid'):
         moodle_email = ''
     moodle_rollen = request.POST.get('roles', 'Learner')
-
-    # LoginLog.objects.create(
-    #     quelle=f'moodle_{platform}',
-    #     consumer_key=consumer_key,
-    #     user_id=moodle_uid,
-    #     user_name=request.POST.get('lis_person_name_full'),
-    #     rolle=moodle_rollen,
-    #     institution_name=request.POST.get('tool_consumer_instance_name'),
-    #     rohdaten=str(request.POST.dict())
-    # )
 
     if 'Instructor' in moodle_rollen or 'Teacher' in moodle_rollen:
         ziel_gruppen_name = "Lehrer"

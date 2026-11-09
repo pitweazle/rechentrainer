@@ -19,8 +19,6 @@ urlpatterns = [
     path('lti/launch/', views.lti_launch, name='lti_launch'),
     
     path('moodle-entscheidung/', views.moodle_entscheidung, name='moodle_entscheidung'),
-    #path('simulation_moodle/', views.simulation_moodle, name='simulation_moodle'),
-    #path('physik/simulation/moodle/', views.simulation_moodle, name='simulation_moodle_physik'),
 
     path('eduplaces/login/', views.eduplaces_login, name='eduplaces_login'),
     path('eduplaces/gruppen/', views.eduplaces_gruppen, name='eduplaces_gruppen'),
@@ -29,10 +27,7 @@ urlpatterns = [
     #path('eduplaces_duell/logout/', views.eduplaces_logout, name='eduplaces_logout'),
     path('eduplaces/zuordnung/', views.eduplaces_zuordnung, name='eduplaces_zuordnung'),
 
-    #path('sim_moodle/', views.simulation_moodle, name='simulation_moodle'),
-    #path('sim_eduplaces/', views.simulation_eduplaces, name='simulation_eduplaces'),
-
-    path('eduplaces_duell/login/', views.eduplaces_login_duell, name='eduplaces_login_duell'),
+      path('eduplaces_duell/login/', views.eduplaces_login_duell, name='eduplaces_login_duell'),
     path('eduplaces_duell/hinweis/', views.duell_hinweis, name='duell_hinweis'),
     path('eduplaces_duell/callback/', views.eduplaces_callback_duell, name='eduplaces_callback_duell'),
 
