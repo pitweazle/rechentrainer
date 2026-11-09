@@ -4,6 +4,7 @@ import string
 
 from django.db import models
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -56,7 +57,11 @@ class Lerngruppe(models.Model):
         unique_together = ['lehrer', 'name']
     
     def __str__(self):
-        return f"{self.id} {self.lehrer.profil.nachname}, {self.name}"
+        try:
+            nachname = self.lehrer.profil.nachname
+        except ObjectDoesNotExist:
+            nachname = self.lehrer.username
+        return f"{self.id} {nachname}, {self.name}"
 
 class wahl_kurs(models.TextChoices):
     GYMNASIUM = 'Y', 'Gymnasium'
@@ -81,7 +86,12 @@ class Physikgruppe(models.Model):
         unique_together = ['lehrer', 'name']
     
     def __str__(self):
-        return f"{self.id} {self.lehrer.profil.nachname}, {self.name}"
+        try:
+            nachname = self.lehrer.profil.nachname
+        except ObjectDoesNotExist:
+            nachname = self.lehrer.username
+        return f"{self.id} {nachname}, {self.name}"
+
     
 class Profil(models.Model):
     user = models.OneToOneField(User, related_name='profil', on_delete=models.CASCADE)
