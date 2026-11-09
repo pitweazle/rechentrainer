@@ -41,9 +41,9 @@
       <div style="margin-bottom: 15px;">
         <label style="display: block; margin-bottom: 5px;">Kurs:</label>
         <select name="reg_kurs" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
-          <option value="" disabled selected>Bitte auswählen...</option>
+          <option value="" disabled {% if not form_kurs %}selected{% endif %}>Bitte auswählen...</option>
           {% for value, label in kurs_choices %}
-            <option value="{{ value }}">{{ label }}</option>
+            <option value="{{ value }}" {% if value == form_kurs %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
         
