@@ -1128,7 +1128,7 @@ def eduplaces_login_duell(request):
     request.session['eduplaces_duell_state'] = state
     request.session['eduplaces_duell_code_verifier'] = code_verifier
 
-    scopes = "openid role groups profile pseudonym school school_name school_location school_official_id"
+    scopes = "openid role profile pseudonym school school_name school_location school_official_id"
 
     params = {
         'response_type': 'code',
@@ -1151,8 +1151,12 @@ def duell_hinweis(request):
     if not user:
         return redirect("duell")
     if request.method == "POST":
+        pending_uid = request.session.pop("duell_pending_uid", None)
         del request.session["duell_pending_user"]
         if request.POST.get("aktion") == "weiter":
+            if pending_uid and not user.profil.eduplaces_uid_duell:
+                user.profil.eduplaces_uid_duell = pending_uid
+                user.profil.save()
             login(request, user)
         return redirect("duell")
     return render(request, "SSO/duell_hinweis.html", {"user_obj": user})
@@ -1199,18 +1203,6 @@ def eduplaces_callback_duell(request):
     id_token = token_data.get("id_token")
     id_payload = decode_jwt_payload(id_token) or {}
     eduplaces_sid = id_payload.get("sid")
-
-    # # DIAGNOSE: kompletten Token-Response anschauen
-    # LoginLog.objects.create(
-    #     quelle='eduplaces_duell_debug',
-    #     consumer_key='TOKEN-DATA',
-    #     user_id='',
-    #     user_name='Token Data + ID Payload',
-    #     rolle='',
-    #     institution_name='',
-    #     # rohdaten=f"token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
-    #     rohdaten=f"scope: {token_data.get('scope')} | token_data keys: {list(token_data.keys())} | id_payload: {id_payload}"
-    # )
 
     userinfo_headers = {"Authorization": f"Bearer {access_token}"}
     userinfo_response = requests.get(userinfo_endpoint, headers=userinfo_headers, timeout=10)
@@ -1287,9 +1279,9 @@ def eduplaces_callback_duell(request):
         rohdaten=str(ed_data)
     )
 
-    # STUFE 1: eduplaces_uid bereits bekannt -> einloggen
+    # STUFE 1: Duell-Kennung bereits bekannt -> einloggen
     try:
-        profil = Profil.objects.get(eduplaces_uid=eduplaces_uid)
+        profil = Profil.objects.get(eduplaces_uid_duell=eduplaces_uid)
         user = profil.user
         gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
         if gruppe_obj:
@@ -1297,23 +1289,16 @@ def eduplaces_callback_duell(request):
         if email and user.email != email:
             user.email = email
             user.save()
-        if profil.mathe:
-            request.session["duell_pending_user"] = user.id
-            return redirect("duell_hinweis")
         login(request, user)
         return redirect("duell")
     except Profil.DoesNotExist:
         pass
 
-    # STUFE 2: Name + Schule stimmen überein -> einloggen
-    # Eine vorhandene Kennung (z. B. aus dem Rechentrainer) bleibt unverändert.
+    # STUFE 2: Name + Schule stimmen überein (z. B. vorhandenes Rechentrainer-Profil)
     if schule_obj and vorname and nachname:
         profil = Profil.objects.filter(vorname=vorname, nachname=nachname, schule=schule_obj).first()
         if profil:
             user = profil.user
-            if not profil.eduplaces_uid:
-                profil.eduplaces_uid = eduplaces_uid
-                profil.save()
             gruppe_obj = Group.objects.filter(name=ziel_gruppen_name).first()
             if gruppe_obj:
                 user.groups.add(gruppe_obj)
@@ -1321,8 +1306,13 @@ def eduplaces_callback_duell(request):
                 user.email = email
                 user.save()
             if profil.mathe:
+                # Hinweisseite: Kennung wird erst nach Bestätigung gespeichert
                 request.session["duell_pending_user"] = user.id
+                request.session["duell_pending_uid"] = eduplaces_uid
                 return redirect("duell_hinweis")
+            if not profil.eduplaces_uid_duell:
+                profil.eduplaces_uid_duell = eduplaces_uid
+                profil.save()
             login(request, user)
             return redirect("duell")
 
@@ -1350,7 +1340,7 @@ def eduplaces_callback_duell(request):
         nachname=nachname,
         klasse='',
         schule=schule_obj,
-        eduplaces_uid=eduplaces_uid,
+        eduplaces_uid_duell=eduplaces_uid,
         mathe=False,
         sj=sj,
         hj=hj,
