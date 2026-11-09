@@ -987,7 +987,7 @@ def eduplaces_zuordnung(request):
         aktion = request.POST.get('aktion')
 
         if aktion == 'registrierung_speichern':
-            reg_klasse = 'Lehrkraft' if is_lehrer else request.POST.get('reg_klasse')
+            reg_klasse = 'Lehrer' if is_lehrer else request.POST.get('reg_klasse')
             reg_jg = request.POST.get('reg_jg')
 
             reg_kurs = request.POST.get('reg_kurs')
@@ -1108,10 +1108,7 @@ def eduplaces_zuordnung(request):
         'error_message': error_message,
         'is_lehrer': is_lehrer,
         'platform': 'mathe',
-        'form_kurs': kurs_aus_schulform(
-            ed_data.get('schulform'),
-            Schule.objects.filter(pk=ed_data.get('schule_id')).values_list('schulname', flat=True).first(),
-        ),
+        'form_kurs': kurs_aus_schulform(ed_data.get('schulform')),
         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
