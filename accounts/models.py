@@ -91,7 +91,6 @@ class Physikgruppe(models.Model):
         except ObjectDoesNotExist:
             nachname = self.lehrer.username
         return f"{self.id} {nachname}, {self.name}"
-
     
 class Profil(models.Model):
     user = models.OneToOneField(User, related_name='profil', on_delete=models.CASCADE)

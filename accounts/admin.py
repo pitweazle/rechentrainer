@@ -60,7 +60,7 @@ class ProfilAdmin(admin.ModelAdmin):
             'fields': [('vorname', 'nachname', 'klasse', 'schule'),('mathe', 'physik')]
         }),
         ('SSO', {
-            'fields': ['moodle_uid', 'eduplaces_uid'], 
+            'fields': ['moodle_uid', 'eduplaces_uid', 'eduplaces_uid_duell',], 
             'classes': ['collapse']
         }),
         ('Mathe-Spezifisch', {
