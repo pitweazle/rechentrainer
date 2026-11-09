@@ -25,7 +25,8 @@
       </tr>
       {% endfor %}
     </table>
-    <br><button type="submit">übernehmen</button>
+        {% if not alle_verknuepft %}<br><button type="submit">übernehmen</button>{% endif %}
   </form>
+  <p style="margin-top: 20px;"><a href="{% url 'index' %}">Weiter zum Rechentrainer →</a></p>
 </div>
 {% endblock %}

@@ -1130,7 +1130,7 @@ def eduplaces_zuordnung(request):
             if 'eduplaces_sub' in request.session:
                 del request.session['eduplaces_sub']
 
-            return redirect('index')
+            return eduplaces_weiter(request)
 
         elif aktion == 'verknuepfen':
             u_eingabe = request.POST.get('username_eingabe')
