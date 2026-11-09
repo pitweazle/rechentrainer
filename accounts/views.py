@@ -947,11 +947,20 @@ def eduplaces_callback(request):
         "email": email,
         "rolle": ziel_gruppen_name,
         "schule_id": schule_obj.id if schule_obj else None,
+        "schulform": ed_data.get("schooling_level") or "",
         "jg": 5,
         "groups": ed_groups,
     }
 
     return redirect("eduplaces_zuordnung")
+
+def kurs_aus_schulform(schulform):
+    """Findet den Kurs, dessen Beschriftung zur Schulform von eduplaces passt."""
+    s = str(schulform or '').strip().lower()
+    for value, label in wahl_kurs.choices:
+        if s == label.lower():
+            return value
+    return ''
 
 def eduplaces_zuordnung(request):
     ed_data = request.session.get('ed_pending')
@@ -978,12 +987,8 @@ def eduplaces_zuordnung(request):
         aktion = request.POST.get('aktion')
 
         if aktion == 'registrierung_speichern':
-            if is_lehrer:
-                reg_klasse = 'Lehrer'
-                reg_jg = 7  # Default-Jahrgang für Lehrer, kann später im Profil geändert werden
-            else:
-                reg_klasse = request.POST.get('reg_klasse')
-                reg_jg = request.POST.get('reg_jg')
+            reg_klasse = 'Lehrkraft' if is_lehrer else request.POST.get('reg_klasse')
+            reg_jg = request.POST.get('reg_jg')
 
             reg_kurs = request.POST.get('reg_kurs')
             reg_email = request.POST.get('reg_email', '').strip()
@@ -1048,6 +1053,7 @@ def eduplaces_zuordnung(request):
                     kurs=reg_kurs,
                     eduplaces_uid=ed_uid,
                     schule_id=ed_data.get('schule_id'),
+                    mathe=True,
                     stufe=stufe,
                     sj=sj,
                     hj=hj,
@@ -1101,6 +1107,11 @@ def eduplaces_zuordnung(request):
         'kurs_choices': wahl_kurs.choices,
         'error_message': error_message,
         'is_lehrer': is_lehrer,
+        'platform': 'mathe',
+        'form_kurs': kurs_aus_schulform(
+            ed_data.get('schulform'),
+            Schule.objects.filter(pk=ed_data.get('schule_id')).values_list('schulname', flat=True).first(),
+        ),
         'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
         'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
     }
