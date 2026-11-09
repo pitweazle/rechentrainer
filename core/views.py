@@ -2619,8 +2619,8 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
             einh = ["Euro", "€", "m", "kg",""]
             einheit = random.choice(einh)
             if typ == 3:
-                titel = "Ergänze zum Ganzen"
-                text = "Ergänze zum Ganzen: {}/{} von x = {}{}"
+                titel = "Das Ganze berechnen"
+                text = "{}/{} von x sind {}{}. Wie groß ist x?"
                 frage = "x="
                 variable = [zaehler, nenner, int(zahl1*zaehler/nenner), einheit]
                 erg = zahl1
@@ -2676,6 +2676,9 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                         hilfe_id = 53
                     else:
                         hilfe_id = 54
+            if isinstance(erg, float) and erg == int(erg):
+                lsg = str(int(erg))                      # "10" statt "10.0" anzeigen
+            lsg = [lsg] if isinstance(lsg, str) else lsg
             parameter = {'name': 'normal'}
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
