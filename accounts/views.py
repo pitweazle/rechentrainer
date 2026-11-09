@@ -264,14 +264,28 @@ def lti_launch(request):
     except Schule.DoesNotExist:
         return HttpResponseBadRequest(f"Unbekannte Dienststellennummer: '{consumer_key}'.")
 
-    logger = logging.getLogger(__name__)
+    #logger = logging.getLogger(__name__)
 
-    if not lti_signatur_ok(request, schule_obj.shared_secret):
-        logger.error(f"LTI-SIGNATUR UNGÜLTIG: Schule {schule_obj.schulname} ({consumer_key}), Host {request.get_host()}")
-        if os.getenv("LTI_SIGNATUR_STRIKT") == "1":
-            return HttpResponseForbidden("Ungültige LTI-Signatur.")
+    signatur_ok = lti_signatur_ok(request, schule_obj.shared_secret)
+    try:
+        LoginLog.objects.create(
+            quelle='lti_signatur_ok' if signatur_ok else 'lti_signatur_FEHLER',
+            consumer_key=consumer_key,
+            user_id=request.POST.get('user_id', ''),
+            institution_name=schule_obj.schulname,
+            rohdaten=(
+                f"Host: {request.get_host()} | Pfad: {request.path} | "
+                f"Plattform: {platform} | "
+                f"Methode: {request.POST.get('oauth_signature_method', '')} | "
+                f"Zeitstempel: {request.POST.get('oauth_timestamp', '')}"
+            ),
+        )
+    except Exception:
+        pass
+    if not signatur_ok and os.getenv("LTI_SIGNATUR_STRIKT") == "1":
+        return HttpResponseForbidden("Ungültige LTI-Signatur.")
 
-    logger.warning(f"MOODLE POST DATEN ({platform}): {request.POST.dict()}")
+    #logger.warning(f"MOODLE POST DATEN ({platform}): {request.POST.dict()}")
 
     moodle_uid = request.POST.get('user_id')
     vorname = request.POST.get('lis_person_name_given', '').strip()
