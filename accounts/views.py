@@ -129,78 +129,6 @@ def index(req):
         profil = None
     return render(req, "mathe_start.html", {"profil": profil, "lehrer": lehrer, "anz_angemeldet": anz_angemeldet, "anz_lehrer": anz_lehrer, "anz_aufg": anz_gesamt, "tests": tests, })
 
-def rt_profil_ergaenzen(request):
-    user = request.user
-    # Profil holen oder anlegen, falls noch keines da ist
-    profil, created = Profil.objects.get_or_create(user=user)
-    
-    if request.method == 'POST':
-        aktion = request.POST.get('aktion')
-        if aktion == 'registrierung_speichern':
-            # Namen auslesen (falls leer gewesen, wurden sie im Template als required abgefragt)
-            eingabe_vorname = request.POST.get('reg_vorname', '').strip()
-            eingabe_nachname = request.POST.get('reg_nachname', '').strip()
-            
-            if eingabe_vorname:
-                profil.vorname = eingabe_vorname
-            if eingabe_nachname:
-                profil.nachname = eingabe_nachname
-                
-            profil.klasse = request.POST.get('reg_klasse')
-            
-            reg_jg = int(request.POST.get('reg_jg'))
-            reg_kurs = request.POST.get('reg_kurs')
-            reg_email = request.POST.get('reg_email')
-            
-            # E-Mail am Standard-User aktualisieren, falls angegeben
-            if reg_email and not user.email:
-                user.email = reg_email
-                user.save()
-            
-            # 1. Mathe-Berechtigung aktivieren & Stufe berechnen
-            profil.mathe = True  
-            profil.stufe = stufe_aus_jg(reg_jg, reg_kurs)
-            
-            # 2. Schuljahr und Halbjahr über deine Service-Funktion setzen
-            sj, hj = name_hj()
-            profil.sj = sj
-            profil.hj = hj
-            
-            # Zeitstempel für den Beginn setzen, falls noch leer
-            if not profil.schuljahr_ab and not profil.halbjahr_ab:
-                heute_datum = get_today()
-                if hj == 1:
-                    profil.schuljahr_ab = timezone.now()
-                else:
-                    profil.halbjahr_ab = timezone.now()
-                    
-            profil.save()
-            ergebnis = check_hj(request)
-            if ergebnis:
-                return ergebnis
-            if profil.gruppe_id:
-                return render(request, 'schueler/gruppe_fertig.html', {'gruppe': profil.gruppe})
-            return redirect('ort_wahl')
-
-    # Kontext für das Template bereitstellen
-    # Prüfen, ob der Benutzer ein Lehrer ist
-    is_lehrer = User.objects.filter(pk=user.id, groups__name='Lehrer').exists()
-    
-    context = {
-        'moodle_vorname': profil.vorname,   
-        'moodle_nachname': profil.nachname, 
-        'moodle_email': user.email,
-        'kurs_choices': wahl_kurs.choices,
-        'titel': "Registrierung abschließen",
-        'is_lehrer': is_lehrer,
-        'form_klasse': 'Lehrer' if is_lehrer else profil.klasse if profil.klasse else '',
-        'form_jg': profil.jg if profil.jg else 5,
-        'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
-        'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
-        'platform': 'mathe',
-    }
-    return render(request, 'SSO/sso_registrierung.html', context)
-
 def datenschutz(req):
     return render(req, 'datenschutz.html', context={'titel': "Datenschutz",})
 
@@ -567,6 +495,83 @@ def simulation_moodle(request):
     """)
 
 # Eduplaces:
+def is_lehrer_nutzer(user):
+    return user.groups.filter(name='Lehrer').exists()
+
+def rt_profil_ergaenzen(request):
+    user = request.user
+    # Profil holen oder anlegen, falls noch keines da ist
+    profil, created = Profil.objects.get_or_create(user=user)
+    
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'registrierung_speichern':
+            # Namen auslesen (falls leer gewesen, wurden sie im Template als required abgefragt)
+            eingabe_vorname = request.POST.get('reg_vorname', '').strip()
+            eingabe_nachname = request.POST.get('reg_nachname', '').strip()
+            
+            if eingabe_vorname:
+                profil.vorname = eingabe_vorname
+            if eingabe_nachname:
+                profil.nachname = eingabe_nachname
+                
+            profil.klasse = request.POST.get('reg_klasse')
+            
+            reg_jg = int(request.POST.get('reg_jg'))
+            reg_kurs = request.POST.get('reg_kurs')
+            reg_email = request.POST.get('reg_email')
+            
+            # E-Mail am Standard-User aktualisieren, falls angegeben
+            if reg_email and not user.email:
+                user.email = reg_email
+                user.save()
+            
+            # 1. Mathe-Berechtigung aktivieren & Stufe berechnen
+            profil.mathe = True  
+            profil.stufe = stufe_aus_jg(reg_jg, reg_kurs)
+            
+            # 2. Schuljahr und Halbjahr über deine Service-Funktion setzen
+            sj, hj = name_hj()
+            profil.sj = sj
+            profil.hj = hj
+            
+            # Zeitstempel für den Beginn setzen, falls noch leer
+            if not profil.schuljahr_ab and not profil.halbjahr_ab:
+                heute_datum = get_today()
+                if hj == 1:
+                    profil.schuljahr_ab = timezone.now()
+                else:
+                    profil.halbjahr_ab = timezone.now()
+                    
+            profil.save()
+            ergebnis = check_hj(request)
+            if ergebnis:
+                return ergebnis
+            if profil.gruppe_id:
+                return render(request, 'schueler/gruppe_fertig.html', {'gruppe': profil.gruppe})
+            if is_lehrer_nutzer(user) and profil.schule_id:
+                return redirect('index')
+            return redirect('ort_wahl')
+
+    # Kontext für das Template bereitstellen
+    # Prüfen, ob der Benutzer ein Lehrer ist
+    is_lehrer = User.objects.filter(pk=user.id, groups__name='Lehrer').exists()
+    
+    context = {
+        'moodle_vorname': profil.vorname,   
+        'moodle_nachname': profil.nachname, 
+        'moodle_email': user.email,
+        'kurs_choices': wahl_kurs.choices,
+        'titel': "Registrierung abschließen",
+        'is_lehrer': is_lehrer,
+        'form_klasse': 'Lehrer' if is_lehrer else profil.klasse if profil.klasse else '',
+        'form_jg': profil.jg if profil.jg else 5,
+        'rollen_label': 'Rolle (z.B. Lehrer / Lehrerin):' if is_lehrer else 'Klasse:',
+        'rollen_placeholder': 'z.B. Lehrer' if is_lehrer else 'z.B. 6R',
+        'platform': 'mathe',
+    }
+    return render(request, 'SSO/sso_registrierung.html', context)
+
 @csrf_exempt
 @require_POST
 def eduplaces_logout(request):
@@ -635,7 +640,6 @@ def eduplaces_logout(request):
         logger.error(f"[ED-LOGOUT] Fehler beim Verarbeiten: {e}", exc_info=True)
         return HttpResponse(f"Error processing logout: {str(e)}", status=400)
     
-#nur - Eduplaces:
 def decode_jwt_payload(token):
     """
     Dekodiert NUR den Payload-Teil eines JWT (ohne Signaturprüfung).
