@@ -23,6 +23,8 @@ from .forms import Register_Form, Profil_Form
 
 from .bewertung import bewerte_aufgabe, check_answer_with_api
 
+KI_HINWEIS = "Diese Einschätzung stammt von einer KI und kann falsch sein – im Zweifel sprich mit deiner Physiklehrkraft."
+
 def ist_mitarbeiter(user):
     if not user.is_authenticated:
         return False
@@ -590,7 +592,7 @@ def aufgaben(request):
                         request,
                         f'Die App hätte eher eine Antwort wie "{aufgabe.loesung}" erwartet.<br>'
                         f'Ich (die KI) finde deine Antwort "{antwort}" auch gut – vielleicht berücksichtigst du '
-                        f'den Lösungsvorschlag des Physiktrainers beim nächsten Mal.<br>(KI-Einschätzung)',
+                        f'den Lösungsvorschlag des Physiktrainers beim nächsten Mal.<br>(KI-Einschätzung)<br>{KI_HINWEIS}',
                         extra_tags="ki"
                     )
 
@@ -616,7 +618,7 @@ def aufgaben(request):
                             pass
                         request.session.pop("fehler_log_id", None)
 
-                    ki_hinweis_text = f"Leider falsch. {ki_ergebnis} (KI-Einschätzung)"
+                    ki_hinweis_text = f"Leider falsch. {ki_ergebnis} (KI-Einschätzung)<br>{KI_HINWEIS}"
                     if aufgabe.typ not in ["p", "a", "r"]:
                         ki_hinweis_text += f"<br>Deine Eingabe: »{antwort}« | Richtige Lösung: »{aufgabe.loesung}«"
                     if aufgabe.erklaerung and aufgabe.erklaerung not in ki_hinweis_text:
