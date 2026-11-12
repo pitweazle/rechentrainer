@@ -3,6 +3,31 @@ import random
 from collections import defaultdict
 from django.test import SimpleTestCase
 from core.views import dreiecke
+from core.views import dreiecke, bruchteile
+
+class BruchteileTest(SimpleTestCase):
+
+    def test_typ3_anzeigen(self):
+        """Zeigt 10 Aufgaben vom Typ 3 mit Lösung."""
+        for _ in range(10):
+            ergebnis = bruchteile(
+                jg=6, stufe=3, aufgnr=1,
+                typ_anf=3, typ_end=3,
+            )
+            text = ergebnis[3].format(*ergebnis[6])
+            lsg = ergebnis[9]
+            print(f"{text}   ->   lsg = {lsg!r}   (Typ: {type(lsg).__name__})")
+
+    def test_typ3_lsg_ist_liste_mit_text(self):
+        for stufe in (1, 2, 3, 4):
+            for _ in range(200):
+                ergebnis = bruchteile(
+                    jg=6, stufe=stufe, aufgnr=1,
+                    typ_anf=3, typ_end=3,
+                )
+                lsg = ergebnis[9]
+                self.assertIsInstance(lsg, list, f"lsg ist keine Liste: {lsg!r}")
+                self.assertIsInstance(lsg[0], str, f"lsg[0] ist kein Text: {lsg!r}")
 
 
 class DreieckeTest(SimpleTestCase):

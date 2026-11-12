@@ -2607,7 +2607,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
             pro_text = "{1}/{2} von {0} Kästchen"
             variable = [spalte*zeile,zaehler, nenner]
             erg = spalte*zeile*zaehler/nenner
-            lsg = [str(erg)]
+            lsg = [str(int(erg))]
             einheit = "müssten gefärbt werden"
             parameter = {'name': 'svg/winkel.svg', 'object': 'kaestchen', 'schieb': koordinaten,}
         else:
@@ -2624,7 +2624,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 frage = "x="
                 variable = [zaehler, nenner, int(zahl1*zaehler/nenner), einheit]
                 erg = zahl1
-                lsg = str(erg)
+                lsg = [str(erg)]
                 if stufe%2 == 1:
                     if zaehler == 1:
                         hilfe_id = 31
@@ -2640,7 +2640,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 frage = "{}/{}·{}"
                 variable = [zaehler, nenner, zahl1,einheit]
                 erg = zahl1*zaehler/nenner
-                lsg = str(erg)  
+                lsg = [str(erg)]  
                 if stufe%2 == 1:
                     if zaehler == 1:
                         hilfe_id = 41
@@ -2665,7 +2665,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                 nenner = bruch.denominator
                 variable = [ganze, zaehler, nenner, zahl1,einheit]
                 erg = ganze*zahl1+zahl1*zaehler/nenner
-                lsg = str(erg)
+                lsg = [str(erg)]
                 if stufe%2 == 1:
                     if zaehler == 1:
                         hilfe_id = 51
@@ -2677,8 +2677,7 @@ def bruchteile(jg = 5, stufe = 3, aufgnr = 0, typ_anf = 0, typ_end = 0, reihenfo
                     else:
                         hilfe_id = 54
             if isinstance(erg, float) and erg == int(erg):
-                lsg = str(int(erg))                      # "10" statt "10.0" anzeigen
-            lsg = [lsg] if isinstance(lsg, str) else lsg
+                lsg = [str(int(erg))]                      # "10" statt "10.0" anzeigen
             parameter = {'name': 'normal'}
         return typ, 0, titel, text, pro_text, frage, variable, einheit, anmerkung, lsg, hilfe_id, erg, parameter
 
